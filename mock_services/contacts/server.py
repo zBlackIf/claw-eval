@@ -82,17 +82,23 @@ class SendMessageRequest(BaseModel):
 def search_contacts(req: SearchRequest) -> dict[str, Any]:
     results = []
     for c in _contacts:
-        # v0.30.3 ark overlay: case-insensitive substring matching. Upstream
-        # 39b27dcc used `req.query in c["name"]` directly which fails when
-        # the agent normalizes case (e.g. department="engineering" vs
-        # fixture="Engineering"). Both directions .lower()'d so all 5 EN
-        # contact tasks (T010/T026/T030/T032/T040) get fair scoring.
-        name_match = req.query.lower() in c["name"].lower()
+        q = req.query.lower()
+        searchable = [c.get("name", ""), c.get("title", ""), c.get("department", "")]
+        # Also search list fields (skills, responsibilities) and free-text notes
+        for key in ("skills", "responsibilities"):
+            val = c.get(key, [])
+            if isinstance(val, list):
+                searchable.extend(val)
+        for key in ("note", "notes", "specialization"):
+            val = c.get(key, "")
+            if isinstance(val, str):
+                searchable.append(val)
+        text_match = any(q in field.lower() for field in searchable if field)
         dept_match = (
             req.department is None
-            or req.department.lower() in c["department"].lower()
+            or req.department.lower() in c.get("department", "").lower()
         )
-        if name_match and dept_match:
+        if text_match and dept_match:
             results.append(copy.deepcopy(c))
     resp = {"contacts": results, "total": len(results)}
     _log_call("/contacts/search", req.model_dump(), resp)
