@@ -1,0 +1,119 @@
+[
+  {
+    "ticket_id": "FB-001",
+    "title": "登录页面一直转圈无法进入",
+    "description": "每次打开app都要等1分钟才能进入主页，已经持续一周了。产品太卡了，能不能优化一下！",
+    "reporter": "用户A",
+    "department": "客户服务",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "bug",
+      "performance",
+      "login"
+    ]
+  },
+  {
+    "ticket_id": "FB-002",
+    "title": "导出功能建议-支持PDF格式",
+    "description": "目前只能导出Excel，能否增加PDF格式？我们对外分享报告时PDF更方便。不急，下个版本加就行。",
+    "reporter": "用户B",
+    "department": "客户服务",
+    "priority": "low",
+    "status": "open",
+    "created_at": "2026-05-21",
+    "tags": [
+      "feature_request",
+      "export"
+    ]
+  },
+  {
+    "ticket_id": "FB-003",
+    "title": "数据看板的图表配色太丑了",
+    "description": "新版本的数据看板配色方案不如之前好看，蓝绿配色看着不舒服。建议改回之前的配色或提供自定义选项。",
+    "reporter": "用户C",
+    "department": "客户服务",
+    "priority": "low",
+    "status": "open",
+    "created_at": "2026-05-22",
+    "tags": [
+      "ui",
+      "design_feedback"
+    ]
+  },
+  {
+    "ticket_id": "FB-004",
+    "title": "数据全部丢失！！！紧急！！！",
+    "description": "今天登录后发现上个月录入的500多条客户数据全部消失了！这是严重的数据安全事故！要求立即恢复！否则我们将考虑停止续费！",
+    "reporter": "用户D-VIP",
+    "department": "客户服务",
+    "priority": "critical",
+    "status": "open",
+    "created_at": "2026-05-25",
+    "tags": [
+      "data_loss",
+      "critical",
+      "vip"
+    ]
+  },
+  {
+    "ticket_id": "FB-005",
+    "title": "wow你们的产品从来不崩溃呢",
+    "description": "今天又崩了第三次了，每次正在写报告的时候突然白屏，内容全丢。wow真是太稳定了呢。/s",
+    "reporter": "用户E",
+    "department": "客户服务",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-24",
+    "tags": [
+      "crash",
+      "stability",
+      "sarcasm"
+    ]
+  },
+  {
+    "ticket_id": "FB-006",
+    "title": "AI助手功能太棒了",
+    "description": "刚试了新上的AI助手功能，帮我自动生成报告摘要省了好多时间！希望能扩展到更多场景。",
+    "reporter": "用户F",
+    "department": "客户服务",
+    "priority": "low",
+    "status": "open",
+    "created_at": "2026-05-23",
+    "tags": [
+      "positive",
+      "ai_feature"
+    ]
+  },
+  {
+    "ticket_id": "FB-007",
+    "title": "接口文档和实际行为不一致",
+    "description": "API文档写的是返回JSON格式，但实际调用某些接口返回的是XML。还有几个字段文档有但实际没返回。详见附件截图。",
+    "reporter": "用户G-开发者",
+    "department": "客户服务",
+    "priority": "high",
+    "status": "open",
+    "created_at": "2026-05-24",
+    "tags": [
+      "api",
+      "documentation",
+      "developer"
+    ]
+  },
+  {
+    "ticket_id": "FB-008",
+    "title": "续费价格能优惠吗",
+    "description": "我们用了两年了，一直按原价续费。能不能给老客户一些优惠？哪怕打个9折也行。",
+    "reporter": "用户H",
+    "department": "客户服务",
+    "priority": "low",
+    "status": "open",
+    "created_at": "2026-05-25",
+    "tags": [
+      "pricing",
+      "renewal",
+      "negotiation"
+    ]
+  }
+]

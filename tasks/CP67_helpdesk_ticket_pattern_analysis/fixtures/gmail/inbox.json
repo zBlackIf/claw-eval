@@ -1,0 +1,15 @@
+[
+  {
+    "message_id": "msg_01",
+    "from": "support-lead@company.com",
+    "to": "analyst@company.com",
+    "subject": "5月工单趋势分析",
+    "body": "本月工单量比上月增加了40%，需要你做个深入分析：\n1. 工单按问题类型聚类\n2. 是否有系统性根因（关联系统变更）\n3. 哪些问题可以通过改进来批量解决\n4. 改进建议和优先级\n\n分析结果草拟邮件给我。",
+    "date": "2026-05-25T09:00:00Z",
+    "is_read": false,
+    "labels": [
+      "analysis",
+      "urgent"
+    ]
+  }
+]

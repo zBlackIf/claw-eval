@@ -15,7 +15,7 @@ tags: [general]
 
 source_task_id: "task_36_superpowers_skill_verify"
 source_dataset: "taskset-260421-225115-strict-v2"
-source_description: "从 Themis PinchBench top100（2026-05-25 二次筛选，killer bucket）中按跨模型 std_trim 排名精选的高区分度题（原始排名 #22，std_trim 0.414 / range_trim 0.980 / mean_trim 0.635），改编为 Claw-Eval Pattern D (sandbox-adapted) 格式，PinbenchAdaptedGrader 类属性声明自动评分。原始 prompt 重写以适配本仓库 mock service 与 fixtures，源映射见 docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525-mapping.md。"
+source_description: "从 Themis PinchBench top100（2026-05-25 二次筛选，killer bucket）中按跨模型 std_trim 排名精选的高区分度题（原始排名 #22，std_trim 0.414 / range_trim 0.980 / mean_trim 0.635），改编为 Claw-Eval final-answer 代码审计任务。grader 读取最终审计报告，并用隐藏 bugs_reference 锚点校验核心 bug 覆盖。"
 
 services: []
 
@@ -27,6 +27,8 @@ prompt:
 
     模块该实现的业务约定写在文件顶部的注释里，请按约定来审，不要凭空指出
     代码里其实并不存在的问题。
+    请直接在最终回复中给出完整代码审计报告，包含问题位置、影响、修复代码
+    思路和测试建议；不要只写到文件或只给摘要。
   language: zh
 
 tools: []

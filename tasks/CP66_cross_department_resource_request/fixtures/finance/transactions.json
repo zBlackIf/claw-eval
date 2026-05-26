@@ -1,0 +1,32 @@
+[
+  {
+    "transaction_id": "BUD-001",
+    "date": "2026-04-01",
+    "amount": 50000,
+    "currency": "CNY",
+    "merchant": "跨部门项目预算",
+    "category": "project_budget",
+    "description": "Q2跨部门创新项目预算拨款",
+    "receipt_url": ""
+  },
+  {
+    "transaction_id": "BUD-002",
+    "date": "2026-04-15",
+    "amount": -12000,
+    "currency": "CNY",
+    "merchant": "外包设计费",
+    "category": "project_budget",
+    "description": "项目设计阶段外包支出",
+    "receipt_url": ""
+  },
+  {
+    "transaction_id": "BUD-003",
+    "date": "2026-05-10",
+    "amount": -8000,
+    "currency": "CNY",
+    "merchant": "工具许可费",
+    "category": "project_budget",
+    "description": "项目工具和云资源",
+    "receipt_url": ""
+  }
+]

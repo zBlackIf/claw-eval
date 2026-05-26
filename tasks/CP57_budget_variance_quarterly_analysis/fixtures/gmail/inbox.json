@@ -1,0 +1,27 @@
+[
+  {
+    "message_id": "msg_01",
+    "from": "cfo@company.com",
+    "to": "fpa@company.com",
+    "subject": "Q2中期预算执行分析-本周出",
+    "body": "请做一份Q2（4-5月）的预算执行分析报告，重点关注：\n1. 各部门实际支出 vs 预算\n2. 超支原因分析\n3. 是否有未经审批的超支\n4. 6月预测和建议\n\n报告草稿发给我。",
+    "date": "2026-05-24T09:00:00Z",
+    "is_read": false,
+    "labels": [
+      "urgent",
+      "finance"
+    ]
+  },
+  {
+    "message_id": "msg_02",
+    "from": "cto@company.com",
+    "to": "fpa@company.com",
+    "subject": "技术部超支说明",
+    "body": "关于技术部4-5月超支：\n1. GPU云服务因AI项目上线增加约4万/月，已口头和VP确认但没走审批流程\n2. 安全审计外包3.8万是临时决定的，也没走预算追加\n希望报告中能标注这些情况。",
+    "date": "2026-05-24T09:00:00Z",
+    "is_read": true,
+    "labels": [
+      "finance"
+    ]
+  }
+]

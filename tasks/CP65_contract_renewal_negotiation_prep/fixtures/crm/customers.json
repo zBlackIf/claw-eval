@@ -1,0 +1,14 @@
+[
+  {
+    "customer_id": "TH-001",
+    "name": "天宏科技",
+    "status": "active",
+    "tier": "vip",
+    "industry": "IT服务",
+    "annual_revenue": 1440000,
+    "contact_person": "陈总监",
+    "email": "chen@tianhong.com",
+    "phone": "13900005001",
+    "last_contact_date": "2026-04-20"
+  }
+]

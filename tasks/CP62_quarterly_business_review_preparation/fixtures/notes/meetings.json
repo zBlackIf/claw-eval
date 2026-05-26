@@ -1,0 +1,15 @@
+[
+  {
+    "note_id": "QBR-M01",
+    "title": "4月数据迁移复盘会",
+    "created_at": "2026-05-05",
+    "participants": [
+      "CTO",
+      "DBA",
+      "产品VP",
+      "客户成功VP"
+    ],
+    "duration_minutes": 60,
+    "content": "# 数据迁移复盘\n\n## 背景\n4月底完成数据库从MySQL到PostgreSQL的迁移\n\n## 影响\n- 迁移期间服务中断4小时（计划内）\n- 迁移后发现部分历史报表数据异常（已修复）\n- helpdesk tickets短期增加45%（主要是迁移相关）\n\n## 结论\n迁移本身成功，ticket增加是一次性的，不代表产品质量下降。预计6月ticket量恢复正常水平。"
+  }
+]

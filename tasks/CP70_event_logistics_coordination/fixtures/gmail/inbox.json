@@ -1,0 +1,42 @@
+[
+  {
+    "message_id": "msg_7001",
+    "from": "Derek Chang <d.chang@company.com>",
+    "to": "me@company.com",
+    "subject": "Re: All-hands date - June 25 conflict",
+    "body": "Hi,\n\nI saw the tentative June 25 hold for the all-hands. Unfortunately that's our Product X Launch day - I'll be doing press demos and the keynote presentation that morning. I absolutely cannot attend the all-hands on that date.\n\nHowever, June 26 (Thursday) or June 30 (Monday) work for me. I'd prefer June 26 since it's closer to the original date.\n\nAlso, Patricia (CEO) mentioned she's back from Asia on June 22, so anything after that works for her.\n\nLet me know how you want to handle this.\n\nDerek Chang\nVP Product",
+    "date": "2026-05-24T10:00:00Z",
+    "is_read": true,
+    "labels": ["all-hands", "scheduling", "conflict"]
+  },
+  {
+    "message_id": "msg_7002",
+    "from": "James Foster <j.foster@company.com>",
+    "to": "me@company.com",
+    "subject": "Facilities requirements for Q2 all-hands",
+    "body": "Hi,\n\nFor the Q2 all-hands planning, here's what I need from you:\n\n1. Final confirmed date - I need minimum 3 weeks advance notice per policy\n2. Expected headcount - I heard we're around 450 now?\n3. AV requirements - are we doing live streaming again?\n4. Catering preferences - standard full-day package?\n\nReminder: if we're using Auditorium A, I can't split the day. It's either full-day booking or nothing. The room can't be used for two separate events on the same day due to setup/teardown logistics.\n\nAlso, the HVAC inspection is scheduled for June 27. Auditorium A will be fine but the executive boardroom will be unavailable that day.\n\nLet me know the date ASAP so I can coordinate with our vendors. They need 2-4 weeks lead time.\n\nJames Foster\nFacilities Director",
+    "date": "2026-05-23T14:30:00Z",
+    "is_read": true,
+    "labels": ["facilities", "all-hands", "planning"]
+  },
+  {
+    "message_id": "msg_7003",
+    "from": "Patricia Wells <p.wells@company.com>",
+    "to": "me@company.com",
+    "subject": "All-hands keynote + board timing",
+    "body": "Quick note for planning:\n\nI want to do the opening keynote at the all-hands (company vision + Q2 results preview). I'll need about 45 minutes.\n\nAlso - please make sure the all-hands doesn't overlap with the Q2 board review. The board meeting is June 25 afternoon and can't be moved. Natasha (CTO) and Richard (CFO) both need to attend the board meeting.\n\nIf the all-hands is on a different day, no issue. But if it has to be June 25, we'd need to end by 1pm which doesn't leave enough time for a full program.\n\nLet's find a date where we can have the full leadership team present.\n\nPatricia",
+    "date": "2026-05-22T09:00:00Z",
+    "is_read": true,
+    "labels": ["ceo", "all-hands", "keynote"]
+  },
+  {
+    "message_id": "msg_7004",
+    "from": "Sophia Lee <s.lee@company.com>",
+    "to": "me@company.com",
+    "subject": "All-hands logistics - headcount and dietary survey",
+    "body": "Hi,\n\nFor the all-hands planning:\n\n- Current headcount: 447 employees (as of May 20 payroll)\n- Expected attendance: ~400-420 in-person (based on Q1 attendance rate of 89%)\n- Remote viewers: ~30-40 typically join the live stream\n\nI'll need the final date 2 weeks in advance to send out the dietary accommodations survey. Last time we had:\n- 12% vegetarian/vegan\n- 5% gluten-free\n- 3% various allergies\n\nShould I start preparing the save-the-date once you confirm?\n\nSophia Lee\nHead of People Ops",
+    "date": "2026-05-25T11:30:00Z",
+    "is_read": false,
+    "labels": ["people-ops", "all-hands", "logistics"]
+  }
+]

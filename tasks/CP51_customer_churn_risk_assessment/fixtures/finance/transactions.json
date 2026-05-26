@@ -1,0 +1,242 @@
+[
+  {
+    "transaction_id": "TXN-5101",
+    "date": "2025-12-15",
+    "amount": 120000,
+    "currency": "CNY",
+    "merchant": "天宏科技",
+    "category": "service_subscription",
+    "description": "Q4 2025 企业级SaaS订阅服务费",
+    "receipt_url": "https://finance.internal/receipts/TXN-5101"
+  },
+  {
+    "transaction_id": "TXN-5102",
+    "date": "2026-01-15",
+    "amount": 80000,
+    "currency": "CNY",
+    "merchant": "天宏科技",
+    "category": "service_subscription",
+    "description": "2026年1月服务费（客户要求缩减部分模块）",
+    "receipt_url": "https://finance.internal/receipts/TXN-5102"
+  },
+  {
+    "transaction_id": "TXN-5103",
+    "date": "2026-02-15",
+    "amount": 50000,
+    "currency": "CNY",
+    "merchant": "天宏科技",
+    "category": "service_subscription",
+    "description": "2026年2月服务费（继续缩减，停用数据分析模块）",
+    "receipt_url": "https://finance.internal/receipts/TXN-5103"
+  },
+  {
+    "transaction_id": "TXN-5104",
+    "date": "2026-03-15",
+    "amount": 40000,
+    "currency": "CNY",
+    "merchant": "天宏科技",
+    "category": "service_subscription",
+    "description": "2026年3月服务费（仅保留核心模块）",
+    "receipt_url": "https://finance.internal/receipts/TXN-5104"
+  },
+  {
+    "transaction_id": "TXN-5105",
+    "date": "2026-04-15",
+    "amount": 30000,
+    "currency": "CNY",
+    "merchant": "天宏科技",
+    "category": "service_subscription",
+    "description": "2026年4月服务费（进一步缩减至基础套餐）",
+    "receipt_url": "https://finance.internal/receipts/TXN-5105"
+  },
+  {
+    "transaction_id": "TXN-5106",
+    "date": "2026-05-15",
+    "amount": 30000,
+    "currency": "CNY",
+    "merchant": "天宏科技",
+    "category": "service_subscription",
+    "description": "2026年5月服务费（维持基础套餐）",
+    "receipt_url": "https://finance.internal/receipts/TXN-5106"
+  },
+  {
+    "transaction_id": "TXN-5107",
+    "date": "2025-12-20",
+    "amount": 40000,
+    "currency": "CNY",
+    "merchant": "锐达电子",
+    "category": "service_subscription",
+    "description": "Q4 2025 标准版订阅服务费",
+    "receipt_url": "https://finance.internal/receipts/TXN-5107"
+  },
+  {
+    "transaction_id": "TXN-5108",
+    "date": "2026-01-20",
+    "amount": 40000,
+    "currency": "CNY",
+    "merchant": "锐达电子",
+    "category": "service_subscription",
+    "description": "2026年1月服务费",
+    "receipt_url": "https://finance.internal/receipts/TXN-5108"
+  },
+  {
+    "transaction_id": "TXN-5109",
+    "date": "2026-02-20",
+    "amount": 40000,
+    "currency": "CNY",
+    "merchant": "锐达电子",
+    "category": "service_subscription",
+    "description": "2026年2月服务费",
+    "receipt_url": "https://finance.internal/receipts/TXN-5109"
+  },
+  {
+    "transaction_id": "TXN-5110",
+    "date": "2026-03-20",
+    "amount": 40000,
+    "currency": "CNY",
+    "merchant": "锐达电子",
+    "category": "service_subscription",
+    "description": "2026年3月服务费（逾期15天支付）",
+    "receipt_url": "https://finance.internal/receipts/TXN-5110"
+  },
+  {
+    "transaction_id": "TXN-5111",
+    "date": "2026-04-20",
+    "amount": 40000,
+    "currency": "CNY",
+    "merchant": "锐达电子",
+    "category": "service_subscription",
+    "description": "2026年4月服务费（逾期22天支付，客户对响应速度不满）",
+    "receipt_url": "https://finance.internal/receipts/TXN-5111"
+  },
+  {
+    "transaction_id": "TXN-5112",
+    "date": "2026-05-20",
+    "amount": 40000,
+    "currency": "CNY",
+    "merchant": "锐达电子",
+    "category": "service_subscription",
+    "description": "2026年5月服务费（尚未支付，已逾期6天）",
+    "receipt_url": null
+  },
+  {
+    "transaction_id": "TXN-5113",
+    "date": "2025-12-10",
+    "amount": 80000,
+    "currency": "CNY",
+    "merchant": "华盛制造",
+    "category": "service_subscription",
+    "description": "Q4 2025 企业版订阅服务费",
+    "receipt_url": "https://finance.internal/receipts/TXN-5113"
+  },
+  {
+    "transaction_id": "TXN-5114",
+    "date": "2026-01-10",
+    "amount": 80000,
+    "currency": "CNY",
+    "merchant": "华盛制造",
+    "category": "service_subscription",
+    "description": "2026年1月服务费",
+    "receipt_url": "https://finance.internal/receipts/TXN-5114"
+  },
+  {
+    "transaction_id": "TXN-5115",
+    "date": "2026-02-10",
+    "amount": 80000,
+    "currency": "CNY",
+    "merchant": "华盛制造",
+    "category": "service_subscription",
+    "description": "2026年2月服务费",
+    "receipt_url": "https://finance.internal/receipts/TXN-5115"
+  },
+  {
+    "transaction_id": "TXN-5116",
+    "date": "2026-03-10",
+    "amount": 80000,
+    "currency": "CNY",
+    "merchant": "华盛制造",
+    "category": "service_subscription",
+    "description": "2026年3月服务费",
+    "receipt_url": "https://finance.internal/receipts/TXN-5116"
+  },
+  {
+    "transaction_id": "TXN-5117",
+    "date": "2026-04-10",
+    "amount": 80000,
+    "currency": "CNY",
+    "merchant": "华盛制造",
+    "category": "service_subscription",
+    "description": "2026年4月服务费",
+    "receipt_url": "https://finance.internal/receipts/TXN-5117"
+  },
+  {
+    "transaction_id": "TXN-5118",
+    "date": "2026-05-10",
+    "amount": 80000,
+    "currency": "CNY",
+    "merchant": "华盛制造",
+    "category": "service_subscription",
+    "description": "2026年5月服务费",
+    "receipt_url": "https://finance.internal/receipts/TXN-5118"
+  },
+  {
+    "transaction_id": "TXN-5119",
+    "date": "2025-12-25",
+    "amount": 20000,
+    "currency": "CNY",
+    "merchant": "明远教育",
+    "category": "service_subscription",
+    "description": "Q4 2025 教育版订阅服务费",
+    "receipt_url": "https://finance.internal/receipts/TXN-5119"
+  },
+  {
+    "transaction_id": "TXN-5120",
+    "date": "2026-01-25",
+    "amount": 22000,
+    "currency": "CNY",
+    "merchant": "明远教育",
+    "category": "service_subscription",
+    "description": "2026年1月服务费（新增在线考试模块）",
+    "receipt_url": "https://finance.internal/receipts/TXN-5120"
+  },
+  {
+    "transaction_id": "TXN-5121",
+    "date": "2026-02-25",
+    "amount": 24000,
+    "currency": "CNY",
+    "merchant": "明远教育",
+    "category": "service_subscription",
+    "description": "2026年2月服务费（新增学生管理模块）",
+    "receipt_url": "https://finance.internal/receipts/TXN-5121"
+  },
+  {
+    "transaction_id": "TXN-5122",
+    "date": "2026-03-25",
+    "amount": 26000,
+    "currency": "CNY",
+    "merchant": "明远教育",
+    "category": "service_subscription",
+    "description": "2026年3月服务费（追加教师协作功能）",
+    "receipt_url": "https://finance.internal/receipts/TXN-5122"
+  },
+  {
+    "transaction_id": "TXN-5123",
+    "date": "2026-04-25",
+    "amount": 28000,
+    "currency": "CNY",
+    "merchant": "明远教育",
+    "category": "service_subscription",
+    "description": "2026年4月服务费（追加数据分析看板）",
+    "receipt_url": "https://finance.internal/receipts/TXN-5123"
+  },
+  {
+    "transaction_id": "TXN-5124",
+    "date": "2026-05-25",
+    "amount": 30000,
+    "currency": "CNY",
+    "merchant": "明远教育",
+    "category": "service_subscription",
+    "description": "2026年5月服务费（追加AI辅助教学模块，客户非常满意）",
+    "receipt_url": "https://finance.internal/receipts/TXN-5124"
+  }
+]

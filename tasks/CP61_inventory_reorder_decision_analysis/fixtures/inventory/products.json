@@ -1,0 +1,112 @@
+[
+  {
+    "product_id": "SKU-001",
+    "name": "A4打印纸(箱)",
+    "category": "办公用品",
+    "current_stock": 15,
+    "min_stock_threshold": 20,
+    "unit_price": 89.0,
+    "daily_avg_sales": 3.0,
+    "supplier": "晨光文具",
+    "lead_time_days": 5
+  },
+  {
+    "product_id": "SKU-002",
+    "name": "碳粉盒-HP",
+    "category": "打印耗材",
+    "current_stock": 8,
+    "min_stock_threshold": 10,
+    "unit_price": 320.0,
+    "daily_avg_sales": 1.5,
+    "supplier": "惠普官方",
+    "lead_time_days": 7
+  },
+  {
+    "product_id": "SKU-003",
+    "name": "USB-C转接头",
+    "category": "IT配件",
+    "current_stock": 45,
+    "min_stock_threshold": 20,
+    "unit_price": 68.0,
+    "daily_avg_sales": 2.0,
+    "supplier": "绿联科技",
+    "lead_time_days": 3
+  },
+  {
+    "product_id": "SKU-004",
+    "name": "机械键盘-Cherry",
+    "category": "IT设备",
+    "current_stock": 12,
+    "min_stock_threshold": 5,
+    "unit_price": 799.0,
+    "daily_avg_sales": 0.8,
+    "supplier": "Cherry官方",
+    "lead_time_days": 14
+  },
+  {
+    "product_id": "SKU-005",
+    "name": "白板笔(盒)",
+    "category": "办公用品",
+    "current_stock": 30,
+    "min_stock_threshold": 50,
+    "unit_price": 45.0,
+    "daily_avg_sales": 0.1,
+    "supplier": "晨光文具",
+    "lead_time_days": 5
+  },
+  {
+    "product_id": "SKU-006",
+    "name": "网线-Cat6(米)",
+    "category": "IT配件",
+    "current_stock": 200,
+    "min_stock_threshold": 100,
+    "unit_price": 3.5,
+    "daily_avg_sales": 15.0,
+    "supplier": "安普网络",
+    "lead_time_days": 10
+  },
+  {
+    "product_id": "SKU-007",
+    "name": "27寸显示器",
+    "category": "IT设备",
+    "current_stock": 6,
+    "min_stock_threshold": 3,
+    "unit_price": 2499.0,
+    "daily_avg_sales": 0.5,
+    "supplier": "戴尔中国",
+    "lead_time_days": 12
+  },
+  {
+    "product_id": "SKU-008",
+    "name": "笔记本电脑-ThinkPad",
+    "category": "IT设备",
+    "current_stock": 4,
+    "min_stock_threshold": 2,
+    "unit_price": 8999.0,
+    "daily_avg_sales": 0.3,
+    "supplier": "联想官方",
+    "lead_time_days": 15
+  },
+  {
+    "product_id": "SKU-009",
+    "name": "洗手液(瓶)",
+    "category": "清洁用品",
+    "current_stock": 25,
+    "min_stock_threshold": 15,
+    "unit_price": 18.0,
+    "daily_avg_sales": 2.0,
+    "supplier": "蓝月亮",
+    "lead_time_days": 3
+  },
+  {
+    "product_id": "SKU-010",
+    "name": "投影仪灯泡",
+    "category": "IT设备",
+    "current_stock": 3,
+    "min_stock_threshold": 2,
+    "unit_price": 1200.0,
+    "daily_avg_sales": 0.05,
+    "supplier": "爱普生",
+    "lead_time_days": 20
+  }
+]

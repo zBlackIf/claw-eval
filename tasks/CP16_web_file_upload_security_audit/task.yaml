@@ -15,7 +15,7 @@ tags: [general]
 
 source_task_id: "task_04_security_audit_file_upload"
 source_dataset: "taskset-260408-163403"
-source_description: "从 Themis PinchBench top100（2026-05-25 二次筛选，killer bucket）中按跨模型 std_trim 排名精选的高区分度题（原始排名 #19，std_trim 0.415 / range_trim 1.000 / mean_trim 0.721），改编为 Claw-Eval Pattern D (sandbox-adapted) 格式，PinbenchAdaptedGrader 类属性声明自动评分。原始 prompt 重写以适配本仓库 mock service 与 fixtures，源映射见 docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525-mapping.md。"
+source_description: "从 Themis PinchBench top100（2026-05-25 二次筛选，killer bucket）中按跨模型 std_trim 排名精选的高区分度题（原始排名 #19，std_trim 0.415 / range_trim 1.000 / mean_trim 0.721），改编为 Claw-Eval final-answer 安全审计任务。grader 只读取最终回复中的完整审计报告，并结合隐藏漏洞锚点评分。"
 
 services: []
 
@@ -27,6 +27,8 @@ prompt:
 
     给我一份审计报告：让开发拿到能直接动手修，让安全主管能看出每个问题的
     严重程度和优先级。
+    请直接在最终回复中给出完整安全审计报告，包含每个问题的文件位置、严重
+    级别、PoC 思路和修复建议；不要只写到文件或只给文件路径。
   language: zh
 
 tools: []

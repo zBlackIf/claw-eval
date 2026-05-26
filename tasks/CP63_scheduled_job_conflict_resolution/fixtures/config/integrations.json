@@ -1,0 +1,38 @@
+[
+  {
+    "integration_id": "DEP-01",
+    "name": "primary-database",
+    "service": "postgresql",
+    "status": "active",
+    "last_verified": "2026-05-26",
+    "monthly_calls": 5000000,
+    "error_rate": 0.01
+  },
+  {
+    "integration_id": "DEP-02",
+    "name": "search-engine",
+    "service": "elasticsearch",
+    "status": "active",
+    "last_verified": "2026-05-26",
+    "monthly_calls": 1000000,
+    "error_rate": 0.1
+  },
+  {
+    "integration_id": "DEP-03",
+    "name": "object-storage",
+    "service": "minio",
+    "status": "active",
+    "last_verified": "2026-05-25",
+    "monthly_calls": 200000,
+    "error_rate": 0.0
+  },
+  {
+    "integration_id": "DEP-04",
+    "name": "message-queue",
+    "service": "rabbitmq",
+    "status": "active",
+    "last_verified": "2026-05-26",
+    "monthly_calls": 3000000,
+    "error_rate": 0.02
+  }
+]

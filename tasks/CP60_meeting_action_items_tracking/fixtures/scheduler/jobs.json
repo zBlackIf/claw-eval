@@ -1,0 +1,30 @@
+[
+  {
+    "job_id": "JOB-601",
+    "name": "sprint-reminder",
+    "cron_expression": "0 9 * * 1-5",
+    "enabled": true,
+    "last_run": "2026-05-26T09:00:00",
+    "next_run": "2026-05-27T09:00:00",
+    "last_status": "success",
+    "action": "send_standup_reminder",
+    "tags": [
+      "team",
+      "daily"
+    ]
+  },
+  {
+    "job_id": "JOB-602",
+    "name": "weekly-report-deadline",
+    "cron_expression": "0 15 * * 5",
+    "enabled": true,
+    "last_run": "2026-05-23T15:00:00",
+    "next_run": "2026-05-30T15:00:00",
+    "last_status": "success",
+    "action": "send_report_reminder",
+    "tags": [
+      "team",
+      "weekly"
+    ]
+  }
+]

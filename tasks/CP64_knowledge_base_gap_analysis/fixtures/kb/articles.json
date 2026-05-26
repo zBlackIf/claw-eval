@@ -1,0 +1,85 @@
+[
+  {
+    "article_id": "KB-DOC-01",
+    "title": "产品快速入门指南",
+    "category": "getting_started",
+    "tags": [
+      "onboarding",
+      "basics"
+    ],
+    "content": "# 快速入门\n\n## 注册账号\n1. 访问官网注册\n2. 验证邮箱\n\n## 创建第一个项目\n..."
+  },
+  {
+    "article_id": "KB-DOC-02",
+    "title": "数据导入导出操作手册",
+    "category": "data_management",
+    "tags": [
+      "import",
+      "export",
+      "csv"
+    ],
+    "content": "# 数据导入导出\n\n## 支持格式\n- CSV\n- Excel\n- JSON\n\n## 操作步骤\n..."
+  },
+  {
+    "article_id": "KB-DOC-03",
+    "title": "权限管理配置说明",
+    "category": "admin",
+    "tags": [
+      "permissions",
+      "roles"
+    ],
+    "content": "# 权限管理\n\n## 角色类型\n- 管理员\n- 编辑者\n- 查看者\n\n## 配置步骤\n..."
+  },
+  {
+    "article_id": "KB-DOC-04",
+    "title": "报表自定义教程",
+    "category": "analytics",
+    "tags": [
+      "reports",
+      "dashboard"
+    ],
+    "content": "# 自定义报表\n\n## 创建仪表盘\n..."
+  },
+  {
+    "article_id": "KB-DOC-05",
+    "title": "API使用指南 v2",
+    "category": "developer",
+    "tags": [
+      "api",
+      "rest",
+      "v2"
+    ],
+    "content": "# API v2 指南\n\n## 认证方式\n- API Key\n- OAuth 2.0\n\n## 常用接口\n..."
+  },
+  {
+    "article_id": "KB-DOC-06",
+    "title": "移动端使用说明",
+    "category": "mobile",
+    "tags": [
+      "ios",
+      "android",
+      "mobile"
+    ],
+    "content": "# 移动端\n\n## 支持平台\n- iOS 15+\n- Android 12+\n\n## 功能差异\n..."
+  },
+  {
+    "article_id": "KB-DOC-07",
+    "title": "计费与套餐说明",
+    "category": "billing",
+    "tags": [
+      "pricing",
+      "plans"
+    ],
+    "content": "# 计费说明\n\n## 套餐对比\n- 基础版\n- 专业版\n- 企业版\n..."
+  },
+  {
+    "article_id": "KB-DOC-08",
+    "title": "常见问题FAQ",
+    "category": "faq",
+    "tags": [
+      "faq",
+      "troubleshooting"
+    ],
+    "content": "# FAQ\n\nQ: 忘记密码怎么办？\nA: 点击登录页\"忘记密码\"链接...\n\nQ: 如何更改套餐？\nA: 进入设置-计费..."
+  }
+]

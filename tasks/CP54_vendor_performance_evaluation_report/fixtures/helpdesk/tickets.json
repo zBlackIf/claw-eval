@@ -1,0 +1,92 @@
+[
+  {
+    "ticket_id": "VHD-001",
+    "title": "天翼云服务中断-3月5日",
+    "description": "云服务器集群在3月5日凌晨2:00-6:00不可用，影响线上业务4小时。SLA承诺99.9%可用性。",
+    "reporter": "运维组",
+    "department": "技术部",
+    "priority": "critical",
+    "status": "resolved",
+    "created_at": "2026-03-05",
+    "tags": [
+      "vendor",
+      "tianyi",
+      "sla_violation"
+    ]
+  },
+  {
+    "ticket_id": "VHD-002",
+    "title": "星辰软件-ERP模块延期交付",
+    "description": "原定2月28日交付的库存管理模块延期2周，影响上线计划。已是第二次延期。",
+    "reporter": "项目经理",
+    "department": "产品部",
+    "priority": "high",
+    "status": "resolved",
+    "created_at": "2026-03-01",
+    "tags": [
+      "vendor",
+      "xingchen",
+      "delay"
+    ]
+  },
+  {
+    "ticket_id": "VHD-003",
+    "title": "锐捷路由器固件bug",
+    "description": "3月升级固件后出现间歇性断连，锐捷响应时间48小时，超出SLA的4小时响应要求。",
+    "reporter": "网络管理员",
+    "department": "IT",
+    "priority": "high",
+    "status": "resolved",
+    "created_at": "2026-03-10",
+    "tags": [
+      "vendor",
+      "ruijie",
+      "sla_violation"
+    ]
+  },
+  {
+    "ticket_id": "VHD-004",
+    "title": "快达物流-包裹丢失投诉",
+    "description": "3月有3件包裹丢失，赔偿流程拖了2周。物流费用也在持续上涨没有合理解释。",
+    "reporter": "仓储管理员",
+    "department": "运营",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-03-18",
+    "tags": [
+      "vendor",
+      "kuaida",
+      "complaint"
+    ]
+  },
+  {
+    "ticket_id": "VHD-005",
+    "title": "天翼云-数据迁移支持不力",
+    "description": "申请数据迁移技术支持，等了5天才有人回复，而且给的方案不完整需要反复沟通。",
+    "reporter": "架构师",
+    "department": "技术部",
+    "priority": "medium",
+    "status": "resolved",
+    "created_at": "2026-03-20",
+    "tags": [
+      "vendor",
+      "tianyi",
+      "support_slow"
+    ]
+  },
+  {
+    "ticket_id": "VHD-006",
+    "title": "锐捷网络-季度巡检正常",
+    "description": "Q1季度巡检完成，除固件bug外，硬件状态良好，性能指标正常。",
+    "reporter": "网络管理员",
+    "department": "IT",
+    "priority": "low",
+    "status": "closed",
+    "created_at": "2026-03-28",
+    "tags": [
+      "vendor",
+      "ruijie",
+      "routine"
+    ]
+  }
+]

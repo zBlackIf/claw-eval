@@ -1,0 +1,98 @@
+[
+  {
+    "integration_id": "INT-001",
+    "name": "payment-gateway",
+    "service": "stripe",
+    "status": "active",
+    "last_verified": "2026-05-20",
+    "monthly_calls": 245000,
+    "error_rate": 8.2,
+    "api_key": "sk_live_***REDACTED***",
+    "endpoint": "https://api.stripe.com/v1",
+    "notes": "Primary payment processor. Error rate spiked after v3.2 API migration on May 15."
+  },
+  {
+    "integration_id": "INT-002",
+    "name": "email-service",
+    "service": "sendgrid",
+    "status": "active",
+    "last_verified": "2026-05-18",
+    "monthly_calls": 180000,
+    "error_rate": 1.2,
+    "api_key": "SG.***REDACTED***",
+    "endpoint": "https://api.sendgrid.com/v3/mail/send",
+    "notes": "Transactional email delivery. Operating normally."
+  },
+  {
+    "integration_id": "INT-003",
+    "name": "analytics-pipeline",
+    "service": "segment",
+    "status": "active",
+    "last_verified": "2026-05-22",
+    "monthly_calls": 520000,
+    "error_rate": 6.1,
+    "api_key": "seg_***REDACTED***",
+    "endpoint": "https://api.segment.io/v1/track",
+    "notes": "Event tracking pipeline. Error rate elevated since May 10 due to schema validation changes."
+  },
+  {
+    "integration_id": "INT-004",
+    "name": "auth-provider",
+    "service": "auth0",
+    "status": "active",
+    "last_verified": "2026-02-25",
+    "monthly_calls": 89000,
+    "error_rate": 0.0,
+    "api_key": "auth0_***REDACTED***",
+    "endpoint": "https://company.auth0.com/oauth/token",
+    "notes": "SSO and authentication. Last manual verification was 90 days ago. Automated health checks pass."
+  },
+  {
+    "integration_id": "INT-005",
+    "name": "search-index",
+    "service": "elasticsearch",
+    "status": "active",
+    "last_verified": "2026-05-24",
+    "monthly_calls": 310000,
+    "error_rate": 0.3,
+    "api_key": "es_***REDACTED***",
+    "endpoint": "https://search.internal.company.com:9200",
+    "notes": "Product search index. Healthy and recently verified."
+  },
+  {
+    "integration_id": "INT-006",
+    "name": "notification-hub",
+    "service": "firebase",
+    "status": "active",
+    "last_verified": "2026-05-19",
+    "monthly_calls": 150000,
+    "error_rate": 5.4,
+    "api_key": "AIza***REDACTED***",
+    "endpoint": "https://fcm.googleapis.com/fcm/send",
+    "notes": "Push notifications. Error rate above threshold. Mostly Android delivery failures in APAC region."
+  },
+  {
+    "integration_id": "INT-007",
+    "name": "cdn-assets",
+    "service": "cloudfront",
+    "status": "active",
+    "last_verified": "2026-05-23",
+    "monthly_calls": 2100000,
+    "error_rate": 0.1,
+    "api_key": "AKIAIOSFODNN7***REDACTED***",
+    "endpoint": "https://d1234.cloudfront.net",
+    "notes": "Static asset delivery. Operating at optimal performance."
+  },
+  {
+    "integration_id": "INT-008",
+    "name": "warehouse-sync",
+    "service": "snowflake",
+    "status": "active",
+    "last_verified": "2026-05-21",
+    "monthly_calls": 45000,
+    "error_rate": 2.8,
+    "api_key": "sf_***REDACTED***",
+    "endpoint": "https://company.snowflakecomputing.com",
+    "notes": "Data warehouse sync. Error rate slightly elevated but within acceptable range. Mostly timeout errors during peak ETL windows."
+  }
+]

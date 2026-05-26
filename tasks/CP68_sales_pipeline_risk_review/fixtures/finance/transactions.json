@@ -1,0 +1,392 @@
+[
+  {
+    "transaction_id": "TXN-6801",
+    "date": "2025-12-01",
+    "amount": 150000,
+    "currency": "USD",
+    "merchant": "Nextera Solutions",
+    "category": "subscription",
+    "description": "Dec 2025 Enterprise Platform subscription",
+    "receipt_url": "https://finance.internal/receipts/TXN-6801"
+  },
+  {
+    "transaction_id": "TXN-6802",
+    "date": "2026-01-01",
+    "amount": 150000,
+    "currency": "USD",
+    "merchant": "Nextera Solutions",
+    "category": "subscription",
+    "description": "Jan 2026 Enterprise Platform subscription",
+    "receipt_url": "https://finance.internal/receipts/TXN-6802"
+  },
+  {
+    "transaction_id": "TXN-6803",
+    "date": "2026-02-01",
+    "amount": 150000,
+    "currency": "USD",
+    "merchant": "Nextera Solutions",
+    "category": "subscription",
+    "description": "Feb 2026 Enterprise Platform subscription",
+    "receipt_url": "https://finance.internal/receipts/TXN-6803"
+  },
+  {
+    "transaction_id": "TXN-6804",
+    "date": "2026-03-01",
+    "amount": 150000,
+    "currency": "USD",
+    "merchant": "Nextera Solutions",
+    "category": "subscription",
+    "description": "Mar 2026 Enterprise Platform subscription",
+    "receipt_url": "https://finance.internal/receipts/TXN-6804"
+  },
+  {
+    "transaction_id": "TXN-6805",
+    "date": "2026-04-01",
+    "amount": 150000,
+    "currency": "USD",
+    "merchant": "Nextera Solutions",
+    "category": "subscription",
+    "description": "Apr 2026 Enterprise Platform subscription",
+    "receipt_url": "https://finance.internal/receipts/TXN-6805"
+  },
+  {
+    "transaction_id": "TXN-6806",
+    "date": "2026-05-01",
+    "amount": 150000,
+    "currency": "USD",
+    "merchant": "Nextera Solutions",
+    "category": "subscription",
+    "description": "May 2026 Enterprise Platform subscription",
+    "receipt_url": "https://finance.internal/receipts/TXN-6806"
+  },
+  {
+    "transaction_id": "TXN-6811",
+    "date": "2025-12-01",
+    "amount": 200000,
+    "currency": "USD",
+    "merchant": "Pinnacle Health Systems",
+    "category": "subscription",
+    "description": "Dec 2025 Healthcare Platform + HIPAA compliance module",
+    "receipt_url": "https://finance.internal/receipts/TXN-6811"
+  },
+  {
+    "transaction_id": "TXN-6812",
+    "date": "2026-01-01",
+    "amount": 200000,
+    "currency": "USD",
+    "merchant": "Pinnacle Health Systems",
+    "category": "subscription",
+    "description": "Jan 2026 Healthcare Platform + HIPAA compliance module",
+    "receipt_url": "https://finance.internal/receipts/TXN-6812"
+  },
+  {
+    "transaction_id": "TXN-6813",
+    "date": "2026-02-01",
+    "amount": 200000,
+    "currency": "USD",
+    "merchant": "Pinnacle Health Systems",
+    "category": "subscription",
+    "description": "Feb 2026 Healthcare Platform + HIPAA compliance module",
+    "receipt_url": "https://finance.internal/receipts/TXN-6813"
+  },
+  {
+    "transaction_id": "TXN-6814",
+    "date": "2026-03-01",
+    "amount": 200000,
+    "currency": "USD",
+    "merchant": "Pinnacle Health Systems",
+    "category": "subscription",
+    "description": "Mar 2026 Healthcare Platform + HIPAA compliance module",
+    "receipt_url": "https://finance.internal/receipts/TXN-6814"
+  },
+  {
+    "transaction_id": "TXN-6815",
+    "date": "2026-04-01",
+    "amount": 200000,
+    "currency": "USD",
+    "merchant": "Pinnacle Health Systems",
+    "category": "subscription",
+    "description": "Apr 2026 Healthcare Platform + HIPAA compliance module",
+    "receipt_url": "https://finance.internal/receipts/TXN-6815"
+  },
+  {
+    "transaction_id": "TXN-6816",
+    "date": "2026-05-01",
+    "amount": 200000,
+    "currency": "USD",
+    "merchant": "Pinnacle Health Systems",
+    "category": "subscription",
+    "description": "May 2026 Healthcare Platform + HIPAA compliance module",
+    "receipt_url": "https://finance.internal/receipts/TXN-6816"
+  },
+  {
+    "transaction_id": "TXN-6821",
+    "date": "2025-12-01",
+    "amount": 50000,
+    "currency": "USD",
+    "merchant": "TerraFirm Industries",
+    "category": "subscription",
+    "description": "Dec 2025 Manufacturing Suite subscription",
+    "receipt_url": "https://finance.internal/receipts/TXN-6821"
+  },
+  {
+    "transaction_id": "TXN-6822",
+    "date": "2026-01-01",
+    "amount": 50000,
+    "currency": "USD",
+    "merchant": "TerraFirm Industries",
+    "category": "subscription",
+    "description": "Jan 2026 Manufacturing Suite subscription",
+    "receipt_url": "https://finance.internal/receipts/TXN-6822"
+  },
+  {
+    "transaction_id": "TXN-6823",
+    "date": "2026-02-01",
+    "amount": 50000,
+    "currency": "USD",
+    "merchant": "TerraFirm Industries",
+    "category": "subscription",
+    "description": "Feb 2026 Manufacturing Suite subscription",
+    "receipt_url": "https://finance.internal/receipts/TXN-6823"
+  },
+  {
+    "transaction_id": "TXN-6824",
+    "date": "2026-03-01",
+    "amount": 50000,
+    "currency": "USD",
+    "merchant": "TerraFirm Industries",
+    "category": "subscription",
+    "description": "Mar 2026 Manufacturing Suite subscription",
+    "receipt_url": "https://finance.internal/receipts/TXN-6824"
+  },
+  {
+    "transaction_id": "TXN-6825",
+    "date": "2026-04-01",
+    "amount": 45000,
+    "currency": "USD",
+    "merchant": "TerraFirm Industries",
+    "category": "subscription",
+    "description": "Apr 2026 Manufacturing Suite (removed analytics add-on)",
+    "receipt_url": "https://finance.internal/receipts/TXN-6825"
+  },
+  {
+    "transaction_id": "TXN-6826",
+    "date": "2026-05-01",
+    "amount": 45000,
+    "currency": "USD",
+    "merchant": "TerraFirm Industries",
+    "category": "subscription",
+    "description": "May 2026 Manufacturing Suite (base plan only)",
+    "receipt_url": "https://finance.internal/receipts/TXN-6826"
+  },
+  {
+    "transaction_id": "TXN-6831",
+    "date": "2025-12-01",
+    "amount": 40000,
+    "currency": "USD",
+    "merchant": "Velocity Logistics",
+    "category": "subscription",
+    "description": "Dec 2025 Logistics Platform monthly",
+    "receipt_url": "https://finance.internal/receipts/TXN-6831"
+  },
+  {
+    "transaction_id": "TXN-6832",
+    "date": "2026-01-01",
+    "amount": 40000,
+    "currency": "USD",
+    "merchant": "Velocity Logistics",
+    "category": "subscription",
+    "description": "Jan 2026 Logistics Platform monthly",
+    "receipt_url": "https://finance.internal/receipts/TXN-6832"
+  },
+  {
+    "transaction_id": "TXN-6833",
+    "date": "2026-02-01",
+    "amount": 38000,
+    "currency": "USD",
+    "merchant": "Velocity Logistics",
+    "category": "subscription",
+    "description": "Feb 2026 Logistics Platform (slight reduction, removed 2 users)",
+    "receipt_url": "https://finance.internal/receipts/TXN-6833"
+  },
+  {
+    "transaction_id": "TXN-6834",
+    "date": "2026-03-01",
+    "amount": 35000,
+    "currency": "USD",
+    "merchant": "Velocity Logistics",
+    "category": "subscription",
+    "description": "Mar 2026 Logistics Platform (downsized team licenses)",
+    "receipt_url": "https://finance.internal/receipts/TXN-6834"
+  },
+  {
+    "transaction_id": "TXN-6835",
+    "date": "2026-04-01",
+    "amount": 30000,
+    "currency": "USD",
+    "merchant": "Velocity Logistics",
+    "category": "subscription",
+    "description": "Apr 2026 Logistics Platform (removed route optimization module)",
+    "receipt_url": "https://finance.internal/receipts/TXN-6835"
+  },
+  {
+    "transaction_id": "TXN-6836",
+    "date": "2026-05-01",
+    "amount": 25000,
+    "currency": "USD",
+    "merchant": "Velocity Logistics",
+    "category": "subscription",
+    "description": "May 2026 Logistics Platform (base tier only, 37.5% decline from Dec)",
+    "receipt_url": "https://finance.internal/receipts/TXN-6836"
+  },
+  {
+    "transaction_id": "TXN-6841",
+    "date": "2025-12-01",
+    "amount": 30000,
+    "currency": "USD",
+    "merchant": "Brightstar Education",
+    "category": "subscription",
+    "description": "Dec 2025 Education Platform",
+    "receipt_url": "https://finance.internal/receipts/TXN-6841"
+  },
+  {
+    "transaction_id": "TXN-6842",
+    "date": "2026-01-01",
+    "amount": 30000,
+    "currency": "USD",
+    "merchant": "Brightstar Education",
+    "category": "subscription",
+    "description": "Jan 2026 Education Platform",
+    "receipt_url": "https://finance.internal/receipts/TXN-6842"
+  },
+  {
+    "transaction_id": "TXN-6843",
+    "date": "2026-02-01",
+    "amount": 30000,
+    "currency": "USD",
+    "merchant": "Brightstar Education",
+    "category": "subscription",
+    "description": "Feb 2026 Education Platform",
+    "receipt_url": "https://finance.internal/receipts/TXN-6843"
+  },
+  {
+    "transaction_id": "TXN-6844",
+    "date": "2026-03-01",
+    "amount": 30000,
+    "currency": "USD",
+    "merchant": "Brightstar Education",
+    "category": "subscription",
+    "description": "Mar 2026 Education Platform",
+    "receipt_url": "https://finance.internal/receipts/TXN-6844"
+  },
+  {
+    "transaction_id": "TXN-6845",
+    "date": "2026-04-01",
+    "amount": 32000,
+    "currency": "USD",
+    "merchant": "Brightstar Education",
+    "category": "subscription",
+    "description": "Apr 2026 Education Platform + student analytics add-on",
+    "receipt_url": "https://finance.internal/receipts/TXN-6845"
+  },
+  {
+    "transaction_id": "TXN-6846",
+    "date": "2026-05-01",
+    "amount": 35000,
+    "currency": "USD",
+    "merchant": "Brightstar Education",
+    "category": "subscription",
+    "description": "May 2026 Education Platform + 50 new user licenses",
+    "receipt_url": "https://finance.internal/receipts/TXN-6846"
+  },
+  {
+    "transaction_id": "TXN-6851",
+    "date": "2026-03-01",
+    "amount": 45000,
+    "currency": "USD",
+    "merchant": "CrestWave Media",
+    "category": "subscription",
+    "description": "Mar 2026 Content Delivery Platform",
+    "receipt_url": "https://finance.internal/receipts/TXN-6851"
+  },
+  {
+    "transaction_id": "TXN-6852",
+    "date": "2026-04-01",
+    "amount": 45000,
+    "currency": "USD",
+    "merchant": "CrestWave Media",
+    "category": "subscription",
+    "description": "Apr 2026 Content Delivery Platform",
+    "receipt_url": "https://finance.internal/receipts/TXN-6852"
+  },
+  {
+    "transaction_id": "TXN-6853",
+    "date": "2026-05-01",
+    "amount": 45000,
+    "currency": "USD",
+    "merchant": "CrestWave Media",
+    "category": "subscription",
+    "description": "May 2026 Content Delivery Platform",
+    "receipt_url": "https://finance.internal/receipts/TXN-6853"
+  },
+  {
+    "transaction_id": "TXN-6861",
+    "date": "2026-03-01",
+    "amount": 100000,
+    "currency": "USD",
+    "merchant": "Quantum Analytics",
+    "category": "subscription",
+    "description": "Mar 2026 Enterprise Analytics Suite",
+    "receipt_url": "https://finance.internal/receipts/TXN-6861"
+  },
+  {
+    "transaction_id": "TXN-6862",
+    "date": "2026-04-01",
+    "amount": 100000,
+    "currency": "USD",
+    "merchant": "Quantum Analytics",
+    "category": "subscription",
+    "description": "Apr 2026 Enterprise Analytics Suite",
+    "receipt_url": "https://finance.internal/receipts/TXN-6862"
+  },
+  {
+    "transaction_id": "TXN-6863",
+    "date": "2026-05-01",
+    "amount": 100000,
+    "currency": "USD",
+    "merchant": "Quantum Analytics",
+    "category": "subscription",
+    "description": "May 2026 Enterprise Analytics Suite",
+    "receipt_url": "https://finance.internal/receipts/TXN-6863"
+  },
+  {
+    "transaction_id": "TXN-6871",
+    "date": "2026-03-01",
+    "amount": 35000,
+    "currency": "USD",
+    "merchant": "OceanBridge Shipping",
+    "category": "subscription",
+    "description": "Mar 2026 Fleet Management Platform",
+    "receipt_url": "https://finance.internal/receipts/TXN-6871"
+  },
+  {
+    "transaction_id": "TXN-6872",
+    "date": "2026-04-01",
+    "amount": 35000,
+    "currency": "USD",
+    "merchant": "OceanBridge Shipping",
+    "category": "subscription",
+    "description": "Apr 2026 Fleet Management Platform",
+    "receipt_url": "https://finance.internal/receipts/TXN-6872"
+  },
+  {
+    "transaction_id": "TXN-6873",
+    "date": "2026-05-01",
+    "amount": 35000,
+    "currency": "USD",
+    "merchant": "OceanBridge Shipping",
+    "category": "subscription",
+    "description": "May 2026 Fleet Management Platform",
+    "receipt_url": "https://finance.internal/receipts/TXN-6873"
+  }
+]

@@ -1,0 +1,52 @@
+[
+  {
+    "note_id": "MTG-601",
+    "title": "产品迭代周会-5月19日",
+    "created_at": "2026-05-19",
+    "participants": [
+      "产品VP",
+      "前端负责人",
+      "后端负责人",
+      "设计主管"
+    ],
+    "duration_minutes": 60,
+    "content": "# 产品迭代周会\n\n## 讨论事项\n1. 新版Dashboard设计评审通过\n2. API v3文档需要更新\n3. 客户反馈的性能问题需要排查\n\n## Action Items\n- [张伟] 5月23日前完成API v3文档更新\n- [李丽] 5月26日前完成Dashboard前端开发\n- [王强] 5月25日前排查Top5客户性能issue\n- [陈设计] 5月22日前出移动端设计稿"
+  },
+  {
+    "note_id": "MTG-602",
+    "title": "技术方案评审-5月20日",
+    "created_at": "2026-05-20",
+    "participants": [
+      "CTO",
+      "架构师",
+      "后端负责人",
+      "DBA"
+    ],
+    "duration_minutes": 90,
+    "content": "# 技术方案评审\n\n## 评审内容\n数据库分库分表方案 v2\n\n## 决议\n方案通过，分三阶段执行\n\n## Action Items\n- [王强] 5月25日前完成分表脚本开发（与周会重复）\n- [DBA-赵] 5月28日前完成压测环境搭建\n- [架构师-刘] 5月30日前完成回滚方案文档"
+  },
+  {
+    "note_id": "MTG-603",
+    "title": "Sprint回顾-5月22日",
+    "created_at": "2026-05-22",
+    "participants": [
+      "Scrum Master",
+      "全体开发",
+      "产品经理"
+    ],
+    "duration_minutes": 45,
+    "content": "# Sprint 回顾\n\n## 做得好\n- 按时交付3个feature\n- 零线上事故\n\n## 需改进\n- Code review积压\n- 文档更新滞后\n\n## Action Items\n- [张伟] API v3文档更新（同周会item，deadline不变5月23日）\n- [全员] 每天花30分钟清理CR queue\n- [Scrum Master] 下周起增加每日站会文档check环节"
+  },
+  {
+    "note_id": "MTG-604",
+    "title": "客户成功同步会-5月23日",
+    "created_at": "2026-05-23",
+    "participants": [
+      "客户成功VP",
+      "客户经理x3",
+      "产品经理"
+    ],
+    "duration_minutes": 30,
+    "content": "# 客户成功同步\n\n## 关键客户动态\n- 华锐制造续约确认，可能加购模块\n- 天宏科技使用率下降，需跟进\n\n## Action Items\n- [客户经理-孙] 5月27日前联系天宏科技了解原因\n- [产品经理-何] 5月26日前准备华锐加购方案\n- [客户成功VP] 5月30日前完成Q2客户健康度报告"
+  }
+]

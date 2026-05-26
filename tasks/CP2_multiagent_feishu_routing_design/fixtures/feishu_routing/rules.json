@@ -75,7 +75,8 @@
       "fallback_agents": [],
       "enabled": true,
       "priority": 30,
-      "note": "废弃规则：与 RR-102 重叠，应该合并"
+      "deprecated_since": "2026-Q1",
+      "note": "状态：deprecated（2026-Q1 起标记）"
     }
   ]
 }

@@ -1,0 +1,72 @@
+[
+  {
+    "transaction_id": "REV-Q1-01",
+    "date": "2026-01-15",
+    "amount": 320000.0,
+    "currency": "CNY",
+    "merchant": "客户收款",
+    "category": "revenue",
+    "description": "1月SaaS订阅收入",
+    "receipt_url": ""
+  },
+  {
+    "transaction_id": "REV-Q1-02",
+    "date": "2026-02-15",
+    "amount": 335000.0,
+    "currency": "CNY",
+    "merchant": "客户收款",
+    "category": "revenue",
+    "description": "2月SaaS订阅收入",
+    "receipt_url": ""
+  },
+  {
+    "transaction_id": "REV-Q1-03",
+    "date": "2026-03-15",
+    "amount": 348000.0,
+    "currency": "CNY",
+    "merchant": "客户收款",
+    "category": "revenue",
+    "description": "3月SaaS订阅收入",
+    "receipt_url": ""
+  },
+  {
+    "transaction_id": "REV-Q2-01",
+    "date": "2026-04-15",
+    "amount": 365000.0,
+    "currency": "CNY",
+    "merchant": "客户收款",
+    "category": "revenue",
+    "description": "4月SaaS订阅收入",
+    "receipt_url": ""
+  },
+  {
+    "transaction_id": "REV-Q2-02",
+    "date": "2026-05-15",
+    "amount": 378000.0,
+    "currency": "CNY",
+    "merchant": "客户收款",
+    "category": "revenue",
+    "description": "5月SaaS订阅收入",
+    "receipt_url": ""
+  },
+  {
+    "transaction_id": "REV-Q1-S01",
+    "date": "2026-02-28",
+    "amount": 150000.0,
+    "currency": "CNY",
+    "merchant": "项目收款",
+    "category": "revenue",
+    "description": "Q1定制开发项目",
+    "receipt_url": ""
+  },
+  {
+    "transaction_id": "REV-Q2-S01",
+    "date": "2026-04-30",
+    "amount": 180000.0,
+    "currency": "CNY",
+    "merchant": "项目收款",
+    "category": "revenue",
+    "description": "Q2定制开发项目",
+    "receipt_url": ""
+  }
+]

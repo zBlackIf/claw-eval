@@ -1,0 +1,34 @@
+[
+  {
+    "contact_id": "CT-001",
+    "name": "高明",
+    "department": "工程部",
+    "title": "工程总监",
+    "email": "gao.ming@company.com",
+    "phone": "13800007001"
+  },
+  {
+    "contact_id": "CT-002",
+    "name": "陈艺",
+    "department": "设计部",
+    "title": "设计总监",
+    "email": "chen.yi@company.com",
+    "phone": "13800007002"
+  },
+  {
+    "contact_id": "CT-003",
+    "name": "刘数",
+    "department": "数据部",
+    "title": "数据总监",
+    "email": "liu.shu@company.com",
+    "phone": "13800007003"
+  },
+  {
+    "contact_id": "CT-004",
+    "name": "王总",
+    "department": "管理层",
+    "title": "VP Engineering",
+    "email": "wang.zong@company.com",
+    "phone": "13800007004"
+  }
+]

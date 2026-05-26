@@ -1,0 +1,15 @@
+[
+  {
+    "message_id": "msg_01",
+    "from": "cx-lead@company.com",
+    "to": "specialist@company.com",
+    "subject": "本周客户反馈处理",
+    "body": "请处理工单系统里本周积压的客户反馈：\n1. 按紧急程度分类\n2. 产品bug类的转给工程团队\n3. 功能建议类的转给产品团队\n4. 严重投诉需要升级处理的给我\n5. 正面反馈可以标记归档\n\n处理完草拟一封汇总邮件给我审核。",
+    "date": "2026-05-26T09:00:00Z",
+    "is_read": false,
+    "labels": [
+      "task",
+      "feedback"
+    ]
+  }
+]

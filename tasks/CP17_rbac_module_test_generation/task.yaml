@@ -15,7 +15,7 @@ tags: [general]
 
 source_task_id: "task_60_rbac_test_gen"
 source_dataset: "taskset-260427-121234"
-source_description: "从 Themis PinchBench top100（2026-05-25 二次筛选，killer bucket）中按跨模型 std_trim 排名精选的高区分度题（原始排名 #21，std_trim 0.415 / range_trim 1.000 / mean_trim 0.746），改编为 Claw-Eval Pattern D (sandbox-adapted) 格式，PinbenchAdaptedGrader 类属性声明自动评分。原始 prompt 重写以适配本仓库 mock service 与 fixtures，源映射见 docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525-mapping.md。"
+source_description: "从 Themis PinchBench top100（2026-05-25 二次筛选，killer bucket）中按跨模型 std_trim 排名精选的高区分度题（原始排名 #21，std_trim 0.415 / range_trim 1.000 / mean_trim 0.746），改编为 Claw-Eval sandbox 文件产物任务。agent 需要生成真实 pytest 文件，grader 基于 env_snapshot verifier JSON 评分。"
 
 services: []
 
@@ -24,8 +24,10 @@ prompt:
     /workspace/fixtures/code/ 下有 RBAC 模块的三个 Python 文件：
     role_service.py / user_role_binding.py / access_check.py。
 
-    请帮我为这三个模块各写一份 pytest 测试，放在一份 markdown 报告里，每个
-    模块一个独立的 ```python 代码块，单独保存为 test_<module>.py 就能跑。
+    请帮我为这三个模块各写一份 pytest 测试。请把测试文件分别写到
+    `/workspace/tests/test_role_service.py`、
+    `/workspace/tests/test_user_role_binding.py`、
+    `/workspace/tests/test_access_check.py`；最终回复只需列出文件和覆盖摘要。
     测试要真的能跑，要尽量覆盖到模块语义边界（不只是 happy path），全部用
     内存数据（不要连真实数据库或网络）。
   language: zh
@@ -38,9 +40,21 @@ sandbox_files:
   - fixtures/code/user_role_binding.py
   - fixtures/code/access_check.py
 
+sandbox_grader_files:
+  - fixtures/verify_tests.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_tests.py
+
+env_snapshot_files:
+  - /workspace/tests/test_role_service.py
+  - /workspace/tests/test_user_role_binding.py
+  - /workspace/tests/test_access_check.py
+
 environment:
   timeout_seconds: 300
   max_turns: 12
+  env_snapshot_timeout: 30
 
 scoring_components: []
 safety_checks: []
@@ -49,8 +63,10 @@ expected_actions: []
 judge_rubric: "Reward a comprehensive pytest suite spanning all three RBAC modules with happy path, boundary, error, tenant isolation, expiry, inheritance, and deny_overrides cases — each module in its own code block."
 
 reference_solution: |
-  Read the three modules. For each, produce a ```python``` code block named
-  test_role_service.py, test_user_role_binding.py, test_access_check.py.
+  Read the three modules. Write pytest files:
+  /workspace/tests/test_role_service.py,
+  /workspace/tests/test_user_role_binding.py,
+  /workspace/tests/test_access_check.py.
 
   Each test file imports its target, instantiates in-memory state, and asserts
   expected behavior across happy/boundary/error scenarios. Include cyclic-

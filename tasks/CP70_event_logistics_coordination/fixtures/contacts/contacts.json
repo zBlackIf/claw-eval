@@ -1,0 +1,66 @@
+[
+  {
+    "contact_id": "CT-301",
+    "name": "Patricia Wells",
+    "department": "Executive Office",
+    "title": "CEO",
+    "email": "p.wells@company.com",
+    "phone": "+1-415-555-0001"
+  },
+  {
+    "contact_id": "CT-302",
+    "name": "Richard Huang",
+    "department": "Finance",
+    "title": "CFO",
+    "email": "r.huang@company.com",
+    "phone": "+1-415-555-0002"
+  },
+  {
+    "contact_id": "CT-303",
+    "name": "Natasha Volkov",
+    "department": "Engineering",
+    "title": "CTO",
+    "email": "n.volkov@company.com",
+    "phone": "+1-415-555-0003"
+  },
+  {
+    "contact_id": "CT-304",
+    "name": "Derek Chang",
+    "department": "Product",
+    "title": "VP Product",
+    "email": "d.chang@company.com",
+    "phone": "+1-415-555-0004"
+  },
+  {
+    "contact_id": "CT-305",
+    "name": "Monica Garcia",
+    "department": "Engineering",
+    "title": "VP Engineering",
+    "email": "m.garcia@company.com",
+    "phone": "+1-415-555-0005"
+  },
+  {
+    "contact_id": "CT-306",
+    "name": "James Foster",
+    "department": "Facilities",
+    "title": "Facilities Director",
+    "email": "j.foster@company.com",
+    "phone": "+1-415-555-0006"
+  },
+  {
+    "contact_id": "CT-307",
+    "name": "Sophia Lee",
+    "department": "People Operations",
+    "title": "Head of People Ops",
+    "email": "s.lee@company.com",
+    "phone": "+1-415-555-0007"
+  },
+  {
+    "contact_id": "CT-308",
+    "name": "Brandon Taylor",
+    "department": "Communications",
+    "title": "Director of Internal Communications",
+    "email": "b.taylor@company.com",
+    "phone": "+1-415-555-0008"
+  }
+]

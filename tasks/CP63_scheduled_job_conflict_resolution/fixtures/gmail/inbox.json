@@ -1,0 +1,15 @@
+[
+  {
+    "message_id": "msg_01",
+    "from": "devops-manager@company.com",
+    "to": "sre@company.com",
+    "subject": "定时任务冲突排查",
+    "body": "最近database-full-backup经常超时，怀疑跟其他任务有冲突。请：\n1. 梳理所有定时任务的执行窗口\n2. 找出有资源冲突的任务组合\n3. 提出优化调度方案\n4. 给我一个邮件草稿汇报结果\n\n另外那个legacy-sync是不是可以彻底删了？已经停了快2个月了。",
+    "date": "2026-05-26T09:00:00Z",
+    "is_read": false,
+    "labels": [
+      "ops",
+      "urgent"
+    ]
+  }
+]

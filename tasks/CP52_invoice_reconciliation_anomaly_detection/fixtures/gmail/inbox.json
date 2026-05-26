@@ -1,0 +1,39 @@
+[
+  {
+    "message_id": "msg_01",
+    "from": "finance-alerts@company.com",
+    "to": "analyst@company.com",
+    "subject": "4月对账异常提醒",
+    "body": "Hi，4月账单初步核对发现几个问题需要你确认：1）阿里云出现了两笔相同金额的扣款；2）有3笔采购缺少发票附件；3）腾讯云的退款似乎还没有入账到余额里。请尽快核实并整理报告给财务总监。",
+    "date": "2026-05-02T09:00:00Z",
+    "is_read": false,
+    "labels": [
+      "urgent",
+      "finance"
+    ]
+  },
+  {
+    "message_id": "msg_02",
+    "from": "procurement@company.com",
+    "to": "analyst@company.com",
+    "subject": "Re: 4月设备采购发票",
+    "body": "京东企业购那笔12000的设备采购，发票还在走流程，预计下周到。钉钉那笔也是，他们说电子发票系统在升级。飞书那笔8500的也没拿到发票。",
+    "date": "2026-05-03T09:00:00Z",
+    "is_read": true,
+    "labels": [
+      "finance"
+    ]
+  },
+  {
+    "message_id": "msg_03",
+    "from": "cloud-ops@company.com",
+    "to": "analyst@company.com",
+    "subject": "华为云重复计费确认",
+    "body": "确认华为云4月出现了重复计费的情况。TXN-004和TXN-009是同一笔GPU算力包的费用，华为云那边已经确认会退款，但目前还没处理。金额32000元。",
+    "date": "2026-05-04T09:00:00Z",
+    "is_read": true,
+    "labels": [
+      "finance"
+    ]
+  }
+]

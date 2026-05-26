@@ -1,0 +1,110 @@
+[
+  {
+    "article_id": "RSS-301",
+    "title": "2026年AI Agent市场规模预测突破500亿美元",
+    "source": "36氪",
+    "category": "AI",
+    "published_at": "2026-05-20",
+    "summary": "Gartner最新报告显示AI Agent市场预计2027年突破500亿美元，企业级应用是最大增长点。",
+    "word_count": 1200
+  },
+  {
+    "article_id": "RSS-302",
+    "title": "制造业数字化转型：MES系统选型指南",
+    "source": "工业互联网周刊",
+    "category": "manufacturing",
+    "published_at": "2026-05-18",
+    "summary": "中国制造2025推动下，MES系统需求爆发，本文对比主流厂商方案。",
+    "word_count": 2500
+  },
+  {
+    "article_id": "RSS-303",
+    "title": "SaaS续费率持续下降，行业如何应对",
+    "source": "中国软件网",
+    "category": "SaaS",
+    "published_at": "2026-05-22",
+    "summary": "2026年Q1 SaaS行业平均NRR降至105%，客户成功体系成为关键竞争力。",
+    "word_count": 1800
+  },
+  {
+    "article_id": "RSS-304",
+    "title": "量子计算芯片新突破：IBM发布1000量子比特处理器",
+    "source": "IEEE Spectrum",
+    "category": "quantum",
+    "published_at": "2026-05-21",
+    "summary": "IBM最新量子处理器突破1000 qubit大关，但商用还需5-10年。",
+    "word_count": 900
+  },
+  {
+    "article_id": "RSS-305",
+    "title": "数据安全法实施细则更新：企业合规指南",
+    "source": "法规在线",
+    "category": "compliance",
+    "published_at": "2026-05-19",
+    "summary": "数据安全法最新实施细则对SaaS企业提出更严格的数据本地化和审计要求。",
+    "word_count": 3200
+  },
+  {
+    "article_id": "RSS-306",
+    "title": "医疗AI在三甲医院的落地实践",
+    "source": "健康中国",
+    "category": "healthcare",
+    "published_at": "2026-05-23",
+    "summary": "全国已有200+三甲医院部署AI辅助诊断系统，准确率达到98.5%。",
+    "word_count": 1500
+  },
+  {
+    "article_id": "RSS-307",
+    "title": "远程办公工具市场竞争加剧",
+    "source": "产品经理社区",
+    "category": "productivity",
+    "published_at": "2026-05-20",
+    "summary": "飞书、钉钉、企微三大平台功能趋同，差异化竞争进入深水区。",
+    "word_count": 1100
+  },
+  {
+    "article_id": "RSS-308",
+    "title": "ESG报告编写AI工具涌现",
+    "source": "碳中和观察",
+    "category": "ESG",
+    "published_at": "2026-05-24",
+    "summary": "AI自动生成ESG报告的工具开始被上市公司采纳，节省80%人力。",
+    "word_count": 800
+  },
+  {
+    "article_id": "RSS-309",
+    "title": "宠物经济再升级：智能养宠设备销量翻倍",
+    "source": "消费日报",
+    "category": "consumer",
+    "published_at": "2026-05-22",
+    "summary": "智能猫砂盆、自动喂食器等设备2026年销量预计超20亿元。",
+    "word_count": 600
+  },
+  {
+    "article_id": "RSS-310",
+    "title": "低代码平台在中小企业的应用瓶颈",
+    "source": "IT经理世界",
+    "category": "enterprise_tech",
+    "published_at": "2026-05-21",
+    "summary": "低代码承诺的快速开发在复杂业务场景下遇到定制化瓶颈。",
+    "word_count": 1400
+  },
+  {
+    "article_id": "RSS-311",
+    "title": "电动汽车充电桩建设加速",
+    "source": "能源观察",
+    "category": "energy",
+    "published_at": "2026-05-23",
+    "summary": "全国充电桩突破500万个，但分布不均问题依然突出。",
+    "word_count": 700
+  },
+  {
+    "article_id": "RSS-312",
+    "title": "企业级AI落地的五大挑战与对策",
+    "source": "哈佛商业评论中文版",
+    "category": "AI",
+    "published_at": "2026-05-25",
+    "summary": "数据质量、人才缺口、ROI不确定性、安全隐私、组织变革是AI落地五大挑战。",
+    "word_count": 2800
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "contact_id": "CT-101",
+    "name": "Tom Baker",
+    "department": "Customer Success",
+    "title": "VP Customer Success",
+    "email": "t.baker@company.com",
+    "phone": "+1-415-555-9001"
+  },
+  {
+    "contact_id": "CT-102",
+    "name": "Lisa Park",
+    "department": "Sales",
+    "title": "Senior Account Executive",
+    "email": "l.park@company.com",
+    "phone": "+1-415-555-9002"
+  },
+  {
+    "contact_id": "CT-103",
+    "name": "Marcus Johnson",
+    "department": "Sales",
+    "title": "Account Manager",
+    "email": "m.johnson@company.com",
+    "phone": "+1-415-555-9003"
+  },
+  {
+    "contact_id": "CT-104",
+    "name": "Rachel Green",
+    "department": "Partnerships",
+    "title": "Partner Channel Manager",
+    "email": "r.green@company.com",
+    "phone": "+1-415-555-9004"
+  },
+  {
+    "contact_id": "CT-105",
+    "name": "Daniel Ortiz",
+    "department": "Sales",
+    "title": "VP Sales",
+    "email": "d.ortiz@company.com",
+    "phone": "+1-415-555-9005"
+  },
+  {
+    "contact_id": "CT-106",
+    "name": "Karen Zhang",
+    "department": "Engineering",
+    "title": "VP Engineering",
+    "email": "k.zhang@company.com",
+    "phone": "+1-415-555-9006"
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "contact_id": "CT-201",
+    "name": "Alex Rivera",
+    "department": "Engineering",
+    "title": "Senior Backend Engineer",
+    "email": "a.rivera@company.com",
+    "phone": "+1-415-555-7001"
+  },
+  {
+    "contact_id": "CT-202",
+    "name": "Priya Sharma",
+    "department": "Security",
+    "title": "Platform Security Engineer",
+    "email": "p.sharma@company.com",
+    "phone": "+1-415-555-7002"
+  },
+  {
+    "contact_id": "CT-203",
+    "name": "Kevin Patel",
+    "department": "Product",
+    "title": "Senior Product Manager",
+    "email": "k.patel@company.com",
+    "phone": "+1-415-555-7003"
+  },
+  {
+    "contact_id": "CT-204",
+    "name": "Maria Santos",
+    "department": "Data Engineering",
+    "title": "Data Engineer",
+    "email": "m.santos@company.com",
+    "phone": "+1-415-555-7004"
+  },
+  {
+    "contact_id": "CT-205",
+    "name": "Ryan Cooper",
+    "department": "Engineering",
+    "title": "VP Engineering",
+    "email": "r.cooper@company.com",
+    "phone": "+1-415-555-7005"
+  },
+  {
+    "contact_id": "CT-206",
+    "name": "Sandra Kim",
+    "department": "Operations",
+    "title": "Director of Platform Operations",
+    "email": "s.kim@company.com",
+    "phone": "+1-415-555-7006"
+  }
+]

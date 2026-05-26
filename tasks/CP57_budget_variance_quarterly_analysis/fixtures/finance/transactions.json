@@ -1,0 +1,122 @@
+[
+  {
+    "transaction_id": "BV-001",
+    "date": "2026-04-05",
+    "amount": 85000.0,
+    "currency": "CNY",
+    "merchant": "技术部-云服务",
+    "category": "engineering",
+    "description": "AWS+阿里云4月费用",
+    "receipt_url": "https://r.example.com/bv001"
+  },
+  {
+    "transaction_id": "BV-002",
+    "date": "2026-04-15",
+    "amount": 45000.0,
+    "currency": "CNY",
+    "merchant": "技术部-设备采购",
+    "category": "engineering",
+    "description": "开发服务器扩容",
+    "receipt_url": "https://r.example.com/bv002"
+  },
+  {
+    "transaction_id": "BV-003",
+    "date": "2026-05-05",
+    "amount": 92000.0,
+    "currency": "CNY",
+    "merchant": "技术部-云服务",
+    "category": "engineering",
+    "description": "AWS+阿里云5月费用(含GPU)",
+    "receipt_url": "https://r.example.com/bv003"
+  },
+  {
+    "transaction_id": "BV-004",
+    "date": "2026-05-20",
+    "amount": 38000.0,
+    "currency": "CNY",
+    "merchant": "技术部-外包",
+    "category": "engineering",
+    "description": "临时外包人力-安全审计",
+    "receipt_url": "https://r.example.com/bv004"
+  },
+  {
+    "transaction_id": "BV-005",
+    "date": "2026-04-10",
+    "amount": 120000.0,
+    "currency": "CNY",
+    "merchant": "市场部-广告投放",
+    "category": "marketing",
+    "description": "百度SEM+抖音信息流4月",
+    "receipt_url": "https://r.example.com/bv005"
+  },
+  {
+    "transaction_id": "BV-006",
+    "date": "2026-04-25",
+    "amount": 65000.0,
+    "currency": "CNY",
+    "merchant": "市场部-活动",
+    "category": "marketing",
+    "description": "行业峰会赞助+展位",
+    "receipt_url": "https://r.example.com/bv006"
+  },
+  {
+    "transaction_id": "BV-007",
+    "date": "2026-05-10",
+    "amount": 130000.0,
+    "currency": "CNY",
+    "merchant": "市场部-广告投放",
+    "category": "marketing",
+    "description": "百度SEM+抖音信息流5月(加投)",
+    "receipt_url": "https://r.example.com/bv007"
+  },
+  {
+    "transaction_id": "BV-008",
+    "date": "2026-05-15",
+    "amount": 85000.0,
+    "currency": "CNY",
+    "merchant": "市场部-内容制作",
+    "category": "marketing",
+    "description": "品牌视频制作+KOL合作",
+    "receipt_url": "https://r.example.com/bv008"
+  },
+  {
+    "transaction_id": "BV-009",
+    "date": "2026-04-08",
+    "amount": 55000.0,
+    "currency": "CNY",
+    "merchant": "产品部-用研",
+    "category": "product",
+    "description": "用户调研+竞品分析",
+    "receipt_url": "https://r.example.com/bv009"
+  },
+  {
+    "transaction_id": "BV-010",
+    "date": "2026-05-08",
+    "amount": 48000.0,
+    "currency": "CNY",
+    "merchant": "产品部-工具",
+    "category": "product",
+    "description": "Figma+Maze年费",
+    "receipt_url": "https://r.example.com/bv010"
+  },
+  {
+    "transaction_id": "BV-011",
+    "date": "2026-04-03",
+    "amount": 35000.0,
+    "currency": "CNY",
+    "merchant": "行政部-办公",
+    "category": "admin",
+    "description": "办公用品+保洁",
+    "receipt_url": "https://r.example.com/bv011"
+  },
+  {
+    "transaction_id": "BV-012",
+    "date": "2026-05-03",
+    "amount": 35000.0,
+    "currency": "CNY",
+    "merchant": "行政部-办公",
+    "category": "admin",
+    "description": "办公用品+保洁5月",
+    "receipt_url": "https://r.example.com/bv012"
+  }
+]

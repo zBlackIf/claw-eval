@@ -1,0 +1,46 @@
+[
+  {
+    "ticket_id": "HD-5001",
+    "title": "Payment processing failures affecting checkout",
+    "description": "Multiple customers reporting failed payments during checkout. Getting 502 errors from payment gateway. Started after the API migration on May 15. Approximately 8% of transactions are failing. Revenue impact estimated at $15K/day in lost sales.",
+    "reporter": "Elena Rodriguez",
+    "department": "Engineering",
+    "priority": "critical",
+    "status": "open",
+    "created_at": "2026-05-22T09:30:00Z",
+    "tags": ["payment-gateway", "checkout", "revenue-impact", "INT-001"]
+  },
+  {
+    "ticket_id": "HD-5002",
+    "title": "Push notification delivery rate dropped 40% in APAC",
+    "description": "Since May 17, our push notification delivery rate in APAC markets has dropped from 92% to approximately 55%. Firebase console shows elevated error rates. Affecting user engagement metrics for our mobile app in Japan, Korea, and Southeast Asia.",
+    "reporter": "Kevin Patel",
+    "department": "Product",
+    "priority": "high",
+    "status": "in_progress",
+    "created_at": "2026-05-19T14:00:00Z",
+    "tags": ["notifications", "firebase", "apac", "INT-006"]
+  },
+  {
+    "ticket_id": "HD-5003",
+    "title": "Analytics events missing for new user cohort",
+    "description": "The segment integration is dropping events for users who signed up after May 10. Looks like the new user profile schema doesn't match the validation rules in the pipeline. We're losing tracking data for approximately 6% of events.",
+    "reporter": "Maria Santos",
+    "department": "Data",
+    "priority": "high",
+    "status": "open",
+    "created_at": "2026-05-20T11:15:00Z",
+    "tags": ["analytics", "segment", "schema", "INT-003"]
+  },
+  {
+    "ticket_id": "HD-5004",
+    "title": "SSO login intermittent failures reported by enterprise customer",
+    "description": "Acme Corp (enterprise customer) reported that 3 of their employees experienced SSO login failures yesterday. The issues resolved after retry. No pattern identified yet. Could be related to the auth0 integration not being recently verified.",
+    "reporter": "Jake Morrison",
+    "department": "Support",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-24T16:45:00Z",
+    "tags": ["sso", "auth0", "enterprise", "INT-004"]
+  }
+]

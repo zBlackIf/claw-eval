@@ -1,0 +1,83 @@
+[
+  {
+    "job_id": "SCH-C01",
+    "name": "database-full-backup",
+    "cron_expression": "0 2 * * *",
+    "enabled": true,
+    "last_run": "2026-05-26T02:00:00",
+    "next_run": "2026-05-27T02:00:00",
+    "last_status": "success",
+    "action": "backup_postgres",
+    "tags": [
+      "backup",
+      "critical"
+    ]
+  },
+  {
+    "job_id": "SCH-C02",
+    "name": "file-storage-backup",
+    "cron_expression": "0 3 * * *",
+    "enabled": true,
+    "last_run": "2026-05-05T03:00:00",
+    "next_run": "2026-05-27T03:00:00",
+    "last_status": "failed",
+    "action": "backup_minio",
+    "tags": [
+      "backup",
+      "critical"
+    ]
+  },
+  {
+    "job_id": "SCH-C03",
+    "name": "log-rotation",
+    "cron_expression": "0 4 * * *",
+    "enabled": true,
+    "last_run": "2026-05-26T04:00:00",
+    "next_run": "2026-05-27T04:00:00",
+    "last_status": "success",
+    "action": "rotate_logs",
+    "tags": [
+      "maintenance"
+    ]
+  },
+  {
+    "job_id": "SCH-C04",
+    "name": "ssl-cert-renewal-check",
+    "cron_expression": "0 6 * * 1",
+    "enabled": true,
+    "last_run": "2026-05-20T06:00:00",
+    "next_run": "2026-05-27T06:00:00",
+    "last_status": "success",
+    "action": "check_certs",
+    "tags": [
+      "security"
+    ]
+  },
+  {
+    "job_id": "SCH-C05",
+    "name": "vulnerability-scan",
+    "cron_expression": "0 1 * * 0",
+    "enabled": false,
+    "last_run": "2026-04-07T01:00:00",
+    "next_run": "2026-05-27T01:00:00",
+    "last_status": "success",
+    "action": "run_vuln_scan",
+    "tags": [
+      "security",
+      "disabled"
+    ]
+  },
+  {
+    "job_id": "SCH-C06",
+    "name": "audit-log-export",
+    "cron_expression": "0 5 1 * *",
+    "enabled": true,
+    "last_run": "2026-05-01T05:00:00",
+    "next_run": "2026-06-01T05:00:00",
+    "last_status": "success",
+    "action": "export_audit_logs",
+    "tags": [
+      "compliance"
+    ]
+  }
+]

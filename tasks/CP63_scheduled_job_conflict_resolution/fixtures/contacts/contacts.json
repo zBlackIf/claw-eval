@@ -1,0 +1,18 @@
+[
+  {
+    "contact_id": "CT-001",
+    "name": "张磊",
+    "department": "技术部",
+    "title": "DevOps经理",
+    "email": "zhang.lei@company.com",
+    "phone": "13800005001"
+  },
+  {
+    "contact_id": "CT-002",
+    "name": "李峰",
+    "department": "技术部",
+    "title": "DBA",
+    "email": "li.feng@company.com",
+    "phone": "13800005002"
+  }
+]

@@ -1,0 +1,174 @@
+[
+  {
+    "ticket_id": "PAT-001",
+    "title": "API响应变慢",
+    "description": "调用用户列表API从100ms变成2000ms",
+    "reporter": "客户A",
+    "department": "技术支持",
+    "priority": "high",
+    "status": "open",
+    "created_at": "2026-05-15",
+    "tags": [
+      "api",
+      "performance"
+    ]
+  },
+  {
+    "ticket_id": "PAT-002",
+    "title": "搜索接口超时",
+    "description": "全文搜索经常timeout",
+    "reporter": "客户B",
+    "department": "技术支持",
+    "priority": "high",
+    "status": "open",
+    "created_at": "2026-05-16",
+    "tags": [
+      "api",
+      "performance",
+      "search"
+    ]
+  },
+  {
+    "ticket_id": "PAT-003",
+    "title": "批量导出API报504",
+    "description": "导出大量数据时频繁504",
+    "reporter": "客户C",
+    "department": "技术支持",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-17",
+    "tags": [
+      "api",
+      "performance",
+      "export"
+    ]
+  },
+  {
+    "ticket_id": "PAT-004",
+    "title": "API查询分页响应慢",
+    "description": "翻到后面几页响应越来越慢",
+    "reporter": "客户D",
+    "department": "开发者支持",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-18",
+    "tags": [
+      "api",
+      "performance",
+      "pagination"
+    ]
+  },
+  {
+    "ticket_id": "PAT-005",
+    "title": "Dashboard接口卡顿",
+    "description": "加载看板数据要等5-8秒",
+    "reporter": "客户E",
+    "department": "技术支持",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-19",
+    "tags": [
+      "api",
+      "performance",
+      "dashboard"
+    ]
+  },
+  {
+    "ticket_id": "PAT-006",
+    "title": "邮件通知没收到",
+    "description": "配置了邮件提醒但没收到",
+    "reporter": "客户F",
+    "department": "技术支持",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-14",
+    "tags": [
+      "notification",
+      "email"
+    ]
+  },
+  {
+    "ticket_id": "PAT-007",
+    "title": "Webhook事件丢失",
+    "description": "配置的webhook有时收不到事件",
+    "reporter": "客户G",
+    "department": "开发者支持",
+    "priority": "high",
+    "status": "open",
+    "created_at": "2026-05-15",
+    "tags": [
+      "notification",
+      "webhook"
+    ]
+  },
+  {
+    "ticket_id": "PAT-008",
+    "title": "站内通知延迟",
+    "description": "审批通知要等30分钟才收到",
+    "reporter": "客户H",
+    "department": "技术支持",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-16",
+    "tags": [
+      "notification",
+      "delay"
+    ]
+  },
+  {
+    "ticket_id": "PAT-009",
+    "title": "无法修改密码",
+    "description": "修改密码页面报500错误",
+    "reporter": "客户I",
+    "department": "技术支持",
+    "priority": "medium",
+    "status": "resolved",
+    "created_at": "2026-05-10",
+    "tags": [
+      "auth",
+      "bug"
+    ]
+  },
+  {
+    "ticket_id": "PAT-010",
+    "title": "导入CSV编码问题",
+    "description": "含中文的CSV导入后乱码",
+    "reporter": "客户J",
+    "department": "技术支持",
+    "priority": "low",
+    "status": "resolved",
+    "created_at": "2026-05-08",
+    "tags": [
+      "import",
+      "encoding"
+    ]
+  },
+  {
+    "ticket_id": "PAT-011",
+    "title": "报表数据更新延迟",
+    "description": "报表数据比实时数据落后1天",
+    "reporter": "客户K",
+    "department": "技术支持",
+    "priority": "low",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "analytics",
+      "delay"
+    ]
+  },
+  {
+    "ticket_id": "PAT-012",
+    "title": "移动端UI显示异常",
+    "description": "iPad横屏时布局错乱",
+    "reporter": "客户L",
+    "department": "技术支持",
+    "priority": "low",
+    "status": "open",
+    "created_at": "2026-05-22",
+    "tags": [
+      "mobile",
+      "ui"
+    ]
+  }
+]

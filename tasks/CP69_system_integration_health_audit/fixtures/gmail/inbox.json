@@ -1,0 +1,42 @@
+[
+  {
+    "message_id": "msg_6901",
+    "from": "Alex Rivera <a.rivera@company.com>",
+    "to": "me@company.com",
+    "subject": "Payment gateway migration post-mortem notes",
+    "body": "Hey,\n\nFollowing up on the Stripe v3.2 migration we did on May 15. I've identified the root cause of the elevated error rate:\n\nThe new API version changed the idempotency key format and our retry logic is sending duplicate requests that get rejected. The fix is straightforward - we need to update our payment service to use UUID v4 for idempotency keys instead of the old hash-based format.\n\nI have a PR ready (PR-4521) but it needs QA sign-off before we can deploy to production. Estimated fix deployment: 2-3 days if we fast-track QA.\n\nIn the meantime, the error rate should be stable around 8% (not getting worse).\n\nAlex Rivera\nSenior Backend Engineer",
+    "date": "2026-05-23T15:00:00Z",
+    "is_read": true,
+    "labels": ["payment-gateway", "post-mortem"]
+  },
+  {
+    "message_id": "msg_6902",
+    "from": "Priya Sharma <p.sharma@company.com>",
+    "to": "me@company.com",
+    "subject": "Auth0 verification overdue - should we be concerned?",
+    "body": "Hi,\n\nI noticed during my weekly checks that the auth-provider (Auth0) integration hasn't been manually verified since February 25 - that's 90 days ago. Our policy requires quarterly manual verification for all authentication integrations.\n\nThe automated health checks are passing, but those only test basic connectivity - they don't validate token claims, MFA flows, or enterprise SSO configurations.\n\nAlso worth noting: the nightly backup sync job for Auth0 (JOB-303) has been disabled since March 15. I'm not sure who disabled it or why. If Auth0 has a data loss event and we don't have current backups, we'd lose user session state and MFA enrollment data.\n\nShould I schedule a full manual verification this week?\n\nPriya Sharma\nPlatform Security Engineer",
+    "date": "2026-05-24T09:30:00Z",
+    "is_read": false,
+    "labels": ["security", "auth0", "verification"]
+  },
+  {
+    "message_id": "msg_6903",
+    "from": "Kevin Patel <k.patel@company.com>",
+    "to": "me@company.com",
+    "subject": "Firebase notification monitoring disabled?",
+    "body": "Hi,\n\nI've been investigating the APAC push notification delivery drop and discovered something concerning: the notification-delivery-monitor job (JOB-306) was disabled on May 17 - the same day the delivery rate started dropping.\n\nThis means we had no automated alerting when the delivery rate fell below our 85% threshold. We only caught it 2 days later from user complaints.\n\nI suspect someone disabled the monitor during maintenance and forgot to re-enable it. The Firebase issue itself seems to be a regional routing problem on Google's side, but having our monitor disabled made it invisible to us.\n\nCan we make sure this gets included in the remediation plan? We need both:\n1. Re-enable the monitoring job immediately\n2. Fix the Firebase APAC delivery issue (I've opened a support ticket with Google)\n\nKevin",
+    "date": "2026-05-25T11:00:00Z",
+    "is_read": false,
+    "labels": ["firebase", "monitoring", "apac"]
+  },
+  {
+    "message_id": "msg_6904",
+    "from": "Maria Santos <m.santos@company.com>",
+    "to": "me@company.com",
+    "subject": "Segment schema fix deployed to staging",
+    "body": "Quick update: I've deployed the schema validation fix to staging. The analytics-pipeline error rate should drop back to normal once we push to production.\n\nThe issue was that we added 3 new user profile fields on May 10 but didn't update the Segment schema validation rules. Events with the new fields were being rejected.\n\nI'll push to production tomorrow after staging validation completes.\n\nMaria Santos\nData Engineer",
+    "date": "2026-05-25T17:00:00Z",
+    "is_read": true,
+    "labels": ["analytics", "segment", "fix"]
+  }
+]

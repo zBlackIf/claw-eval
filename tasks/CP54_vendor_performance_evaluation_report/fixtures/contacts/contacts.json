@@ -1,0 +1,26 @@
+[
+  {
+    "contact_id": "CT-001",
+    "name": "孙志强",
+    "department": "采购部",
+    "title": "采购总监",
+    "email": "sun.zhiqiang@company.com",
+    "phone": "13800002001"
+  },
+  {
+    "contact_id": "CT-002",
+    "name": "周磊",
+    "department": "技术部",
+    "title": "CTO",
+    "email": "zhou.lei@company.com",
+    "phone": "13800002002"
+  },
+  {
+    "contact_id": "CT-003",
+    "name": "吴婷",
+    "department": "采购部",
+    "title": "供应商管理专员",
+    "email": "wu.ting@company.com",
+    "phone": "13800002003"
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "transaction_id": "PO-001",
+    "date": "2026-04-15",
+    "amount": 4450.0,
+    "currency": "CNY",
+    "merchant": "晨光文具",
+    "category": "procurement",
+    "description": "A4纸50箱采购",
+    "receipt_url": "https://r.example.com/po001"
+  },
+  {
+    "transaction_id": "PO-002",
+    "date": "2026-04-20",
+    "amount": 3200.0,
+    "currency": "CNY",
+    "merchant": "惠普官方",
+    "category": "procurement",
+    "description": "碳粉盒10个",
+    "receipt_url": "https://r.example.com/po002"
+  },
+  {
+    "transaction_id": "PO-003",
+    "date": "2026-05-01",
+    "amount": 5250.0,
+    "currency": "CNY",
+    "merchant": "安普网络",
+    "category": "procurement",
+    "description": "Cat6网线1500米",
+    "receipt_url": "https://r.example.com/po003"
+  }
+]

@@ -1,0 +1,27 @@
+[
+  {
+    "note_id": "MTG-BV01",
+    "title": "Q2市场预算追加审批会",
+    "created_at": "2026-04-20",
+    "participants": [
+      "CEO",
+      "CMO",
+      "CFO",
+      "市场总监"
+    ],
+    "duration_minutes": 30,
+    "content": "# 会议决议\n\n## 议题：市场部Q2预算追加申请\n\n### 背景\n市场部提出Q2预算追加40%（从60万增加到84万），理由：\n1. 竞品加大投放力度\n2. 行业峰会机会窗口\n3. 品牌视频制作需要\n\n### 决议\n- **批准追加**：同意市场部Q2预算从60万追加到84万\n- 条件：6月底前ROI需达到1:3\n- CEO签字确认\n\n### Action Items\n- CFO：更新预算系统\n- CMO：提交详细花销计划"
+  },
+  {
+    "note_id": "MTG-BV02",
+    "title": "技术部月度review",
+    "created_at": "2026-05-15",
+    "participants": [
+      "CTO",
+      "技术总监",
+      "架构师"
+    ],
+    "duration_minutes": 60,
+    "content": "# 技术部5月Review\n\n## 预算使用情况\n- 云服务费增长预警：GPU用量因AI项目上线激增\n- 安全审计外包：属于临时性支出，不在原预算内\n- CTO建议下月削减非核心云资源\n\n## 未提及任何预算审批"
+  }
+]

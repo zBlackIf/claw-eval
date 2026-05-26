@@ -1,0 +1,14 @@
+[
+  {
+    "message_id": "msg_01",
+    "from": "admin-manager@company.com",
+    "to": "supply-chain@company.com",
+    "subject": "月度补货分析",
+    "body": "请做一下这个月的库存分析和补货建议：\n1. 哪些产品需要立即补货\n2. 哪些看起来库存充足但考虑到到货周期也需要提前订\n3. 有没有库存积压（高库存低销量）的情况\n4. 生成采购建议单草稿给我审批",
+    "date": "2026-05-26T09:00:00Z",
+    "is_read": false,
+    "labels": [
+      "procurement"
+    ]
+  }
+]

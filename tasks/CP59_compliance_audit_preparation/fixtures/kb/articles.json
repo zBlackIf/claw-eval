@@ -1,0 +1,42 @@
+[
+  {
+    "article_id": "KB-CP01",
+    "title": "信息安全管理体系-ISO27001合规要求",
+    "category": "compliance",
+    "tags": [
+      "iso27001",
+      "security"
+    ],
+    "content": "# ISO 27001 合规检查清单\n\n## A.9 访问控制\n- 所有系统必须启用TLS 1.2+加密\n- 认证服务必须每90天验证一次\n- 文件存储必须启用加密at-rest\n\n## A.12 运维安全\n- 所有关键系统必须有自动备份\n- 备份任务失败必须在24小时内修复\n- 日志保留期≥180天\n\n## A.14 系统开发安全\n- API网关必须启用WAF规则\n- 内部通信必须使用mTLS"
+  },
+  {
+    "article_id": "KB-CP02",
+    "title": "数据安全分级标准",
+    "category": "compliance",
+    "tags": [
+      "data_classification",
+      "security"
+    ],
+    "content": "# 数据分级\n\n## L1-公开数据：无特殊要求\n## L2-内部数据：传输加密\n## L3-机密数据：传输+存储加密+审计日志\n## L4-绝密数据：专用存储+双重认证+物理隔离"
+  },
+  {
+    "article_id": "KB-CP03",
+    "title": "季度安全审计流程",
+    "category": "compliance",
+    "tags": [
+      "audit",
+      "process"
+    ],
+    "content": "# 审计流程\n\n1. 系统集成配置检查（TLS/认证/加密）\n2. 备份策略验证（任务状态/恢复演练）\n3. 访问权限review（最小权限原则）\n4. 漏洞扫描报告\n5. 合规差距报告提交给CISO"
+  },
+  {
+    "article_id": "KB-CP04",
+    "title": "应急响应预案",
+    "category": "compliance",
+    "tags": [
+      "incident",
+      "response"
+    ],
+    "content": "# 应急响应\n\n## 数据泄露\n1. 立即隔离受影响系统\n2. 通知CISO和法务\n3. 72小时内上报监管机构\n\n## 服务中断\n1. 启动灾备切换\n2. 通知客户\n3. 事后RCA"
+  }
+]

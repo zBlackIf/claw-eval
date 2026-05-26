@@ -1,0 +1,102 @@
+[
+  {
+    "transaction_id": "TXN-7001",
+    "date": "2025-09-15",
+    "amount": 28500,
+    "currency": "USD",
+    "merchant": "Grand Ballroom Events Co.",
+    "category": "corporate_event",
+    "description": "Q3 2025 All-Hands Meeting - venue rental + AV equipment (350 attendees)",
+    "receipt_url": "https://finance.internal/receipts/TXN-7001"
+  },
+  {
+    "transaction_id": "TXN-7002",
+    "date": "2025-09-15",
+    "amount": 8200,
+    "currency": "USD",
+    "merchant": "Premium Catering Solutions",
+    "category": "corporate_event",
+    "description": "Q3 2025 All-Hands Meeting - breakfast, lunch, snacks (350 pax)",
+    "receipt_url": "https://finance.internal/receipts/TXN-7002"
+  },
+  {
+    "transaction_id": "TXN-7003",
+    "date": "2025-09-14",
+    "amount": 3800,
+    "currency": "USD",
+    "merchant": "TechStage Productions",
+    "category": "corporate_event",
+    "description": "Q3 2025 All-Hands - stage setup, lighting, live streaming equipment",
+    "receipt_url": "https://finance.internal/receipts/TXN-7003"
+  },
+  {
+    "transaction_id": "TXN-7004",
+    "date": "2025-12-10",
+    "amount": 32000,
+    "currency": "USD",
+    "merchant": "Grand Ballroom Events Co.",
+    "category": "corporate_event",
+    "description": "Q4 2025 Year-End All-Hands + Holiday Party - venue rental + AV (420 attendees, extended hours)",
+    "receipt_url": "https://finance.internal/receipts/TXN-7004"
+  },
+  {
+    "transaction_id": "TXN-7005",
+    "date": "2025-12-10",
+    "amount": 12500,
+    "currency": "USD",
+    "merchant": "Premium Catering Solutions",
+    "category": "corporate_event",
+    "description": "Q4 2025 Year-End All-Hands + Holiday Party - full day catering + evening reception (420 pax)",
+    "receipt_url": "https://finance.internal/receipts/TXN-7005"
+  },
+  {
+    "transaction_id": "TXN-7006",
+    "date": "2025-12-09",
+    "amount": 5200,
+    "currency": "USD",
+    "merchant": "TechStage Productions",
+    "category": "corporate_event",
+    "description": "Q4 2025 Year-End All-Hands - enhanced stage, dual screens, professional videography",
+    "receipt_url": "https://finance.internal/receipts/TXN-7006"
+  },
+  {
+    "transaction_id": "TXN-7007",
+    "date": "2026-03-18",
+    "amount": 26000,
+    "currency": "USD",
+    "merchant": "Grand Ballroom Events Co.",
+    "category": "corporate_event",
+    "description": "Q1 2026 All-Hands Meeting - venue rental + AV (380 attendees)",
+    "receipt_url": "https://finance.internal/receipts/TXN-7007"
+  },
+  {
+    "transaction_id": "TXN-7008",
+    "date": "2026-03-18",
+    "amount": 9100,
+    "currency": "USD",
+    "merchant": "Premium Catering Solutions",
+    "category": "corporate_event",
+    "description": "Q1 2026 All-Hands - breakfast, lunch, afternoon snacks (380 pax)",
+    "receipt_url": "https://finance.internal/receipts/TXN-7008"
+  },
+  {
+    "transaction_id": "TXN-7009",
+    "date": "2026-03-17",
+    "amount": 4200,
+    "currency": "USD",
+    "merchant": "TechStage Productions",
+    "category": "corporate_event",
+    "description": "Q1 2026 All-Hands - stage, lighting, streaming, recording",
+    "receipt_url": "https://finance.internal/receipts/TXN-7009"
+  },
+  {
+    "transaction_id": "TXN-7010",
+    "date": "2026-05-01",
+    "amount": 30000,
+    "currency": "USD",
+    "merchant": "Finance Department",
+    "category": "budget_allocation",
+    "description": "Q2 2026 Events Budget Allocation - approved ceiling for company all-hands meeting",
+    "receipt_url": "https://finance.internal/receipts/TXN-7010"
+  }
+]

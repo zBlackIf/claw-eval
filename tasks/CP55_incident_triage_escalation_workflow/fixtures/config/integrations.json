@@ -1,0 +1,56 @@
+[
+  {
+    "integration_id": "INT-001",
+    "name": "payment-gateway",
+    "service": "stripe-cn",
+    "status": "degraded",
+    "last_verified": "2026-05-26T10:00:00",
+    "monthly_calls": 150000,
+    "error_rate": 15.2
+  },
+  {
+    "integration_id": "INT-002",
+    "name": "order-service",
+    "service": "internal-api",
+    "status": "active",
+    "last_verified": "2026-05-26T11:00:00",
+    "monthly_calls": 200000,
+    "error_rate": 0.3
+  },
+  {
+    "integration_id": "INT-003",
+    "name": "email-service",
+    "service": "sendgrid",
+    "status": "active",
+    "last_verified": "2026-05-26T08:00:00",
+    "monthly_calls": 50000,
+    "error_rate": 2.1
+  },
+  {
+    "integration_id": "INT-004",
+    "name": "push-notification",
+    "service": "firebase",
+    "status": "active",
+    "last_verified": "2026-05-25T20:00:00",
+    "monthly_calls": 80000,
+    "error_rate": 0.5
+  },
+  {
+    "integration_id": "INT-005",
+    "name": "cms-backend",
+    "service": "headless-cms",
+    "status": "active",
+    "last_verified": "2026-05-26T09:00:00",
+    "monthly_calls": 10000,
+    "error_rate": 0.1
+  },
+  {
+    "integration_id": "INT-006",
+    "name": "analytics-pipeline",
+    "service": "bigquery",
+    "status": "active",
+    "last_verified": "2026-05-26T06:00:00",
+    "monthly_calls": 5000,
+    "error_rate": 0.0
+  }
+]

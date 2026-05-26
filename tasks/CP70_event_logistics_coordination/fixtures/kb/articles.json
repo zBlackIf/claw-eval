@@ -1,0 +1,30 @@
+[
+  {
+    "article_id": "KB-201",
+    "title": "Company Events Policy & Guidelines",
+    "category": "policies",
+    "tags": ["events", "policy", "facilities", "compliance"],
+    "content": "# Company Events Policy\n\n## All-Hands Meetings\n\n### Scheduling Requirements\n- All-hands meetings must be scheduled with minimum 3 weeks advance notice to Facilities team\n- The Facilities team needs this lead time for AV setup, security coordination, and catering arrangements\n- C-suite attendance is MANDATORY for company all-hands meetings\n- CEO and at least 2 other C-level executives must confirm attendance before event date is finalized\n\n### Venue Requirements\n- Company all-hands require Auditorium A (capacity 500) or equivalent external venue\n- If Auditorium A is unavailable, external venue booking requires VP-level approval and adds $5K-$10K to budget\n\n### Budget Guidelines\n- Standard all-hands budget: $25K-$35K (venue + catering + AV)\n- Budget must be approved by Finance Director minimum 2 weeks before event\n- Any amount exceeding $30K requires CFO sign-off\n- Catering: plan for $22-$25 per person for full-day events\n\n### Catering\n- Orders must be placed minimum 5 business days in advance\n- Dietary accommodations survey must be sent 2 weeks prior\n- Standard menu: breakfast, lunch, 2 snack breaks, beverages throughout\n\n### Communication\n- Save-the-date notification: 4 weeks before event\n- Detailed agenda: 1 week before event\n- Post-event survey: within 2 business days after\n\n## Conflict Resolution\n- Board meetings take absolute priority over all other bookings\n- Product launches can be rescheduled if they conflict with all-hands (requires VP Product approval)\n- Recurring meetings should be cancelled for the all-hands day with 1 week notice\n\n## Remote Participation\n- All company events must have live streaming capability\n- Recording must be available within 24 hours for remote employees\n- Time zones: optimize for majority attendance (US Pacific primary, provide APAC/EMEA replay)"
+  },
+  {
+    "article_id": "KB-202",
+    "title": "Vendor Contact Directory - Events & Facilities",
+    "category": "resources",
+    "tags": ["vendors", "events", "catering", "av-equipment"],
+    "content": "# Preferred Vendors for Company Events\n\n## Venue & Facilities\n- Grand Ballroom Events Co. - Primary external venue partner\n  - Contact: events@granballroom.com / (415) 555-8000\n  - Capacity: up to 600\n  - Requires 4-week advance booking\n\n## Catering\n- Premium Catering Solutions - Preferred caterer\n  - Contact: orders@premiumcatering.com / (415) 555-8100\n  - Minimum 5 business days advance order\n  - Per-person rates: Breakfast $8, Lunch $12, Full-day $22-25\n\n## AV & Production\n- TechStage Productions - Stage, lighting, streaming\n  - Contact: bookings@techstage.com / (415) 555-8200\n  - Requires 2-week advance booking for full setup\n  - Includes: stage, dual-screen, lighting, live stream, recording"
+  },
+  {
+    "article_id": "KB-203",
+    "title": "Auditorium A - Booking & Capacity Information",
+    "category": "facilities",
+    "tags": ["auditorium", "room-booking", "capacity", "av-equipment"],
+    "content": "# Auditorium A\n\n## Specifications\n- Maximum capacity: 500 (theater style), 300 (classroom style)\n- Built-in AV: projector, screen, basic sound system\n- Advanced AV (stage lighting, multi-camera streaming): requires TechStage Productions booking\n- Location: HQ Building, Ground Floor\n\n## Booking Rules\n- Book through Scheduler system (scheduler_create_job or contact Facilities)\n- Maximum single booking: full day (09:00-17:00)\n- Cannot be split into multiple events on the same day\n- Priority: Board meetings > Company all-hands > Product launches > Department events\n\n## Current Known Bookings (June-July 2026)\n- June 25: Product X Launch Keynote (10:00-12:00) - confirmed by VP Product\n- June 25: Auditorium tentatively held for all-hands Q2 (full day) - CONFLICT with above\n- July 2: Town Hall (tentative hold)\n\n## Availability Notes\n- June 25 has a scheduling conflict that needs resolution\n- June 26 (Thursday) or June 30 (Monday) are available alternatives\n- July 2 tentative hold can be released with 1-week notice"
+  },
+  {
+    "article_id": "KB-204",
+    "title": "Q2 2026 Company Priorities & Key Dates",
+    "category": "company-info",
+    "tags": ["quarterly", "priorities", "dates", "leadership"],
+    "content": "# Q2 2026 Company Priorities\n\n## Key Dates\n- June 15: Q2 revenue close (Finance blackout period June 12-16)\n- June 25: Product X Launch (major milestone - VP Product presenting to press)\n- June 25: Q2 Board Review (Board of Directors quarterly meeting, 14:00-17:00)\n- June 30: End of Q2\n- July 2: Tentative Town Hall\n\n## Leadership Availability (June)\n- CEO: Available June 23-27 (returning from Asia trip June 22)\n- CFO: Available all of June except June 12-16 (revenue close)\n- CTO: Available except June 25 afternoon (attending board meeting)\n- VP Product: Unavailable June 24-26 (Product X launch activities)\n- VP Engineering: Available all June\n\n## All-Hands Planning Notes\n- Target: ~450 attendees (company has grown from 380 to 450 since Q1)\n- Must avoid Product X launch day if possible (VP Product conflict)\n- Must have CEO + at least 2 C-level present (policy requirement)\n- Budget approved: $30K ceiling (see Finance TXN-7010)"
+  }
+]

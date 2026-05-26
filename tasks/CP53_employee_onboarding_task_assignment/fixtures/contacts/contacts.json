@@ -1,0 +1,42 @@
+[
+  {
+    "contact_id": "CT-001",
+    "name": "刘建国",
+    "department": "技术部",
+    "title": "技术总监",
+    "email": "liu.jianguo@company.com",
+    "phone": "13900001001"
+  },
+  {
+    "contact_id": "CT-002",
+    "name": "陈雅婷",
+    "department": "产品设计",
+    "title": "设计经理",
+    "email": "chen.yating@company.com",
+    "phone": "13900001002"
+  },
+  {
+    "contact_id": "CT-003",
+    "name": "王强",
+    "department": "销售部",
+    "title": "华东区总监",
+    "email": "wang.qiang@company.com",
+    "phone": "13900001003"
+  },
+  {
+    "contact_id": "CT-004",
+    "name": "赵丽",
+    "department": "HR",
+    "title": "HR经理",
+    "email": "zhao.li@company.com",
+    "phone": "13900001004"
+  },
+  {
+    "contact_id": "CT-005",
+    "name": "周伟",
+    "department": "IT",
+    "title": "IT主管",
+    "email": "zhou.wei@company.com",
+    "phone": "13900001005"
+  }
+]

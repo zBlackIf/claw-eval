@@ -1,0 +1,27 @@
+[
+  {
+    "message_id": "msg_01",
+    "from": "procurement-director@company.com",
+    "to": "analyst@company.com",
+    "subject": "Q1供应商评估报告-本周五前提交",
+    "body": "请整理Q1供应商评估报告，重点关注：\n1. SLA达成情况\n2. 费用变化趋势\n3. 服务质量问题\n4. 续约建议\n\n快达物流费用一直在涨，需要重点关注。天翼云虽然便宜但最近问题不少。",
+    "date": "2026-04-01T09:00:00Z",
+    "is_read": false,
+    "labels": [
+      "urgent",
+      "procurement"
+    ]
+  },
+  {
+    "message_id": "msg_02",
+    "from": "cto@company.com",
+    "to": "analyst@company.com",
+    "subject": "Re: 天翼云替代方案",
+    "body": "天翼云虽然Q1出了问题，但整体性价比还是不错的。如果评估下来问题严重的话再考虑替代。优先解决他们的响应速度问题。",
+    "date": "2026-04-02T09:00:00Z",
+    "is_read": true,
+    "labels": [
+      "management"
+    ]
+  }
+]

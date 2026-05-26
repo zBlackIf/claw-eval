@@ -1,0 +1,34 @@
+[
+  {
+    "contact_id": "CT-001",
+    "name": "刘浩",
+    "department": "技术部",
+    "title": "支付团队负责人",
+    "email": "liu.hao@company.com",
+    "phone": "13800003001"
+  },
+  {
+    "contact_id": "CT-002",
+    "name": "陈峰",
+    "department": "技术部",
+    "title": "基础架构负责人",
+    "email": "chen.feng@company.com",
+    "phone": "13800003002"
+  },
+  {
+    "contact_id": "CT-003",
+    "name": "王芳",
+    "department": "技术部",
+    "title": "CTO",
+    "email": "wang.fang@company.com",
+    "phone": "13800003003"
+  },
+  {
+    "contact_id": "CT-004",
+    "name": "赵明",
+    "department": "运营",
+    "title": "运营总监",
+    "email": "zhao.ming@company.com",
+    "phone": "13800003004"
+  }
+]

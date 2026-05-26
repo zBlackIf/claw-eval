@@ -1,0 +1,12 @@
+[
+  {
+    "article_id": "KB-SYS-01",
+    "title": "系统变更记录-2026年5月",
+    "category": "changelog",
+    "tags": [
+      "changes",
+      "may2026"
+    ],
+    "content": "# 5月系统变更\n\n## 5月12日\n- API网关升级至Kong 3.5（含新的rate limiting模块）\n- 通知服务迁移至新队列（RabbitMQ → Kafka）\n\n## 5月5日\n- 搜索引擎集群扩容\n\n## 5月1日\n- 数据库连接池参数调整"
+  }
+]

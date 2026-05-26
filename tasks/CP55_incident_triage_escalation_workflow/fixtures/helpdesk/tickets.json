@@ -1,0 +1,92 @@
+[
+  {
+    "ticket_id": "INC-201",
+    "title": "支付接口超时-客户投诉",
+    "description": "多个客户反馈支付完成后页面一直转圈，交易状态不确定。从今天上午10点开始。",
+    "reporter": "客服组",
+    "department": "客户服务",
+    "priority": "critical",
+    "status": "open",
+    "created_at": "2026-05-26T10:30:00",
+    "tags": [
+      "payment",
+      "timeout",
+      "customer_facing"
+    ]
+  },
+  {
+    "ticket_id": "INC-202",
+    "title": "订单状态同步延迟",
+    "description": "支付成功但订单状态更新延迟5-10分钟，正常应该是实时的。疑似与支付网关有关。",
+    "reporter": "运营组",
+    "department": "运营",
+    "priority": "high",
+    "status": "open",
+    "created_at": "2026-05-26T10:45:00",
+    "tags": [
+      "payment",
+      "sync_delay",
+      "order"
+    ]
+  },
+  {
+    "ticket_id": "INC-203",
+    "title": "支付回调webhook失败率飙升",
+    "description": "监控显示payment-gateway的webhook回调失败率从0.1%升至15%。错误码502。",
+    "reporter": "监控系统",
+    "department": "技术部",
+    "priority": "critical",
+    "status": "open",
+    "created_at": "2026-05-26T11:00:00",
+    "tags": [
+      "payment",
+      "webhook",
+      "error_rate"
+    ]
+  },
+  {
+    "ticket_id": "INC-204",
+    "title": "内部后台页面加载慢",
+    "description": "CMS后台管理页面加载时间从2秒增加到8秒，影响编辑效率。",
+    "reporter": "内容组",
+    "department": "市场部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-26T09:00:00",
+    "tags": [
+      "performance",
+      "cms",
+      "internal"
+    ]
+  },
+  {
+    "ticket_id": "INC-205",
+    "title": "邮件发送队列积压",
+    "description": "营销邮件发送队列积压3000+封，发送速度下降。但不影响核心交易。",
+    "reporter": "市场运营",
+    "department": "市场部",
+    "priority": "low",
+    "status": "open",
+    "created_at": "2026-05-26T08:00:00",
+    "tags": [
+      "email",
+      "queue",
+      "non_critical"
+    ]
+  },
+  {
+    "ticket_id": "INC-206",
+    "title": "移动端推送延迟",
+    "description": "App推送通知延迟30分钟以上。用户反馈较少但客服陆续收到。",
+    "reporter": "移动端组",
+    "department": "产品",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-26T11:30:00",
+    "tags": [
+      "mobile",
+      "push",
+      "delay"
+    ]
+  }
+]

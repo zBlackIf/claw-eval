@@ -1,0 +1,50 @@
+[
+  {
+    "customer_id": "VEND-001",
+    "name": "天翼云服务",
+    "status": "active",
+    "tier": "vip",
+    "industry": "云计算",
+    "annual_revenue": 540000,
+    "contact_person": "张明",
+    "email": "zhangming@tianyi.com",
+    "phone": "13700001001",
+    "last_contact_date": "2026-03-20"
+  },
+  {
+    "customer_id": "VEND-002",
+    "name": "星辰软件",
+    "status": "active",
+    "tier": "standard",
+    "industry": "软件开发",
+    "annual_revenue": 240000,
+    "contact_person": "李强",
+    "email": "liqiang@xingchen.com",
+    "phone": "13700001002",
+    "last_contact_date": "2026-03-15"
+  },
+  {
+    "customer_id": "VEND-003",
+    "name": "锐捷网络",
+    "status": "active",
+    "tier": "standard",
+    "industry": "网络设备",
+    "annual_revenue": 300000,
+    "contact_person": "王华",
+    "email": "wanghua@ruijie.com",
+    "phone": "13700001003",
+    "last_contact_date": "2026-03-28"
+  },
+  {
+    "customer_id": "VEND-004",
+    "name": "快达物流",
+    "status": "active",
+    "tier": "standard",
+    "industry": "物流",
+    "annual_revenue": 240000,
+    "contact_person": "赵飞",
+    "email": "zhaofei@kuaida.com",
+    "phone": "13700001004",
+    "last_contact_date": "2026-03-18"
+  }
+]

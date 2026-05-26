@@ -114,9 +114,10 @@ class ProviderConfigBatchMigrationGrader(AbstractGrader):
         inventory_score = inv_hits / len(PROVIDER_IDS)
 
         # --- Component 2: backup_keywords_mentioned (keywords) ---
-        backup_keywords = ["备份", "快照", "audit"]
+        # 词表扩成 5 个常见同义说法，命中 ≥ 2 个就算 — 不强求 agent 用某个特定词
+        backup_keywords = ["备份", "快照", "归档", "审计", "fingerprint"]
         backup_hits = sum(1 for kw in backup_keywords if kw in all_text)
-        backup_kw_score = min(backup_hits / 2.0, 1.0)  # ≥2/3 keywords = full score
+        backup_kw_score = min(backup_hits / 2.0, 1.0)  # ≥2/5 keywords = full score
 
         # --- Components 3-5: LLM judge ---
         completion = 0.20 * inventory_score + 0.15 * backup_kw_score

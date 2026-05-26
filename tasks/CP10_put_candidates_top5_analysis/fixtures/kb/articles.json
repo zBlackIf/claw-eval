@@ -1,0 +1,47 @@
+[
+  {
+    "article_id": "KB-CSP-001",
+    "title": "CSP 候选筛选原则（基金内部研究备忘）",
+    "category": "research",
+    "summary": "现金担保卖出看跌（CSP）的开仓窗口、到期选择、波动率边界的内部研究备忘。",
+    "tags": [
+      "csp",
+      "options",
+      "strategy"
+    ],
+    "updated_at": "2026-03-12",
+    "content": "我们做 CSP 选股的整体口径：\n\n1) 到期窗口（DTE）：基金过往复盘显示，过短（< 20 天）的合约 theta 收益虽然快，但容易卡在期权赋值前的最后一周来回交易，操作密度大；过长（> 130 天）的合约价格反应迟钝、占用保证金时间过久。建议把窗口控制在大约 20-130 天。\n\n2) 隐含波动率（IV）：IV 是溢价的核心来源，但极端 IV 通常意味着 meme 股 / 单事件驱动 / gamma squeeze 风险。基金内部经验：IV 超过约 60% 的标的不进入 CSP 候选池（这类标的应该用更小仓位的不同策略处理）。\n\n3) 标的质量：优先考虑指数 ETF 和大盘核心股；纯 retail 热度股谨慎，哪怕 IV 看起来诱人。\n\n4) 开仓节奏：每周滚仓，不集中暴露于单一到期日。",
+    "last_updated": "2026-05-01",
+    "views": 0
+  },
+  {
+    "article_id": "KB-CSP-002",
+    "title": "流动性与价差风控口径",
+    "category": "risk",
+    "summary": "OI 下限、bid-ask spread 上限、深度评估、低流动性二次确认机制。",
+    "tags": [
+      "csp",
+      "liquidity",
+      "risk"
+    ],
+    "updated_at": "2026-03-15",
+    "content": "CSP 卖方进场容易、退场难。流动性差的合约可能在你想滚仓 / 止损时被 spread 吃掉一大块利润。基金 2025 H1 复盘几次实际亏损都来自这一类。\n\nOI（open interest）：基金内部把 20,000 作为最低门槛。低于这条线意味着市场深度不够，单笔大单可能直接吃穿 5 档报价。出现 OI < 20k 但报价看起来诱人的候选，是危险信号，不是机会。\n\nbid-ask spread：作为相对价差（spread / mid_price）评估，基金内部上限大约 2%。spread 4% 以上意味着开仓即亏 4%（如果要立刻滚仓），任何后续策略都得先弥补这部分摩擦。\n\n二次确认：如果某候选 OI 或 spread 恰好踩在边界附近（如 OI ≈ 25k 或 spread ≈ 1.8%），还需要看 5 档深度和过去 10 个交易日的成交量；只看 snapshot 不够。",
+    "last_updated": "2026-05-01",
+    "views": 0
+  },
+  {
+    "article_id": "KB-CSP-003",
+    "title": "候选评分备忘录（年化收益 + 安全垫）",
+    "category": "research",
+    "summary": "年化保证金收益率计算口径、cushion 计算口径、综合排序建议。",
+    "tags": [
+      "csp",
+      "scoring",
+      "ranking"
+    ],
+    "updated_at": "2026-03-20",
+    "content": "对通过初筛的候选做横向比较，基金统一两个口径：\n\n1) 年化保证金收益率（annualized cash-on-cash return）：\n   annualized_return_pct = (option_mid_price / strike) × (365 / days_to_expiry) × 100\n\n   解释：把卖 put 收到的溢价相对保证金（约 = strike × 100 × 1 张）算成 365 天等价收益。年化口径让不同 DTE 的候选可以直接对比，避免被「DTE 短 → 数字小」的视觉误导。\n\n2) 安全垫（cushion）：\n   cushion_pct = (underlying_price - breakeven) / underlying_price × 100\n\n   其中 breakeven 字段在候选 put_meta 里直接给出（已包含 strike - mid_price 的扣减）。cushion 反映标的需要跌多少才会触及亏损区。\n\n3) 综合排序：基金没有强制公式，建议同时高的 annualized 和 cushion 优先；遇到 IV 偏高的候选要做风险折减（在排序里手动降权）。给出 TOP 名单时把「重点观察的前几名」列出来就行，不是要做严格排名比赛。\n\n4) 最看好的那一个：写一段独立投资逻辑，含理由、主要风险、退出计划（profit target / 滚仓 / 被赋值后的 wheel 策略等）。",
+    "last_updated": "2026-05-01",
+    "views": 0
+  }
+]

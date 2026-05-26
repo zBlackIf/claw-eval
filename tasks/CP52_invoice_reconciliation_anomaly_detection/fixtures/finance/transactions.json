@@ -1,0 +1,152 @@
+[
+  {
+    "transaction_id": "TXN-001",
+    "date": "2026-04-01",
+    "amount": 15000.0,
+    "currency": "CNY",
+    "merchant": "阿里云",
+    "category": "cloud_services",
+    "description": "4月云服务费",
+    "receipt_url": "https://receipt.example.com/001"
+  },
+  {
+    "transaction_id": "TXN-002",
+    "date": "2026-04-01",
+    "amount": 15000.0,
+    "currency": "CNY",
+    "merchant": "阿里云",
+    "category": "cloud_services",
+    "description": "4月云服务费（重复扣款）",
+    "receipt_url": "https://receipt.example.com/002"
+  },
+  {
+    "transaction_id": "TXN-003",
+    "date": "2026-04-05",
+    "amount": 8500.0,
+    "currency": "CNY",
+    "merchant": "飞书企业版",
+    "category": "saas_subscription",
+    "description": "飞书年费分期-4月",
+    "receipt_url": ""
+  },
+  {
+    "transaction_id": "TXN-004",
+    "date": "2026-04-10",
+    "amount": 32000.0,
+    "currency": "CNY",
+    "merchant": "华为云",
+    "category": "cloud_services",
+    "description": "GPU算力包-4月",
+    "receipt_url": "https://receipt.example.com/004"
+  },
+  {
+    "transaction_id": "TXN-005",
+    "date": "2026-04-12",
+    "amount": -5000.0,
+    "currency": "CNY",
+    "merchant": "腾讯云",
+    "category": "refund",
+    "description": "3月超额退款（未入账）",
+    "receipt_url": "https://receipt.example.com/005"
+  },
+  {
+    "transaction_id": "TXN-006",
+    "date": "2026-04-15",
+    "amount": 4200.0,
+    "currency": "CNY",
+    "merchant": "Notion",
+    "category": "saas_subscription",
+    "description": "Notion团队版-Q2",
+    "receipt_url": "https://receipt.example.com/006"
+  },
+  {
+    "transaction_id": "TXN-007",
+    "date": "2026-04-18",
+    "amount": 12000.0,
+    "currency": "CNY",
+    "merchant": "京东企业购",
+    "category": "equipment",
+    "description": "开发设备采购",
+    "receipt_url": ""
+  },
+  {
+    "transaction_id": "TXN-008",
+    "date": "2026-04-20",
+    "amount": 6800.0,
+    "currency": "CNY",
+    "merchant": "GitHub Enterprise",
+    "category": "saas_subscription",
+    "description": "GitHub企业版-4月",
+    "receipt_url": "https://receipt.example.com/008"
+  },
+  {
+    "transaction_id": "TXN-009",
+    "date": "2026-04-22",
+    "amount": 32000.0,
+    "currency": "CNY",
+    "merchant": "华为云",
+    "category": "cloud_services",
+    "description": "GPU算力包-4月（重复计费）",
+    "receipt_url": "https://receipt.example.com/009"
+  },
+  {
+    "transaction_id": "TXN-010",
+    "date": "2026-04-25",
+    "amount": 9500.0,
+    "currency": "CNY",
+    "merchant": "钉钉专业版",
+    "category": "saas_subscription",
+    "description": "钉钉年费分期-4月",
+    "receipt_url": ""
+  },
+  {
+    "transaction_id": "TXN-011",
+    "date": "2026-04-28",
+    "amount": 18000.0,
+    "currency": "CNY",
+    "merchant": "AWS China",
+    "category": "cloud_services",
+    "description": "AWS中国区-4月",
+    "receipt_url": "https://receipt.example.com/011"
+  },
+  {
+    "transaction_id": "TXN-012",
+    "date": "2026-04-30",
+    "amount": 3500.0,
+    "currency": "CNY",
+    "merchant": "Figma",
+    "category": "saas_subscription",
+    "description": "Figma企业版-4月",
+    "receipt_url": "https://receipt.example.com/012"
+  },
+  {
+    "transaction_id": "TXN-013",
+    "date": "2026-05-01",
+    "amount": 15200.0,
+    "currency": "CNY",
+    "merchant": "阿里云",
+    "category": "cloud_services",
+    "description": "5月云服务费",
+    "receipt_url": "https://receipt.example.com/013"
+  },
+  {
+    "transaction_id": "TXN-014",
+    "date": "2026-05-05",
+    "amount": 8500.0,
+    "currency": "CNY",
+    "merchant": "飞书企业版",
+    "category": "saas_subscription",
+    "description": "飞书年费分期-5月",
+    "receipt_url": "https://receipt.example.com/014"
+  },
+  {
+    "transaction_id": "TXN-015",
+    "date": "2026-05-10",
+    "amount": 28000.0,
+    "currency": "CNY",
+    "merchant": "华为云",
+    "category": "cloud_services",
+    "description": "GPU算力包-5月",
+    "receipt_url": "https://receipt.example.com/015"
+  }
+]

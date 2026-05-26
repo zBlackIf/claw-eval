@@ -1,0 +1,98 @@
+[
+  {
+    "customer_id": "BIZ-001",
+    "name": "华锐制造",
+    "status": "active",
+    "tier": "vip",
+    "industry": "制造业",
+    "annual_revenue": 960000,
+    "contact_person": "林总",
+    "email": "lin@huarui.com",
+    "phone": "13600001001",
+    "last_contact_date": "2026-05-20"
+  },
+  {
+    "customer_id": "BIZ-002",
+    "name": "仁和医疗",
+    "status": "active",
+    "tier": "vip",
+    "industry": "医疗",
+    "annual_revenue": 720000,
+    "contact_person": "张院长",
+    "email": "zhang@renhe.com",
+    "phone": "13600001002",
+    "last_contact_date": "2026-05-18"
+  },
+  {
+    "customer_id": "BIZ-003",
+    "name": "鼎盛机械",
+    "status": "active",
+    "tier": "vip",
+    "industry": "制造业",
+    "annual_revenue": 840000,
+    "contact_person": "孙总",
+    "email": "sun@dingsheng.com",
+    "phone": "13600001003",
+    "last_contact_date": "2026-05-15"
+  },
+  {
+    "customer_id": "BIZ-004",
+    "name": "信达金融",
+    "status": "active",
+    "tier": "standard",
+    "industry": "金融",
+    "annual_revenue": 480000,
+    "contact_person": "赵经理",
+    "email": "zhao@xinda.com",
+    "phone": "13600001004",
+    "last_contact_date": "2026-05-10"
+  },
+  {
+    "customer_id": "BIZ-005",
+    "name": "明远教育",
+    "status": "active",
+    "tier": "standard",
+    "industry": "教育",
+    "annual_revenue": 240000,
+    "contact_person": "王校长",
+    "email": "wang@mingyuan.com",
+    "phone": "13600001005",
+    "last_contact_date": "2026-05-22"
+  },
+  {
+    "customer_id": "BIZ-006",
+    "name": "天宏科技",
+    "status": "active",
+    "tier": "vip",
+    "industry": "IT",
+    "annual_revenue": 600000,
+    "contact_person": "陈总",
+    "email": "chen@tianhong.com",
+    "phone": "13600001006",
+    "last_contact_date": "2026-04-15"
+  },
+  {
+    "customer_id": "BIZ-007",
+    "name": "启航物流",
+    "status": "active",
+    "tier": "standard",
+    "industry": "物流",
+    "annual_revenue": 360000,
+    "contact_person": "李经理",
+    "email": "li@qihang.com",
+    "phone": "13600001007",
+    "last_contact_date": "2026-05-08"
+  },
+  {
+    "customer_id": "BIZ-008",
+    "name": "新锐教育(新签)",
+    "status": "active",
+    "tier": "standard",
+    "industry": "教育",
+    "annual_revenue": 180000,
+    "contact_person": "周老师",
+    "email": "zhou@xinrui.com",
+    "phone": "13600001008",
+    "last_contact_date": "2026-05-25"
+  }
+]

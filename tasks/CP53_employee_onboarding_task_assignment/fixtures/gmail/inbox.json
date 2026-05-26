@@ -1,0 +1,27 @@
+[
+  {
+    "message_id": "msg_01",
+    "from": "hr@company.com",
+    "to": "coordinator@company.com",
+    "subject": "下周一三位新同事入职",
+    "body": "提醒：6月3日（下周一）有三位新同事入职。\n\n1. 张伟 - 后端工程师，加入平台组，汇报给刘总监\n2. 李艺 - UI设计师，加入产品设计组，汇报给陈经理\n3. 陈磊 - 销售经理，加入华东大区，汇报给王总\n\n请确保设备和账号都准备好，另外安排周一下午的入职培训。",
+    "date": "2026-05-26T09:00:00Z",
+    "is_read": false,
+    "labels": [
+      "urgent",
+      "hr"
+    ]
+  },
+  {
+    "message_id": "msg_02",
+    "from": "it-admin@company.com",
+    "to": "coordinator@company.com",
+    "subject": "Re: 新员工设备到货情况",
+    "body": "设备到货情况：\n- 开发笔记本（ThinkPad X1）：已到货2台\n- Mac Pro：已到货1台\n- Wacom数位板：已到货\n- 商务笔记本+企业手机：已到货\n- 双显示器：只到了1套，另1套预计周三到\n\n张伟的显示器可能要延迟一天配置。",
+    "date": "2026-05-25T09:00:00Z",
+    "is_read": true,
+    "labels": [
+      "it"
+    ]
+  }
+]

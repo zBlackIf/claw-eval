@@ -1,0 +1,26 @@
+[
+  {
+    "contact_id": "CT-001",
+    "name": "陈伟",
+    "department": "财务部",
+    "title": "CFO",
+    "email": "chen.wei@company.com",
+    "phone": "13400001001"
+  },
+  {
+    "contact_id": "CT-002",
+    "name": "刘洋",
+    "department": "技术部",
+    "title": "CTO",
+    "email": "liu.yang@company.com",
+    "phone": "13400001002"
+  },
+  {
+    "contact_id": "CT-003",
+    "name": "张华",
+    "department": "市场部",
+    "title": "CMO",
+    "email": "zhang.hua@company.com",
+    "phone": "13400001003"
+  }
+]

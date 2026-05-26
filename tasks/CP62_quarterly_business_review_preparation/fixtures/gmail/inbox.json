@@ -1,0 +1,15 @@
+[
+  {
+    "message_id": "msg_01",
+    "from": "ceo@company.com",
+    "to": "strategy@company.com",
+    "subject": "Q2 QBR材料准备",
+    "body": "下周的季度业务回顾需要准备以下内容：\n1. 收入趋势（Q1 vs Q2对比）\n2. 客户增长和留存数据\n3. 产品质量指标（ticket趋势）\n4. 关键洞察和建议\n\n注意：ticket数量增长要有context，不要让董事会误解。\n\n草稿先发给我过目。",
+    "date": "2026-05-24T09:00:00Z",
+    "is_read": false,
+    "labels": [
+      "urgent",
+      "executive"
+    ]
+  }
+]

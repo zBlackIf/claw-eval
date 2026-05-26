@@ -1,0 +1,18 @@
+[
+  {
+    "contact_id": "CT-001",
+    "name": "赵军",
+    "department": "客户支持",
+    "title": "支持团队负责人",
+    "email": "zhao.jun@company.com",
+    "phone": "13800009001"
+  },
+  {
+    "contact_id": "CT-002",
+    "name": "孙伟",
+    "department": "技术部",
+    "title": "平台工程师",
+    "email": "sun.wei@company.com",
+    "phone": "13800009002"
+  }
+]

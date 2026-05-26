@@ -1,0 +1,58 @@
+[
+  {
+    "ticket_id": "HD-100",
+    "title": "新员工入职-设备申请模板",
+    "description": "标准设备申请流程参考：工程师（开发笔记本+双显示器+键鼠套装），设计师（Mac Pro+Wacom数位板+4K显示器），销售（商务笔记本+企业手机）",
+    "reporter": "IT管理员",
+    "department": "IT",
+    "priority": "low",
+    "status": "closed",
+    "created_at": "2026-03-01",
+    "tags": [
+      "onboarding",
+      "template"
+    ]
+  },
+  {
+    "ticket_id": "HD-101",
+    "title": "张伟-后端工程师入职准备",
+    "description": "入职日期：2026-06-03。需要：开发环境配置、GitLab账号、VPN权限、工位安排",
+    "reporter": "HR",
+    "department": "HR",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "onboarding",
+      "engineering"
+    ]
+  },
+  {
+    "ticket_id": "HD-102",
+    "title": "李艺-UI设计师入职准备",
+    "description": "入职日期：2026-06-03。需要：Mac环境、Figma企业账号、设计规范文档访问权限",
+    "reporter": "HR",
+    "department": "HR",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "onboarding",
+      "design"
+    ]
+  },
+  {
+    "ticket_id": "HD-103",
+    "title": "陈磊-销售经理入职准备",
+    "description": "入职日期：2026-06-03。需要：CRM系统账号、企业微信、客户资料培训安排",
+    "reporter": "HR",
+    "department": "HR",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "onboarding",
+      "sales"
+    ]
+  }
+]

@@ -1,47 +1,64 @@
-"""CP17_rbac_module_test_generation grader — Pattern D.
+"""CP17_rbac_module_test_generation grader.
 
-Source: Themis taskset-260427-121234:task_60_rbac_test_gen.
-
-Agent reads 3 RBAC modules from /workspace/fixtures/code/ and produces
-a markdown report with 3 pytest code blocks (one per module).
+The deliverable is three real pytest files under /workspace/tests. Completion
+comes from the verifier JSON emitted during env_snapshot_commands.
 """
 
 from __future__ import annotations
 
-from claw_eval.graders.pinbench_common import PinbenchAdaptedGrader
+import json
+from typing import Any
+
+from claw_eval.graders.base import AbstractGrader
+from claw_eval.models.task import TaskDefinition
+from claw_eval.models.trace import DimensionScores, MediaLoad, ToolDispatch, TraceMessage
 
 
-class RbacModuleTestGenerationGrader(PinbenchAdaptedGrader):
+VERIFY_CMD_KEY = "cmd:python /workspace/fixtures/verify_tests.py"
 
-    REQUIRED_TOOLS = {}  # no mock service
 
-    REQUIRED_KEYWORDS = [
-        "pytest",
-        "assert",
-        "tenant",
-        # Module-specific anchors
-        "role_service",
-        "user_role_binding",
-        "access_check",
-    ]
+class RbacModuleTestGenerationGrader(AbstractGrader):
+    @staticmethod
+    def _parse_verify(env_snapshot: dict | None) -> dict:
+        if not env_snapshot:
+            return {}
+        entry = env_snapshot.get(VERIFY_CMD_KEY)
+        if not isinstance(entry, dict):
+            return {}
+        stdout = entry.get("stdout") or ""
+        for line in stdout.strip().splitlines():
+            line = line.strip()
+            if line.startswith("{"):
+                try:
+                    return json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+        return {}
 
-    OPTIONAL_KEYWORDS = [
-        "def test_",
-        "cyclic", "循环",
-        "expired", "expires_at", "过期",
-        "deny_overrides",
-        "stale binding",
-        "fixture", "@pytest.fixture",
-        "raises", "pytest.raises",
-        "ValueError",
-        "KeyError",
-        "parametrize",
-    ]
+    def grade(
+        self,
+        messages: list[TraceMessage],
+        dispatches: list[ToolDispatch],
+        task: TaskDefinition,
+        audit_data: dict[str, dict] | None = None,
+        judge: Any | None = None,
+        media_events: list[MediaLoad] | None = None,
+        env_snapshot: dict | None = None,
+    ) -> DimensionScores:
+        del task, audit_data, judge, media_events
+        scores = DimensionScores(safety=1.0)
+        verify = self._parse_verify(env_snapshot)
+        scores.completion = round(
+            min(max(float(verify.get("overall_score", 0.0)), 0.0), 1.0),
+            4,
+        )
+        scores.robustness = self.compute_robustness(dispatches)
 
-    # Must contain at least one ```python code block (markdown fence)
-    REQUIRED_PATTERNS = [
-        r"```python",
-        r"^def test_",
-    ]
-
-    MIN_FINAL_LENGTH = 800
+        final_text = self._get_final_assistant_text(messages)
+        scores.communication = self.compute_communication_substance(
+            final_text,
+            ["test_role_service.py", "test_user_role_binding.py", "test_access_check.py"],
+            min(sum(1 for x in ["- ", "1.", "2.", "3."] if x in final_text) / 2.0, 1.0),
+        )
+        scores.efficiency_turns = len([m for m in messages if m.message.role == "assistant"])
+        return scores

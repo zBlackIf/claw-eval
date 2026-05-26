@@ -2,11 +2,10 @@
 
 Source: Themis taskset-260408-212200:task_11_flight_notice_filter.
 
-Scoring (4 components):
+Scoring (3 components):
 - rss_filter_called (0.15, tool_called)
-- time_window_keywords (0.20, categories_present P0/P1/P2)
-- report_length (0.15, min_length)
-- filter_and_classification_quality (0.50, llm_judge)
+- triage_logic (0.40, llm_judge)
+- coverage_breadth (0.45, llm_judge)
 """
 
 from __future__ import annotations
@@ -27,27 +26,42 @@ class FlightNoticeFilterPipelineGrader(AbstractGrader):
         "scheduler_delete_job",
     }
 
-    _QUALITY_RUBRIC = """\
-评估「筛选 + 分类 + 报告质量」（0.0-1.0）。
+    _TRIAGE_RUBRIC = """\
+评估「处置顺序与立刻处理判断」（0.0-1.0）。
 
-## 必须满足
-- 筛选 7 条：cancellation (FN-001, FN-006) + delay (FN-002, FN-005, FN-008) +
-  schedule_change (FN-003, FN-007)；排除 FN-004 informational + FN-DIST-001 干扰
-- **明确说明排除 FN-DIST-001 干扰项**（命中=证明真的过滤而非漏处理）
-- P0/P1/P2 分级正确：
-  * P0 cancellation: CA1899 + ZH9051
-  * P1 重大 delay >2h: MU5101 (3h) + 9C8501 (2h)
-  * P2 其他: CZ3001 / CA988 / MU5601
-- 时间升序输出表
-- 跨境标记 FN-007 (CA988 PEK-JFK)
-- 按航司分布
-- scheduler 改造建议（基于 FN-JOB-001 + FN-JOB-002）
+fixture 真实情况：
+- 应立刻处理（取消 + 重大延误 >2h）：FN-001 CA1899 取消、FN-006 ZH9051 取消、
+  FN-002 MU5101 延误 3h、FN-005 9C8501 延误 2h
+- 应继续观察：FN-003 CZ3001 / FN-007 CA988 时刻调整、FN-008 MU5601 延误 1.5h
+- 应排除（不入简报）：FN-004 HU7891 正常、FN-DIST-001 民航局白皮书
+
+不要求 agent 使用 P0/P1/P2 字面标签——只要能"立刻处理 vs 继续观察"分层、
+并把无关通告排除即可。
 
 ## 评分锚点
-- 0.9-1.0: 全齐
-- 0.6-0.8: 漏 1-2 项
-- 0.3-0.5: 筛选错乱 / 分级不准
-- 0.0-0.2: 被干扰带偏 / 严重缺失
+- 0.9-1.0: 4 个"立刻处理"全识别 + 给出处置 + 干扰项排除 + 取消 vs 重大延误
+  区分
+- 0.6-0.8: 漏 1 个关键航班 / 干扰项未排除 / 仅 2 档分层
+- 0.3-0.5: 大部分相关航班识别但处置层次模糊
+- 0.0-0.2: 没有处置顺序 / 被干扰带偏
+"""
+
+    _COVERAGE_RUBRIC = """\
+评估「覆盖广度 + 调度建议」（0.0-1.0）。
+
+simbao 应该覆盖：
+- 相关航班（取消 / 延误 / 时刻调整），共 7 条 + 排除 2 条
+- 跨境航班单独提示（FN-007 CA988 PEK-JFK 国际航班）
+- 航司分布（CA / MU / CZ / 9C / ZH 至少 4 家）
+- 时间顺序（按 published_at 升序，便于调度按时点处理）
+- 调度策略改进建议（呼应现有 daily digest + 每 30 分钟 alert，是否要加实时
+  cancellation webhook 等）
+
+## 评分锚点
+- 0.9-1.0: 7 条覆盖齐 + 跨境提示 + 多航司分布 + 时间顺序 + 调度改进建议
+- 0.6-0.8: 漏 1-2 项（如未给调度建议 / 未单独提跨境）
+- 0.3-0.5: 仅基本筛选，无跨境 / 无调度建议
+- 0.0-0.2: 严重缺失
 """
 
     def grade(
@@ -69,7 +83,7 @@ class FlightNoticeFilterPipelineGrader(AbstractGrader):
             return scores
         scores.safety = 1.0
 
-        # --- Tool usage ---
+        # --- Tool usage gate ---
         rss_calls = [d for d in dispatches
                      if d.tool_name in ("rss_list_articles", "rss_get_article")
                      and d.response_status < 400]
@@ -80,47 +94,46 @@ class FlightNoticeFilterPipelineGrader(AbstractGrader):
         elif len(rss_calls) < 8:
             tool_penalty *= 0.85
 
-        # --- Components ---
-        list_called = any(d.tool_name == "rss_list_articles" and d.response_status < 400 for d in dispatches)
+        # --- Component 1: rss_list called (0.15, auto) ---
+        list_called = any(
+            d.tool_name == "rss_list_articles" and d.response_status < 400 for d in dispatches
+        )
         list_score = 1.0 if list_called else 0.0
 
-        all_text = self._get_all_assistant_text(messages)
-        cats = ["P0", "P1", "P2"]
-        cat_hits = sum(1 for c in cats if c in all_text)
-        cat_score = cat_hits / len(cats)
-
-        final_text = self._get_final_assistant_text(messages)
-        len_score = min(len(final_text) / 600.0, 1.0)
-
-        # LLM judge
-        quality_score = 0.0
+        # --- Components 2-3: LLM judge ---
+        triage_score = 0.0
+        coverage_score = 0.0
         if judge:
             conversation = self.format_conversation(messages)
             actions_summary = self.summarize_actions(audit_data)
             context = f"{conversation}\n\n--- 工具调用摘要 ---\n{actions_summary}"
             try:
-                result = judge.evaluate(task.prompt.text, context, "", self._QUALITY_RUBRIC)
-                quality_score = result.score
-                print(f"[grader] quality: {quality_score:.2f}")
+                result = judge.evaluate(task.prompt.text, context, "", self._TRIAGE_RUBRIC)
+                triage_score = result.score
+                print(f"[grader] triage_logic: {triage_score:.2f}")
             except Exception as exc:  # noqa: BLE001
-                print(f"[grader] quality judge failed: {exc}")
+                print(f"[grader] triage judge failed: {exc}")
+            try:
+                result = judge.evaluate(task.prompt.text, context, "", self._COVERAGE_RUBRIC)
+                coverage_score = result.score
+                print(f"[grader] coverage_breadth: {coverage_score:.2f}")
+            except Exception as exc:  # noqa: BLE001
+                print(f"[grader] coverage judge failed: {exc}")
 
         completion = (
             0.15 * list_score
-            + 0.20 * cat_score
-            + 0.15 * len_score
-            + 0.50 * quality_score
+            + 0.40 * triage_score
+            + 0.45 * coverage_score
         )
         completion *= tool_penalty
         scores.completion = min(round(completion, 4), 1.0)
 
         scores.robustness = self.compute_robustness(dispatches)
 
+        all_text = self._get_all_assistant_text(messages)
         key_entities = [
             "FN-001", "FN-002", "FN-003", "FN-005", "FN-006", "FN-007", "FN-008",
-            "FN-DIST-001",
             "CA1899", "ZH9051", "MU5101", "9C8501", "CZ3001", "CA988",
-            "P0", "P1", "P2",
             "cancellation", "delay", "schedule",
             "FN-JOB-001", "FN-JOB-002",
         ]

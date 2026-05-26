@@ -1,0 +1,112 @@
+[
+  {
+    "transaction_id": "VTX-001",
+    "date": "2026-01-15",
+    "amount": 45000.0,
+    "currency": "CNY",
+    "merchant": "天翼云服务",
+    "category": "vendor_payment",
+    "description": "Q1云服务费-天翼云",
+    "receipt_url": "https://receipt.example.com/v001"
+  },
+  {
+    "transaction_id": "VTX-002",
+    "date": "2026-02-15",
+    "amount": 45000.0,
+    "currency": "CNY",
+    "merchant": "天翼云服务",
+    "category": "vendor_payment",
+    "description": "Q1云服务费-天翼云(2月)",
+    "receipt_url": "https://receipt.example.com/v002"
+  },
+  {
+    "transaction_id": "VTX-003",
+    "date": "2026-03-15",
+    "amount": 45000.0,
+    "currency": "CNY",
+    "merchant": "天翼云服务",
+    "category": "vendor_payment",
+    "description": "Q1云服务费-天翼云(3月)",
+    "receipt_url": "https://receipt.example.com/v003"
+  },
+  {
+    "transaction_id": "VTX-004",
+    "date": "2026-01-20",
+    "amount": 80000.0,
+    "currency": "CNY",
+    "merchant": "星辰软件",
+    "category": "vendor_payment",
+    "description": "ERP定制开发-里程碑1",
+    "receipt_url": "https://receipt.example.com/v004"
+  },
+  {
+    "transaction_id": "VTX-005",
+    "date": "2026-03-20",
+    "amount": 80000.0,
+    "currency": "CNY",
+    "merchant": "星辰软件",
+    "category": "vendor_payment",
+    "description": "ERP定制开发-里程碑2",
+    "receipt_url": "https://receipt.example.com/v005"
+  },
+  {
+    "transaction_id": "VTX-006",
+    "date": "2026-01-10",
+    "amount": 25000.0,
+    "currency": "CNY",
+    "merchant": "锐捷网络",
+    "category": "vendor_payment",
+    "description": "网络设备维保-Q1",
+    "receipt_url": "https://receipt.example.com/v006"
+  },
+  {
+    "transaction_id": "VTX-007",
+    "date": "2026-02-10",
+    "amount": 25000.0,
+    "currency": "CNY",
+    "merchant": "锐捷网络",
+    "category": "vendor_payment",
+    "description": "网络设备维保-2月",
+    "receipt_url": "https://receipt.example.com/v007"
+  },
+  {
+    "transaction_id": "VTX-008",
+    "date": "2026-03-10",
+    "amount": 25000.0,
+    "currency": "CNY",
+    "merchant": "锐捷网络",
+    "category": "vendor_payment",
+    "description": "网络设备维保-3月",
+    "receipt_url": "https://receipt.example.com/v008"
+  },
+  {
+    "transaction_id": "VTX-009",
+    "date": "2026-01-25",
+    "amount": 18000.0,
+    "currency": "CNY",
+    "merchant": "快达物流",
+    "category": "vendor_payment",
+    "description": "仓储物流服务-1月",
+    "receipt_url": "https://receipt.example.com/v009"
+  },
+  {
+    "transaction_id": "VTX-010",
+    "date": "2026-02-25",
+    "amount": 22000.0,
+    "currency": "CNY",
+    "merchant": "快达物流",
+    "category": "vendor_payment",
+    "description": "仓储物流服务-2月(含超额费)",
+    "receipt_url": "https://receipt.example.com/v010"
+  },
+  {
+    "transaction_id": "VTX-011",
+    "date": "2026-03-25",
+    "amount": 28000.0,
+    "currency": "CNY",
+    "merchant": "快达物流",
+    "category": "vendor_payment",
+    "description": "仓储物流服务-3月(费用持续上涨)",
+    "receipt_url": "https://receipt.example.com/v011"
+  }
+]

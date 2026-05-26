@@ -1,0 +1,26 @@
+[
+  {
+    "contact_id": "CT-001",
+    "name": "张明华",
+    "department": "财务部",
+    "title": "财务总监",
+    "email": "zhang.minghua@company.com",
+    "phone": "13800001001"
+  },
+  {
+    "contact_id": "CT-002",
+    "name": "李晓红",
+    "department": "财务部",
+    "title": "会计主管",
+    "email": "li.xiaohong@company.com",
+    "phone": "13800001002"
+  },
+  {
+    "contact_id": "CT-003",
+    "name": "王建",
+    "department": "采购部",
+    "title": "采购经理",
+    "email": "wang.jian@company.com",
+    "phone": "13800001003"
+  }
+]
