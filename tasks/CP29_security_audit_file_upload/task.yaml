@@ -1,0 +1,100 @@
+task_id: CP29_security_audit_file_upload
+task_name: Web项目文件上传漏洞安全审计
+version: "1.0"
+category: security
+difficulty: medium
+tags: [general, single_turn, coding_plan]
+
+source_task_id: "task_04_security_audit_file_upload"
+source_dataset: "taskset-260408-163403"
+source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
+
+services: []
+
+prompt:
+  text: |
+    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
+    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+
+    - `/workspace/fixtures/project_structure.txt`
+    - `/workspace/fixtures/server/config/SecurityConfig.java`
+    - `/workspace/fixtures/server/api/UploadHandler.java`
+    - `/workspace/fixtures/server/api/ETLHandler.java`
+    - `/workspace/fixtures/src/app/shared/services/upload.service.ts`
+
+    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+
+    请对提供的项目代码进行文件上传漏洞安全审计。项目结构在 project_structure.txt 中，关键代码文件包括前端的 upload.service.ts 和后端的 UploadHandler.java、ETLHandler.java、SecurityConfig.java。
+
+    请完成以下审计任务：
+    1. 分析项目结构，定位所有文件上传处理点
+    2. 对每个上传点检查6项安全措施：扩展名白名单、MIME校验、magic bytes校验、文件名净化、存储路径安全、大小限制
+    3. 深入分析可利用的攻击向量（路径穿越、双扩展名绕过等）
+    4. 生成 audit_report.md 安全审计报告，包含漏洞列表、风险等级、修复建议
+    5. 生成 security_fix.java 示例修复代码
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/project_structure.txt
+  - fixtures/server/config/SecurityConfig.java
+  - fixtures/server/api/UploadHandler.java
+  - fixtures/server/api/ETLHandler.java
+  - fixtures/src/app/shared/services/upload.service.ts
+
+sandbox_grader_files:
+  - fixtures/verify.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+  env_snapshot_timeout: 30
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify.py
+
+env_snapshot_files:
+  - /workspace/**/*.md
+  - /workspace/**/*fix*
+  - /workspace/**/*secure*
+scoring_components: []
+
+safety_checks: []
+
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 是否完成了全面的文件上传安全审计。
+
+  ## 漏洞发现
+  - 是否发现路径穿越漏洞（UploadHandler使用原始文件名）
+  - 是否发现无大小限制漏洞
+  - 是否发现上传目录在Web根目录下
+  - 是否发现无扩展名白名单
+  - 是否发现ETLHandler的文件名注入
+
+  ## 报告质量
+  - 是否有风险等级分类
+  - 是否有修复建议
+  - 是否生成了示例修复代码
+
+  ## 评分标准
+  - 0.9-1.0: 发现全部关键漏洞，报告完整，修复代码正确
+  - 0.7-0.8: 发现主要漏洞，报告基本完整
+  - 0.4-0.6: 只发现部分漏洞
+  - 0.0-0.3: 审计不完整
+
+reference_solution: |
+  关键漏洞：
+  1. UploadHandler: 路径穿越（../../文件名）- CRITICAL
+  2. UploadHandler: 无文件大小限制 - HIGH
+  3. UploadHandler: 上传目录在web根目录 - HIGH
+  4. UploadHandler: 无扩展名/MIME校验 - HIGH
+  5. ETLHandler: 文件名参数注入 - CRITICAL
+  6. SecurityConfig: 无文件上传安全配置 - MEDIUM
+  7. upload.service.ts: 客户端无文件类型验证 - LOW
+
+primary_dimensions: [completion, robustness, communication]

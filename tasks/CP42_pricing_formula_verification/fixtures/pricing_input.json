@@ -1,0 +1,42 @@
+{
+  "tiers": [
+    {"name": "Personal Basic", "price": 199, "type": "personal"},
+    {"name": "Personal Pro", "price": 2999, "type": "personal"},
+    {"name": "Personal Premium", "price": 6999, "type": "personal"},
+    {"name": "Enterprise Starter", "price": 14999, "type": "enterprise"},
+    {"name": "Enterprise Pro", "price": 49999, "type": "enterprise"},
+    {"name": "Enterprise Ultimate", "price": 99999, "type": "enterprise"}
+  ],
+  "parameters": {
+    "gross_margin_targets": {
+      "199": 0.40,
+      "2999": 0.37,
+      "6999": 0.34,
+      "14999": 0.29,
+      "49999": 0.24,
+      "99999": 0.20
+    },
+    "bonus_feature_costs": {
+      "199": 5,
+      "2999": 75,
+      "6999": 210,
+      "14999": 600,
+      "49999": 3225,
+      "99999": 7500
+    },
+    "bonus_sharing_ratio": 0.0,
+    "model_premium_ratio": 0.05
+  },
+  "scenarios": [
+    {"name": "no_bonus", "bonus_sharing_ratio": 0.0},
+    {"name": "kol_5pct", "bonus_sharing_ratio": 0.05},
+    {"name": "producer_10pct", "bonus_sharing_ratio": 0.10}
+  ],
+  "constraints": {
+    "bonus_cost_ratio_min": 0.05,
+    "bonus_cost_ratio_max": 0.10,
+    "margin_range_min": 0.20,
+    "margin_range_max": 0.40,
+    "monotonicity": "higher_tier_more_bonus"
+  }
+}

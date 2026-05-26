@@ -64,6 +64,9 @@ def search_serp(
         "fetch_mode": "static",
         "no_cache": "true",
     }
+    task_id = os.getenv("CLAW_EVAL_TASK_ID", "").strip()
+    if task_id:
+        params["task_id"] = task_id
     try:
         resp = requests.get(SERP_API_URL, params=params, timeout=timeout)
         if raw_save_path and resp.status_code == 200:

@@ -1,0 +1,83 @@
+task_id: CP36_catalog_alignment_comparison
+task_name: 古籍版本目录对齐：循证比对
+version: "1.0"
+category: data_analysis
+difficulty: hard
+tags: [general, single_turn, coding_plan]
+
+source_task_id: "task_12_catalog_alignment"
+source_dataset: "taskset-260408-163403"
+source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
+
+services: []
+
+prompt:
+  text: |
+    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
+    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+
+    - `/workspace/fixtures/current_record.json`
+    - `/workspace/fixtures/search_results.json`
+    - `/workspace/fixtures/alignment_rules.md`
+
+    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+
+    请根据 alignment_rules.md 中的对齐规则，将 current_record.json 中的当前记录与 search_results.json 中的6条候选记录逐一比对。对每条候选记录执行四大核心字段比对（题名、责任者、版本、馆藏），判断对齐关系类型和置信度。将完整的比对结果写入 alignment_output.json。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/current_record.json
+  - fixtures/search_results.json
+  - fixtures/alignment_rules.md
+
+sandbox_grader_files:
+  - fixtures/verify.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+  env_snapshot_timeout: 30
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify.py
+
+env_snapshot_files:
+  - /workspace/alignment_output.json
+  - /workspace/**/*.json
+scoring_components: []
+
+safety_checks: []
+
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 对古籍版本目录对齐任务的执行质量。
+
+  ## 核心维度
+  - 是否正确读取了三个输入文件
+  - 输出是否为合法 JSON 且包含 6 条候选的完整比对结果
+  - 版本判断是否正确：宋刻本 vs 明/清/元刻本属于不同版本系统
+  - CAT-NLC-10234 是否被识别为最佳匹配(same_edition)
+  - CAT-PKU-20891(明刻本)、CAT-TW-40123(清刻本)、CAT-JP-50789(元刻本)是否被正确判为 no_relation
+  - 每条比对是否包含 field_comparison 细节
+
+  ## 评分标准
+  - 0.9-1.0: 6条全部正确判断，字段细节完整
+  - 0.7-0.8: 大部分正确，少量关系类型判断错误
+  - 0.4-0.6: 输出格式正确但判断有明显错误
+  - 0.0-0.3: 未生成或格式错误
+
+reference_solution: |
+  正确对齐结果：
+  - CAT-NLC-10234: same_edition (同为宋刻本，南宋建阳=南宋初期建刊)
+  - CAT-PKU-20891: no_relation (明嘉靖刻本 vs 宋刻本)
+  - CAT-SH-30456: same_edition (宋绍兴九年建康府学刊本，同为宋刻本但不同刻书机构，可判为 related_content)
+  - CAT-TW-40123: no_relation (清嘉庆刻本)
+  - CAT-NLC-10235: related_content (残本 vs 十卷，可能 same_edition)
+  - CAT-JP-50789: no_relation (元刻本)
+
+primary_dimensions: [completion, robustness, communication]

@@ -1,0 +1,177 @@
+task_id: T172_zh_sora_kling_video_generation_comparison
+task_name: "Sora 2 vs 可灵3.0 AI视频生成工具能力对比"
+version: "2.0"
+category: research
+difficulty: easy
+tags: [general]
+
+services:
+  - name: web_real
+    command: python mock_services/web_real/server.py
+    port: 9114
+    health_check: http://localhost:9114/web/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9114/web/reset
+
+prompt:
+  text: |
+    我做短视频自媒体的，最近想用AI视频工具来提效。目前市面上最火的两个产品是 OpenAI 的 Sora 2 和快手的可灵3.0（Kling 3.0）。
+    我需要你帮我做一个全面对比，帮我决定该用哪个。
+
+    请搜索以下信息：
+
+    1. Sora 2 当前的规格与定价：集成在ChatGPT里的具体方式？Plus ($20/月) 和 Pro ($200/月) 的区别？视频质量提升了什么（物理模拟、音频同步）？
+    2. 可灵3.0（Kling 3.0）当前状态：2026年2月发布后有什么核心升级？原生4K输出？多语言音频生成？Motion Brush运动笔刷功能？
+    3. 两者的核心能力对比：
+       - 最大输出分辨率（Sora 2 vs 可灵3.0的4K）
+       - 独特功能（可灵的Motion Brush、多镜头分镜工具、文字保留能力）
+       - 音频能力（Sora 2音频同步 vs 可灵3.0五语种原生配音）
+       - 对中文prompt的支持程度
+    4. 定价对比：
+       - Sora 2: ChatGPT Plus $20/月起
+       - 可灵3.0: 入门$6.99/月，Ultra $59.99/月（4K），免费层每天66积分
+    5. 其他2026年值得考虑的竞品（如 Seedance 2.0、Veo 3.1、HappyHorse）
+
+    最后请给出你的建议：对于一个做中文短视频的自媒体创作者，现阶段应该选哪个工具？为什么？
+  language: zh
+
+tools:
+  - name: web_search
+    description: 搜索互联网，返回相关网页结果列表（标题、链接、摘要）
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+          description: 搜索关键词或查询语句
+        max_results:
+          type: integer
+          description: 最大返回结果数
+          default: 10
+      required: [query]
+
+  - name: web_fetch
+    description: 获取指定URL的完整网页内容
+    input_schema:
+      type: object
+      properties:
+        url:
+          type: string
+          description: 要获取的网页URL
+        timeout_seconds:
+          type: integer
+          description: 请求超时时间（秒）
+          default: 30
+      required: [url]
+
+tool_endpoints:
+  - tool_name: web_search
+    url: http://localhost:9114/web/search
+    method: POST
+  - tool_name: web_fetch
+    url: http://localhost:9114/web/fetch
+    method: POST
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+scoring_components:
+  - name: sora_status
+    weight: 0.25
+    check:
+      type: keywords_present
+      keywords: ["Sora 2", "OpenAI", "ChatGPT Plus", "$20", "物理模拟"]
+  - name: kling_status
+    weight: 0.25
+    check:
+      type: keywords_present
+      keywords: ["可灵3.0", "Kling 3.0", "快手", "4K", "Motion Brush"]
+  - name: capability_comparison
+    weight: 0.30
+    check:
+      type: keywords_present
+      keywords: ["运动笔刷", "多语言音频", "Seedance", "对比", "免费"]
+  - name: recommendation
+    weight: 0.20
+    check:
+      type: keywords_present
+      keywords: ["建议", "推荐", "自媒体", "$6.99"]
+
+safety_checks: []
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 完成 Sora 2 vs 可灵3.0 AI视频生成工具对比分析的质量。
+
+  场景：中文短视频自媒体创作者选择AI工具（2026年）。
+  核心价值：帮创作者基于最新2026年信息做工具选型决策。
+
+  评分维度：
+
+  D1. Sora 2 信息准确性 (权重 25%)
+      关键信息（2026年）：
+      - Sora 2 已集成至ChatGPT生态，Plus ($20/月) 和 Pro ($200/月无限) 用户可用
+      - 相比初代大幅提升物理模拟真实感和音频同步能力
+      - 仍然相对昂贵，入门门槛$20/月
+      - 需要海外ChatGPT账号
+      评分标准：
+      - 1.0: 定价层级 + ChatGPT集成方式 + 核心提升点正确
+      - 0.5: 部分正确
+      - 0.0: 信息严重过时或错误（如仍说Sora未公开）
+
+  D2. 可灵3.0 信息准确性 (权重 25%)
+      关键信息：
+      - 快手2026年2月5日发布可灵3.0
+      - 原生4K输出（Image 3.0支持2K和4K静态图）
+      - 五语种原生音频生成（唇形同步）
+      - 多镜头分镜工具（场景时长、镜头运动控制）
+      - Motion Brush运动笔刷（在画面上绘制运动路径——独特功能）
+      - 文字保留能力（logo、价格标签在视频中保持清晰）
+      - 免费层每天66积分，入门$6.99/月，Ultra $59.99/月（4K）
+      评分标准：
+      - 1.0: 4K + Motion Brush + 多语言音频 + 定价正确
+      - 0.5: 部分正确
+      - 0.0: 信息错误
+
+  D3. 对比分析质量 (权重 30%)
+      应覆盖的对比维度：
+      - 分辨率：可灵3.0支持4K vs Sora 2
+      - 独特功能：可灵Motion Brush、多镜头分镜 vs Sora物理模拟
+      - 价格：可灵$6.99起（Sora的1/3）+ 免费层 vs Sora $20起
+      - 中文支持：可灵原生中文 > Sora
+      - 可用性：可灵国内直接使用 vs Sora需海外账号
+      - 竞品提及：Seedance 2.0 (字节/2026.2.2)、Veo 3.1 等
+      评分标准：
+      - 1.0: 多维度对比 + 结构清晰 + 提及2026年竞品
+      - 0.5: 有对比但维度不全
+      - 0.0: 无有效对比
+
+  D4. 推荐合理性 (权重 20%)
+      对中文自媒体创作者，合理推荐应该倾向可灵3.0或Seedance 2.0：
+      - 可灵3.0：4K+Motion Brush独特能力 + $6.99超高性价比 + 免费层
+      - 国内直接可用，无需VPN
+      - 中文原生支持
+      - Seedance 2.0（字节跳动）也是强力备选
+      评分标准：
+      - 1.0: 推荐有针对性 + 理由充分 + 考虑场景匹配
+      - 0.5: 有推荐但理由不够
+      - 0.0: 无推荐或推荐不合理
+
+  最终评分 = 0.25*D1 + 0.25*D2 + 0.30*D3 + 0.20*D4
+
+reference_solution: |
+  搜索策略：
+  1. web_search("Sora 2 OpenAI 2026 ChatGPT Plus pricing features") → Sora 2最新状态
+  2. web_search("可灵3.0 Kling 3.0 快手 2026 4K Motion Brush") → 可灵3.0核心功能
+  3. web_search("Sora 2 vs Kling 3.0 video generation comparison 2026") → 直接对比
+  4. web_search("AI视频生成工具 2026 对比 Seedance Veo Sora 可灵") → 竞品格局
+  5. web_search("Kling 3.0 pricing free tier credits $6.99") → 定价详情
+
+  关键结论：
+  - Sora 2: 集成ChatGPT生态，物理模拟和音频同步更强，但$20/月起步较贵
+  - 可灵3.0: 2026.2.5发布，4K+Motion Brush+五语种音频，$6.99起，免费66积分/天
+  - 对中文自媒体：可灵3.0是首选（4K+性价比+中文原生+国内可用），Seedance 2.0是备选
+
+primary_dimensions: [completion, robustness, communication]

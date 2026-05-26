@@ -1,7 +1,11 @@
-"""TaskDefinition — loaded from YAML task files (v3 aligned)."""
+"""TaskDefinition — loaded from YAML task files (v3 aligned).
+
+v0.34.1 ark overlay: normalize known calendar_list_events task schemas.
+"""
 
 from __future__ import annotations
 
+import copy
 import re
 from pathlib import Path
 from typing import Any
@@ -10,6 +14,63 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .tool import ToolEndpoint, ToolSpec
+
+
+_ARK_CALENDAR_SCHEMA_NORMALIZATION_TASK_IDS = frozenset(
+    {
+        "T113zh_meeting_preparation",
+        "T114_meeting_preparation",
+        "T123zh_todo_calendar_conflict",
+        "T124_todo_calendar_conflict",
+        "T129zh_business_trip_planning",
+        "T130_business_trip_planning",
+        "T135zh_weekly_meeting_tracking",
+        "T136_weekly_meeting_tracking",
+        "T149zh_project_progress_report",
+        "T150_project_progress_report",
+        "T155zh_onsite_support_dispatch",
+        "T156_onsite_support_dispatch",
+    }
+)
+
+_CALENDAR_LIST_EVENTS_CANONICAL_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "date": {
+            "type": "string",
+            "description": "Query date (YYYY-MM-DD)",
+        },
+        "days": {
+            "type": "integer",
+            "description": "Number of days to query",
+            "default": 1,
+        },
+    },
+    "required": ["date"],
+}
+
+
+def _normalize_calendar_list_events_schema(data: dict[str, Any]) -> None:
+    """Patch accidental task-side schema drift for known Claw-Eval tasks."""
+    if not isinstance(data, dict):
+        return
+
+    task_id = str(data.get("task_id") or "")
+    if task_id not in _ARK_CALENDAR_SCHEMA_NORMALIZATION_TASK_IDS:
+        return
+
+    tools = data.get("tools") or []
+    if not isinstance(tools, list):
+        return
+
+    for tool in tools:
+        if not isinstance(tool, dict) or tool.get("name") != "calendar_list_events":
+            continue
+
+        schema = tool.get("input_schema") or {}
+        properties = schema.get("properties") or {}
+        if "start_date" in properties or "end_date" in properties:
+            tool["input_schema"] = copy.deepcopy(_CALENDAR_LIST_EVENTS_CANONICAL_SCHEMA)
 
 
 class Prompt(BaseModel):
@@ -132,6 +193,7 @@ class TaskDefinition(BaseModel):
     def from_yaml(cls, path: str | Path) -> TaskDefinition:
         with open(path) as f:
             data = yaml.safe_load(f)
+        _normalize_calendar_list_events_schema(data)
         data["task_file"] = str(Path(path).resolve())
         return cls.model_validate(data)
 

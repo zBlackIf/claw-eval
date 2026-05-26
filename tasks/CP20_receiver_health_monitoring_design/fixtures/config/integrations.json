@@ -1,0 +1,90 @@
+[
+  {
+    "integration_id": "RECV-INT-101",
+    "name": "Receiver Service (主入口 webhook gateway)",
+    "type": "service",
+    "status": "active",
+    "version": "v2.4.1",
+    "auth": {
+      "method": "hmac_sha256",
+      "key_rotation_days": 90
+    },
+    "endpoints": {
+      "ingest_webhook": "POST /v1/webhook/{partner}",
+      "health": "GET /healthz",
+      "ready": "GET /readyz"
+    },
+    "qps_peak": 3200,
+    "p99_latency_ms": 320,
+    "owner_team": "Receiver SRE",
+    "incident_note": "p99 偶发 8s+，dead-letter 增长，consumer 处理速度跟不上",
+    "service": "service",
+    "last_verified": "2026-05-20T00:00:00Z",
+    "monthly_calls": 1000,
+    "error_rate": 0.01
+  },
+  {
+    "integration_id": "RECV-INT-102",
+    "name": "Receiver DB (PostgreSQL 主库)",
+    "type": "database",
+    "status": "active",
+    "version": "PG 15.4",
+    "auth": {
+      "method": "iam_db_token"
+    },
+    "endpoints": {
+      "primary": "postgres://recv-pg-primary.internal:5432/receiver",
+      "replica": "postgres://recv-pg-replica.internal:5432/receiver"
+    },
+    "qps_peak": 1800,
+    "p99_latency_ms": 28,
+    "owner_team": "DBA",
+    "incident_note": "DB 迁移现无 advisory_lock，多 instance 同时迁移过坑",
+    "service": "database",
+    "last_verified": "2026-05-20T00:00:00Z",
+    "monthly_calls": 1000,
+    "error_rate": 0.01
+  },
+  {
+    "integration_id": "RECV-INT-103",
+    "name": "Receiver Queue (Kafka topic webhook-events)",
+    "type": "message_queue",
+    "status": "degraded",
+    "version": "Kafka 3.6",
+    "auth": {
+      "method": "sasl_scram"
+    },
+    "endpoints": {
+      "bootstrap": "kafka.internal:9092",
+      "topic_main": "webhook-events",
+      "topic_dlq": "webhook-events-dlq"
+    },
+    "qps_peak": 3500,
+    "p99_latency_ms": 1200,
+    "owner_team": "Receiver SRE",
+    "incident_note": "DLQ lag 持续累积 5w+，需要扩 consumer + 自动重放",
+    "service": "message_queue",
+    "last_verified": "2026-05-20T00:00:00Z",
+    "monthly_calls": 1000,
+    "error_rate": 0.15
+  },
+  {
+    "integration_id": "RECV-INT-104",
+    "name": "Prometheus Metrics Exporter",
+    "type": "observability",
+    "status": "disabled",
+    "version": "v0.8.3",
+    "auth": null,
+    "endpoints": {
+      "metrics": "GET /metrics"
+    },
+    "qps_peak": null,
+    "p99_latency_ms": null,
+    "owner_team": "Observability",
+    "incident_note": "上次（RECV-JOB-004）被关闭，导致 Receiver 黑盒；要恢复 + 加业务指标",
+    "service": "observability",
+    "last_verified": "2026-05-20T00:00:00Z",
+    "monthly_calls": 1000,
+    "error_rate": 0.15
+  }
+]

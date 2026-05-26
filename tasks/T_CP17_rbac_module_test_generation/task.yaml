@@ -1,0 +1,88 @@
+# provenance:
+#   themis_dataset: taskset-260427-121234
+#   themis_task_id: task_60_rbac_test_gen
+#   themis_rank_original: 21
+#   themis_metrics: { std_trim: 0.415, range_trim: 1.000, mean_trim: 0.746 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525.md
+#   mapping_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525-mapping.md
+task_id: T_CP17_rbac_module_test_generation
+task_name: "RBAC 三模块测试用例生成（T_CP17 / 源 taskset-260427-121234:task_60_rbac_test_gen）"
+version: "1.0"
+category: testing
+difficulty: easy
+tags: [general]
+
+source_task_id: "task_60_rbac_test_gen"
+source_dataset: "taskset-260427-121234"
+source_description: "从 Themis PinchBench top100（2026-05-25 二次筛选，killer bucket）中按跨模型 std_trim 排名精选的高区分度题（原始排名 #21，std_trim 0.415 / range_trim 1.000 / mean_trim 0.746），改编为 Claw-Eval Pattern D (sandbox-adapted) 格式，PinbenchAdaptedGrader 类属性声明自动评分。原始 prompt 重写以适配本仓库 mock service 与 fixtures，源映射见 docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525-mapping.md。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/code/ 下有 RBAC 模块的 3 个 Python 文件：
+
+    - role_service.py：角色与权限（含继承、循环检测、删除前的子节点检查）
+    - user_role_binding.py：用户-角色绑定（多租户、时效、重复绑定检测）
+    - access_check.py：集成层（deny_overrides、stale binding 处理）
+
+    请为这 3 个模块生成 **pytest** 测试用例，以一份完整 markdown 报告输出，
+    内含 3 个独立 Python 代码块（每块即可直接保存为 test_<module>.py）。
+
+    要求：
+
+    ## 覆盖度要求（每模块）
+    - **正例 happy path**：基本流程能跑通
+    - **边界**：空输入、不存在的 role / user / tenant
+    - **错误**：抛出预期异常（cyclic inheritance / role-not-found / 重复绑定）
+    - **租户隔离**：跨租户不可见（user_role_binding + access_check 必须有）
+    - **时效**：expires_at 过期不再生效（user_role_binding + access_check 必须有）
+    - **继承**：parent role 权限可通过子角色解析（role_service + access_check 必须有）
+    - **deny_overrides**：access_check 中明示拒绝必须优先
+
+    ## 输出格式
+    使用 markdown 标题分章节，3 个独立 ```python 代码块（一块一模块）。每个测试函数
+    用 `def test_xxx():` 命名。至少 15 个 test 函数总计。
+
+    ## 必须命中的关键概念（用 keyword 验证 grader）
+    - `pytest`
+    - `assert`
+    - `cyclic` 或 `循环`（cyclic inheritance test）
+    - `expired` 或 `过期`（expiry test）
+    - `tenant`（多租户隔离）
+
+    禁止：
+    - 仅写空 `pass` 的占位 test
+    - 跨模块共用一个 test 文件
+    - 调用真实数据库 / 网络（必须用纯 in-memory dataclass）
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/code/role_service.py
+  - fixtures/code/user_role_binding.py
+  - fixtures/code/access_check.py
+
+environment:
+  timeout_seconds: 300
+  max_turns: 12
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a comprehensive pytest suite spanning all three RBAC modules with happy path, boundary, error, tenant isolation, expiry, inheritance, and deny_overrides cases — each module in its own code block."
+
+reference_solution: |
+  Read the three modules. For each, produce a ```python``` code block named
+  test_role_service.py, test_user_role_binding.py, test_access_check.py.
+
+  Each test file imports its target, instantiates in-memory state, and asserts
+  expected behavior across happy/boundary/error scenarios. Include cyclic-
+  inheritance test, multi-tenant isolation test, expires_at test, deny_overrides
+  test. Use pytest fixtures for shared setup.
+
+primary_dimensions: [completion, communication, safety]

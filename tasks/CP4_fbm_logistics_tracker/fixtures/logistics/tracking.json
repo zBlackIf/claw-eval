@@ -1,0 +1,93 @@
+{
+  "auth_tokens": [
+    {
+      "client_id": "fbm-batch-agent",
+      "client_secret": "demo-secret-do-not-use-in-prod",
+      "token": "demo-token-12345"
+    }
+  ],
+  "tracking_numbers": [
+    {
+      "tracking_number": "FBA17XYZ001",
+      "carrier": "USPS",
+      "status": "delivered",
+      "last_event": "2026-05-22T14:32:00Z",
+      "estimated_delivery": "2026-05-22",
+      "destination_country": "US"
+    },
+    {
+      "tracking_number": "FBA17XYZ002",
+      "carrier": "UPS",
+      "status": "in_transit",
+      "last_event": "2026-05-24T03:15:00Z",
+      "estimated_delivery": "2026-05-27",
+      "destination_country": "US"
+    },
+    {
+      "tracking_number": "FBA17XYZ003",
+      "carrier": "DHL",
+      "status": "exception",
+      "last_event": "2026-05-23T18:42:00Z",
+      "estimated_delivery": null,
+      "destination_country": "DE",
+      "exception_reason": "address verification failed"
+    },
+    {
+      "tracking_number": "FBA17XYZ004",
+      "carrier": "USPS",
+      "status": "out_for_delivery",
+      "last_event": "2026-05-25T09:01:00Z",
+      "estimated_delivery": "2026-05-25",
+      "destination_country": "US"
+    },
+    {
+      "tracking_number": "FBA17XYZ005",
+      "carrier": "FedEx",
+      "status": "label_created",
+      "last_event": "2026-05-24T16:00:00Z",
+      "estimated_delivery": "2026-06-01",
+      "destination_country": "CA"
+    },
+    {
+      "tracking_number": "FBA17XYZ006",
+      "carrier": "Yamato",
+      "status": "in_transit",
+      "last_event": "2026-05-25T01:23:00Z",
+      "estimated_delivery": "2026-05-30",
+      "destination_country": "JP"
+    },
+    {
+      "tracking_number": "FBA17XYZ007",
+      "carrier": "DHL",
+      "status": "returned_to_sender",
+      "last_event": "2026-05-21T11:00:00Z",
+      "estimated_delivery": null,
+      "destination_country": "UK",
+      "exception_reason": "recipient absent 3 attempts"
+    },
+    {
+      "tracking_number": "FBA17XYZ008",
+      "carrier": "UPS",
+      "status": "delivered",
+      "last_event": "2026-05-20T10:45:00Z",
+      "estimated_delivery": "2026-05-20",
+      "destination_country": "US"
+    },
+    {
+      "tracking_number": "FBA17XYZ009",
+      "carrier": "FedEx",
+      "status": "in_transit",
+      "last_event": "2026-05-24T22:18:00Z",
+      "estimated_delivery": "2026-05-27",
+      "destination_country": "US"
+    },
+    {
+      "tracking_number": "FBA17XYZ010",
+      "carrier": "Royal Mail",
+      "status": "customs_clearance",
+      "last_event": "2026-05-23T08:00:00Z",
+      "estimated_delivery": "2026-05-29",
+      "destination_country": "UK"
+    }
+  ]
+}

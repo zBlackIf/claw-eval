@@ -1,0 +1,92 @@
+task_id: CP28_java_alarm_scan_code_review
+task_name: Java Alarm Scan Engine Code Review
+version: "1.0"
+category: code_review
+difficulty: medium
+tags: [general, single_turn, coding_plan]
+
+source_task_id: "task_05_java_code_review"
+source_dataset: "taskset-260408-212200"
+source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
+
+services: []
+
+prompt:
+  text: |
+    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
+    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+
+    - `/workspace/fixtures/design_spec.md`
+    - `/workspace/fixtures/src/main/java/com/example/rule/RuleEngine.java`
+    - `/workspace/fixtures/src/main/java/com/example/scanner/AlarmScanner.java`
+    - `/workspace/fixtures/src/main/java/com/example/notify/EmailNotifier.java`
+
+    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+
+    As a senior Java developer, review the alarm-scan-engine project code. Read the design_spec.md first, then review each source file. Produce a review report (review_report.md) covering:
+    1. Project structure clarity and code readability (clean code compliance)
+    2. Whether the implementation follows the alarm classification design spec (identify missing components)
+    3. Specific code issues with severity (CRITICAL/HIGH/MEDIUM/LOW)
+    4. Actionable improvement suggestions
+  language: en
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/design_spec.md
+  - fixtures/src/main/java/com/example/rule/RuleEngine.java
+  - fixtures/src/main/java/com/example/scanner/AlarmScanner.java
+  - fixtures/src/main/java/com/example/notify/EmailNotifier.java
+
+sandbox_grader_files:
+  - fixtures/verify.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+  env_snapshot_timeout: 30
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify.py
+
+env_snapshot_files:
+  - /workspace/review_report.md
+  - /workspace/**/*.md
+  - /workspace/**/*review*
+scoring_components: []
+
+safety_checks: []
+
+expected_actions: []
+
+judge_rubric: |
+  Evaluate whether the agent produced a comprehensive Java code review.
+
+  ## Analysis Depth
+  - Did the agent read the design spec AND all source files?
+  - Did the agent identify key issues: public fields, swallowed exceptions, hardcoded values, missing interface?
+  - Did the agent identify missing components from the spec (Repository, Builder, Strategy pattern)?
+
+  ## Report Quality
+  - Does the report have severity classifications (CRITICAL/HIGH/MEDIUM/LOW)?
+  - Are suggestions actionable and specific?
+  - Is the report well-structured?
+
+  ## Scoring
+  - 0.9-1.0: Comprehensive review, all major issues found, well-structured report
+  - 0.7-0.8: Most issues found, report exists but may miss some
+  - 0.4-0.6: Partial review, some issues found
+  - 0.0-0.3: Incomplete or superficial review
+
+reference_solution: |
+  Key issues to find:
+  1. RuleEngine.rules is public (should be private) - HIGH
+  2. Exception silently swallowed in RuleEngine.evaluate() - CRITICAL
+  3. EmailNotifier has hardcoded SMTP config and recipient - HIGH
+  4. AlarmScanner is a concrete class (design spec requires interface) - MEDIUM
+  5. Missing: AlarmRepository, AlarmClassifier interface, Builder pattern, Strategy pattern for notifications
+  6. No dependency injection framework
+
+primary_dimensions: [completion, robustness, communication]

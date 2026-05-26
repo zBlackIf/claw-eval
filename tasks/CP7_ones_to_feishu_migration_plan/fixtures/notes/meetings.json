@@ -1,0 +1,39 @@
+[
+  {
+    "note_id": "MIG-NOTE-001",
+    "title": "ONES → 飞书迁移立项会议",
+    "created_at": "2026-04-25",
+    "participants": [
+      "效率工程",
+      "AI Platform",
+      "HR"
+    ],
+    "summary": "决策：6 月 1 日前完成首批 TOP 50 迁移；7 月底全量；ONES 平台 9 月停用。要求：增量同步窗口期 2 个月。",
+    "duration_minutes": 30,
+    "content": "决策：6 月 1 日前完成首批 TOP 50 迁移；7 月底全量；ONES 平台 9 月停用。要求：增量同步窗口期 2 个月。"
+  },
+  {
+    "note_id": "MIG-NOTE-002",
+    "title": "API 鉴权与速率讨论",
+    "created_at": "2026-05-08",
+    "participants": [
+      "AI Platform",
+      "安全合规"
+    ],
+    "summary": "ONES：OAuth2 client_credentials，速率 100 QPS；飞书：tenant_access_token + user_access_token 二选一，速率 200 QPS（带 burst 50）。必须设计退避策略。",
+    "duration_minutes": 30,
+    "content": "ONES：OAuth2 client_credentials，速率 100 QPS；飞书：tenant_access_token + user_access_token 二选一，速率 200 QPS（带 burst 50）。必须设计退避策略。"
+  },
+  {
+    "note_id": "MIG-NOTE-003",
+    "title": "对账与回退预案",
+    "created_at": "2026-05-15",
+    "participants": [
+      "效率工程",
+      "AI Platform"
+    ],
+    "summary": "对账：每批迁移后跑 reconciliation job 比较 page_count + block_count + checksum；不一致 > 1% 暂停整批。回退：保留 ONES 源 3 个月不删，飞书侧软标记 migrated_at；如发现问题可重新拉源数据。",
+    "duration_minutes": 30,
+    "content": "对账：每批迁移后跑 reconciliation job 比较 page_count + block_count + checksum；不一致 > 1% 暂停整批。回退：保留 ONES 源 3 个月不删，飞书侧软标记 migrated_at；如发现问题可重新拉源数据。"
+  }
+]

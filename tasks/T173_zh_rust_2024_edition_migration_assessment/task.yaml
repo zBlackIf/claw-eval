@@ -1,0 +1,181 @@
+task_id: T173_zh_rust_2024_edition_migration_assessment
+task_name: "Rust 2024 Edition 迁移影响评估"
+version: "1.0"
+category: research
+difficulty: medium
+tags: [general]
+
+services:
+  - name: web_real
+    command: python mock_services/web_real/server.py
+    port: 9114
+    health_check: http://localhost:9114/web/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9114/web/reset
+
+prompt:
+  text: |
+    我们的项目目前使用 Rust 2021 edition，团队在讨论是否要升级到 2024 edition。
+    Rust 2024 edition 随 Rust 1.85 稳定发布了（2025年2月），但我对具体变更内容不太熟悉。
+
+    请帮我搜索并整理一份迁移影响评估：
+
+    1. Rust 2024 edition 有哪些主要的语言变更？特别是：
+       - `gen` 关键字保留（影响有没有用 gen 作标识符的代码）
+       - `unsafe_op_in_unsafe_fn` 变为默认 deny 的影响
+       - `impl Trait` lifetime capture 规则变化
+       - `tail expression` temporary scope 变化
+       - `unsafe extern` 块的新要求
+
+    2. 自动迁移工具 `cargo fix --edition` 能处理多少？哪些需要手动调整？
+
+    3. 新 edition 带来的好处：
+       - `async closures` 稳定化情况
+       - `gen blocks` 的实验状态
+       - 错误信息改善
+
+    4. 迁移风险评估：
+       - 对大型项目（>10万行 Rust 代码）的预估工作量
+       - 常见踩坑点
+       - 建议的迁移策略（一次性 vs 渐进式）
+
+    输出一份简洁的技术评估报告，给出明确建议：升还是不升？什么时候升？
+  language: zh
+
+tools:
+  - name: web_search
+    description: 搜索互联网，返回相关网页结果列表（标题、链接、摘要）
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+          description: 搜索关键词或查询语句
+        max_results:
+          type: integer
+          description: 最大返回结果数
+          default: 10
+      required: [query]
+
+  - name: web_fetch
+    description: 获取指定URL的完整网页内容
+    input_schema:
+      type: object
+      properties:
+        url:
+          type: string
+          description: 要获取的网页URL
+        timeout_seconds:
+          type: integer
+          description: 请求超时时间（秒）
+          default: 30
+      required: [url]
+
+tool_endpoints:
+  - tool_name: web_search
+    url: http://localhost:9114/web/search
+    method: POST
+  - tool_name: web_fetch
+    url: http://localhost:9114/web/fetch
+    method: POST
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+scoring_components:
+  - name: language_changes
+    weight: 0.30
+    check:
+      type: keywords_present
+      keywords: ["gen", "unsafe_op_in_unsafe_fn", "impl Trait", "lifetime"]
+  - name: migration_tooling
+    weight: 0.20
+    check:
+      type: keywords_present
+      keywords: ["cargo fix", "--edition", "自动", "手动"]
+  - name: benefits
+    weight: 0.20
+    check:
+      type: keywords_present
+      keywords: ["async", "closure", "改善", "稳定"]
+  - name: risk_assessment
+    weight: 0.30
+    check:
+      type: keywords_present
+      keywords: ["风险", "建议", "迁移", "策略"]
+
+safety_checks: []
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 完成 Rust 2024 Edition 迁移影响评估的质量。
+
+  场景：Rust 开发团队评估是否升级 edition。
+  核心价值：帮开发者做出有数据支持的技术决策。
+
+  评分维度：
+
+  D1. 语言变更覆盖 (权重 30%)
+      Rust 2024 edition 主要变更：
+      - `gen` 成为保留关键字（为 generators 做准备）
+      - `unsafe_op_in_unsafe_fn` lint 默认 deny（unsafe fn 内的 unsafe op 必须显式 unsafe 块）
+      - `impl Trait` lifetime capture 规则变更（RPIT captures all in-scope lifetimes）
+      - tail expression temporary scope 缩小
+      - `unsafe extern` 块要求（extern 块需标注 unsafe）
+      - `static_mut_refs` 禁止（不能直接引用 static mut）
+      评分标准：
+      - 1.0: 覆盖4+个变更且描述正确
+      - 0.5: 覆盖2-3个
+      - 0.0: 变更描述错误
+
+  D2. 迁移工具信息 (权重 20%)
+      - `cargo fix --edition` 可自动处理大部分变更
+      - 部分 lifetime 相关变更可能需要手动调整
+      - Rust 保证跨 edition 互操作（不同 edition 的 crate 可以混用）
+      评分标准：
+      - 1.0: cargo fix + 手动调整范围 + 互操作说明
+      - 0.5: 提到cargo fix但细节不足
+      - 0.0: 未提及迁移工具
+
+  D3. 收益分析 (权重 20%)
+      - unsafe 更安全（显式 unsafe 块要求）
+      - lifetime capture 更直观
+      - async closures 逐步稳定
+      - 更好的错误信息
+      评分标准：
+      - 1.0: 多个具体收益
+      - 0.5: 泛泛而谈
+      - 0.0: 无收益分析
+
+  D4. 风险评估与建议 (权重 30%)
+      合理建议应包含：
+      - 风险总体可控（cargo fix 自动化程度高）
+      - 建议先在CI跑 `cargo fix --edition` 看影响范围
+      - 大项目可渐进式（先升依赖，再升主项目）
+      - 生态已成熟（Rust 1.85 发布于 2025年2月，距今已一年多，生态crate已广泛支持）
+      评分标准：
+      - 1.0: 有策略 + 有生态成熟度判断 + 有风险缓解措施
+      - 0.5: 有建议但不够具体
+      - 0.0: 无建议
+
+  最终评分 = 0.30*D1 + 0.20*D2 + 0.20*D3 + 0.30*D4
+
+reference_solution: |
+  搜索策略：
+  1. web_search("Rust 2024 edition changes migration guide") → 官方迁移指南
+  2. web_fetch(doc.rust-lang.org/edition-guide/rust-2024/) → 详细变更列表
+  3. web_search("Rust 1.85 2024 edition breaking changes unsafe_op_in_unsafe_fn") → 具体变更
+  4. web_search("Rust 2024 edition cargo fix migration experience") → 迁移经验
+  5. web_search("Rust 2024 edition gen keyword impl trait lifetime capture") → 具体技术变更
+
+  关键变更列表：
+  - gen 保留关键字
+  - unsafe_op_in_unsafe_fn 默认deny
+  - RPIT lifetime capture 规则
+  - tail expression temporary scope
+  - unsafe extern blocks
+  - static_mut_refs 禁止
+
+primary_dimensions: [completion, robustness, communication]

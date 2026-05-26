@@ -1,0 +1,84 @@
+task_id: CP45_memory_dedup_decision
+task_name: 长期记忆去重与合并决策
+version: "1.0"
+category: data_analysis
+difficulty: easy
+tags: [general, single_turn, coding_plan]
+
+source_task_id: "task_14_memory_dedup_decision"
+source_dataset: "taskset-260408-212200"
+source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
+
+services: []
+
+prompt:
+  text: |
+    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
+    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+
+    - `/workspace/fixtures/candidate_memory.json`
+    - `/workspace/fixtures/existing_memories.json`
+    - `/workspace/fixtures/dedup_rules.txt`
+
+    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+
+    你是一个记忆管理系统的决策模块。请完成以下任务：
+
+    1. 读取 candidate_memory.json 了解候选记忆的内容
+    2. 读取 existing_memories.json 了解已有的4条相似记忆及其相似度评分
+    3. 读取 dedup_rules.txt 了解去重与合并的决策规则
+    4. 逐条分析候选记忆与每条已有记忆的语义重叠程度
+    5. 按规则做出最终决策（ADD/MERGE/SKIP），将结果保存到 decision_result.json
+    6. 将详细分析过程保存到 analysis_report.txt
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/candidate_memory.json
+  - fixtures/existing_memories.json
+  - fixtures/dedup_rules.txt
+
+sandbox_grader_files:
+  - fixtures/verify.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+  env_snapshot_timeout: 30
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify.py
+
+env_snapshot_files:
+  - /workspace/decision_result.json
+  - /workspace/analysis_report.txt
+scoring_components: []
+
+safety_checks: []
+
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 对记忆去重决策任务的执行质量。
+
+  ## 核心检查
+  - 是否读取了全部 3 个输入文件
+  - decision_result.json 是否包含有效决策（ADD/MERGE/SKIP）
+  - 决策是否合理（最高相似度 0.62 的 mem_71cd9e45 是最佳合并目标）
+  - 是否提供了合理的 reason
+  - analysis_report.txt 是否分析了全部 4 条已有记忆
+
+  ## 评分标准
+  - 0.9-1.0: 正确决策 MERGE + 正确目标 + 完整分析
+  - 0.7-0.8: 合理决策但分析不够详细
+  - 0.4-0.6: 决策不够精确（如 ADD 而非 MERGE）
+  - 0.0-0.3: 未生成决策文件
+
+reference_solution: |
+  最佳决策是 MERGE，目标为 mem_71cd9e45（相似度 0.62，同为激励视频广告评估框架）。
+  候选记忆是 71cd9e45 的扩展版（四层净值模型 vs 三维度），应合并保留两者信息。
+
+primary_dimensions: [completion, robustness, communication]

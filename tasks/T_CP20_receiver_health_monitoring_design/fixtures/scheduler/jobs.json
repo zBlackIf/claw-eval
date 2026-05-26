@@ -1,0 +1,56 @@
+{
+  "jobs": [
+    {
+      "job_id": "RECV-JOB-001",
+      "name": "receiver_health_probe (production webhook ingest)",
+      "schedule_cron": "*/1 * * * *",
+      "enabled": true,
+      "last_run_at": "2026-05-25T03:48:00Z",
+      "last_status": "success",
+      "last_duration_ms": 240,
+      "consecutive_failures": 0,
+      "owner_team": "Receiver SRE",
+      "history_p99_ms": 480,
+      "notes": "现有 health probe，只看 HTTP 200，不看真实事件吞吐"
+    },
+    {
+      "job_id": "RECV-JOB-002",
+      "name": "receiver_db_migration_runner",
+      "schedule_cron": "0 2 * * *",
+      "enabled": true,
+      "last_run_at": "2026-05-25T02:00:00Z",
+      "last_status": "success",
+      "last_duration_ms": 12000,
+      "consecutive_failures": 0,
+      "owner_team": "Receiver SRE",
+      "history_p99_ms": 38000,
+      "notes": "现有 DB 迁移调度，无锁机制，多 instance 并发会冲突"
+    },
+    {
+      "job_id": "RECV-JOB-003",
+      "name": "webhook_replay_dead_letter (DLQ 重放)",
+      "schedule_cron": "*/15 * * * *",
+      "enabled": true,
+      "last_run_at": "2026-05-25T03:45:00Z",
+      "last_status": "failed",
+      "last_duration_ms": 8500,
+      "consecutive_failures": 4,
+      "owner_team": "Receiver SRE",
+      "history_p99_ms": 6500,
+      "notes": "连续 4 次失败，TK-RECV-004 已开单未处理"
+    },
+    {
+      "job_id": "RECV-JOB-004",
+      "name": "receiver_metrics_export_prometheus",
+      "schedule_cron": "*/30 * * * * *",
+      "enabled": false,
+      "last_run_at": "2026-04-12T08:00:00Z",
+      "last_status": "success",
+      "last_duration_ms": 1100,
+      "consecutive_failures": 0,
+      "owner_team": "Observability",
+      "history_p99_ms": 1500,
+      "notes": "30s 频率导出指标，已被关闭，TK-RECV-005 提到要重启"
+    }
+  ]
+}

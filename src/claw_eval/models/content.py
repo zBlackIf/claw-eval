@@ -1,4 +1,8 @@
-"""Typed content blocks matching Anthropic Messages API."""
+"""Typed content blocks matching Anthropic Messages API.
+
+v0.30.7 ark overlay: add Anthropic extended-thinking blocks so provider
+responses can be persisted in traces and replayed in later turns.
+"""
 
 from __future__ import annotations
 
@@ -10,6 +14,17 @@ from pydantic import BaseModel, Field
 class TextBlock(BaseModel):
     type: Literal["text"] = "text"
     text: str
+
+
+class ThinkingBlock(BaseModel):
+    type: Literal["thinking"] = "thinking"
+    thinking: str
+    signature: str | None = None
+
+
+class RedactedThinkingBlock(BaseModel):
+    type: Literal["redacted_thinking"] = "redacted_thinking"
+    data: str
 
 
 class ToolUseBlock(BaseModel):
@@ -48,6 +63,15 @@ class VideoBlock(BaseModel):
 
 
 ContentBlock = Annotated[
-    Union[TextBlock, ToolUseBlock, ToolResultBlock, ImageBlock, AudioBlock, VideoBlock],
+    Union[
+        TextBlock,
+        ThinkingBlock,
+        RedactedThinkingBlock,
+        ToolUseBlock,
+        ToolResultBlock,
+        ImageBlock,
+        AudioBlock,
+        VideoBlock,
+    ],
     Field(discriminator="type"),
 ]

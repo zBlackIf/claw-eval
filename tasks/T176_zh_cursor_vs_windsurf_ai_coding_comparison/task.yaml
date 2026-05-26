@@ -1,0 +1,187 @@
+task_id: T176_zh_cursor_vs_windsurf_ai_coding_comparison
+task_name: "Cursor vs Windsurf AI编程工具2026对比评估"
+version: "2.0"
+category: research
+difficulty: easy
+tags: [general]
+
+services:
+  - name: web_real
+    command: python mock_services/web_real/server.py
+    port: 9114
+    health_check: http://localhost:9114/web/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9114/web/reset
+
+prompt:
+  text: |
+    我们团队在选AI编程辅助工具，目前主要考虑 Cursor 和 Windsurf。
+    GitHub Copilot 我们已经用过觉得不够好，想找更强的方案。
+
+    帮我搜索对比一下这两个工具（请搜索2026年最新信息）：
+
+    1. 产品背景和所有权变化：
+       - Cursor 是什么公司做的？最新融资和估值到什么程度？
+       - Windsurf 2025年经历了什么所有权变动？（OpenAI收购失败→Google acqui-hire→Cognition收购）
+       - 现在 Windsurf 归谁所有？和 Devin 是什么关系？
+
+    2. 核心能力对比：
+       - Cursor 的 Background Agents 和 Supermaven 自动补全是什么？
+       - Windsurf 的 Cascade 和 SWE-1.5 模型是什么？
+       - 和 Devin 的整合带来了什么新能力？
+
+    3. 定价对比（2026最新）：
+       - Cursor Pro $20/月 包含什么？Business计划？
+       - Windsurf Pro $15/月 包含什么？
+       - 各自的credit/quota系统
+
+    4. 平台风险和稳定性：
+       - Windsurf 4个月换了3次东家，这对用户意味着什么？
+       - Cursor 作为独立公司的优势
+       - 企业合规方面（FedRAMP、HIPAA）
+
+    5. 综合推荐：
+       对于一个10人的全栈开发团队（Python+TypeScript为主），综合考虑能力、价格、平台稳定性，你推荐哪个？为什么？
+  language: zh
+
+tools:
+  - name: web_search
+    description: 搜索互联网，返回相关网页结果列表（标题、链接、摘要）
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+          description: 搜索关键词或查询语句
+        max_results:
+          type: integer
+          description: 最大返回结果数
+          default: 10
+      required: [query]
+
+  - name: web_fetch
+    description: 获取指定URL的完整网页内容
+    input_schema:
+      type: object
+      properties:
+        url:
+          type: string
+          description: 要获取的网页URL
+        timeout_seconds:
+          type: integer
+          description: 请求超时时间（秒）
+          default: 30
+      required: [url]
+
+tool_endpoints:
+  - tool_name: web_search
+    url: http://localhost:9114/web/search
+    method: POST
+  - tool_name: web_fetch
+    url: http://localhost:9114/web/fetch
+    method: POST
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+scoring_components:
+  - name: product_background
+    weight: 0.20
+    check:
+      type: keywords_present
+      keywords: ["Cursor", "Anysphere", "$50", "Windsurf", "Cognition", "Devin"]
+  - name: capability_comparison
+    weight: 0.30
+    check:
+      type: keywords_present
+      keywords: ["Background Agent", "Supermaven", "Cascade", "SWE-1.5", "context"]
+  - name: pricing_and_risk
+    weight: 0.25
+    check:
+      type: keywords_present
+      keywords: ["$20", "$15", "收购", "acquisition", "platform"]
+  - name: recommendation
+    weight: 0.25
+    check:
+      type: keywords_present
+      keywords: ["推荐", "建议", "团队", "风险"]
+
+safety_checks: []
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 完成 Cursor vs Windsurf AI编程工具2026对比的质量。
+
+  场景：开发团队选择AI编程辅助工具，需要了解最新（2026年）市场格局。
+  核心价值：帮技术团队在Cursor独立路线 vs Windsurf/Cognition/Devin整合路线之间做出有依据的决策。
+
+  评分维度：
+
+  D1. 产品背景与所有权历史 (权重 20%)
+      关键信息：
+      - Cursor: 由Anysphere开发，2026年2月达到$2B ARR，正以$50B估值融资（a16z/Thrive/Nvidia领投），
+        此前2025年11月估值$29.3B；100万+付费用户，70% Fortune 1000使用
+      - Windsurf: 经历戏剧性所有权变动——2025年4月OpenAI宣布$3B收购→5月交易因微软反对崩盘→
+        6月Google DeepMind以$2.4B acqui-hire了CEO Varun Mohan及核心研发→7月Cognition(Devin)收购剩余产品/品牌/IP/团队
+      - 现在Windsurf归Cognition所有，与Devin自主编程agent整合
+      评分标准：
+      - 1.0: 公司背景 + 估值 + Windsurf所有权变动链正确
+      - 0.5: 部分正确（缺少收购saga细节）
+      - 0.0: 信息严重错误或过时
+
+  D2. 能力对比 (权重 30%)
+      应覆盖：
+      - Cursor: Background Agents（云端clone repo，自主工作，提PR，最多8个并行）、
+        Supermaven自动补全（多行、项目级上下文）、Auto模式（付费无限制）、VSCode fork
+      - Windsurf: Cascade agent模式、SWE-1.5专有编码模型、与Devin整合的自主编码能力、
+        FedRAMP High + HIPAA合规
+      - 上下文：两者都支持全codebase索引
+      评分标准：
+      - 1.0: Background Agents vs Devin整合 + Supermaven vs SWE-1.5 + 合规差异
+      - 0.5: 有对比但缺少2026新特性
+      - 0.0: 对比内容过时或错误
+
+  D3. 定价与价值 (权重 25%)
+      (2026年最新):
+      - Cursor Pro: $20/月（Auto模式无限制，frontier模型用credit）
+      - Cursor Business: $40/月/人
+      - Windsurf Pro: $15/月（2026年4月改为每日配额制取代credit）
+      - Cognizant合作（2026年1月）推动企业SDLC场景
+      评分标准：
+      - 1.0: 价格正确 + 层级清晰 + 提到定价模式差异
+      - 0.5: 有价格但不够准确
+      - 0.0: 价格完全错误
+
+  D4. 推荐质量（含平台风险） (权重 25%)
+      对10人全栈团队(Python+TS)，合理推荐应考虑：
+      - Cursor优势：$50B独立公司、资金充裕、Background Agents生产力高、Supermaven补全体验好
+      - Windsurf优势：$15更便宜、Devin整合的自主agent强、企业合规（FedRAMP/HIPAA）
+      - 关键风险：Windsurf 4个月换3次东家（OpenAI→Google→Cognition），平台稳定性存疑
+      - Claude Code ($20/月via Max plan) 也是新兴竞争者
+      - 应根据团队优先级给出有倾向性的推荐
+      评分标准：
+      - 1.0: 有针对性推荐 + 考虑平台风险 + 理由充分
+      - 0.5: 有推荐但未考虑平台稳定性
+      - 0.0: 无推荐或不合理
+
+  最终评分 = 0.20*D1 + 0.30*D2 + 0.25*D3 + 0.25*D4
+
+reference_solution: |
+  搜索策略：
+  1. web_search("Cursor AI 2026 valuation $50B Anysphere funding") → Cursor最新融资信息
+  2. web_search("Windsurf Cognition acquisition 2025 Devin") → Windsurf所有权变动
+  3. web_search("Cursor Background Agents Supermaven 2026") → Cursor新能力
+  4. web_search("Windsurf SWE-1.5 Cascade Devin integration 2026") → Windsurf新能力
+  5. web_search("Cursor vs Windsurf pricing 2026 comparison") → 定价对比
+  6. web_search("Cursor $20 Pro Business plan 2026") → Cursor定价细节
+  7. web_search("Windsurf Pro $15 daily quota 2026") → Windsurf定价细节
+
+  关键数据：
+  - Cursor: Anysphere, $2B ARR, $50B估值融资中, Background Agents(8并行), Supermaven补全, Pro $20/月, Business $40/月/人
+  - Windsurf: OpenAI $3B收购失败→Google $2.4B acqui-hire CEO→Cognition收购产品, 与Devin整合, SWE-1.5模型, Cascade, Pro $15/月, FedRAMP+HIPAA
+  - 平台风险：Windsurf 4个月3次易主 vs Cursor独立稳定
+  - 竞争格局：Claude Code via Max plan也是$20/月
+
+primary_dimensions: [completion, robustness, communication]

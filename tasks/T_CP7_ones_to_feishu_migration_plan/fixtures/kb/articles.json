@@ -1,0 +1,49 @@
+{
+  "articles": [
+    {
+      "article_id": "ONES-WIKI-001",
+      "namespace": "ones_ns",
+      "title": "ONES Wiki 当前知识库（待迁移）",
+      "category": "documentation",
+      "summary": "公司内部知识库当前在 ONES Wiki：约 2400 篇 page、3 万个 block；含 Markdown / 富文本 / 表格 / 嵌入图片 / 附件。API 走 ONES OpenAPI v2，OAuth2 client credentials。",
+      "tags": ["ones", "source", "migration"],
+      "updated_at": "2026-03-01"
+    },
+    {
+      "article_id": "ONES-WIKI-002",
+      "namespace": "ones_ns",
+      "title": "ONES 高频使用页面 TOP 50（必须优先迁移）",
+      "category": "documentation",
+      "summary": "TOP 50 是新员工入职 / SOP / 安全规范类高频页面；首批必须保证 100% 完整性迁移。包含 page_id 与最近访问日期。",
+      "tags": ["ones", "priority"],
+      "updated_at": "2026-04-15"
+    },
+    {
+      "article_id": "FEISHU-WIKI-001",
+      "namespace": "feishu_ns",
+      "title": "飞书 Wiki API 能力评估（目标平台）",
+      "category": "documentation",
+      "summary": "飞书 Wiki Open API：支持 Block 创建、Doc 移动、Permission 同步。差异：(1) 表格 Block 字段类型与 ONES 不完全对齐；(2) 嵌入图片需要重新上传；(3) 附件大小限制 100MB（ONES 是 500MB）；(4) 权限模型基于飞书部门树。",
+      "tags": ["feishu", "target", "api"],
+      "updated_at": "2026-04-22"
+    },
+    {
+      "article_id": "FEISHU-WIKI-002",
+      "namespace": "feishu_ns",
+      "title": "飞书 Wiki 权限与部门树同步设计",
+      "category": "documentation",
+      "summary": "权限对照：ONES 的 project_member ↔ 飞书的 department + user。需要建立 user_id 映射表；离职员工权限需要 fallback 到部门 admin。",
+      "tags": ["feishu", "permission"],
+      "updated_at": "2026-05-02"
+    },
+    {
+      "article_id": "MIG-LESSON-001",
+      "namespace": "shared",
+      "title": "上次 Confluence → 飞书 迁移踩过的坑（2024）",
+      "category": "lesson_learned",
+      "summary": "(1) 一次性全量迁移导致飞书 API 限流被封 12 小时；改用分批 + 退避；(2) Block 转换丢公式；写转换器时单测公式；(3) 增量同步靠 ONES 的 updated_at 排序，要带去重；(4) 对账：抽样 5% 人工 review。",
+      "tags": ["migration", "best_practice"],
+      "updated_at": "2025-03-10"
+    }
+  ]
+}

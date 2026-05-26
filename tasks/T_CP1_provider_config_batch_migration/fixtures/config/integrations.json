@@ -1,0 +1,100 @@
+{
+  "integrations": [
+    {
+      "integration_id": "PROV-101",
+      "name": "OpenAI Compat 端点 #1 (prod-us-east)",
+      "type": "llm_provider",
+      "status": "active",
+      "api_base": "https://api.openai.com/v1",
+      "api_key_secret_ref": "vault:openai/prod-us-east",
+      "model_default": "gpt-4-turbo",
+      "rate_limit_rpm": 3000,
+      "owner_team": "AI Platform",
+      "drift_note": "schema 还在用 v1（model 字段而不是新规范的 model_id）"
+    },
+    {
+      "integration_id": "PROV-102",
+      "name": "OpenAI Compat 端点 #2 (prod-eu-west)",
+      "type": "llm_provider",
+      "status": "active",
+      "api_base": "https://eu.api.openai.com/v1",
+      "api_key_secret_ref": "vault:openai/prod-eu-west",
+      "model_default": "gpt-4-turbo",
+      "rate_limit_rpm": 1500,
+      "owner_team": "AI Platform",
+      "drift_note": "schema v1"
+    },
+    {
+      "integration_id": "PROV-103",
+      "name": "Anthropic Claude 端点",
+      "type": "llm_provider",
+      "status": "active",
+      "api_base": "https://api.anthropic.com",
+      "api_key_secret_ref": "vault:anthropic/prod",
+      "model_default": "claude-sonnet-3.7",
+      "rate_limit_rpm": 1800,
+      "owner_team": "AI Platform",
+      "drift_note": "schema v1"
+    },
+    {
+      "integration_id": "PROV-104",
+      "name": "Doubao Volcengine 端点",
+      "type": "llm_provider",
+      "status": "active",
+      "api_base": "https://ark.cn-beijing.volces.com/api/v3",
+      "api_key_secret_ref": "vault:volcengine/prod",
+      "model_default": "doubao-seed-2.1-pro",
+      "rate_limit_rpm": 2400,
+      "owner_team": "AI Platform",
+      "drift_note": "schema v1"
+    },
+    {
+      "integration_id": "PROV-105",
+      "name": "本地 vLLM 自托管 #1",
+      "type": "llm_provider",
+      "status": "active",
+      "api_base": "http://vllm-cluster-1.internal:8000/v1",
+      "api_key_secret_ref": null,
+      "model_default": "llama-3-70b",
+      "rate_limit_rpm": 600,
+      "owner_team": "ML Infra",
+      "drift_note": "schema v1"
+    },
+    {
+      "integration_id": "PROV-106",
+      "name": "DeepSeek 端点",
+      "type": "llm_provider",
+      "status": "degraded",
+      "api_base": "https://api.deepseek.com",
+      "api_key_secret_ref": "vault:deepseek/prod",
+      "model_default": "deepseek-v3",
+      "rate_limit_rpm": 1200,
+      "owner_team": "AI Platform",
+      "drift_note": "schema v1，且 reasoning_content 字段需要 overlay 处理"
+    },
+    {
+      "integration_id": "PROV-107",
+      "name": "本地 vLLM 自托管 #2",
+      "type": "llm_provider",
+      "status": "active",
+      "api_base": "http://vllm-cluster-2.internal:8000/v1",
+      "api_key_secret_ref": null,
+      "model_default": "qwen-2.5-72b",
+      "rate_limit_rpm": 600,
+      "owner_team": "ML Infra",
+      "drift_note": "schema v1"
+    },
+    {
+      "integration_id": "PROV-108",
+      "name": "OpenAI Responses API 端点",
+      "type": "llm_provider",
+      "status": "planned",
+      "api_base": "https://api.openai.com/v1/responses",
+      "api_key_secret_ref": "vault:openai/prod-us-east",
+      "model_default": "gpt-5-thinking",
+      "rate_limit_rpm": 800,
+      "owner_team": "AI Platform",
+      "drift_note": "需要新 schema v2 的 reasoning + tool_use 双 protocol 支持"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+server:
+  host: "0.0.0.0"
+  port: 8443
+  workers: 4
+
+tls:
+  enabled: true
+  cert: "/opt/openclaw/certs/server.pem"
+  key: "/opt/openclaw/certs/server-key.pem"
+
+mcp:
+  endpoint: "/mcp/v1"
+  max_connections: 200
+  timeout_seconds: 30
+
+logging:
+  level: "info"
+  file: "/var/log/openclaw/gateway.log"
+  rotate_size_mb: 100
+  keep_days: 30
+
+auth:
+  enabled: false
+  # type: "bearer"
+  # token_endpoint: "https://auth.internal/oauth/token"

@@ -1,0 +1,25 @@
+Token from login with dev@example.com / test:
+
+eyJraWQiOiJwcm9kLmtleSIsInR5cCI6IkpXVCIsImFsZyI6IkhTMjU2In0.eyJlbWFpbCI6ImRldkBleGFtcGxlLmNvbSIsInJvbGUiOiJkZXZlbG9wZXIiLCJleHAiOjE3NzYyMjA5Nzh9.abc123signaturehere
+
+Decoded header:
+{
+  "kid": "prod.key",
+  "typ": "JWT",
+  "alg": "HS256"
+}
+
+Decoded payload:
+{
+  "email": "dev@example.com",
+  "role": "developer",
+  "exp": 1776220978
+}
+
+Key observations:
+- The "email" field value matches the username entered at login
+- The "role" field is set to "developer" for the test account
+- The "kid" field references "prod.key" - the signing key file
+- JWT is signed with HS256
+- System constructs the JWT payload by string-concatenating user input into a JSON template:
+  '{"email":"' + username + '","role":"developer","exp":' + expiry + '}'

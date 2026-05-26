@@ -1,0 +1,78 @@
+[
+  {
+    "article_id": "KB-LSE-001",
+    "title": "我司租赁系统 v1 设计回顾（已上线，文档零散）",
+    "category": "engineering",
+    "summary": "lease_service v1 在 2024 Q4 上线，支持 IFRS 16 finance_lease，但缺乏短期租赁/低价值豁免、lease modification 处理。现有代码：lease_engine/recognition.py, lease_engine/payment_split.py, lease_engine/depreciation.py，没有文档；需要做反推设计文档。",
+    "tags": [
+      "lease",
+      "v1",
+      "tech_debt",
+      "missing_docs"
+    ],
+    "updated_at": "2026-04-22",
+    "content": "lease_service v1 在 2024 Q4 上线，支持 IFRS 16 finance_lease，但缺乏短期租赁/低价值豁免、lease modification 处理。现有代码：lease_engine/recognition.py, lease_engine/payment_split.py, lease_engine/depreciation.py，没有文档；需要做反推设计文档。",
+    "last_updated": "2026-05-01",
+    "views": 0
+  },
+  {
+    "article_id": "KB-LSE-002",
+    "title": "IFRS 16 关键条款摘录（中文版）",
+    "category": "accounting",
+    "summary": "(1) 承租人模型：使用权资产 (RoU) + 租赁负债；(2) 豁免：短期租赁（≤12m）+ 低价值（单价≤$5000 USD）；(3) 折现率：优先用 implicit rate；不可得用 IBR；(4) 后续计量：RoU 直线折旧；负债按 effective interest method 摊销利息；(5) lease modification 必须重新折现。",
+    "tags": [
+      "lease",
+      "ifrs16",
+      "standard"
+    ],
+    "updated_at": "2025-09-30",
+    "content": "(1) 承租人模型：使用权资产 (RoU) + 租赁负债；(2) 豁免：短期租赁（≤12m）+ 低价值（单价≤$5000 USD）；(3) 折现率：优先用 implicit rate；不可得用 IBR；(4) 后续计量：RoU 直线折旧；负债按 effective interest method 摊销利息；(5) lease modification 必须重新折现。",
+    "last_updated": "2026-05-01",
+    "views": 0
+  },
+  {
+    "article_id": "KB-LSE-003",
+    "title": "Lease modification 处理流程（业务侧需求）",
+    "category": "accounting",
+    "summary": "modification 触发：续约/取消/缩减/扩张/付款条件变化。处理：用 modification date 当日 revised IBR 重新折现剩余支付；调整 RoU 与 lease_liability 差额计入 P&L。我们 v1 没实现，本次设计要补。",
+    "tags": [
+      "lease",
+      "modification",
+      "gap"
+    ],
+    "updated_at": "2025-11-12",
+    "content": "modification 触发：续约/取消/缩减/扩张/付款条件变化。处理：用 modification date 当日 revised IBR 重新折现剩余支付；调整 RoU 与 lease_liability 差额计入 P&L。我们 v1 没实现，本次设计要补。",
+    "last_updated": "2026-05-01",
+    "views": 0
+  },
+  {
+    "article_id": "KB-LSE-004",
+    "title": "RoU 折旧 + 利息摊销示例（v1 代码逻辑摘要）",
+    "category": "engineering",
+    "summary": "RoU 折旧 = (初始账面 - 残值) / useful_life_months，按月直线。利息摊销 = previous_liability_balance × monthly_rate；本金 = payment - interest_part；新负债 = old - principal。effective monthly_rate = (1 + annual_rate)^(1/12) - 1（如年 4.85% → 月 0.39549%）。",
+    "tags": [
+      "lease",
+      "amortization",
+      "implementation"
+    ],
+    "updated_at": "2025-12-08",
+    "content": "RoU 折旧 = (初始账面 - 残值) / useful_life_months，按月直线。利息摊销 = previous_liability_balance × monthly_rate；本金 = payment - interest_part；新负债 = old - principal。effective monthly_rate = (1 + annual_rate)^(1/12) - 1（如年 4.85% → 月 0.39549%）。",
+    "last_updated": "2026-05-01",
+    "views": 0
+  },
+  {
+    "article_id": "KB-LSE-005",
+    "title": "审计师 2025 年度反馈意见（必读）",
+    "category": "audit",
+    "summary": "审计师指出 3 个问题：(1) 短期租赁未单独披露 → 设计要支持分类与披露报表；(2) lease modification 没流程 → 必须补；(3) IBR 取数来源不透明 → 设计要审计 trail（IBR 取数日期、参考利率、加点幅度）。",
+    "tags": [
+      "lease",
+      "audit",
+      "compliance"
+    ],
+    "updated_at": "2026-02-28",
+    "content": "审计师指出 3 个问题：(1) 短期租赁未单独披露 → 设计要支持分类与披露报表；(2) lease modification 没流程 → 必须补；(3) IBR 取数来源不透明 → 设计要审计 trail（IBR 取数日期、参考利率、加点幅度）。",
+    "last_updated": "2026-05-01",
+    "views": 0
+  }
+]

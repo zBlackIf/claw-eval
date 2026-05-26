@@ -1,0 +1,11 @@
+{
+  "challenge_name": "Serverless Rule Engine",
+  "category": "Web",
+  "difficulty": "Medium",
+  "description": "A serverless platform with a self-developed rule engine. Only admins can access the rule editor where the flag is hidden.",
+  "target": "http://challenge.example.com:80",
+  "hints_available": true,
+  "points": 300,
+  "solves": 12,
+  "technology_stack": ["PHP", "JWT", "JSON"]
+}

@@ -1,0 +1,107 @@
+{
+  "transactions": [
+    {
+      "transaction_id": "LSE-2026-001",
+      "date": "2026-01-15",
+      "type": "lease_initial_recognition",
+      "amount": 0.00,
+      "currency": "CNY",
+      "vendor": "广州中盈物业",
+      "asset_code": "RIGHT_OF_USE_OFFICE_GZ_2026",
+      "memo": "广州 IFC 写字楼 36F 5 年期租赁，初始确认；月租 ¥186,000，年付增长率 3%，折现率 4.85% (IBR)",
+      "lease_meta": {
+        "lease_term_months": 60,
+        "monthly_payment": 186000.00,
+        "annual_escalator_pct": 3.0,
+        "discount_rate_pct": 4.85,
+        "discount_rate_method": "incremental_borrowing_rate",
+        "payment_timing": "in_advance",
+        "lease_classification": "finance_lease_under_ifrs16"
+      }
+    },
+    {
+      "transaction_id": "LSE-2026-002",
+      "date": "2026-01-15",
+      "type": "right_of_use_asset_creation",
+      "amount": 9847215.34,
+      "currency": "CNY",
+      "vendor": null,
+      "asset_code": "RIGHT_OF_USE_OFFICE_GZ_2026",
+      "memo": "广州 IFC RoU asset 初始账面价值 = PV(future lease payments) + initial_direct_costs - lease_incentives",
+      "lease_meta": {
+        "calculation_base": "PV(annuity_due, 60 months, 4.85% IBR, escalator 3%/年)",
+        "initial_direct_costs": 0.00,
+        "lease_incentives": 0.00,
+        "useful_life_months": 60,
+        "depreciation_method": "straight_line"
+      }
+    },
+    {
+      "transaction_id": "LSE-2026-003",
+      "date": "2026-01-15",
+      "type": "lease_liability_recognition",
+      "amount": 9847215.34,
+      "currency": "CNY",
+      "vendor": "广州中盈物业",
+      "asset_code": "LIABILITY_LEASE_OFFICE_GZ_2026",
+      "memo": "租赁负债初始确认，等于 RoU asset 初始账面 (无 IDC / incentives)"
+    },
+    {
+      "transaction_id": "LSE-2026-004",
+      "date": "2026-02-15",
+      "type": "lease_payment",
+      "amount": -186000.00,
+      "currency": "CNY",
+      "vendor": "广州中盈物业",
+      "asset_code": "LIABILITY_LEASE_OFFICE_GZ_2026",
+      "memo": "月度租金支付：拆分为利息 ¥39,816.34 + 本金 ¥146,183.66"
+    },
+    {
+      "transaction_id": "LSE-2026-005",
+      "date": "2026-02-29",
+      "type": "rou_depreciation",
+      "amount": -164120.26,
+      "currency": "CNY",
+      "vendor": null,
+      "asset_code": "RIGHT_OF_USE_OFFICE_GZ_2026",
+      "memo": "RoU 月度直线折旧 = 9847215.34 / 60 = ¥164,120.26"
+    },
+    {
+      "transaction_id": "LSE-2026-006",
+      "date": "2026-03-15",
+      "type": "lease_modification",
+      "amount": 0.00,
+      "currency": "CNY",
+      "vendor": "上海雅居物业",
+      "asset_code": "RIGHT_OF_USE_OFFICE_SH_2024",
+      "memo": "上海办公室原 3 年期改为 5 年期，需做 lease_modification：重新计算 PV + 调整 RoU 和负债",
+      "lease_meta": {
+        "modification_type": "term_extension",
+        "old_remaining_months": 18,
+        "new_remaining_months": 42,
+        "monthly_payment_change": false,
+        "discount_rate_revised_pct": 5.10
+      }
+    },
+    {
+      "transaction_id": "LSE-2026-007",
+      "date": "2026-04-01",
+      "type": "short_term_lease_expense",
+      "amount": -28000.00,
+      "currency": "CNY",
+      "vendor": "杭州西湖区临时仓",
+      "asset_code": null,
+      "memo": "短期租赁（≤12 个月），不进 RoU/Liability，直接费用化"
+    },
+    {
+      "transaction_id": "LSE-2026-008",
+      "date": "2026-04-30",
+      "type": "low_value_lease_expense",
+      "amount": -1800.00,
+      "currency": "CNY",
+      "vendor": "联想",
+      "asset_code": null,
+      "memo": "低价值租赁（笔记本，单价 < $5000），不进 RoU/Liability，直接费用化"
+    }
+  ]
+}

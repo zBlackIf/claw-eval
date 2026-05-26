@@ -1,0 +1,22 @@
+# Volume-Price Analysis Task
+
+## Constraint
+Do NOT search the internet. Use ONLY the local CSV data in stock_data/ directory.
+
+## Steps
+1. Read all CSV files from stock_data/ directory
+2. For each stock, compute:
+   - Daily price change (close - previous close)
+   - Volume change (volume - previous volume)
+   - Pearson correlation between price change and volume change
+3. Handle data quality issues:
+   - Missing values (NaN) should be dropped or filled
+   - Infinite values should be filtered out
+   - Log any data quality issues found
+4. Generate summary report
+
+## Output
+Write results to volume_price_results.csv with columns:
+code, correlation, avg_volume, avg_price_change, data_quality_notes
+
+Write a text summary to analysis_summary.txt

@@ -1,0 +1,116 @@
+task_id: CP31_vue_codebase_architecture_analysis
+task_name: Plan模式：代码架构分析与重构计划
+version: "1.0"
+category: architecture
+difficulty: hard
+tags: [general, single_turn, coding_plan]
+
+source_task_id: "task_09_plan_mode_codebase_analysis"
+source_dataset: "taskset-260325-020101"
+source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
+
+services: []
+
+prompt:
+  text: |
+    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
+    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+
+    - `/workspace/fixtures/src/api/bills.ts`
+    - `/workspace/fixtures/src/api/members.ts`
+    - `/workspace/fixtures/src/api/budgets.ts`
+    - `/workspace/fixtures/src/api/request.ts`
+    - `/workspace/fixtures/src/views/BillList.vue`
+    - `/workspace/fixtures/src/views/MemberList.vue`
+
+    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+
+    你是一个高级前端架构师 AI Agent。请以 Plan 模式对这个 Vue 金融管理后台项目进行代码架构分析，找出代码中的问题和重复模式，然后制定重构计划。
+
+    要求：
+    1. 逐一阅读所有源文件，理解项目结构和代码风格
+    2. 分析代码中的以下问题：
+       - API 层的 CRUD 重复模式（bills, members, budgets 的接口高度类似）
+       - 页面组件的重复模式（loading, error, pagination 逻辑重复）
+       - 缺少的类型定义
+    3. 生成重构产物：
+       - `src/api/createCrudApi.ts` —— 通用 CRUD 工厂函数
+       - `src/composables/useListPage.ts` —— 通用列表页 Composable
+       - `src/types/index.ts` —— 类型定义
+       - `REFACTOR_PLAN.md` —— 完整重构计划（包含优先级、步骤、风险评估）
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/src/api/bills.ts
+  - fixtures/src/api/members.ts
+  - fixtures/src/api/budgets.ts
+  - fixtures/src/api/request.ts
+  - fixtures/src/views/BillList.vue
+  - fixtures/src/views/MemberList.vue
+
+sandbox_grader_files:
+  - fixtures/verify.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+  env_snapshot_timeout: 30
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify.py
+
+env_snapshot_files:
+  - /workspace/src/api/createCrudApi.ts
+  - /workspace/src/composables/useListPage.ts
+  - /workspace/src/types/index.ts
+  - /workspace/REFACTOR_PLAN.md
+  - /workspace/**/*crud*api*
+  - /workspace/**/*useListPage*
+  - /workspace/**/*types*
+  - /workspace/**/*REFACTOR*
+  - /workspace/**/*refactor*plan*
+scoring_components: []
+
+safety_checks: []
+
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 的代码架构分析和重构计划质量。
+
+  ## 代码理解深度
+  - 是否真正理解了代码结构（不仅是表面扫描）
+  - 是否识别了深层次架构问题
+
+  ## 模式识别能力
+  - 是否准确识别了 CRUD 重复模式
+  - 是否识别了页面组件重复模式
+  - 抽象方案是否合理且不过度
+
+  ## 重构方案质量
+  - createCrudApi 是否支持自定义扩展
+  - useListPage 是否涵盖 loading/error/pagination
+  - 类型定义是否完整
+
+  ## 计划可执行性
+  - 是否有明确的优先级
+  - 是否考虑了向后兼容
+  - 是否评估了风险
+
+  ## 评分标准
+  - 0.9-1.0: 深度理解+完整产物+可执行计划
+  - 0.7-0.8: 大部分正确，产物基本完整
+  - 0.4-0.6: 分析浅显或产物不完整
+  - 0.0-0.3: 未完成
+
+reference_solution: |
+  1. createCrudApi.ts: 工厂函数支持 list/get/create/update/delete + 自定义扩展
+  2. useListPage.ts: Composable 包含 loading/error/pagination/search/refresh
+  3. types/index.ts: 通用 ApiResponse<T>, PaginatedList<T>, CrudApi<T>
+  4. REFACTOR_PLAN.md: 分步骤迁移计划+风险评估
+
+primary_dimensions: [completion, robustness, communication]

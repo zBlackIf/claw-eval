@@ -1,0 +1,36 @@
+{
+  "articles": [
+    {
+      "article_id": "KB-CITE-001",
+      "title": "AI 写作工具引用规范（v1 内部标准）",
+      "category": "engineering",
+      "summary": "写作时每个事实性陈述必须带引用；引用形式：[1] 或 [来源]；文末统一 References 列表，列出每条引用的标题 + 链接 + 访问日期。模型可见引用但不要瞎编。",
+      "tags": ["citation", "standard", "writing"],
+      "updated_at": "2025-12-01"
+    },
+    {
+      "article_id": "KB-CITE-002",
+      "title": "学术写作 vs 科技博客的引用风格差异",
+      "category": "writing",
+      "summary": "学术：APA / IEEE 编号制，作者姓 + 年份；科技博客：超链接内联 + 文末 References；新闻稿：括号注 + 文末 sources。本模块默认采用「内联超链接 + 文末 References」科技博客风格。",
+      "tags": ["citation", "style"],
+      "updated_at": "2025-10-12"
+    },
+    {
+      "article_id": "KB-CITE-003",
+      "title": "Provenance Tracking 设计：写作模块的引用追踪机制",
+      "category": "engineering",
+      "summary": "每个 paragraph 在内部保存 source_chunks: [{url, fetched_at, snippet_hash}]；输出时渲染为内联引用；avoid hallucination 的关键是把 retrieval 结果 ID 串入 prompt。",
+      "tags": ["provenance", "rag", "design"],
+      "updated_at": "2026-01-18"
+    },
+    {
+      "article_id": "KB-CITE-004",
+      "title": "用户反馈 2025 Q4：引用缺失 / 错误的 top 3 抱怨",
+      "category": "ux",
+      "summary": "(1) 模型说\"研究显示...\"但没有具体引用；(2) 引用链接 404 或指向无关页面；(3) References 列表里有空条目或重复。本次升级要解决全部 3 个。",
+      "tags": ["feedback", "pain_point"],
+      "updated_at": "2026-02-08"
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+task_id: T175_zh_a_share_etf_fee_reduction_impact
+task_name: "A股ETF降费改革影响分析"
+version: "1.0"
+category: finance
+difficulty: easy
+tags: [general]
+
+services:
+  - name: web_real
+    command: python mock_services/web_real/server.py
+    port: 9114
+    health_check: http://localhost:9114/web/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9114/web/reset
+
+prompt:
+  text: |
+    我最近在研究基金投资，听说2023年以来中国公募基金行业在推ETF降费改革，很多头部ETF的管理费和托管费都降了。
+    我想了解具体情况，帮我做一个调研。
+
+    请搜索以下信息：
+
+    1. 中国公募基金降费改革的时间线：什么时候开始的？分几个阶段？
+    2. ETF降费前后的费率变化：
+       - 股票型ETF管理费从多少降到多少？
+       - 托管费从多少降到多少？
+       - 综合费率（管理费+托管费）降了多少个基点？
+    3. 哪些头部基金公司率先降费？覆盖了哪些主流指数？
+    4. 降费对投资者的实际影响：
+       - 以一笔10万元的沪深300ETF投资为例，一年能省多少费用？
+       - 对基金公司营收的影响
+
+    5. 和美国ETF（如Vanguard、iShares）的费率对比，中国ETF降费后差距还有多大？
+
+    输出一份面向普通投资者的分析报告，结论要回答："现在买ETF比以前便宜了多少？值得从主动基金换到ETF吗？"
+  language: zh
+
+tools:
+  - name: web_search
+    description: 搜索互联网，返回相关网页结果列表（标题、链接、摘要）
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+          description: 搜索关键词或查询语句
+        max_results:
+          type: integer
+          description: 最大返回结果数
+          default: 10
+      required: [query]
+
+  - name: web_fetch
+    description: 获取指定URL的完整网页内容
+    input_schema:
+      type: object
+      properties:
+        url:
+          type: string
+          description: 要获取的网页URL
+        timeout_seconds:
+          type: integer
+          description: 请求超时时间（秒）
+          default: 30
+      required: [url]
+
+tool_endpoints:
+  - tool_name: web_search
+    url: http://localhost:9114/web/search
+    method: POST
+  - tool_name: web_fetch
+    url: http://localhost:9114/web/fetch
+    method: POST
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+scoring_components:
+  - name: reform_timeline
+    weight: 0.20
+    check:
+      type: keywords_present
+      keywords: ["2023", "降费", "改革", "阶段"]
+  - name: fee_changes
+    weight: 0.30
+    check:
+      type: keywords_present
+      keywords: ["0.15%", "0.05%", "管理费", "托管费"]
+  - name: investor_impact
+    weight: 0.25
+    check:
+      type: keywords_present
+      keywords: ["10万", "节省", "基点", "费用"]
+  - name: us_comparison
+    weight: 0.25
+    check:
+      type: keywords_present
+      keywords: ["Vanguard", "美国", "对比", "费率"]
+
+safety_checks: []
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 完成 A股ETF降费改革影响分析的质量。
+
+  场景：普通基金投资者了解ETF降费政策对自己的影响。
+  核心价值：帮投资者做出"主动基金 vs ETF"的配置决策。
+
+  评分维度：
+
+  D1. 改革时间线 (权重 20%)
+      关键事实：
+      - 2023年7月：证监会发布公募基金费率改革方案
+      - 第一阶段（2023年）：主动权益类基金管理费上限降至1.2%
+      - 第二阶段（2024年）：ETF等被动产品降费
+      - 多家头部公司（华夏、易方达、南方等）跟进
+      评分标准：
+      - 1.0: 时间线清晰 + 分阶段说明
+      - 0.5: 提到降费但时间线不清
+      - 0.0: 时间线错误
+
+  D2. 费率数据 (权重 30%)
+      典型股票型ETF费率变化：
+      - 管理费: 0.50% → 0.15%（降幅70%）
+      - 托管费: 0.10% → 0.05%（降幅50%）
+      - 综合费率: 0.60% → 0.20%（降低40bp）
+      评分标准：
+      - 1.0: 管理费和托管费变化正确（含降后费率0.15%/0.05%）
+      - 0.5: 方向正确但数字不够准确
+      - 0.0: 费率数据错误
+
+  D3. 投资者实际影响 (权重 25%)
+      以10万元计算：
+      - 降费前: 10万×0.60% = 600元/年
+      - 降费后: 10万×0.20% = 200元/年
+      - 每年节省约400元（或40bp）
+      - vs 主动基金（管理费1.2%+托管费0.2%=1.4%）→ ETF优势1.2%/年
+      评分标准：
+      - 1.0: 有具体计算 + 与主动基金对比
+      - 0.5: 有定性结论但缺少具体计算
+      - 0.0: 无影响分析
+
+  D4. 中美对比与结论 (权重 25%)
+      - 美国头部ETF费率: Vanguard S&P500 (VOO) 0.03%, iShares (IVV) 0.03%
+      - 中国降费后: 0.15%+0.05% = 0.20%
+      - 差距: 仍有约17bp差距，但已大幅缩小
+      - 结论: ETF降费后性价比显著提升，长期投资者应考虑从高费率主动基金转向ETF
+      评分标准：
+      - 1.0: 中美对比 + 明确结论
+      - 0.5: 有对比但结论不够明确
+      - 0.0: 无对比
+
+  最终评分 = 0.20*D1 + 0.30*D2 + 0.25*D3 + 0.25*D4
+
+reference_solution: |
+  搜索策略：
+  1. web_search("中国公募基金 降费改革 2023 2024 时间线 ETF") → 改革背景
+  2. web_search("股票ETF 管理费 托管费 降费 0.15% 0.05%") → 具体费率变化
+  3. web_search("华夏 易方达 沪深300 ETF 降费 费率调整") → 头部公司响应
+  4. web_search("Vanguard VOO expense ratio 2024 iShares") → 美国ETF费率
+  5. web_search("ETF降费 投资者 省多少 主动基金 对比") → 投资者影响
+
+  关键数据：
+  - 降费后股票型ETF: 管理费0.15% + 托管费0.05% = 综合0.20%
+  - 降费前: 管理费0.50% + 托管费0.10% = 综合0.60%
+  - 美国头部ETF: ~0.03%
+  - 10万元/年节省约400元
+
+primary_dimensions: [completion, robustness, communication]

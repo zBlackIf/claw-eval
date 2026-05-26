@@ -22,11 +22,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         poppler-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Install sandbox server dependencies (PyPI via TUNA mirror)
+# Install sandbox server dependencies.
+# v0.37.3 ark overlay: keep the index configurable so local smoke runs are not
+# blocked when a regional mirror is stale or returns transient 403s.
+ARG PIP_INDEX_URL=https://pypi.org/simple
+ARG PIP_TRUSTED_HOST=
 COPY requirements-sandbox-server.txt /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt \
-        -i https://pypi.tuna.tsinghua.edu.cn/simple \
-        --trusted-host pypi.tuna.tsinghua.edu.cn \
+        -i "${PIP_INDEX_URL}" \
+        $(if [ -n "${PIP_TRUSTED_HOST}" ]; then printf '%s' "--trusted-host ${PIP_TRUSTED_HOST}"; fi) \
         --no-cache-dir \
     && rm /tmp/requirements.txt
 
@@ -35,8 +39,8 @@ COPY src/claw_eval/sandbox/ /opt/sandbox/
 
 # Playwright + Chromium for browser screenshot/recording support
 RUN pip install playwright --no-cache-dir \
-        -i https://pypi.tuna.tsinghua.edu.cn/simple \
-        --trusted-host pypi.tuna.tsinghua.edu.cn \
+        -i "${PIP_INDEX_URL}" \
+        $(if [ -n "${PIP_TRUSTED_HOST}" ]; then printf '%s' "--trusted-host ${PIP_TRUSTED_HOST}"; fi) \
     && playwright install --with-deps chromium
 
 EXPOSE 8080

@@ -1,0 +1,58 @@
+# provenance:
+#   themis_dataset: taskset-260421-225115-strict-v2
+#   themis_task_id: task_36_superpowers_skill_verify
+#   themis_rank_original: 22
+#   themis_metrics: { std_trim: 0.414, range_trim: 0.980, mean_trim: 0.635 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525.md
+#   mapping_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525-mapping.md
+task_id: CP18_fund_trading_logic_audit
+task_name: "基金交易逻辑代码审计（严格 rubric v2）（CP18 / 源 taskset-260421-225115-strict-v2:task_36_superpowers_skill_verify）"
+version: "1.0"
+category: code_review
+difficulty: easy
+tags: [general]
+
+source_task_id: "task_36_superpowers_skill_verify"
+source_dataset: "taskset-260421-225115-strict-v2"
+source_description: "从 Themis PinchBench top100（2026-05-25 二次筛选，killer bucket）中按跨模型 std_trim 排名精选的高区分度题（原始排名 #22，std_trim 0.414 / range_trim 0.980 / mean_trim 0.635），改编为 Claw-Eval Pattern D (sandbox-adapted) 格式，PinbenchAdaptedGrader 类属性声明自动评分。原始 prompt 重写以适配本仓库 mock service 与 fixtures，源映射见 docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525-mapping.md。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/code/fund_trader.py 是我们公募基金的申购 / 赎回核心
+    模块。代码上线前我需要一份严格的代码审计报告：让开发拿到能直接动手修，
+    让风控主管能看出每个问题的真实影响。
+
+    模块该实现的业务约定写在文件顶部的注释里，请按约定来审，不要凭空指出
+    代码里其实并不存在的问题。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+local_grader_files:
+  - fixtures/bugs_reference.md
+
+sandbox_files:
+  - fixtures/code/fund_trader.py
+
+environment:
+  timeout_seconds: 300
+  max_turns: 15
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward an audit that identifies the four core bugs (subscribe cash check, weighted avg cost, T+1 violation, redemption fee tier reversal) with file:line citations and concrete fix code — no fabricated issues."
+
+reference_solution: |
+  Read /workspace/fixtures/code/fund_trader.py. Identify and document 4 core bugs
+  (CRITICAL: cash-not-checked, T+1 missing; HIGH: avg_cost weighted wrong,
+  fee-tier reversed) plus 1 LOW (cash KeyError). For each: position, current behavior,
+  expected behavior per spec, impact (regulatory / user / financial), fix code.
+  Add ≥3 pytest scenarios validating the fixes.
+
+primary_dimensions: [completion, communication, safety]

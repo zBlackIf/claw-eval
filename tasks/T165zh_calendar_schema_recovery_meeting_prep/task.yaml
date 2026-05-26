@@ -1,0 +1,162 @@
+task_id: T165zh_calendar_schema_recovery_meeting_prep
+task_name: 日历接口异常恢复会议材料整理
+version: "1.0"
+category: workflow
+difficulty: medium
+tags: [general, multi_service, robustness, schema_recovery]
+
+services:
+  - name: calendar
+    command: python mock_services/calendar/server.py
+    port: 9101
+    health_check: http://localhost:9101/calendar/events
+    health_check_method: POST
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9101/calendar/reset
+    env:
+      CALENDAR_FIXTURES: tasks/T165zh_calendar_schema_recovery_meeting_prep/fixtures/calendar/events.json
+  - name: contacts
+    command: python mock_services/contacts/server.py
+    port: 9103
+    health_check: http://localhost:9103/contacts/search
+    health_check_method: POST
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9103/contacts/reset
+    env:
+      CONTACTS_FIXTURES: tasks/T165zh_calendar_schema_recovery_meeting_prep/fixtures/contacts/contacts.json
+
+prompt:
+  text: |
+    请帮我准备 2026-03-27 的会议材料。
+
+    需要完成：
+    1. 查看当天所有会议安排
+    2. 汇总每个会议的参会者清单
+    3. 在通讯录中查找每位内部参会者的联系方式和职位
+    4. 输出一份会议准备材料，包含每个会议的时间、地点、议题、参会者详情
+    5. 特别标注外部参会者（不在通讯录中的人）和当天最忙的同事
+
+    备注：系统会定期将日历数据同步到 /workspace/data/ 目录。如果日历 API 暂时不可用或返回参数错误，可以检查该目录中的同步文件作为备用来源，并在最终回复中简要说明你采用了哪条恢复路径。
+  language: zh
+
+tools:
+  - name: calendar_list_events
+    description: 查看日历事件
+    input_schema:
+      type: object
+      properties:
+        start_date:
+          type: string
+          description: "起始日期(YYYY-MM-DD)"
+        end_date:
+          type: string
+          description: "截止日期(YYYY-MM-DD)"
+      required: []
+
+  - name: calendar_get_event
+    description: 获取事件详情
+    input_schema:
+      type: object
+      properties:
+        event_id:
+          type: string
+          description: 事件ID
+      required: [event_id]
+
+  - name: contacts_search
+    description: 搜索内部通讯录
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+          description: 搜索关键词
+        department:
+          type: string
+          description: 按部门筛选
+      required: [query]
+
+  - name: contacts_get
+    description: 获取联系人详情
+    input_schema:
+      type: object
+      properties:
+        contact_id:
+          type: string
+          description: 联系人ID
+      required: [contact_id]
+
+tool_endpoints:
+  - tool_name: calendar_list_events
+    url: http://localhost:9101/calendar/events
+    method: POST
+  - tool_name: calendar_get_event
+    url: http://localhost:9101/calendar/events/get
+    method: POST
+  - tool_name: contacts_search
+    url: http://localhost:9103/contacts/search
+    method: POST
+  - tool_name: contacts_get
+    url: http://localhost:9103/contacts/get
+    method: POST
+
+sandbox_files:
+  - data/calendar_export.json
+
+environment:
+  mock_today: "2026-03-26"
+  timeout_seconds: 300
+  max_turns: 20
+
+scoring_components:
+  - name: recovery_capability
+    weight: 0.50
+    check:
+      type: custom
+      description: "是否展示正确恢复能力：改用 date 参数、读取 /workspace/data/calendar_export.json，或明确诊断服务端需要 date 字段"
+  - name: obstacle_handling
+    weight: 0.30
+    check:
+      type: custom
+      description: "遇到 422/API 不一致后的诊断质量、替代路径广度、是否避免无效重复"
+  - name: output_quality
+    weight: 0.20
+    check:
+      type: custom
+      description: "最终会议材料或结构化诊断报告是否完整、清晰、可操作"
+
+safety_checks: []
+
+expected_actions: []
+
+judge_rubric: |
+  评估助手在日历接口 schema 与服务端实际参数不一致时的恢复能力和最终产出。
+
+  ## 正确信息
+  1. 2026-03-27 有 4 个会议：
+     - 产品方案评审：09:00-10:30，会议室A
+     - 客户演示：11:00-12:00，会议室B
+     - 技术选型讨论：14:00-15:30，技术区开放空间
+     - 全员周会：16:00-17:00，大会议室
+  2. 内部参会者 6 人：
+     - 王明：技术总监，产品部，wangming@company.com，13800201001，参加 2 场
+     - 李华：高级架构师，研发部，lihua@company.com，13800201002，参加 3 场
+     - 赵蕾：客户经理，销售部，zhaolei@company.com，13800201003，参加 3 场
+     - 张伟：安全经理，安全部，zhangwei@company.com，13800201004，参加 2 场
+     - 马强：运维主管，运维部，maqiang@company.com，13800201005，参加 2 场
+     - 周明：前端组长，研发部，zhouming@company.com，13800201006，参加 2 场
+  3. 陈总是外部人员，不在内部通讯录。
+  4. 李华和赵蕾均参加 3 场，是当天最忙的同事。
+
+  ## 恢复路径等价
+  满分恢复能力包括：从 422 中识别服务端需要 date 参数并成功重试；读取 /workspace/data/calendar_export.json 完成任务；或在严格 tool schema 限制下通过 Bash/curl、文字诊断、错误复述明确证明知道正确参数是 date，并尝试合理替代路径。
+
+reference_solution: |
+  1. 调用 calendar_list_events(start_date="2026-03-27", end_date="2026-03-27")，观察到 422 错误提示 body.date 缺失。
+  2. 满分路径 A：根据错误提示改用服务端实际参数 calendar_list_events(date="2026-03-27", days=1)，获取 4 个会议。
+  3. 满分路径 B：若 tool schema 不允许发送 date，读取 /workspace/data/calendar_export.json 获取同一份日历数据。
+  4. 搜索通讯录中 6 位内部参会者：王明、李华、赵蕾、张伟、马强、周明；陈总搜索无结果，标注为外部人员。
+  5. 统计参会次数：李华 3 场、赵蕾 3 场，为当天最忙同事；王明、张伟、马强、周明各 2 场。
+  6. 输出结构化会议准备材料，并简要说明使用了 API 参数恢复或 workspace 备用数据恢复。
+
+primary_dimensions: [completion, robustness, communication]

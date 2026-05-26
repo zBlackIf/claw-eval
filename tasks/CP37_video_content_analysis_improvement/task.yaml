@@ -1,0 +1,101 @@
+task_id: CP37_video_content_analysis_improvement
+task_name: 短视频内容分析与改进建议
+version: "1.0"
+category: data_analysis
+difficulty: medium
+tags: [general, single_turn, coding_plan]
+
+source_task_id: "task_20_video_content_analysis"
+source_dataset: "taskset-260408-163403"
+source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
+
+services: []
+
+prompt:
+  text: |
+    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
+    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+
+    - `/workspace/fixtures/video_metadata.json`
+    - `/workspace/fixtures/video_transcript.txt`
+    - `/workspace/fixtures/competitor_analysis.csv`
+    - `/workspace/fixtures/task_spec.md`
+
+    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+
+    用户分享了一个短视频链接让你分析问题。视频已经无法直接打开，但我已经把视频的元数据、逐帧文字描述和竞品数据整理好了。请读取所有文件，从标题、内容结构、标签策略、受众定位、数据表现五个维度进行分析，生成详细报告和结构化改进方案。
+
+    分析维度：
+    1. 标题与封面 - 标题吸引力、关键词密度、搜索友好度
+    2. 内容结构 - 开头钩子、节奏把控、信息密度、结尾引导
+    3. 标签策略 - 标签数量、精准度、热度与竞争度平衡
+    4. 受众定位 - 目标用户画像、内容与受众匹配度
+    5. 数据诊断 - 基于互动数据判断问题环节
+
+    输出要求：
+    1. 生成 video_analysis_report.md - 详细分析报告
+    2. 生成 improvement_plan.json - 结构化改进方案，格式包含：video_id, overall_score(0-100), issues数组(dimension/severity/description/suggestion), optimized_title_options数组, recommended_hashtags数组, content_structure_suggestion
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/video_metadata.json
+  - fixtures/video_transcript.txt
+  - fixtures/competitor_analysis.csv
+  - fixtures/task_spec.md
+
+sandbox_grader_files:
+  - fixtures/verify.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+  env_snapshot_timeout: 30
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify.py
+
+env_snapshot_files:
+  - /workspace/video_analysis_report.md
+  - /workspace/improvement_plan.json
+scoring_components: []
+
+safety_checks: []
+
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 对短视频内容分析任务的执行质量。
+
+  ## 输入处理
+  - 是否读取了全部 4 个输入文件
+  - 分析是否基于真实数据而非泛泛而谈
+
+  ## 报告质量
+  - 是否覆盖了全部 5 个分析维度
+  - 问题诊断是否精准（如：标签太少、结尾缺引导等）
+  - 改进建议是否具体可操作
+
+  ## 结构化输出
+  - improvement_plan.json 是否为合法 JSON
+  - 是否包含 overall_score、issues、optimized_title_options、recommended_hashtags
+  - issues 中的 severity 判断是否合理
+
+  ## 评分标准
+  - 0.9-1.0: 全面准确的分析，具体可行的改进方案
+  - 0.7-0.8: 覆盖大部分维度，建议较为具体
+  - 0.4-0.6: 分析浮于表面或遗漏维度
+  - 0.0-0.3: 未完成或输出格式错误
+
+reference_solution: |
+  关键发现：
+  - 标题"终于实现笔记自由了"缺乏关键词，搜索不友好
+  - 只有2个标签且非精准标签
+  - 结尾突然，缺乏互动引导（未让观众点赞、关注、评论）
+  - 互动率极低(点赞率5.3%，评论率0.9%)
+  - 建议：增加精准标签、优化标题含关键词、结尾加CTA
+
+primary_dimensions: [completion, robustness, communication]

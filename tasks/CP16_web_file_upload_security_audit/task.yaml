@@ -1,0 +1,58 @@
+# provenance:
+#   themis_dataset: taskset-260408-163403
+#   themis_task_id: task_04_security_audit_file_upload
+#   themis_rank_original: 19
+#   themis_metrics: { std_trim: 0.415, range_trim: 1.000, mean_trim: 0.721 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525.md
+#   mapping_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525-mapping.md
+task_id: CP16_web_file_upload_security_audit
+task_name: "Web 项目文件上传漏洞安全审计（CP16 / 源 taskset-260408-163403:task_04_security_audit_file_upload）"
+version: "1.0"
+category: security
+difficulty: easy
+tags: [general]
+
+source_task_id: "task_04_security_audit_file_upload"
+source_dataset: "taskset-260408-163403"
+source_description: "从 Themis PinchBench top100（2026-05-25 二次筛选，killer bucket）中按跨模型 std_trim 排名精选的高区分度题（原始排名 #19，std_trim 0.415 / range_trim 1.000 / mean_trim 0.721），改编为 Claw-Eval Pattern D (sandbox-adapted) 格式，PinbenchAdaptedGrader 类属性声明自动评分。原始 prompt 重写以适配本仓库 mock service 与 fixtures，源映射见 docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525-mapping.md。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/code/ 下是我们一段 legacy 的文件上传后端（PHP）+
+    nginx 上传目录配置。这两个文件 18 个月没做安全 review 了，请帮我做一次
+    完整的安全审计。
+
+    给我一份审计报告：让开发拿到能直接动手修，让安全主管能看出每个问题的
+    严重程度和优先级。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/code/upload_handler.php
+  - fixtures/code/nginx_uploads.conf
+
+environment:
+  timeout_seconds: 300
+  max_turns: 15
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a comprehensive security audit naming concrete vulnerabilities (extension-bypass, MIME, path traversal, RCE via .htaccess, race condition) with file:line citations and a prioritized fix list."
+
+reference_solution: |
+  Read upload_handler.php and nginx_uploads.conf from /workspace/fixtures/code/.
+  Identify ≥10 issues: extension-only whitelist (line ~25), missing MIME/finfo,
+  path traversal (line ~32), missing size enforcement (line ~36 oversize log without
+  return), TOCTOU on move_uploaded_file (line ~41), no .htaccess + nginx allows PHP,
+  XSS on filename echo (line ~47), GDPR log of REMOTE_ADDR (line ~50), missing CSRF
+  token, oversize check has wrong control flow. Produce markdown report with sections
+  Critical / High / Medium / 修复优先级.
+
+primary_dimensions: [completion, communication, safety]

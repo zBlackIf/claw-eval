@@ -1,0 +1,115 @@
+task_id: CP21_tcg_card_rule_schema_construction
+task_name: TCG卡牌游戏规则系统Schema构建
+version: "1.1"
+category: code_generation
+difficulty: hard
+tags: [general, single_turn, coding_plan]
+
+source_task_id: "task_32_tcg_card_rule_schema"
+source_dataset: "taskset-260427-121234"
+
+services: []
+
+prompt:
+  text: |
+    我要为一个 TCG 引擎创建新的游戏规则。游戏名为"Arena TCG"。请严格按照我描述的规则进行，不要添加任何额外内容。如果有不明确的细节，请向我询问。
+
+    规则如下：
+
+    1. **卡牌类型**：5种 -- 英雄牌(hero)、装备牌(equipment)、谋略牌(strategy)、技能牌(skill)、野怪牌(monster)。英雄牌分为 1阶(tier1)、2阶(tier2)、3阶(tier3)。
+
+    2. **场面结构**：每位玩家拥有：前场(front, 至多1名英雄)、后场(back, 其余英雄)、主卡组(deck, 30张)、野怪卡组(monster_deck, 10张)、技能(summoner_skill, 1张)、弃牌堆(discard)、手牌(hand, 上限7张)。前后场合计始终5名英雄。
+
+    3. **卡组构筑**：选定5名英雄，各取1阶卡一张(不计入30张)；主卡组由该5名英雄的2/3阶卡+谋略牌+装备牌组成(30张，同名卡至多4张)；野怪卡组10张(同名至多4张)；1张召唤师技能。
+
+    4. **费用系统**：初始0，每回合上限+1(上限10)，回合开始回满。
+
+    5. **回合操作**(按顺序声明)：
+       - 回合开始：抽1张牌，然后可决定复归已死亡英雄(支付复归代价)
+       - 迅捷(swift)：一回合一次，使用一个英雄的迅捷效果
+       - 主动(active)：一回合一次，使用一个英雄的主动效果，立即结束回合
+       - 谋略(strategy)：一回合任意次，使用手牌中的谋略牌
+       - 装备(equip)：一回合任意次，给英雄装备(旧装备进弃牌堆)
+       - 升级(upgrade)：一回合任意次，将英雄从N阶升到N+1阶(不可跳阶)
+       - 替换(replace)：一回合任意次，3阶英雄替换为手中另一张同名3阶卡
+       - 撤退(retreat)：支付撤退代价，前场英雄与后场英雄交换，恢复血量
+       - 结束回合
+
+    6. **英雄卡要素**：name, card_art, hp, retreat_cost, defeat_cost, revive_cost, effects(分为swift/active/upgrade_replace三类), tags, tier
+
+    7. **击败与胜负**：英雄HP归零则被击败 -> 支付击败代价(从卡组顶部弃N张) -> 死亡英雄留在场上(死亡状态) -> 若在前场须与后场存活英雄交换 -> 对手翻野怪牌结算奖励。卡组耗尽或全部英雄死亡则输。
+
+    请完成以下任务（所有产物必须落到容器 `/workspace` 下）：
+    1. 在 `/workspace/data/rules/arena_tcg/rule.json` 中写入完整的游戏规则定义(JSON格式)
+    2. 创建至少6张卡牌JSON文件在 `/workspace/data/rules/arena_tcg/cards/` 目录下(至少包含：2张英雄牌不同阶、1张装备牌、1张谋略牌、1张技能牌、1张野怪牌)
+    3. 创建 `/workspace/skills/arena_tcg_card_import.md` 描述从卡图提取卡牌信息的标准操作流程
+    4. 所有卡牌JSON必须包含上述英雄卡的全部9个要素(非英雄卡不适用的字段留null)
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files: []
+
+sandbox_grader_files:
+  - fixtures/verify.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+  env_snapshot_timeout: 30
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify.py
+
+env_snapshot_files:
+  - /workspace/data/rules/arena_tcg/rule.json
+  - /workspace/data/rules/arena_tcg/cards/*.json
+  - /workspace/skills/arena_tcg_card_import.md
+
+scoring_components: []
+
+safety_checks: []
+
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 是否严格按照用户描述的规则创建了完整的 TCG 游戏规则系统。
+
+  ## 规则完整性
+  - rule.json 是否包含全部 7 个规则模块（卡牌类型、场面结构、卡组构筑、费用系统、回合操作、英雄卡要素、击败与胜负）
+  - 每个模块的细节是否与 prompt 完全一致（如手牌上限 7、卡组 30 张、同名至多 4 张等数字）
+  - 回合操作的 9 个阶段是否按正确顺序列出
+
+  ## 卡牌文件质量
+  - 是否创建了至少 6 张卡牌（2 英雄不同阶 + 装备 + 谋略 + 技能 + 野怪）
+  - 英雄卡是否包含全部 9 个要素（name, card_art, hp, retreat_cost, defeat_cost, revive_cost, effects, tags, tier）
+  - 非英雄卡是否对不适用字段留 null
+  - JSON 格式是否合法且 schema 一致
+
+  ## 严格性
+  - 是否添加了 prompt 未要求的额外规则或机制
+  - 是否遗漏了 prompt 中明确要求的任何内容
+
+  ## 文档质量
+  - arena_tcg_card_import.md 是否描述了标准操作流程
+
+  ## 评分标准
+  - 0.9-1.0: 完美执行，所有规则模块完整且精确，6+ 张卡牌 schema 一致，无额外内容
+  - 0.7-0.8: 大部分正确，少量细节遗漏或 schema 不一致
+  - 0.4-0.6: 结构存在但有明显错误或遗漏
+  - 0.0-0.3: 未完成或严重偏离要求
+
+reference_solution: |
+  1. 创建 /workspace/data/rules/arena_tcg/rule.json，包含：
+     - card_types: [hero, equipment, strategy, skill, monster]，hero 分 tier1/2/3
+     - zones: {front(max 1), back, deck(30), monster_deck(10), summoner_skill(1), discard, hand(max 7)}
+     - deck_building: 5 heroes 各取 1 阶不计入 30 张，主卡组 30 张(2/3 阶+谋略+装备，同名≤4)，野怪 10 张(同名≤4)，1 召唤师技能
+     - cost_system: {initial: 0, per_turn_increment: 1, max: 10, refill_on_turn_start: true}
+     - turn_phases: [draw, revive, swift, active, strategy, equip, upgrade, replace, retreat, end_turn]
+     - hero_card_fields: [name, card_art, hp, retreat_cost, defeat_cost, revive_cost, effects{swift,active,upgrade_replace}, tags, tier]
+     - defeat_victory: HP→0→defeat_cost(discard from deck)→dead state→swap if front→opponent draws monster→deck_out or all_dead = lose
+  2. 创建 6+ 张卡牌 JSON 文件
+  3. 创建 /workspace/skills/arena_tcg_card_import.md SOP
+
+primary_dimensions: [completion, robustness, communication]

@@ -1,0 +1,22 @@
+{
+  "integrations": [
+    {
+      "integration_id": "FS-INT-101",
+      "name": "飞书开放平台 OAuth2 client",
+      "type": "feishu_oauth",
+      "status": "active",
+      "tenant_key": "feishu-tenant-xxx",
+      "scopes": ["im:message:send_as_bot", "im:resource"],
+      "owner_team": "AI Platform"
+    },
+    {
+      "integration_id": "FS-INT-102",
+      "name": "飞书消息事件订阅",
+      "type": "feishu_event",
+      "status": "active",
+      "subscribed_events": ["im.message.receive_v1", "im.chat.member.user.added_v1"],
+      "callback_url": "https://api.internal/feishu/event",
+      "owner_team": "AI Platform"
+    }
+  ]
+}

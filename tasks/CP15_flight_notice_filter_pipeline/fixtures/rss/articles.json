@@ -1,0 +1,180 @@
+[
+  {
+    "article_id": "FN-001",
+    "title": "CA1899（北京-上海）2026-05-26 取消，原因：恶劣天气",
+    "category": "cancellation",
+    "published_at": "2026-05-25T08:30:00Z",
+    "summary": "国航 CA1899 于 2026-05-26 全天取消，已自动改签或退票。",
+    "tags": [
+      "CA",
+      "PEK-SHA",
+      "cancel"
+    ],
+    "source": "民航通告",
+    "word_count": 50,
+    "content": "国航 CA1899 于 2026-05-26 全天取消，已自动改签或退票。",
+    "relevance_tags": [
+      "CA",
+      "PEK-SHA",
+      "cancel"
+    ]
+  },
+  {
+    "article_id": "FN-002",
+    "title": "MU5101（上海-北京）2026-05-25 延误至 18:30 起飞",
+    "category": "delay",
+    "published_at": "2026-05-25T11:00:00Z",
+    "summary": "东航 MU5101 因前序航班延误，预计 18:30 起飞，原计划 15:30。",
+    "tags": [
+      "MU",
+      "SHA-PEK",
+      "delay"
+    ],
+    "source": "民航通告",
+    "word_count": 50,
+    "content": "东航 MU5101 因前序航班延误，预计 18:30 起飞，原计划 15:30。",
+    "relevance_tags": [
+      "MU",
+      "SHA-PEK",
+      "delay"
+    ]
+  },
+  {
+    "article_id": "FN-003",
+    "title": "CZ3001（广州-北京）2026-05-26 改时刻表",
+    "category": "schedule_change",
+    "published_at": "2026-05-25T09:15:00Z",
+    "summary": "南航 CZ3001 原 08:00 → 改为 09:30 起飞。",
+    "tags": [
+      "CZ",
+      "CAN-PEK",
+      "schedule"
+    ],
+    "source": "民航通告",
+    "word_count": 50,
+    "content": "南航 CZ3001 原 08:00 → 改为 09:30 起飞。",
+    "relevance_tags": [
+      "CZ",
+      "CAN-PEK",
+      "schedule"
+    ]
+  },
+  {
+    "article_id": "FN-004",
+    "title": "HU7891（海口-北京）正常运行",
+    "category": "informational",
+    "published_at": "2026-05-25T10:00:00Z",
+    "summary": "海航 HU7891 状态正常，按时起飞。",
+    "tags": [
+      "HU",
+      "HAK-PEK",
+      "normal"
+    ],
+    "source": "民航通告",
+    "word_count": 50,
+    "content": "海航 HU7891 状态正常，按时起飞。",
+    "relevance_tags": [
+      "HU",
+      "HAK-PEK",
+      "normal"
+    ]
+  },
+  {
+    "article_id": "FN-005",
+    "title": "9C8501（上海-重庆）2026-05-26 延误约 2 小时",
+    "category": "delay",
+    "published_at": "2026-05-25T12:00:00Z",
+    "summary": "春秋航空 9C8501 预计 14:00 起飞，原 12:00。",
+    "tags": [
+      "9C",
+      "SHA-CKG",
+      "delay"
+    ],
+    "source": "民航通告",
+    "word_count": 50,
+    "content": "春秋航空 9C8501 预计 14:00 起飞，原 12:00。",
+    "relevance_tags": [
+      "9C",
+      "SHA-CKG",
+      "delay"
+    ]
+  },
+  {
+    "article_id": "FN-006",
+    "title": "ZH9051（深圳-北京）2026-05-26 取消",
+    "category": "cancellation",
+    "published_at": "2026-05-25T13:30:00Z",
+    "summary": "深航 ZH9051 因机务原因取消。",
+    "tags": [
+      "ZH",
+      "SZX-PEK",
+      "cancel"
+    ],
+    "source": "民航通告",
+    "word_count": 50,
+    "content": "深航 ZH9051 因机务原因取消。",
+    "relevance_tags": [
+      "ZH",
+      "SZX-PEK",
+      "cancel"
+    ]
+  },
+  {
+    "article_id": "FN-007",
+    "title": "CA988（北京-纽约）2026-05-27 提前 30 分钟起飞",
+    "category": "schedule_change",
+    "published_at": "2026-05-25T14:00:00Z",
+    "summary": "国航 CA988 跨太平洋航班提前 30 分钟起飞，请旅客提前到达机场。",
+    "tags": [
+      "CA",
+      "PEK-JFK",
+      "schedule",
+      "international"
+    ],
+    "source": "民航通告",
+    "word_count": 50,
+    "content": "国航 CA988 跨太平洋航班提前 30 分钟起飞，请旅客提前到达机场。",
+    "relevance_tags": [
+      "CA",
+      "PEK-JFK",
+      "schedule",
+      "international"
+    ]
+  },
+  {
+    "article_id": "FN-008",
+    "title": "MU5601（昆明-北京）2026-05-26 延误",
+    "category": "delay",
+    "published_at": "2026-05-25T15:00:00Z",
+    "summary": "东航 MU5601 延误 1.5 小时。",
+    "tags": [
+      "MU",
+      "KMG-PEK",
+      "delay"
+    ],
+    "source": "民航通告",
+    "word_count": 50,
+    "content": "东航 MU5601 延误 1.5 小时。",
+    "relevance_tags": [
+      "MU",
+      "KMG-PEK",
+      "delay"
+    ]
+  },
+  {
+    "article_id": "FN-DIST-001",
+    "title": "（干扰条目）一般行业新闻：民航局推动机场扩建",
+    "category": "industry_news",
+    "published_at": "2026-05-25T16:00:00Z",
+    "summary": "民航局发布扩建白皮书，无具体航班影响。",
+    "tags": [
+      "industry"
+    ],
+    "source": "民航通告",
+    "word_count": 50,
+    "content": "民航局发布扩建白皮书，无具体航班影响。",
+    "relevance_tags": [
+      "industry"
+    ]
+  }
+]

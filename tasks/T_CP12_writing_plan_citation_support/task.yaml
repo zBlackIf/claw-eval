@@ -1,0 +1,109 @@
+# provenance:
+#   themis_dataset: taskset-260427-121234
+#   themis_task_id: task_75_writing_plan_citation
+#   themis_rank_original: 32
+#   themis_metrics: { std_trim: 0.405, range_trim: 1.000, mean_trim: 0.624 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525.md
+#   mapping_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525-mapping.md
+#   plan_deviation: 用 kb 替代 documents（与 batch A 同理）
+task_id: T_CP12_writing_plan_citation_support
+task_name: "AI 写作模块添加内联引用支持的设计方案（T_CP12 / 源 taskset-260427-121234:task_75_writing_plan_citation）"
+version: "1.0"
+category: research
+difficulty: easy
+tags: [general]
+
+source_task_id: "task_75_writing_plan_citation"
+source_dataset: "taskset-260427-121234"
+source_description: "从 Themis PinchBench top100（2026-05-25 二次筛选，killer bucket）中按跨模型 std_trim 排名精选的高区分度题（原始排名 #32，std_trim 0.405 / range_trim 1.000 / mean_trim 0.624），改编为 Claw-Eval Pattern D (sandbox-adapted) 格式，PinbenchAdaptedGrader 类属性声明自动评分。原始 prompt 重写以适配本仓库 mock service 与 fixtures，源映射见 docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525-mapping.md。"
+
+services:
+  - name: kb
+    command: python mock_services/kb/server.py
+    port: 9106
+    health_check: http://localhost:9106/kb/search
+    health_check_method: POST
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9106/kb/reset
+    env:
+      KB_FIXTURES: tasks/T_CP12_writing_plan_citation_support/fixtures/kb/articles.json
+
+prompt:
+  text: |
+    我是 AI 写作模块的产品 PM。我们要在现有 writing pipeline 上新增「内联引用支持」
+    功能。请你做调研 + 输出 markdown 形式的设计方案。
+
+    调研步骤：
+    1. kb_search("citation") / kb_search("引用") → 找出 KB-CITE-001..004 全部读完，
+       理解我们的内部引用标准、风格选择、provenance 设计、用户反馈痛点；
+
+    设计方案要求（markdown，按章节）：
+    1. **目标与背景**：引用 KB-CITE-004 的 3 个用户反馈痛点（hallucination 引用 /
+       404 链接 / 空 References）
+    2. **风格选择**：引用 KB-CITE-002，采用「内联超链接 + 文末 References」科技博客风格
+    3. **核心数据模型**：呼应 KB-CITE-003 的 provenance 设计，给出
+       `source_chunks: [{url, fetched_at, snippet_hash}]` 字段定义
+    4. **写作流程改造**：从 retrieval → drafting → citation 渲染的 3 阶段流程
+    5. **质量保证**：3 个机制
+       - 防 hallucination：retrieval ID 串入 prompt（KB-CITE-003）
+       - 防 404：每次发布前抽样 HEAD 请求验证
+       - 防空 References：渲染层校验
+    6. **回归测试**：≥3 个 test case 描述
+
+    输出要求：markdown，≥600 字，引用所有 4 个 KB-CITE 文章 ID（这是「真读」的证据）。
+  language: zh
+
+tools:
+  - name: kb_search
+    description: 搜索内部知识库
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        category:
+          type: string
+        max_results:
+          type: integer
+          default: 5
+      required: [query]
+
+  - name: kb_get_article
+    description: 获取知识库文章详情
+    input_schema:
+      type: object
+      properties:
+        article_id:
+          type: string
+      required: [article_id]
+
+tool_endpoints:
+  - tool_name: kb_search
+    url: http://localhost:9106/kb/search
+    method: POST
+  - tool_name: kb_get_article
+    url: http://localhost:9106/kb/articles/get
+    method: POST
+
+sandbox_files:
+  - fixtures/kb/articles.json
+
+environment:
+  timeout_seconds: 300
+  max_turns: 15
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a citation-support design that references all 4 KB-CITE articles, covers user pain points (hallucination / 404 / empty references), inline + References style, provenance source_chunks data model, and ≥3 regression test cases."
+
+reference_solution: |
+  kb_search("citation") → find KB-CITE-001..004.
+  Read all 4 KB articles. Produce markdown design plan covering:
+  目标/背景 (KB-CITE-004 pain points), 风格选择 (KB-CITE-002 blog style),
+  核心数据模型 (KB-CITE-003 source_chunks), 写作流程, 质量保证 (3 mechanisms),
+  回归测试 (≥3 cases). Reference all 4 KB IDs explicitly.
+
+primary_dimensions: [completion, communication, safety]

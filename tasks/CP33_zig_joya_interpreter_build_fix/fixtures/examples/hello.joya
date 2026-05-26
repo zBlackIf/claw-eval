@@ -1,0 +1,13 @@
+// Hello World in Joya
+let greeting = "Hello, Joya!";
+print(greeting);
+
+let x = 42;
+let y = 8;
+print(x + y);
+
+if (x > 10) {
+  print("x is big");
+} else {
+  print("x is small");
+}

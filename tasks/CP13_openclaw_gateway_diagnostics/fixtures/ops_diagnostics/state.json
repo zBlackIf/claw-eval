@@ -1,0 +1,48 @@
+{
+  "processes": [
+    {"pid": 1, "name": "systemd", "user": "root", "cpu_pct": 0.1, "mem_mb": 12},
+    {"pid": 1234, "name": "openclaw-gateway", "user": "openclaw", "cpu_pct": 18.5, "mem_mb": 820},
+    {"pid": 1245, "name": "openclaw-gateway", "user": "openclaw", "cpu_pct": 22.1, "mem_mb": 845},
+    {"pid": 1267, "name": "openclaw-worker", "user": "openclaw", "cpu_pct": 3.4, "mem_mb": 156},
+    {"pid": 1300, "name": "rogue-test-server", "user": "root", "cpu_pct": 0.5, "mem_mb": 32, "bound_port": 8080},
+    {"pid": 1456, "name": "postgres", "user": "postgres", "cpu_pct": 4.2, "mem_mb": 412}
+  ],
+  "ports": [
+    {"port": 8080, "host": "localhost", "status": "open", "bound_by": "rogue-test-server", "bound_pid": 1300, "expected_owner": "openclaw-gateway"},
+    {"port": 8443, "host": "localhost", "status": "open", "bound_by": "openclaw-gateway", "bound_pid": 1234},
+    {"port": 5432, "host": "localhost", "status": "open", "bound_by": "postgres", "bound_pid": 1456},
+    {"port": 9999, "host": "localhost", "status": "closed", "bound_by": null, "bound_pid": null}
+  ],
+  "services": [
+    {
+      "name": "openclaw-gateway",
+      "status": "degraded",
+      "version": "v0.34.2",
+      "uptime_seconds": 4500,
+      "last_restart_at": "2026-05-25T02:30:00Z",
+      "health_note": "8080 端口被 rogue-test-server 占用，导致部分流量分配失败；需要先 stop 8080 占用者再 restart gateway"
+    },
+    {
+      "name": "openclaw-worker",
+      "status": "healthy",
+      "version": "v0.34.2",
+      "uptime_seconds": 18000,
+      "last_restart_at": "2026-05-24T22:00:00Z"
+    },
+    {
+      "name": "postgres",
+      "status": "healthy",
+      "version": "PG 15.4",
+      "uptime_seconds": 86400,
+      "last_restart_at": "2026-05-24T03:00:00Z"
+    }
+  ],
+  "logs": [
+    {"service": "openclaw-gateway", "timestamp": "2026-05-25T03:40:12Z", "level": "ERROR", "message": "EADDRINUSE: failed to bind 0.0.0.0:8080 (port owned by pid=1300)"},
+    {"service": "openclaw-gateway", "timestamp": "2026-05-25T03:40:18Z", "level": "ERROR", "message": "EADDRINUSE: retry binding 0.0.0.0:8080 failed (attempt 2/5)"},
+    {"service": "openclaw-gateway", "timestamp": "2026-05-25T03:41:02Z", "level": "WARN", "message": "running with only 8443 bound; 50% traffic dropped"},
+    {"service": "openclaw-gateway", "timestamp": "2026-05-25T03:45:30Z", "level": "INFO", "message": "health probe ok on 8443 (8080 still in fail state)"},
+    {"service": "openclaw-worker", "timestamp": "2026-05-25T03:00:00Z", "level": "INFO", "message": "consumer started, lag=0"},
+    {"service": "openclaw-worker", "timestamp": "2026-05-25T03:45:00Z", "level": "INFO", "message": "consumer healthy, lag=12"}
+  ]
+}

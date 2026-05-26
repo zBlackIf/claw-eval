@@ -1,0 +1,77 @@
+[
+  {
+    "article_id": "KB-AIW-001",
+    "title": "现状盘点：3 条 AI 生产线痛点小结",
+    "category": "engineering",
+    "summary": "PL-401 (内容审核) 单 agent 处理多 modal，p99 长尾；PL-402 (客服) 没 review gate，红线话题直接外发风险；PL-403 (运维诊断) 长尾不敢上 prod。结论：必须迁移到 supervisor + specialist 多 agent + 强制 review gate。",
+    "tags": [
+      "ai_workflow",
+      "current_state",
+      "pain_point"
+    ],
+    "updated_at": "2026-03-15",
+    "content": "PL-401 (内容审核) 单 agent 处理多 modal，p99 长尾；PL-402 (客服) 没 review gate，红线话题直接外发风险；PL-403 (运维诊断) 长尾不敢上 prod。结论：必须迁移到 supervisor + specialist 多 agent + 强制 review gate。",
+    "last_updated": "2026-05-01",
+    "views": 0
+  },
+  {
+    "article_id": "KB-AIW-002",
+    "title": "supervisor + specialist 多 agent 架构指南",
+    "category": "architecture",
+    "summary": "supervisor agent 负责：意图理解 + 任务分解 + 路由 + 最终汇总；specialist agent 各自承包单一 domain（text_safety / image_safety / knowledge / decision）。router 由 supervisor 调用 dispatch 函数实现，避免链路 nested 太深。",
+    "tags": [
+      "multi_agent",
+      "supervisor",
+      "pattern"
+    ],
+    "updated_at": "2025-12-20",
+    "content": "supervisor agent 负责：意图理解 + 任务分解 + 路由 + 最终汇总；specialist agent 各自承包单一 domain（text_safety / image_safety / knowledge / decision）。router 由 supervisor 调用 dispatch 函数实现，避免链路 nested 太深。",
+    "last_updated": "2026-05-01",
+    "views": 0
+  },
+  {
+    "article_id": "KB-AIW-003",
+    "title": "Router 规则设计：意图 → agent 映射",
+    "category": "architecture",
+    "summary": "Router 三类规则：(1) 精确路由（intent='refund' → refund_specialist）；(2) 多路由（multi-modal 输入 → 同时跑 text + image specialist 然后 merge）；(3) Fallback（unknown intent → escalation_specialist）。Router 必须支持权重 + 黑名单（如 medical/financial 直接走 review_gate）。",
+    "tags": [
+      "router",
+      "routing_rules",
+      "fallback"
+    ],
+    "updated_at": "2026-01-30",
+    "content": "Router 三类规则：(1) 精确路由（intent='refund' → refund_specialist）；(2) 多路由（multi-modal 输入 → 同时跑 text + image specialist 然后 merge）；(3) Fallback（unknown intent → escalation_specialist）。Router 必须支持权重 + 黑名单（如 medical/financial 直接走 review_gate）。",
+    "last_updated": "2026-05-01",
+    "views": 0
+  },
+  {
+    "article_id": "KB-AIW-004",
+    "title": "Review Gate 设计：人工 vs LLM-judge vs 规则",
+    "category": "safety",
+    "summary": "三档 review gate：(1) auto_rule_gate（确定性正则，最快）；(2) llm_judge_gate（LLM 二审，处理灰色地带）；(3) human_required（高风险全人工，如金融建议、医疗诊断）。所有 production-line 必须至少配 1 档 gate，红线话题强制 human_required。",
+    "tags": [
+      "review_gate",
+      "safety",
+      "compliance"
+    ],
+    "updated_at": "2026-02-10",
+    "content": "三档 review gate：(1) auto_rule_gate（确定性正则，最快）；(2) llm_judge_gate（LLM 二审，处理灰色地带）；(3) human_required（高风险全人工，如金融建议、医疗诊断）。所有 production-line 必须至少配 1 档 gate，红线话题强制 human_required。",
+    "last_updated": "2026-05-01",
+    "views": 0
+  },
+  {
+    "article_id": "KB-AIW-005",
+    "title": "Workflow 迁移最佳实践：双跑 + 灰度",
+    "category": "operations",
+    "summary": "迁移流程：T0 部署新 workflow 但只跑 shadow（不返回给用户）；T+1w 灰度 1% 流量，对比新旧输出差异；T+2w 灰度 10%；T+4w 全量。回滚开关：feature_flag = old_workflow，秒级切回。",
+    "tags": [
+      "migration",
+      "rollout",
+      "shadow_traffic"
+    ],
+    "updated_at": "2026-03-01",
+    "content": "迁移流程：T0 部署新 workflow 但只跑 shadow（不返回给用户）；T+1w 灰度 1% 流量，对比新旧输出差异；T+2w 灰度 10%；T+4w 全量。回滚开关：feature_flag = old_workflow，秒级切回。",
+    "last_updated": "2026-05-01",
+    "views": 0
+  }
+]

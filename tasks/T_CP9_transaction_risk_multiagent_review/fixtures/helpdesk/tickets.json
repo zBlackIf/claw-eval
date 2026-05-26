@@ -1,0 +1,44 @@
+{
+  "tickets": [
+    {
+      "ticket_id": "TK-RF-901",
+      "subject": "Customer CUS-RF-501 reports unauthorized wire activity",
+      "status": "open",
+      "priority": "high",
+      "category": "fraud_dispute",
+      "customer_id": "CUS-RF-501",
+      "opened_at": "2026-05-20T08:30:00Z",
+      "body": "Customer called frantic at 08:30 saying she did NOT authorize any wires to Bahamas. Last activity she remembers is yesterday morning. Possible account takeover or coercion."
+    },
+    {
+      "ticket_id": "TK-RF-902",
+      "subject": "Customer CUS-RF-503 asks about crypto offramp limit policy",
+      "status": "open",
+      "priority": "medium",
+      "category": "policy_question",
+      "customer_id": "CUS-RF-503",
+      "opened_at": "2026-05-22T02:10:00Z",
+      "body": "Customer asks why his $89k crypto offramp is being delayed for review. Mentions urgency."
+    },
+    {
+      "ticket_id": "TK-RF-903",
+      "subject": "False positive: CUS-RF-505 trade payment held",
+      "status": "open",
+      "priority": "low",
+      "category": "false_positive",
+      "customer_id": "CUS-RF-505",
+      "opened_at": "2026-05-23T22:25:00Z",
+      "body": "CUS-RF-505 recurring HK trade payment held by AML. Customer is whitelisted; this is the 47th similar payment this year. Suggest tuning rule."
+    },
+    {
+      "ticket_id": "TK-RF-904",
+      "subject": "FinCEN advisory match — CUS-RF-501",
+      "status": "open",
+      "priority": "high",
+      "category": "compliance_alert",
+      "customer_id": "CUS-RF-501",
+      "opened_at": "2026-05-20T05:00:00Z",
+      "body": "External FinCEN advisory matched on account holder name (family dispute, elder-financial-exploitation watch). Auto-routed to compliance team."
+    }
+  ]
+}

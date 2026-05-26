@@ -10,8 +10,11 @@ All other tool calls are delegated to the standard HTTP ToolDispatcher.
 from __future__ import annotations
 
 import base64
+import hashlib
 import io
 import json
+import os
+import re
 import subprocess
 import time
 from pathlib import Path
@@ -25,6 +28,14 @@ from .sandbox_tools import SANDBOX_TOOL_NAMES
 _ALWAYS_MEDIA_TOOLS = frozenset({"ReadMedia", "BrowserScreenshot"})
 # Tools that conditionally return frames (e.g. Read with image/PDF)
 _CONDITIONAL_MEDIA_TOOLS = frozenset({"Read"})
+
+# v0.30.12 ark overlay: lossless artifact staging for oversized sandbox
+# outputs, plus recoverable tool-use validation errors.
+_MALFORMED_TOOL_INPUT_KEY = "__ark_malformed_tool_input__"
+TOOL_CACHE_ROOT = os.environ.get("ARK_CLAW_EVAL_TOOL_CACHE_ROOT", "/workspace/.tool_cache")
+MAX_INLINE_TOOL_RESULT_CHARS = int(os.environ.get("ARK_CLAW_EVAL_MAX_INLINE_TOOL_RESULT_CHARS", "30000"))
+TOOL_RESULT_PREVIEW_CHARS = int(os.environ.get("ARK_CLAW_EVAL_TOOL_RESULT_PREVIEW_CHARS", "4000"))
+MAX_READ_INLINE_CHARS = int(os.environ.get("ARK_CLAW_EVAL_MAX_READ_INLINE_CHARS", "30000"))
 
 
 def _compress_image_b64(
@@ -72,6 +83,48 @@ def _compress_image_b64(
         return data_b64
 
 
+def _sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8", errors="replace")).hexdigest()
+
+
+def _byte_len(text: str) -> int:
+    return len(text.encode("utf-8", errors="replace"))
+
+
+def _safe_name(value: str) -> str:
+    return re.sub(r"[^a-zA-Z0-9_.-]+", "_", value).strip("_") or "tool"
+
+
+def _json_type_name(value) -> str:
+    if isinstance(value, dict):
+        return "object"
+    if isinstance(value, list):
+        return "array"
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "boolean"
+    if isinstance(value, (int, float)):
+        return "number"
+    if isinstance(value, str):
+        return "string"
+    return type(value).__name__
+
+
+def _preview_payload(text: str) -> dict:
+    preview = max(0, TOOL_RESULT_PREVIEW_CHARS)
+    if len(text) <= preview:
+        return {"preview": text}
+    return {
+        "preview_head": text[:preview],
+        "preview_tail": text[-preview:] if preview else "",
+    }
+
+
+def _read_hint(path: str) -> str:
+    return f"Use Read with offset and limit to inspect the full output, e.g. Read(file_path='{path}', offset=1, limit=200)."
+
+
 class SandboxToolDispatcher:
     """Routes sandbox tools to container HTTP or local fallback; others via HTTP."""
 
@@ -96,6 +149,9 @@ class SandboxToolDispatcher:
     def dispatch(
         self, tool_use: ToolUseBlock, trace_id: str
     ) -> tuple[ToolResultBlock, ToolDispatch, list[ImageBlock] | None]:
+        malformed = self._malformed_tool_input(tool_use)
+        if malformed is not None:
+            return self._tool_input_error_result(tool_use, trace_id, malformed)
         if tool_use.name in SANDBOX_TOOL_NAMES:
             return self._dispatch_sandbox(tool_use, trace_id)
         result, event = self._http.dispatch(tool_use, trace_id)
@@ -162,6 +218,10 @@ class SandboxToolDispatcher:
     def _dispatch_remote(
         self, tool_use: ToolUseBlock, trace_id: str
     ) -> tuple[ToolResultBlock, ToolDispatch, list[ImageBlock] | None]:
+        schema_error = self._validate_tool_use(tool_use)
+        if schema_error is not None:
+            return self._tool_input_error_result(tool_use, trace_id, schema_error)
+
         path = self._PATH_MAP.get(tool_use.name)
         if not path:
             return self._error_result(
@@ -226,6 +286,7 @@ class SandboxToolDispatcher:
             if not extra_images:
                 extra_images = None
         else:
+            body = self._apply_output_policy(tool_use, trace_id, body, remote=True)
             text_content = json.dumps(body, ensure_ascii=False)
 
         result = ToolResultBlock(
@@ -262,6 +323,10 @@ class SandboxToolDispatcher:
     def _dispatch_local(
         self, tool_use: ToolUseBlock, trace_id: str
     ) -> tuple[ToolResultBlock, ToolDispatch, list[ImageBlock] | None]:
+        schema_error = self._validate_tool_use(tool_use)
+        if schema_error is not None:
+            return self._tool_input_error_result(tool_use, trace_id, schema_error)
+
         handler_name = self._LOCAL_HANDLERS.get(tool_use.name)
         if handler_name is None:
             return self._error_result(
@@ -274,6 +339,7 @@ class SandboxToolDispatcher:
         t0 = time.monotonic()
         try:
             body = handler(tool_use.input)
+            body = self._apply_output_policy(tool_use, trace_id, body, remote=False)
             latency_ms = (time.monotonic() - t0) * 1000
             content_text = json.dumps(body, ensure_ascii=False) if isinstance(body, dict) else str(body)
             result = ToolResultBlock(
@@ -472,6 +538,195 @@ class SandboxToolDispatcher:
         }
 
     # ---- helpers ---------------------------------------------------------
+
+    @staticmethod
+    def _malformed_tool_input(tool_use: ToolUseBlock) -> dict | None:
+        marker = tool_use.input.get(_MALFORMED_TOOL_INPUT_KEY)
+        return marker if isinstance(marker, dict) else None
+
+    @staticmethod
+    def _validate_tool_use(tool_use: ToolUseBlock) -> dict | None:
+        def missing(param: str) -> dict:
+            return {
+                "tool_name": tool_use.name,
+                "input_type": "object",
+                "message": f"The parameter `{param}` is required and must be a string.",
+            }
+
+        def not_string(param: str) -> dict:
+            return {
+                "tool_name": tool_use.name,
+                "input_type": _json_type_name(tool_use.input.get(param)),
+                "message": f"The parameter `{param}` must be a string.",
+            }
+
+        if tool_use.name == "Bash":
+            value = tool_use.input.get("command")
+            if value is None:
+                return missing("command")
+            if not isinstance(value, str):
+                return not_string("command")
+        elif tool_use.name == "Grep":
+            value = tool_use.input.get("pattern")
+            if value is None:
+                return missing("pattern")
+            if not isinstance(value, str):
+                return not_string("pattern")
+        elif tool_use.name == "Read":
+            value = tool_use.input.get("file_path") or tool_use.input.get("path")
+            if value is None:
+                return {
+                    "tool_name": tool_use.name,
+                    "input_type": "object",
+                    "message": "The parameter `file_path` or `path` is required and must be a string.",
+                }
+            if not isinstance(value, str):
+                return {
+                    "tool_name": tool_use.name,
+                    "input_type": _json_type_name(value),
+                    "message": "The parameter `file_path` or `path` must be a string.",
+                }
+        return None
+
+    def _tool_cache_path(self, trace_id: str, tool_use: ToolUseBlock, suffix: str) -> str:
+        base = _safe_name(f"{trace_id}_{tool_use.id}_{suffix}")
+        return f"{TOOL_CACHE_ROOT.rstrip('/')}/{base}"
+
+    def _write_artifact(self, path: str, content: str, *, remote: bool) -> dict:
+        if remote:
+            try:
+                client = self._get_client()
+                resp = client.post(f"{self._sandbox_url}/write", json={"path": path, "content": content})
+                body = resp.json()
+                if resp.status_code >= 400 or isinstance(body, dict) and body.get("error"):
+                    return {"ok": False, "error": body}
+                return {"ok": True, "response": body}
+            except Exception as exc:
+                return {"ok": False, "error": str(exc)}
+
+        local_root = Path(".tool_cache").resolve()
+        local_root.mkdir(parents=True, exist_ok=True)
+        local_path = local_root / Path(path).name
+        local_path.write_text(content, encoding="utf-8")
+        return {"ok": True, "response": {"written": str(local_path), "bytes": _byte_len(content)}}
+
+    def _stage_large_text(
+        self,
+        *,
+        tool_use: ToolUseBlock,
+        trace_id: str,
+        label: str,
+        text: str,
+        remote: bool,
+        threshold: int | None = None,
+    ) -> dict | None:
+        threshold = MAX_INLINE_TOOL_RESULT_CHARS if threshold is None else threshold
+        if len(text) <= threshold:
+            return None
+        path = self._tool_cache_path(trace_id, tool_use, label)
+        write_result = self._write_artifact(path, text, remote=remote)
+        staged = {
+            f"{label}_path": path,
+            "total_chars": len(text),
+            "total_bytes": _byte_len(text),
+            "sha256": _sha256_text(text),
+            "truncated": True,
+            "read_hint": _read_hint(path),
+            **_preview_payload(text),
+        }
+        if not write_result.get("ok"):
+            staged["artifact_write_error"] = write_result.get("error")
+        return staged
+
+    def _apply_output_policy(
+        self,
+        tool_use: ToolUseBlock,
+        trace_id: str,
+        body: dict,
+        *,
+        remote: bool,
+    ) -> dict:
+        if not isinstance(body, dict):
+            return body
+        out = dict(body)
+        if tool_use.name == "Bash":
+            for key in ("stdout", "stderr"):
+                value = out.get(key)
+                if isinstance(value, str):
+                    staged = self._stage_large_text(
+                        tool_use=tool_use,
+                        trace_id=trace_id,
+                        label=key,
+                        text=value,
+                        remote=remote,
+                    )
+                    if staged is not None:
+                        out[key] = staged
+        elif tool_use.name == "Grep":
+            value = out.get("output")
+            if isinstance(value, str):
+                staged = self._stage_large_text(
+                    tool_use=tool_use,
+                    trace_id=trace_id,
+                    label="output",
+                    text=value,
+                    remote=remote,
+                )
+                if staged is not None:
+                    staged.pop("preview_tail", None)
+                    staged["total_lines"] = len(value.splitlines())
+                    staged["preview_lines"] = value.splitlines()[:20]
+                    out["output"] = staged
+        elif tool_use.name == "Read":
+            value = out.get("content")
+            if isinstance(value, str) and len(value) > MAX_READ_INLINE_CHARS:
+                raw_path = tool_use.input.get("file_path") or tool_use.input.get("path") or ""
+                out["content"] = value[:TOOL_RESULT_PREVIEW_CHARS]
+                out["content_truncated"] = True
+                out["total_chars"] = len(value)
+                out["total_bytes"] = _byte_len(value)
+                out["sha256"] = _sha256_text(value)
+                out["read_hint"] = _read_hint(str(raw_path))
+        return out
+
+    @staticmethod
+    def _tool_input_error_message(tool_use: ToolUseBlock, marker: dict) -> str:
+        provided = marker.get("input_type") or "unknown"
+        message = marker.get("message")
+        if not message:
+            message = (
+                "The parameter `tool_use.input` type is expected as `object` "
+                f"but provided as `{provided}`."
+            )
+        return (
+            "<tool_use_error>InputValidationError: "
+            f"{tool_use.name} failed due to the following issue:\n"
+            f"{message}</tool_use_error>"
+        )
+
+    def _tool_input_error_result(
+        self,
+        tool_use: ToolUseBlock,
+        trace_id: str,
+        marker: dict,
+    ) -> tuple[ToolResultBlock, ToolDispatch, list[ImageBlock] | None]:
+        error_msg = self._tool_input_error_message(tool_use, marker)
+        result = ToolResultBlock(
+            tool_use_id=tool_use.id,
+            content=[TextBlock(text=error_msg)],
+            is_error=True,
+        )
+        event = ToolDispatch(
+            trace_id=trace_id,
+            tool_use_id=tool_use.id,
+            tool_name=tool_use.name,
+            endpoint_url=f"local://sandbox/{tool_use.name}/input-validation",
+            request_body=tool_use.input,
+            response_status=400,
+            response_body={"error": error_msg, "marker": marker},
+            latency_ms=0.0,
+        )
+        return result, event, None
 
     @staticmethod
     def _error_result(

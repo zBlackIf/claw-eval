@@ -1,0 +1,84 @@
+task_id: CP44_k8s_script_multi_app_deployment
+task_name: K8s Script Multi-App Deployment
+version: "1.0"
+category: code_generation
+difficulty: medium
+tags: [general, single_turn, coding_plan]
+
+source_task_id: "task_05_k8s_script_multi_app"
+source_dataset: "taskset-260427-121234"
+source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
+
+services: []
+
+prompt:
+  text: |
+    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
+    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+
+    - `/workspace/fixtures/config.conf`
+    - `/workspace/fixtures/prevent_app_basic_12b_001.sh`
+    - `/workspace/fixtures/prevent_app_basic_03b_002.sh`
+    - `/workspace/fixtures/common_utils.sh`
+
+    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+
+    我有一套云应用弹性评估脚本。config.conf 里已经写好了 dify 和 halo 两种部署形态的配置（包括 K8s 和 Docker 两种方式，以及各自的访问地址）。
+
+    请参照 prevent_app_basic_12b_001.sh 里切换应用和部署形式的逻辑，改进 prevent_app_basic_03b_002.sh 脚本，让它能根据 config.conf 的配置自动选择当前要评估的应用和部署方式。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/config.conf
+  - fixtures/prevent_app_basic_12b_001.sh
+  - fixtures/prevent_app_basic_03b_002.sh
+  - fixtures/common_utils.sh
+
+sandbox_grader_files:
+  - fixtures/verify.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+  env_snapshot_timeout: 30
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify.py
+
+env_snapshot_files:
+  - /workspace/prevent_app_basic_03b_002.sh
+  - /workspace/**/prevent_app_basic_03b_002.sh
+scoring_components: []
+
+safety_checks: []
+
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 对 K8s 评估脚本改进的质量。
+
+  ## 核心检查
+  - 是否 source 了 config.conf
+  - 是否支持 halo/dify 应用切换（case/if 逻辑）
+  - 是否区分 K8s 和 Docker 部署方式
+  - 是否沿用 12b_001.sh 的模式（common_utils, log functions, main()）
+  - shell 语法是否正确（then/fi 匹配，shebang 存在）
+
+  ## 评分标准
+  - 0.9-1.0: 全部满足，pattern 一致，可运行
+  - 0.7-0.8: 大部分正确，小细节遗漏
+  - 0.4-0.6: 部分改动但不完整
+  - 0.0-0.3: 未修改或破坏原有功能
+
+reference_solution: |
+  在 03b_002.sh 中：
+  1. source ./config.conf
+  2. 添加 select_app() 函数（从 12b_001.sh 参考）
+  3. 在 main() 中调用 select_app
+  4. 用 $app_url 替换硬编码的 APP_URL
+
+primary_dimensions: [completion, robustness, communication]

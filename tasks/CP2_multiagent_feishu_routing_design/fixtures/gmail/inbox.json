@@ -1,0 +1,31 @@
+[
+  {
+    "from": "tech-leadership@company.com",
+    "to": [
+      "ai-platform@company.com"
+    ],
+    "subject": "多 Agent 飞书路由架构 - 立项 PRD",
+    "body": "我们要把现有 4 个独立飞书 Bot（客服 / 运维 / HR / 财务）整合成统一的 multi-agent 路由架构。目标：(1) 单一入口接收所有 channel 消息；(2) 智能路由到正确 Agent；(3) 支持 fallback 与 conflict 仲裁；(4) 全流程可审计 + 回滚。请安排 PM 出方案。",
+    "labels": [
+      "urgent",
+      "prd_request"
+    ],
+    "message_id": "MSG-FS-001",
+    "date": "2026-05-20T10:00:00Z",
+    "is_read": false
+  },
+  {
+    "from": "ops-lead@company.com",
+    "to": [
+      "ai-platform@company.com"
+    ],
+    "subject": "现有路由规则混乱，请尽快治理",
+    "body": "RR-105 通用群 fallback 已禁用，消息堆积；RR-106 与 RR-102 在 OPS-PROD 群有规则冲突，关键词触发不可预期。请新方案至少解决这两个问题。",
+    "labels": [
+      "routing_chaos"
+    ],
+    "message_id": "MSG-FS-002",
+    "date": "2026-05-22T14:30:00Z",
+    "is_read": false
+  }
+]

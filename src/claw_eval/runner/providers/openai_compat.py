@@ -1,4 +1,9 @@
-"""OpenAI-compatible provider (GPT-4o, vLLM, MiMo, etc.)."""
+"""OpenAI-compatible provider (GPT-4o, vLLM, MiMo, etc.).
+
+v0.30.12 ark overlay: replay captured reasoning_content with the field name
+required by DeepSeek native endpoints while preserving the existing
+OpenRouter-style ``reasoning`` field for other OpenAI-compatible providers.
+"""
 
 from __future__ import annotations
 
@@ -16,6 +21,8 @@ from ...models.content import AudioBlock, ImageBlock, TextBlock, ToolUseBlock, V
 from ...models.message import Message
 from ...models.tool import ToolSpec
 from ...models.trace import TokenUsage
+
+_MALFORMED_TOOL_INPUT_KEY = "__ark_malformed_tool_input__"
 
 
 def _tool_spec_to_openai(spec: ToolSpec) -> dict[str, Any]:
@@ -38,6 +45,42 @@ def _audio_format_from_mime(mime_type: str) -> str:
     if mime in {"audio/mp3", "audio/mpeg"}:
         return "mp3"
     return "wav"
+
+
+def _json_preview(value: Any, limit: int = 500) -> str:
+    try:
+        text = json.dumps(value, ensure_ascii=False, default=str)
+    except TypeError:
+        text = repr(value)
+    return text if len(text) <= limit else text[:limit] + "...[truncated]"
+
+
+def _json_type_name(value: Any) -> str:
+    if isinstance(value, dict):
+        return "object"
+    if isinstance(value, list):
+        return "array"
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "boolean"
+    if isinstance(value, (int, float)):
+        return "number"
+    if isinstance(value, str):
+        return "string"
+    return type(value).__name__
+
+
+def _coerce_tool_input(tool_name: str, raw_input: Any) -> dict[str, Any]:
+    if isinstance(raw_input, dict):
+        return raw_input
+    return {
+        _MALFORMED_TOOL_INPUT_KEY: {
+            "tool_name": tool_name,
+            "input_type": _json_type_name(raw_input),
+            "input_preview": _json_preview(raw_input),
+        }
+    }
 
 
 _TOOL_CALL_BLOCK_RE = re.compile(
@@ -179,7 +222,17 @@ def _blocks_to_openai_content(msg: Message) -> str | list[dict[str, Any]]:
     return parts
 
 
-def _message_to_openai(msg: Message) -> dict[str, Any] | list[dict[str, Any]]:
+def _resolve_reasoning_replay_field(model_id: str | None, base_url: str | None) -> str:
+    haystack = f"{model_id or ''} {base_url or ''}".lower()
+    if "deepseek" in haystack:
+        return "reasoning_content"
+    return "reasoning"
+
+
+def _message_to_openai(
+    msg: Message,
+    reasoning_replay_field: str = "reasoning",
+) -> dict[str, Any] | list[dict[str, Any]]:
     """Convert our Message to OpenAI chat format.
 
     Returns a single dict for simple messages, or a list of dicts
@@ -217,9 +270,7 @@ def _message_to_openai(msg: Message) -> dict[str, Any] | list[dict[str, Any]]:
             ],
         }
         if msg.reasoning_content:
-            # Use "reasoning" for OpenRouter compatibility (also accepted as
-            # "reasoning_content" by native DeepSeek/QwQ endpoints).
-            d["reasoning"] = msg.reasoning_content
+            d[reasoning_replay_field] = msg.reasoning_content
         return d
 
     # Simple text message
@@ -228,7 +279,7 @@ def _message_to_openai(msg: Message) -> dict[str, Any] | list[dict[str, Any]]:
         "content": _blocks_to_openai_content(msg),
     }
     if msg.reasoning_content:
-        d["reasoning"] = msg.reasoning_content
+        d[reasoning_replay_field] = msg.reasoning_content
     return d
 
 
@@ -245,6 +296,8 @@ class OpenAICompatProvider:
         reasoning_effort: str | None = None,
     ) -> None:
         self.model_id = model_id
+        self.base_url = base_url
+        self.reasoning_replay_field = _resolve_reasoning_replay_field(model_id, base_url)
         self.extra_body = extra_body or {}
         self.temperature = temperature
         self.reasoning_effort = reasoning_effort
@@ -269,7 +322,7 @@ class OpenAICompatProvider:
         # Build OpenAI messages list
         oai_messages: list[dict[str, Any]] = []
         for msg in messages:
-            converted = _message_to_openai(msg)
+            converted = _message_to_openai(msg, self.reasoning_replay_field)
             if isinstance(converted, list):
                 oai_messages.extend(converted)
             else:
@@ -500,10 +553,11 @@ class OpenAICompatProvider:
                     args = json.loads(tc.function.arguments)
                 except json.JSONDecodeError:
                     args = {}
+                tool_name = tc.function.name
                 parsed_tool_uses.append(ToolUseBlock(
                     id=tc.id,
-                    name=tc.function.name,
-                    input=args,
+                    name=tool_name,
+                    input=_coerce_tool_input(tool_name, args),
                 ))
             content_blocks.extend(parsed_tool_uses)
         else:

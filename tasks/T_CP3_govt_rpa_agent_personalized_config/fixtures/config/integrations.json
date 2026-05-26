@@ -1,0 +1,31 @@
+{
+  "integrations": [
+    {
+      "integration_id": "RPA-INT-101",
+      "name": "政务 OA 系统",
+      "type": "oa",
+      "status": "active",
+      "endpoints": {"doc_create": "POST /oa/doc", "doc_search": "GET /oa/doc/search"},
+      "auth": {"method": "ca_cert + ukey"},
+      "compliance_note": "等保三级，所有写操作需 CA 证书 + UKey 二次验证"
+    },
+    {
+      "integration_id": "RPA-INT-102",
+      "name": "户籍管理系统",
+      "type": "domain_system",
+      "status": "active",
+      "endpoints": {"household_query": "POST /huji/query"},
+      "auth": {"method": "vpn_tunnel + service_account"},
+      "compliance_note": "只读授权，写操作走线下"
+    },
+    {
+      "integration_id": "RPA-INT-103",
+      "name": "政府数据中台",
+      "type": "data_lake",
+      "status": "active",
+      "endpoints": {"dataset_query": "POST /data/query"},
+      "auth": {"method": "internal_jwt"},
+      "compliance_note": "查询全部 log，留 3 年"
+    }
+  ]
+}

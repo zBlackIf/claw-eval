@@ -1,0 +1,82 @@
+{
+  "integrations": [
+    {
+      "integration_id": "STG-101",
+      "name": "AWS S3 海外主存储",
+      "type": "object_storage",
+      "vendor": "aws_s3",
+      "region": "us-east-1",
+      "status": "active",
+      "auth": {
+        "method": "iam_role",
+        "role_arn": "arn:aws:iam::123456789012:role/clawhub-s3-reader"
+      },
+      "buckets": ["clawhub-prod-assets", "clawhub-prod-logs"],
+      "max_object_size_mb": 5120,
+      "supports_multipart": true,
+      "supports_presigned_url": true,
+      "presigned_url_max_ttl_seconds": 604800,
+      "monthly_traffic_gb": 8200,
+      "owner_team": "海外平台组"
+    },
+    {
+      "integration_id": "STG-102",
+      "name": "阿里云 OSS 国内主存储",
+      "type": "object_storage",
+      "vendor": "aliyun_oss",
+      "region": "cn-hangzhou",
+      "status": "active",
+      "auth": {
+        "method": "sts_token",
+        "ram_role": "acs:ram::cn-hangzhou:role/clawhub-oss-prod"
+      },
+      "buckets": ["clawhub-cn-assets", "clawhub-cn-logs", "clawhub-cn-cold"],
+      "max_object_size_mb": 51200,
+      "supports_multipart": true,
+      "supports_presigned_url": true,
+      "presigned_url_max_ttl_seconds": 32400,
+      "monthly_traffic_gb": 14500,
+      "owner_team": "国内平台组"
+    },
+    {
+      "integration_id": "STG-103",
+      "name": "Azure Blob 备份存储",
+      "type": "object_storage",
+      "vendor": "azure_blob",
+      "region": "eastasia",
+      "status": "degraded",
+      "auth": {
+        "method": "azure_ad_app",
+        "tenant_id": "tenant-redacted",
+        "client_id": "client-redacted"
+      },
+      "buckets": ["clawhub-backup-warm", "clawhub-backup-cold"],
+      "max_object_size_mb": 4750,
+      "supports_multipart": true,
+      "supports_presigned_url": true,
+      "presigned_url_max_ttl_seconds": 86400,
+      "monthly_traffic_gb": 320,
+      "owner_team": "DR 组",
+      "incident_note": "Azure AD app secret 将于 2026-06-15 到期，需提前 14 天轮换"
+    },
+    {
+      "integration_id": "STG-104",
+      "name": "MinIO 内部对象存储",
+      "type": "object_storage",
+      "vendor": "minio",
+      "region": "intranet",
+      "status": "active",
+      "auth": {
+        "method": "access_key",
+        "access_key_id": "minioadmin"
+      },
+      "buckets": ["dev-sandbox", "ci-artifacts"],
+      "max_object_size_mb": 5120,
+      "supports_multipart": true,
+      "supports_presigned_url": true,
+      "presigned_url_max_ttl_seconds": 604800,
+      "monthly_traffic_gb": 90,
+      "owner_team": "开发体验组"
+    }
+  ]
+}

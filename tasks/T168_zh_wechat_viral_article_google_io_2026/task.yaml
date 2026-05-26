@@ -1,0 +1,239 @@
+task_id: T168_zh_wechat_viral_article_google_io_2026
+task_name: 微信公众号深度复盘长文（Google I/O 2026 资讯）
+version: "1.3"
+category: workflow
+difficulty: hard
+tags: [general]
+
+services:
+  - name: web_real
+    command: python mock_services/web_real/server.py
+    port: 9114
+    health_check: http://localhost:9114/web/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9114/web/reset
+
+prompt:
+  text: |
+    我是科技自媒体「AI 前线观察」主理人，粉丝 15W。Google I/O 2026 刚结束 Keynote，帮我写一篇深度复盘公众号长文，
+    KPI 是全网 10万+ 阅读量：
+
+    1. 联网搜索 I/O 2026 keynote 全部发布，按议程分 7 大块（AI 模型 / Gemini
+       产品 / Agent 系统 / 视觉生成 / 搜索 / Agent 电商 / 其他），共 20+ 子产品
+    2. 写作调性按我之前爆款的风格——朴素直白不标题党，单句成段、口语化、该吐槽就
+       吐槽（emmm / 有点拉 / 过于大冤种）、引用 keynote 英文原话
+    3. 结构用「一. 二. 三. ...」罗马数字大块 +「1. 2. 3.」阿拉伯子节
+    4. 全文 3500-6000 中文字，单段 ≤ 100 字
+    5. 结尾固定套路：Hassabis "奇点 / singularity" 金句升华 + 个人感慨 +
+       「点赞 / 在看 / 转发」三连引导 + 「星标 ⭐ 下次再见」暖结尾
+    6. 关键数据（跑分、定价、合作伙伴、上市时间）必须搜实，搜不到的别瞎编
+    7. 直接输出完整 markdown，我会复制到公众号编辑器粘贴
+  language: zh
+
+tools:
+  - name: web_search
+    description: 搜索互联网，返回相关网页结果列表（标题、链接、摘要）
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+          description: 搜索关键词或查询语句
+        max_results:
+          type: integer
+          description: 最大返回结果数
+          default: 10
+      required: [query]
+
+  - name: web_fetch
+    description: 获取指定URL的完整网页内容
+    input_schema:
+      type: object
+      properties:
+        url:
+          type: string
+          description: 要获取的网页URL
+        timeout_seconds:
+          type: integer
+          description: 请求超时时间（秒）
+          default: 30
+      required: [url]
+
+tool_endpoints:
+  - tool_name: web_search
+    url: http://localhost:9114/web/search
+    method: POST
+  - tool_name: web_fetch
+    url: http://localhost:9114/web/fetch
+    method: POST
+
+local_grader_files:
+  - fixtures/reference_article.md
+
+environment:
+  timeout_seconds: 1800
+  max_turns: 60
+
+scoring_components:
+  - name: info_coverage_breadth
+    weight: 0.30
+    check:
+      type: llm_judge
+      description: "是否广泛覆盖 I/O 2026 keynote 7 大议程模块（≥6/7）和 20+ 子产品；关键数据（跑分、定价、上市时间、合作伙伴）准确无编造"
+  - name: writing_voice_alignment
+    weight: 0.25
+    check:
+      type: llm_judge
+      description: "调性对齐用户范文：朴素标题不标题党 + 单句成段口语化 + ≥5 处个人吐槽 + 引用 keynote 英文原话 + 第一人称视角"
+  - name: structure_and_density
+    weight: 0.20
+    check:
+      type: llm_judge
+      description: "罗马数字 + 阿拉伯数字双层结构，单段 ≤100 字短段落节奏，全文 3500-6000 中文字"
+  - name: closing_and_engagement
+    weight: 0.10
+    check:
+      type: llm_judge
+      description: "结尾三要素：高管金句（Hassabis 奇点）+ 个人感慨 + 朴素三连（点赞/在看/转发/星标/下次再见）。禁止 ABCD 投票或花哨互动"
+  - name: compliance_and_truthfulness
+    weight: 0.15
+    check:
+      type: llm_judge
+      description: "无违禁词（震惊/炸了/绝对/暴利）；不诋毁竞品；不编造产品（Gemini 4/Pixel Glasses）；关键数据交代出处"
+
+safety_checks: []
+expected_actions: []
+
+judge_rubric: |
+  评估自媒体作者的 Google I/O 2026 公众号深度复盘长文。
+
+  ## 信息覆盖广度
+
+  ### 七大议程模块
+
+  1. **AI 模型**: Gemini 3.5 Flash（Terminal-Bench 2.1 编码 76.2% vs 3.1 Pro
+     70.3%；GDPval-AA 1656 vs 1314 Elo；输入 $1.50 / 输出 $9 per million
+     token；比 3.1 Pro 便宜 40%；上下文 100 万；4x faster output）+
+     Gemini Omni Flash（多模态视频生成；下个月发 Omni Pro）
+  2. **Gemini 产品（≥4 个子产品）**: Neural Expressive 新设计 / Ask Maps /
+     Ask YouTube / Docs Live / Gemini Live 多方言 / Daily Brief /
+     NotebookLM 升级（电影级视频概览 + EPUB 上传 + 与 Gemini App 打通）
+  3. **Agent 系统**: Antigravity 2.0（桌面应用 + CLI 替代 Gemini CLI，
+     2026-06-18 停服 + SDK + 93 subagents/12h/2.6B tokens/<$1000 演示 +
+     12x faster）+ Gemini Spark（24/7 个人 Agent，云端跑，Ultra 订阅）+
+     Android Halo（Agent 状态栏 home base）
+  4. **视觉生成**: Google Pics（Workspace 新图像工具）/ Stitch（UI 设计，
+     1 亿 UI 生成数）/ Google Flow + Flow Music / SynthID（OpenAI/Kakao/
+     ElevenLabs 加入合作，1000 亿张图 + 6 万年音频水印）
+  5. **Google 搜索（≥3 项更新）**: 搜索框 25 年最大升级（多模态输入）/
+     AI Overviews + AI Mode 合并 / Search Agents / Agentic Coding 进搜索
+     （Antigravity 驱动）/ AI Mode 月活 10 亿，Gemini 3.5 Flash 成默认模型
+  6. **Agent 电商**: UCP（创始伙伴 Shopify/Etsy/Wayfair/Target/Walmart +
+     委员会 Amazon/Meta/Microsoft/Salesforce/Stripe）+ AP2（三道护栏 +
+     tamper-proof mandate）+ Universal Cart（跨商家智能购物车）
+  7. **其他**: Android XR 眼镜（Gentle Monster + Warby Parker + 三星 +
+     Qualcomm，Fall 2026 音频眼镜先上，同时支持 iOS/Android）+ TPU 第 8 代
+     （8t 训练 + 8i 推理双芯架构 + Jackson Pathways + 跨 100 万 TPU +
+     1500 tokens/sec）+ AI 科研（Gemini for Science 三件套 + Weather Next
+     + Code Mender）
+
+  ### 价格与套餐
+  - AI Ultra plan 拆分两档：$100/月（新）+ $200/月（老降价）
+  - Spark 在两档都可用
+
+  ### 编造红线（一票否决）
+  出现 "Gemini 4"、"Gemini 5"、"Pixel Glasses"、"Google Vision Pro" 等
+  实际不存在的产品 → 立即扣分；将旧 I/O（2024/2025）发布张冠李戴 → 扣分
+
+  ## 写作调性
+
+  范文（黄金对照标准）已通过 local_grader_files 注入 grader sub-rubric。
+  范文标题：《帮大家总结了一下凌晨的 Google I/O 2026 开发者大会》。
+
+  ### 必须的调性特征
+  1. **标题朴素直白**: 不出现"震惊""炸了""卧槽""一夜变天""杀死 OpenAI"等
+     标题党词
+  2. **单句成段 + 短句节奏**: 大量段落 1-2 句话
+  3. **个人吐槽 / 口语化（≥5 处）**: 如 "emmm"、"用起来其实有点拉"、
+     "过于大冤种"、"我自己是真的有点期待了"、"我也确实相信"、"还蛮动容的"
+  4. **该吐槽就吐槽**: 看到拉的产品就说拉，价格贵就吐槽
+  5. **引用 keynote 英文原话**: ≥1 处英文金句
+  6. **第一人称视角**: 大量 "我"、"我自己"、"我也"、"我熬"、"我整理"
+
+  ### 反模式
+  - 通篇 Google 通稿翻译毫无个人观察
+  - 全程吹捧无吐槽
+  - 过分堆 emoji 或华丽辞藻
+
+  ## 结构与信息密度
+
+  ### 必须的结构特征
+  1. **罗马数字大块**: 「一. 二. 三. 四. 五. 六. 七.」5-7 个大块
+  2. **阿拉伯数字子节**: 每大块下「1. 2. 3.」罗列子产品
+  3. **短段落节奏**: 平均段落 ≤ 100 字，无长段落墙
+  4. **字数**: 3500-6000 中文字符（范文约 5000 字）
+  5. **markdown 强调**: 使用引用块（>）+ ## 二级标题 + **加粗**
+
+  ### 反模式
+  - 用 ## 平铺所有内容（不用罗马数字）
+  - 长段落墙（单段 > 200 字）
+  - 字数 < 2500（信息密度严重不足）
+
+  ## 结尾升华与互动
+
+  ### 高管金句（结尾升华必备）
+  - Demis Hassabis: "When we look back at this time, I think we'll realize
+    that we were standing in the foothills of the singularity"
+    （"我们正站在奇点的山脚下"）
+
+  ### 必须模仿的三要素
+  1. **高管金句升华**: 引用 Hassabis 上述金句或 Pichai 等价 keynote 金句
+  2. **个人感慨**: 有人情味的个人感想（如范文中的"AI 是人类智慧的放大器"）
+  3. **朴素三连引导 + 暖结尾**: "点赞、在看、转发" + "星标 ⭐" +
+     "下次再见" / "谢谢你看我的文章"
+
+  ### 反模式（重要）
+  - 塞 A/B/C/D 投票选项 → 严重不符合范文
+  - 留 2-3 个互动问题 / 留言钩子
+  - 仅 "完" / "以上" 等冷淡结尾
+
+  ## 合规与真实性
+
+  ### 平台合规
+  - 不出现违禁词：震惊体、绝对化承诺（"绝对能 / 一定会"）、暴利、政治敏感
+  - 不诋毁竞品：可客观吐槽（"用起来不如 Seedance"）但不能恶意贬低
+    （"OpenAI 就是垃圾"）
+
+  ### 内容真实性
+  - 数据交代出处："Google 官方说"、"现场演示"、"keynote 上"
+  - 不编造产品（"Gemini 4"、"Pixel Glasses"、"Google Vision Pro"）
+  - 不编造合作（"Google 收购 OpenAI"）
+  - 不编造价格 / 时间（定价和上市时间必须与实际公告一致）
+
+  ## 评分标准
+
+  - 0.9-1.0: 5 个维度全部到位，覆盖 ≥6 大块 + ≥18 子产品 + 调性高度对齐
+    范文 + 结构标准 + 结尾三要素齐全 + 全文 3500-6000 字 + 无编造
+  - 0.7-0.8: 5 个维度大部分到位，覆盖 5 大块 + 12-17 子产品 + 调性基本对齐
+    + 结构齐全 + 字数 2800-3499
+  - 0.5-0.6: 覆盖 3-4 大块 + 8-11 子产品 + 调性部分对齐
+  - 0.2-0.4: 覆盖 ≤ 2 大块或大量编造产品或全程标题党调性
+  - 0.0-0.1: 未联网搜索 / 文章严重残缺 / 大量事实错误
+
+reference_solution: |
+  1. web_search("Google I/O 2026 keynote announcements") → 议程概览
+  2. web_fetch(blog.google/...all-our-announcements) → 100+ 项公告
+  3. web_search("Gemini 3.5 Flash Terminal-Bench 76.2 GDPval") → 跑分
+  4. web_search("Antigravity 2.0 CLI 93 subagents") → Agent 平台
+  5. web_search("Gemini Spark Ultra plan $100") → 个人 Agent
+  6. web_search("Android XR Gentle Monster Warby Parker fall 2026") → 眼镜
+  7. web_search("Google Search AI Mode Search Agents 10 billion MAU") → 搜索
+  8. web_search("Universal Commerce Protocol AP2 Universal Cart") → Agent 电商
+  9. web_search("TPU 8 generation 8t 8i Jackson Pathways") → 算力
+  10. web_search("Gemini for Science Weather Next Code Mender") → AI 科研
+  11. web_search("Hassabis foothills singularity quote keynote") → 结尾金句
+  12. 输出 markdown：朴素标题 + 罗马数字 7 大块 + 阿拉伯数字子节 +
+      个人吐槽 + 英文金句升华 + 三连引导 + 暖结尾，3500-6000 字
+
+primary_dimensions: [completion, robustness, communication]

@@ -1,0 +1,95 @@
+[
+  {
+    "customer_id": "CUS-3001",
+    "name": "炫途旗舰店",
+    "tier": "vip",
+    "status": "active",
+    "industry": "电商-数码",
+    "annual_revenue": 18000000,
+    "review_feedback": [
+      {
+        "asin": "B0CXC4M001",
+        "rating": 5,
+        "snippet": "夜视真的强，雨天也能看清车牌"
+      },
+      {
+        "asin": "B0CXC4M001",
+        "rating": 5,
+        "snippet": "ADAS 偶尔误报，但 GPS 测速很准"
+      },
+      {
+        "asin": "B0CXC4M001",
+        "rating": 2,
+        "snippet": "256G TF 卡两个月就坏，差评"
+      },
+      {
+        "asin": "B0CXC4M001",
+        "rating": 3,
+        "snippet": "WiFi 连接经常掉线，APP UI 像 10 年前的"
+      },
+      {
+        "asin": "B0CXC4M002",
+        "rating": 4,
+        "snippet": "便宜实用，但 1080P 夜视一般"
+      },
+      {
+        "asin": "B0CXC4M002",
+        "rating": 5,
+        "snippet": "性价比之王，安装简单"
+      },
+      {
+        "asin": "B0CXC4M002",
+        "rating": 2,
+        "snippet": "广角说是 130 度其实只有 110 度"
+      }
+    ],
+    "contact_person": "炫途旗舰店",
+    "email": "contact@example.com",
+    "phone": "+1-000-000-0000",
+    "last_contact_date": "2026-05-01"
+  },
+  {
+    "customer_id": "CUS-3002",
+    "name": "新读官方店",
+    "tier": "standard",
+    "status": "active",
+    "industry": "电商-阅读器",
+    "annual_revenue": 4200000,
+    "review_feedback": [
+      {
+        "asin": "B0DEK7001",
+        "rating": 5,
+        "snippet": "彩屏比想象中清晰，看漫画很爽"
+      },
+      {
+        "asin": "B0DEK7001",
+        "rating": 5,
+        "snippet": "防水真的有用，浴缸里看了半小时没事"
+      },
+      {
+        "asin": "B0DEK7001",
+        "rating": 4,
+        "snippet": "翻页键手感不错，但电池一周要充一次"
+      },
+      {
+        "asin": "B0DEK7002",
+        "rating": 2,
+        "snippet": "手写笔延迟太高，写字像延迟 300ms"
+      },
+      {
+        "asin": "B0DEK7002",
+        "rating": 3,
+        "snippet": "PDF 批注是亮点，但云端同步经常失败"
+      },
+      {
+        "asin": "B0DEK7002",
+        "rating": 2,
+        "snippet": "微信导出格式乱码，导出 word 完全没法看"
+      }
+    ],
+    "contact_person": "新读官方店",
+    "email": "contact@example.com",
+    "phone": "+1-000-000-0000",
+    "last_contact_date": "2026-05-01"
+  }
+]

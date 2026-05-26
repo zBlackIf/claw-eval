@@ -1,0 +1,60 @@
+# provenance:
+#   themis_dataset: taskset-260427-121234
+#   themis_task_id: task_60_rbac_test_gen
+#   themis_rank_original: 21
+#   themis_metrics: { std_trim: 0.415, range_trim: 1.000, mean_trim: 0.746 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525.md
+#   mapping_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525-mapping.md
+task_id: CP17_rbac_module_test_generation
+task_name: "RBAC 三模块测试用例生成（CP17 / 源 taskset-260427-121234:task_60_rbac_test_gen）"
+version: "1.0"
+category: testing
+difficulty: easy
+tags: [general]
+
+source_task_id: "task_60_rbac_test_gen"
+source_dataset: "taskset-260427-121234"
+source_description: "从 Themis PinchBench top100（2026-05-25 二次筛选，killer bucket）中按跨模型 std_trim 排名精选的高区分度题（原始排名 #21，std_trim 0.415 / range_trim 1.000 / mean_trim 0.746），改编为 Claw-Eval Pattern D (sandbox-adapted) 格式，PinbenchAdaptedGrader 类属性声明自动评分。原始 prompt 重写以适配本仓库 mock service 与 fixtures，源映射见 docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525-mapping.md。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/code/ 下有 RBAC 模块的三个 Python 文件：
+    role_service.py / user_role_binding.py / access_check.py。
+
+    请帮我为这三个模块各写一份 pytest 测试，放在一份 markdown 报告里，每个
+    模块一个独立的 ```python 代码块，单独保存为 test_<module>.py 就能跑。
+    测试要真的能跑，要尽量覆盖到模块语义边界（不只是 happy path），全部用
+    内存数据（不要连真实数据库或网络）。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/code/role_service.py
+  - fixtures/code/user_role_binding.py
+  - fixtures/code/access_check.py
+
+environment:
+  timeout_seconds: 300
+  max_turns: 12
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a comprehensive pytest suite spanning all three RBAC modules with happy path, boundary, error, tenant isolation, expiry, inheritance, and deny_overrides cases — each module in its own code block."
+
+reference_solution: |
+  Read the three modules. For each, produce a ```python``` code block named
+  test_role_service.py, test_user_role_binding.py, test_access_check.py.
+
+  Each test file imports its target, instantiates in-memory state, and asserts
+  expected behavior across happy/boundary/error scenarios. Include cyclic-
+  inheritance test, multi-tenant isolation test, expires_at test, deny_overrides
+  test. Use pytest fixtures for shared setup.
+
+primary_dimensions: [completion, communication, safety]

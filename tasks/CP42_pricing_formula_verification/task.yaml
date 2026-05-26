@@ -1,0 +1,94 @@
+task_id: CP42_pricing_formula_verification
+task_name: Multi-Tier Pricing Formula Verification
+version: "1.0"
+category: data_analysis
+difficulty: medium
+tags: [general, single_turn, coding_plan]
+
+source_task_id: "task_104_pricing_formula_verification"
+source_dataset: "taskset-260427-121234"
+source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
+
+services: []
+
+prompt:
+  text: |
+    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
+    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+
+    - `/workspace/fixtures/skills/pricing_skill.md`
+    - `/workspace/fixtures/pricing_input.json`
+
+    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+
+    我们的充值定价方案需要验证。参考 `skills/pricing_skill.md` 中的公式和规则，以及 `pricing_input.json` 中的参数，完成以下任务：
+
+    1. **公式验证**：对6个档位（199/2999/6999/14999/49999/99999），在"无奖金"场景下逐一计算充增比（recharge-to-bonus ratio），要求：
+       - 展示每个档位的完整代入过程（中间步骤）
+       - 注意：毛利率目标需要以小数形式代入（40% = 0.40），不能直接用百分比数值
+
+    2. **单调性校验**：验证计算结果是否满足"档位越高，赠送越多"的约束，如果不满足，指出违规档位并分析原因
+
+    3. **三场景输出**：分别计算三个场景（no_bonus / kol_5pct / producer_10pct）下所有6个档位的充增比，输出为结构化的 `pricing_result.json`
+
+    4. **合规报告**：生成 `compliance_report.md`，包含：
+       - 各约束项（margin range, cost ratio, monotonicity）的逐项检查结果（PASS/FAIL）
+       - 如有违规项，给出具体修正建议
+
+    5. **修正方案**（如需）：如果计算结果中存在任何违规项，输出修正后的参数和计算结果到 `pricing_result_fixed.json`
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/skills/pricing_skill.md
+  - fixtures/pricing_input.json
+
+sandbox_grader_files:
+  - fixtures/verify.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+  env_snapshot_timeout: 30
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify.py
+
+env_snapshot_files:
+  - /workspace/pricing_result.json
+  - /workspace/compliance_report.md
+  - /workspace/**/*
+scoring_components: []
+
+safety_checks: []
+
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 对定价公式验证任务的执行质量。
+
+  ## 红线检查
+  - 毛利率是否以小数形式代入（0.40而非40）
+
+  ## 核心检查
+  - 是否计算了全部 6 个档位
+  - 是否检查了单调性约束
+  - pricing_result.json 是否包含 3 个场景 x 6 档位
+  - compliance_report.md 是否包含 PASS/FAIL 判定
+
+  ## 评分标准
+  - 0.9-1.0: 全部正确，公式代入用小数，三场景完整
+  - 0.7-0.8: 大部分正确，可能遗漏修正方案
+  - 0.4-0.6: 部分计算但公式有错误
+  - 0.0-0.3: 未完成或百分比代入错误
+
+reference_solution: |
+  用 ratio 公式对 6 档位分别代入：
+  - margin 用 0.40/0.37/0.34/0.29/0.24/0.20（小数）
+  - bonus_cost / tier_price 比值检查是否在 5%-10% 范围
+  - 检查结果递增性（单调）
+
+primary_dimensions: [completion, robustness, communication]

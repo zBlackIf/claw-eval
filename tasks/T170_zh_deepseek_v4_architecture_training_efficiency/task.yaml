@@ -1,0 +1,175 @@
+task_id: T170_zh_deepseek_v4_architecture_training_efficiency
+task_name: "DeepSeek V4模型架构与部署技术调研"
+version: "2.0"
+category: research
+difficulty: medium
+tags: [general]
+
+services:
+  - name: web_real
+    command: python mock_services/web_real/server.py
+    port: 9114
+    health_check: http://localhost:9114/web/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9114/web/reset
+
+prompt:
+  text: |
+    我们组在做大模型技术路线调研，需要整理一份关于 DeepSeek V4 的技术分析报告。
+    DeepSeek V4 是 2026 年 4 月发布的，我对它的 MoE 架构创新、部署方案和开源策略特别感兴趣。
+
+    请帮我搜索并整理以下技术细节：
+
+    1. 模型基本参数：DeepSeek-V4-Pro 和 V4-Flash 两个变体的总参数量、激活参数量、MoE 架构设计
+    2. 核心架构创新：Hybrid Attention 机制（Compressed Sparse Attention + Heavily Compressed Attention）、1M token 上下文窗口的实现
+    3. 部署与推理：V4-Flash 单卡部署方案（H100/2×48GB + GGUF量化）、vLLM 和 SGLang 的 Day-0 支持情况
+    4. 与闭源模型（GPT-5、Claude Opus 4）的对比，以及作为首个开源权重前沿模型的行业意义
+    5. 开源情况：MIT license、HuggingFace 发布、首周下载量
+
+    重点关注：
+    - V4-Pro 和 V4-Flash 的双层发布策略（旗舰 vs 实用）设计考量
+    - 1M 上下文窗口如何通过 Hybrid Attention 实现？
+    - 开源前沿模型对行业格局的影响是什么？
+
+    请输出一份结构化的技术分析报告，适合给团队做技术路线分享使用。
+  language: zh
+
+tools:
+  - name: web_search
+    description: 搜索互联网，返回相关网页结果列表（标题、链接、摘要）
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+          description: 搜索关键词或查询语句
+        max_results:
+          type: integer
+          description: 最大返回结果数
+          default: 10
+      required: [query]
+
+  - name: web_fetch
+    description: 获取指定URL的完整网页内容
+    input_schema:
+      type: object
+      properties:
+        url:
+          type: string
+          description: 要获取的网页URL
+        timeout_seconds:
+          type: integer
+          description: 请求超时时间（秒）
+          default: 30
+      required: [url]
+
+tool_endpoints:
+  - tool_name: web_search
+    url: http://localhost:9114/web/search
+    method: POST
+  - tool_name: web_fetch
+    url: http://localhost:9114/web/fetch
+    method: POST
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+scoring_components:
+  - name: model_parameters
+    weight: 0.25
+    check:
+      type: keywords_present
+      keywords: ["1.6", "49", "MoE", "284", "Flash"]
+  - name: architecture_innovation
+    weight: 0.25
+    check:
+      type: keywords_present
+      keywords: ["Hybrid Attention", "Compressed Sparse Attention", "1M", "HCA"]
+  - name: deployment_inference
+    weight: 0.30
+    check:
+      type: keywords_present
+      keywords: ["vLLM", "SGLang", "GGUF", "H100"]
+  - name: open_source_significance
+    weight: 0.20
+    check:
+      type: keywords_present
+      keywords: ["MIT", "开源", "GPT-5", "Claude"]
+
+safety_checks: []
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 完成 DeepSeek V4 技术分析报告的质量。
+
+  场景：AI 研究团队做大模型技术路线调研，为团队技术决策提供参考。
+  核心价值：帮研究者快速获取最新模型的架构细节和部署方案。
+
+  评分维度：
+
+  D1. 模型架构与参数 (权重 25%)
+      DeepSeek V4 关键参数（2026年4月发布）：
+      - V4-Pro: 总参数 1.6T (1.6万亿), 激活参数 ~49B, MoE架构
+      - V4-Flash: 总参数 284B, 激活参数 ~13B
+      - 双层发布策略: Pro (旗舰) + Flash (实用/单卡部署)
+      评分标准：
+      - 1.0: Pro和Flash参数均正确，理解双层策略
+      - 0.5: 仅一个变体参数正确
+      - 0.0: 参数数据错误
+
+  D2. 架构创新说明 (权重 25%)
+      核心创新：
+      - Hybrid Attention: Compressed Sparse Attention (CSA) + Heavily Compressed Attention (HCA)
+      - 1M token 上下文窗口（首个支持1M上下文的开源权重前沿模型）
+      - 注意力压缩机制实现超长上下文
+      评分标准：
+      - 1.0: Hybrid Attention机制 + CSA/HCA解释 + 1M上下文
+      - 0.5: 只提到1M上下文或仅提到注意力创新之一
+      - 0.0: 未涉及架构创新
+
+  D3. 部署与推理方案 (权重 30%)
+      关键数据：
+      - V4-Flash: 可在单张 H100 80GB 或 2×48GB GPU 上运行（GGUF量化）
+      - Day-0 支持: vLLM 和 SGLang 框架
+      - 首周 HuggingFace 下载量: 174K
+      - 开源权重: deepseek-ai/DeepSeek-V4-Pro (HuggingFace)
+      评分标准：
+      - 1.0: 单卡方案 + 推理框架支持 + 量化方式均正确
+      - 0.7: 两项正确
+      - 0.3: 一项正确
+      - 0.0: 均错误
+
+  D4. 开源意义与行业对比 (权重 20%)
+      - 首个开源权重的前沿模型（MIT license）
+      - 与 GPT-5、Claude Opus 4 等闭源模型性能可比
+      - MIT 许可证，完全开放商用
+      - 对行业的意义：打破闭源垄断，开源前沿模型首次可行
+      评分标准：
+      - 1.0: MIT开源 + 闭源对比 + 行业影响分析
+      - 0.5: 涉及两项
+      - 0.0: 无对比分析
+
+  最终评分 = 0.25*D1 + 0.25*D2 + 0.30*D3 + 0.20*D4
+
+reference_solution: |
+  搜索策略：
+  1. web_search("DeepSeek V4 Pro Flash release April 2026") → 找发布信息
+  2. web_fetch(deepseek官方/HuggingFace页面) → 获取技术细节
+  3. web_search("DeepSeek V4 parameters MoE 1.6T 49B architecture") → 验证参数数据
+  4. web_search("DeepSeek V4 deployment vLLM SGLang GGUF single GPU") → 部署方案
+  5. web_search("DeepSeek V4 vs GPT-5 Claude Opus open source frontier") → 对比与意义
+
+  关键数据：
+  - V4-Pro: 1.6T总参数, ~49B激活参数, MoE架构
+  - V4-Flash: 284B总参数, ~13B激活参数
+  - 1M token上下文窗口
+  - Hybrid Attention: CSA (Compressed Sparse Attention) + HCA (Heavily Compressed Attention)
+  - 单卡部署: H100 80GB 或 2×48GB + GGUF量化
+  - Day-0支持: vLLM, SGLang
+  - MIT license, HuggingFace开源 (deepseek-ai/DeepSeek-V4-Pro)
+  - 首周174K下载
+  - 历史: V3 (Dec 2024, 671B/37B) → R1 (Jan 2025) → V3 MIT (Mar 2025) → V4 (Apr 2026)
+
+primary_dimensions: [completion, robustness, communication]

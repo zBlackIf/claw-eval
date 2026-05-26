@@ -1,0 +1,91 @@
+[
+  {
+    "integration_id": "PL-401",
+    "name": "内容审核 production-line（v1，单体 agent）",
+    "type": "ai_workflow",
+    "status": "active",
+    "owner_team": "内容安全组",
+    "agent_loop": "single_agent_react",
+    "tools": [
+      "text_classify",
+      "image_moderate",
+      "ocr_extract",
+      "decision_log"
+    ],
+    "router_rule": "none (single agent handles all)",
+    "review_gate": "p1_only",
+    "qps_peak": 380,
+    "p99_latency_ms": 1850,
+    "incident_note": "p99 偶发 5s+，怀疑 image_moderate 长尾",
+    "service": "ai_workflow",
+    "last_verified": "2026-05-20T00:00:00Z",
+    "monthly_calls": 1000,
+    "error_rate": 0.01
+  },
+  {
+    "integration_id": "PL-402",
+    "name": "客服对话 production-line（v1）",
+    "type": "ai_workflow",
+    "status": "active",
+    "owner_team": "客户体验组",
+    "agent_loop": "single_agent_react",
+    "tools": [
+      "intent_classify",
+      "knowledge_retrieve",
+      "draft_reply",
+      "escalate"
+    ],
+    "router_rule": "none",
+    "review_gate": "no_review",
+    "qps_peak": 220,
+    "p99_latency_ms": 980,
+    "incident_note": "未做 review，遇到红线话题（如医疗 / 金融建议）会直接发出",
+    "service": "ai_workflow",
+    "last_verified": "2026-05-20T00:00:00Z",
+    "monthly_calls": 1000,
+    "error_rate": 0.01
+  },
+  {
+    "integration_id": "PL-403",
+    "name": "运维诊断 production-line（v1，未上线）",
+    "type": "ai_workflow",
+    "status": "degraded",
+    "owner_team": "SRE 组",
+    "agent_loop": "single_agent_react",
+    "tools": [
+      "log_search",
+      "metric_query",
+      "ticket_link",
+      "runbook_lookup"
+    ],
+    "router_rule": "none",
+    "review_gate": "human_required",
+    "qps_peak": 40,
+    "p99_latency_ms": 3600,
+    "incident_note": "在 staging 长尾严重，不敢上 prod；需要重构",
+    "service": "ai_workflow",
+    "last_verified": "2026-05-20T00:00:00Z",
+    "monthly_calls": 1000,
+    "error_rate": 0.15
+  },
+  {
+    "integration_id": "PL-MIG-001",
+    "name": "目标架构：多 agent + router（待设计）",
+    "type": "ai_workflow_target",
+    "status": "planned",
+    "owner_team": "AI 平台组",
+    "agent_loop": "supervisor_plus_specialists",
+    "tools": [
+      "TBD"
+    ],
+    "router_rule": "TBD",
+    "review_gate": "TBD",
+    "qps_peak": null,
+    "p99_latency_ms": null,
+    "incident_note": "PRD 已写，待技术方案",
+    "service": "ai_workflow_target",
+    "last_verified": "2026-05-20T00:00:00Z",
+    "monthly_calls": 1000,
+    "error_rate": 0.15
+  }
+]

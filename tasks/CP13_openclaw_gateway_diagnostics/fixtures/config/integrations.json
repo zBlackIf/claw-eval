@@ -1,0 +1,31 @@
+[
+  {
+    "integration_id": "OCG-101",
+    "name": "OpenClaw Gateway 主入口",
+    "type": "gateway",
+    "status": "degraded",
+    "bind_ports": [
+      8080,
+      8443
+    ],
+    "required_user": "openclaw",
+    "config_note": "v0.34.2 配置：必须以 openclaw 用户运行，绑定 8080 + 8443，证书在 /etc/openclaw/tls/。当前 8080 被占用导致 degraded。",
+    "service": "gateway",
+    "last_verified": "2026-05-20T00:00:00Z",
+    "monthly_calls": 1000,
+    "error_rate": 0.15
+  },
+  {
+    "integration_id": "OCG-102",
+    "name": "OpenClaw Worker Pool",
+    "type": "worker",
+    "status": "active",
+    "bind_ports": [],
+    "required_user": "openclaw",
+    "config_note": "worker pool 不绑端口，从 gateway 接任务；当前 lag=12 健康",
+    "service": "worker",
+    "last_verified": "2026-05-20T00:00:00Z",
+    "monthly_calls": 1000,
+    "error_rate": 0.01
+  }
+]

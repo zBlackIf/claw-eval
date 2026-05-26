@@ -1,0 +1,78 @@
+[
+  {
+    "article_id": "KB-STG-001",
+    "title": "对象存储统一接入历史方案 v1（已废弃）",
+    "category": "infrastructure",
+    "summary": "2024 年第一版 storage SDK 直接在业务代码引入 boto3 / oss2 / azure-storage-blob 三套 SDK。引发的问题：版本冲突、auth 散落、跨云迁移成本高、断点续传各自实现。",
+    "tags": [
+      "storage",
+      "legacy",
+      "lesson_learned"
+    ],
+    "updated_at": "2024-11-08",
+    "content": "2024 年第一版 storage SDK 直接在业务代码引入 boto3 / oss2 / azure-storage-blob 三套 SDK。引发的问题：版本冲突、auth 散落、跨云迁移成本高、断点续传各自实现。",
+    "last_updated": "2026-05-01",
+    "views": 0
+  },
+  {
+    "article_id": "KB-STG-002",
+    "title": "签名 URL 的安全实践（GDPR 合规要点）",
+    "category": "security",
+    "summary": "TTL 上限：用户下载 24h、机器服务 7d；URL 不应记日志全文（截短 query）；OSS / S3 / Azure 的 TTL 上限不一致（aliyun_oss 32400s, s3 604800s, azure 86400s），统一代理必须对外暴露稳定上限并在内部转译。",
+    "tags": [
+      "storage",
+      "security",
+      "presigned_url",
+      "compliance"
+    ],
+    "updated_at": "2025-08-22",
+    "content": "TTL 上限：用户下载 24h、机器服务 7d；URL 不应记日志全文（截短 query）；OSS / S3 / Azure 的 TTL 上限不一致（aliyun_oss 32400s, s3 604800s, azure 86400s），统一代理必须对外暴露稳定上限并在内部转译。",
+    "last_updated": "2026-05-01",
+    "views": 0
+  },
+  {
+    "article_id": "KB-STG-003",
+    "title": "断点续传 / 分片上传跨云差异速查",
+    "category": "infrastructure",
+    "summary": "AWS S3 multipart 最小分片 5 MB，OSS 最小分片 100 KB，Azure block blob 最大 4000 块。统一代理需将这些差异封装为单一 InitiateUpload / UploadPart / CompleteUpload 三段式 API。",
+    "tags": [
+      "storage",
+      "multipart",
+      "cross_cloud"
+    ],
+    "updated_at": "2025-12-03",
+    "content": "AWS S3 multipart 最小分片 5 MB，OSS 最小分片 100 KB，Azure block blob 最大 4000 块。统一代理需将这些差异封装为单一 InitiateUpload / UploadPart / CompleteUpload 三段式 API。",
+    "last_updated": "2026-05-01",
+    "views": 0
+  },
+  {
+    "article_id": "KB-STG-004",
+    "title": "成本治理：冷热分层与生命周期策略",
+    "category": "finops",
+    "summary": "OSS / S3 都有 IA / Archive / Cold 多档；统一代理需暴露 storage_class 抽象（hot/warm/cold/archive），并在 IaC 层固化生命周期规则。",
+    "tags": [
+      "storage",
+      "finops",
+      "lifecycle"
+    ],
+    "updated_at": "2025-10-15",
+    "content": "OSS / S3 都有 IA / Archive / Cold 多档；统一代理需暴露 storage_class 抽象（hot/warm/cold/archive），并在 IaC 层固化生命周期规则。",
+    "last_updated": "2026-05-01",
+    "views": 0
+  },
+  {
+    "article_id": "KB-STG-005",
+    "title": "Azure AD app secret 轮换 SOP",
+    "category": "security",
+    "summary": "轮换流程：T-14 创建新 secret → T-7 双 secret 灰度 → T-0 切换主用 → T+7 删除旧 secret。需要监控 401 错误率。",
+    "tags": [
+      "azure",
+      "secret_rotation",
+      "ops"
+    ],
+    "updated_at": "2026-02-11",
+    "content": "轮换流程：T-14 创建新 secret → T-7 双 secret 灰度 → T-0 切换主用 → T+7 删除旧 secret。需要监控 401 错误率。",
+    "last_updated": "2026-05-01",
+    "views": 0
+  }
+]

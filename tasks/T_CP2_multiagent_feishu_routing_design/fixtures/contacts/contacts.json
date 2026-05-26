@@ -1,0 +1,9 @@
+{
+  "contacts": [
+    {"contact_id": "C-001", "name": "张铭", "department": "AI Platform", "role": "tech-leadership", "email": "zhang.ming@company.com"},
+    {"contact_id": "C-002", "name": "李华", "department": "Ops SRE", "role": "ops-lead", "email": "li.hua@company.com"},
+    {"contact_id": "C-003", "name": "王芳", "department": "Customer Success", "role": "cs-lead", "email": "wang.fang@company.com"},
+    {"contact_id": "C-004", "name": "赵刚", "department": "HR", "role": "hr-lead", "email": "zhao.gang@company.com"},
+    {"contact_id": "C-005", "name": "周娜", "department": "Finance", "role": "fin-lead", "email": "zhou.na@company.com"}
+  ]
+}

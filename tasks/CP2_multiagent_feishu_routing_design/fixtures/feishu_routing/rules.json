@@ -1,0 +1,81 @@
+{
+  "agents": [
+    {"agent_id": "AGT-CS", "name": "客服 Bot", "domain": "customer_service",
+     "skills": ["intent_classify", "kb_search", "draft_reply"]},
+    {"agent_id": "AGT-OPS", "name": "运维 Bot", "domain": "ops",
+     "skills": ["log_query", "alert_check", "runbook_lookup"]},
+    {"agent_id": "AGT-HR", "name": "HR Bot", "domain": "hr",
+     "skills": ["policy_lookup", "form_fill"]},
+    {"agent_id": "AGT-FIN", "name": "财务 Bot", "domain": "finance",
+     "skills": ["expense_check", "policy_lookup"]}
+  ],
+  "channels": [
+    {"channel_id": "CH-CS-ALL", "name": "客户咨询群", "topic": "customer_questions"},
+    {"channel_id": "CH-OPS-PROD", "name": "生产运维告警群", "topic": "ops_alerts"},
+    {"channel_id": "CH-HR-NEWHIRE", "name": "新员工入职群", "topic": "onboarding"},
+    {"channel_id": "CH-FIN-EXPENSE", "name": "报销咨询群", "topic": "expense"},
+    {"channel_id": "CH-MIXED-001", "name": "通用工作群", "topic": "mixed"}
+  ],
+  "routing_rules": [
+    {
+      "rule_id": "RR-101",
+      "source_channel": "CH-CS-ALL",
+      "match_pattern": ".*",
+      "target_agents": ["AGT-CS"],
+      "fallback_agents": [],
+      "enabled": true,
+      "priority": 10,
+      "note": "客户群所有消息都路由到客服 Bot"
+    },
+    {
+      "rule_id": "RR-102",
+      "source_channel": "CH-OPS-PROD",
+      "match_pattern": "(alert|incident|p[01]|critical)",
+      "target_agents": ["AGT-OPS"],
+      "fallback_agents": [],
+      "enabled": true,
+      "priority": 20,
+      "note": "P0/P1 告警关键词触发运维 Bot"
+    },
+    {
+      "rule_id": "RR-103",
+      "source_channel": "CH-HR-NEWHIRE",
+      "match_pattern": "(入职|福利|社保|公积金)",
+      "target_agents": ["AGT-HR"],
+      "fallback_agents": ["AGT-CS"],
+      "enabled": true,
+      "priority": 15,
+      "note": "新员工 HR 类关键词路由到 HR Bot，fallback 到客服"
+    },
+    {
+      "rule_id": "RR-104",
+      "source_channel": "CH-FIN-EXPENSE",
+      "match_pattern": "(报销|发票|额度)",
+      "target_agents": ["AGT-FIN"],
+      "fallback_agents": [],
+      "enabled": true,
+      "priority": 15,
+      "note": "报销关键词路由到财务 Bot"
+    },
+    {
+      "rule_id": "RR-105",
+      "source_channel": "CH-MIXED-001",
+      "match_pattern": ".*",
+      "target_agents": [],
+      "fallback_agents": ["AGT-CS"],
+      "enabled": false,
+      "priority": 5,
+      "note": "通用群 fallback 规则，当前已禁用 → 需要重新设计"
+    },
+    {
+      "rule_id": "RR-106-DEPRECATED",
+      "source_channel": "CH-OPS-PROD",
+      "match_pattern": "(restart|reboot)",
+      "target_agents": ["AGT-OPS"],
+      "fallback_agents": [],
+      "enabled": true,
+      "priority": 30,
+      "note": "废弃规则：与 RR-102 重叠，应该合并"
+    }
+  ]
+}

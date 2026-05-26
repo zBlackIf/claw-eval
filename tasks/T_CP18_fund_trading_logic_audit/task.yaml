@@ -1,0 +1,85 @@
+# provenance:
+#   themis_dataset: taskset-260421-225115-strict-v2
+#   themis_task_id: task_36_superpowers_skill_verify
+#   themis_rank_original: 22
+#   themis_metrics: { std_trim: 0.414, range_trim: 0.980, mean_trim: 0.635 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525.md
+#   mapping_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525-mapping.md
+task_id: T_CP18_fund_trading_logic_audit
+task_name: "基金交易逻辑代码审计（严格 rubric v2）（T_CP18 / 源 taskset-260421-225115-strict-v2:task_36_superpowers_skill_verify）"
+version: "1.0"
+category: code_review
+difficulty: easy
+tags: [general]
+
+source_task_id: "task_36_superpowers_skill_verify"
+source_dataset: "taskset-260421-225115-strict-v2"
+source_description: "从 Themis PinchBench top100（2026-05-25 二次筛选，killer bucket）中按跨模型 std_trim 排名精选的高区分度题（原始排名 #22，std_trim 0.414 / range_trim 0.980 / mean_trim 0.635），改编为 Claw-Eval Pattern D (sandbox-adapted) 格式，PinbenchAdaptedGrader 类属性声明自动评分。原始 prompt 重写以适配本仓库 mock service 与 fixtures，源映射见 docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525-mapping.md。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/code/fund_trader.py 是公募基金的申购 / 赎回核心模块。
+
+    模块语义（必须遵循）：
+    - 申购：用户买入基金，扣现金（含 1.5% 前端手续费），加份额（基于当日 NAV）
+    - 赎回：用户卖出份额，扣份额，加现金（基于当日 NAV，扣阶梯手续费）
+    - T+1 确认：T 日申购后，T+1 才能赎回（监管要求，禁止日内套利）
+    - 赎回手续费阶梯（按持有时长）：
+      * 持有 < 7 天 → 1.5%
+      * 7 ≤ 持有 < 30 天 → 0.5%
+      * 持有 ≥ 30 天 → 0%
+
+    请做一次严格的代码审计，输出一份 markdown 报告。
+
+    ## 必须覆盖（满分 4 项 + 加分 1 项）
+
+    对每个 bug 给出：
+    1. **Bug 编号 + 严重级别**（CRITICAL / HIGH / MEDIUM / LOW）
+    2. **位置**：函数名 + 行号或代码片段
+    3. **当前错误行为**：描述实际跑出的结果
+    4. **预期正确行为**：模块语义要求的结果
+    5. **影响**：用户/监管/财务层面的后果
+    6. **修复代码**：给出至少 2-3 行修复 diff 或正确实现
+
+    ## 输出要求
+    - markdown 标题分章节，**每个 bug 一个 `##` 段落**
+    - 至少识别 4 个 bug（少于 4 个会严重扣分）
+    - 必须用真实函数名 + 真实变量名（subscribe / redeem / cash / avg_cost / nav / last_buy_date 等）
+    - 输出 ≥ 800 字
+    - 末尾加一段「测试用例建议」：列出 ≥3 个能验证修复的 pytest 测试场景
+
+    ## 反盲信审计要点
+    不要凭空指出"可能有 race condition"、"可能有 SQL 注入"之类未在代码中存在的
+    问题。**只指出 fund_trader.py 中真实存在的 bug**。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+local_grader_files:
+  - fixtures/bugs_reference.md
+
+sandbox_files:
+  - fixtures/code/fund_trader.py
+
+environment:
+  timeout_seconds: 300
+  max_turns: 15
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward an audit that identifies the four core bugs (subscribe cash check, weighted avg cost, T+1 violation, redemption fee tier reversal) with file:line citations and concrete fix code — no fabricated issues."
+
+reference_solution: |
+  Read /workspace/fixtures/code/fund_trader.py. Identify and document 4 core bugs
+  (CRITICAL: cash-not-checked, T+1 missing; HIGH: avg_cost weighted wrong,
+  fee-tier reversed) plus 1 LOW (cash KeyError). For each: position, current behavior,
+  expected behavior per spec, impact (regulatory / user / financial), fix code.
+  Add ≥3 pytest scenarios validating the fixes.
+
+primary_dimensions: [completion, communication, safety]

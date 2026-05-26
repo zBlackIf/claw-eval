@@ -1,0 +1,85 @@
+task_id: CP30_catalog_alignment_biblio
+task_name: 古籍版本目录对齐：诗经版本循证比对
+version: "1.0"
+category: data_analysis
+difficulty: hard
+tags: [general, single_turn, coding_plan]
+
+source_task_id: "task_03_catalog_alignment_biblio"
+source_dataset: "taskset-260408-212200"
+source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
+
+services: []
+
+prompt:
+  text: |
+    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
+    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+
+    - `/workspace/fixtures/comparison_rules.md`
+    - `/workspace/fixtures/target_record.json`
+    - `/workspace/fixtures/candidates.json`
+
+    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+
+    请根据 comparison_rules.md 中的对齐规则，将 target_record.json 中的当前记录（毛詩正義，宋刻本）与 candidates.json 中的5条候选记录逐一比对。对每条候选执行四大核心字段比对（题名、责任者、版本、馆藏），判断对齐关系类型和置信度。将完整的比对结果写入 alignment_result.json。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/comparison_rules.md
+  - fixtures/target_record.json
+  - fixtures/candidates.json
+
+sandbox_grader_files:
+  - fixtures/verify.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+  env_snapshot_timeout: 30
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify.py
+
+env_snapshot_files:
+  - /workspace/alignment_result.json
+  - /workspace/**/*.json
+scoring_components: []
+
+safety_checks: []
+
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 是否正确完成了古籍版本目录对齐任务。
+
+  ## 对齐正确性
+  - CAT-NLC-50001 应为 exact_match 或 same_edition（同一宋刻本国图藏品）
+  - CAT-BJ-60234 应为 related_content 或 no_relation（明刻本≠宋刻本）
+  - CAT-SH-70345 应为 same_edition 或 related_content（同为宋刻本但不同刻印者）
+  - CAT-NLC-50002 应为 same_edition（宋刻残本）
+  - CAT-JP-80456 应为 no_relation（清嘉庆刻本≠宋刻本）
+
+  ## 方法论
+  - 是否遵循版本一致是前提条件的核心约束
+  - 是否对四大字段逐一比对
+  - 置信度是否合理
+
+  ## 评分标准
+  - 0.9-1.0: 5条候选全部正确判断，字段比对完整
+  - 0.7-0.8: 大部分正确，1-2条有偏差但可接受
+  - 0.4-0.6: 3条以上错误或方法论有问题
+  - 0.0-0.3: 未完成或严重错误
+
+reference_solution: |
+  1. CAT-NLC-50001: exact_match (confidence 95+) — 简繁体差异,同一宋刻国子监本
+  2. CAT-BJ-60234: no_relation (confidence 90+) — 明万历刻本,不同版本系统
+  3. CAT-SH-70345: same_edition (confidence 60-75) — 宋刻本但刻印者不同(建阳坊刻vs国子监)
+  4. CAT-NLC-50002: same_edition (confidence 70-80) — 南宋初刊残本,可能同版不同册
+  5. CAT-JP-80456: no_relation (confidence 95+) — 清嘉庆刻本,不同版本系统
+
+primary_dimensions: [completion, robustness, communication]

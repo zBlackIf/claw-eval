@@ -52,7 +52,54 @@ class SandboxRunner:
         kwargs: dict[str, Any] = {}
         if sandbox_config.docker_host:
             kwargs["base_url"] = sandbox_config.docker_host
-        self._docker = docker.from_env(**kwargs)
+        else:
+            context_host = self._active_docker_context_host()
+            if context_host:
+                kwargs["base_url"] = context_host
+        if "base_url" in kwargs:
+            self._docker = docker.DockerClient(**kwargs)
+        else:
+            self._docker = docker.from_env()
+
+    @staticmethod
+    def _active_docker_context_host() -> str | None:
+        """Return the Docker endpoint for the active CLI context when useful.
+
+        The Python Docker SDK reads DOCKER_HOST but does not automatically
+        honor `docker context use colima`. Local development often relies on
+        that context, so infer the endpoint when DOCKER_HOST is absent.
+        """
+        import json
+        import os
+        import subprocess
+
+        if os.environ.get("DOCKER_HOST"):
+            return None
+        try:
+            proc = subprocess.run(
+                ["docker", "context", "inspect"],
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=3,
+            )
+        except Exception:
+            return None
+        if proc.returncode != 0 or not proc.stdout.strip():
+            return None
+        try:
+            contexts = json.loads(proc.stdout)
+            host = (
+                contexts[0]
+                .get("Endpoints", {})
+                .get("docker", {})
+                .get("Host")
+            )
+        except Exception:
+            return None
+        if isinstance(host, str) and host and host != "unix:///var/run/docker.sock":
+            return host
+        return None
 
     # ------------------------------------------------------------------
     # Container lifecycle

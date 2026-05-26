@@ -1,0 +1,39 @@
+[
+  {
+    "note_id": "MEMO-RPA-001",
+    "title": "RPA Agent V1 上线总结（已有版本）",
+    "created_at": "2026-04-20",
+    "participants": [
+      "陈处长",
+      "周主任"
+    ],
+    "summary": "V1 用统一 prompt + 单一 skill，所有用户体验一样。陈处长抱怨格式不规范，周主任抱怨数据汇总要重写；个性化是 V2 核心方向。",
+    "duration_minutes": 30,
+    "content": "V1 用统一 prompt + 单一 skill，所有用户体验一样。陈处长抱怨格式不规范，周主任抱怨数据汇总要重写；个性化是 V2 核心方向。"
+  },
+  {
+    "note_id": "MEMO-RPA-002",
+    "title": "V2 个性化设计技术评审",
+    "created_at": "2026-05-10",
+    "participants": [
+      "AI Platform 团队",
+      "陈处长",
+      "周主任"
+    ],
+    "summary": "评审通过：基于 user_memory + skill_routing 两个模块实现个性化。user_memory 记录用户偏好、历史交互；skill_routing 按 department + role + preferences 选最合适的 skill 组合。架构文档待出。",
+    "duration_minutes": 30,
+    "content": "评审通过：基于 user_memory + skill_routing 两个模块实现个性化。user_memory 记录用户偏好、历史交互；skill_routing 按 department + role + preferences 选最合适的 skill 组合。架构文档待出。"
+  },
+  {
+    "note_id": "MEMO-RPA-003",
+    "title": "合规要求确认",
+    "created_at": "2026-05-15",
+    "participants": [
+      "AI Platform",
+      "信息安全处"
+    ],
+    "summary": "(1) user_memory 不能存敏感字段（身份证号 / 户籍详细地址等），只存偏好；(2) 所有 RPA 写操作必须 audit log 永久保留；(3) 等保三级合规审计；(4) 配合 RPA-INT-101 的 CA + UKey 二次验证。",
+    "duration_minutes": 30,
+    "content": "(1) user_memory 不能存敏感字段（身份证号 / 户籍详细地址等），只存偏好；(2) 所有 RPA 写操作必须 audit log 永久保留；(3) 等保三级合规审计；(4) 配合 RPA-INT-101 的 CA + UKey 二次验证。"
+  }
+]

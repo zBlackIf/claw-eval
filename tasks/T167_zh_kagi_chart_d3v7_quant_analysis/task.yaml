@@ -1,0 +1,220 @@
+task_id: T167_zh_kagi_chart_d3v7_quant_analysis
+task_name: "Kagi 图技术分析可视化（D3.js v7 + 多日行情数据）"
+version: "1.0"
+category: end_to_end
+difficulty: hard
+tags: [general]
+
+services:
+  - name: web_real
+    command: python mock_services/web_real/server.py
+    port: 9114
+    health_check: http://localhost:9114/web/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9114/web/reset
+
+prompt:
+  text: |
+    我在做一个量化投资的技术分析工具，需要你帮我实现一个 Kagi 图（カギ足）的分析页面。
+
+    背景：我最近在研究上证综指的短期趋势。K 线图噪音太多，我想用 Kagi 图来过滤短期波动，
+    只关注有意义的趋势反转信号。Kagi 是日本的一种技术分析图表，不按时间等距排列，
+    只在价格反转超过阈值时才画新线。我之前没实现过 Kagi，你帮我搜一下算法。
+
+    数据和参数：
+    1. 使用上证综指（SSE Composite）最近 5 个交易日的收盘价。
+       今天是 2026-05-20，请搜索获取 5 月 14 日到 5 月 20 日期间的交易日收盘数据。
+       注意中间可能有非交易日要跳过。
+
+    2. 反转阈值（reversal amount）= 收盘价序列中最大值与最小值之差 的 50%。
+       拿到数据后算出来，写在代码注释里。
+
+    技术要求：
+    3. 用 D3.js v7 画图。我们组统一用 v7，注意 v7 跟 v5/v6 有些 API 变化
+      （比如 d3.event 移除了，要用 event 参数）。如果不确定请搜索确认。
+
+    4. 图表要素：
+       - 上升趋势粗线（阳线，绿色 #26A69A）
+       - 下降趋势细线（阴线，红色 #EF5350）
+       - 反转点标注日期和价格
+       - X 轴不等距（Kagi 核心特征）
+       - 标注反转阈值
+
+    5. 趋势分析面板（图表下方）：
+       这是最重要的产出——不只是画图，要给出可操作的分析结论：
+       - 当前趋势状态：阳线（上升）还是阴线（下降）？
+       - 最近一次反转发生在哪天？反转方向是什么？
+       - 当前价格距离下一次可能反转还差多少点？
+       - 一句话趋势判断："短期看多/看空/震荡，理由是..."
+
+    6. 输出单个 .html 文件，底部标注：数据来源、日期范围、反转阈值计算过程、免责声明。
+
+    我要的是一个能帮我做决策的工具页面，不只是一张好看的图。
+
+  language: zh
+
+tools:
+  - name: web_search
+    description: 搜索互联网，返回相关网页结果列表（标题、链接、摘要）
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+          description: 搜索关键词或查询语句
+        max_results:
+          type: integer
+          description: 最大返回结果数
+          default: 10
+      required: [query]
+
+  - name: web_fetch
+    description: 获取指定URL的完整网页内容
+    input_schema:
+      type: object
+      properties:
+        url:
+          type: string
+          description: 要获取的网页URL
+        timeout_seconds:
+          type: integer
+          description: 请求超时时间（秒）
+          default: 30
+      required: [url]
+
+tool_endpoints:
+  - tool_name: web_search
+    url: http://localhost:9114/web/search
+    method: POST
+  - tool_name: web_fetch
+    url: http://localhost:9114/web/fetch
+    method: POST
+
+environment:
+  timeout_seconds: 900
+  max_turns: 40
+
+scoring_components:
+  - name: d3v7_usage
+    weight: 0.20
+    check:
+      type: keywords_present
+      keywords: ["d3.js", "d3@7", "d3.select", "d3.scale"]
+  - name: kagi_algorithm
+    weight: 0.25
+    check:
+      type: keywords_present
+      keywords: ["reversal", "kagi", "threshold", "trend"]
+  - name: historical_data_5day
+    weight: 0.30
+    check:
+      type: keywords_present
+      keywords: ["4177.92", "4131.53", "4169.54", "4162.18"]
+  - name: html_chart_runnable
+    weight: 0.25
+    check:
+      type: keywords_present
+      keywords: ["<!DOCTYPE", "<svg", "<script", "d3"]
+
+safety_checks: []
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 完成 Kagi 图技术分析工具页面的质量。
+
+  场景价值：量化投资者（CP 用户 15.6%）的日常决策工具。
+  不只是画一张图——要提供趋势判断和操作建议，帮用户做投资决策。
+  完成后可作为每日技术分析的参考工具。
+
+  评分维度：
+
+  D1. Kagi 图算法正确性 (权重 25%)
+      Kagi 图的核心规则：
+      - 初始方向由前两个数据点决定
+      - 价格沿当前方向继续 → 延长当前线段
+      - 价格反向超过"反转阈值" → 画新列，改变方向
+      - 阳线/阴线区分
+      - X 轴不等距（只在反转时产生新列）
+      评分标准：
+      - 1.0: 算法正确（反转判定 + 方向切换 + 非等距X轴）
+      - 0.5: 部分正确但有关键错误
+      - 0.0: 不是 Kagi 图
+
+  D2. 历史数据获取正确性 (权重 25%)
+      5 个交易日收盘价：
+      - 05-14: 4177.92 | 05-15: 4135.39 | 05-18: 4131.53
+      - 05-19: 4169.54 | 05-20: 4162.18
+      反转阈值 = (4177.92 − 4131.53) × 50% = 23.20（±1）
+      评分标准：
+      - 1.0: 5 日数据全对 + 阈值计算正确
+      - 0.7: 4 日正确 + 阈值接近
+      - 0.4: 3 日正确
+      - 0.0: 数据大部分错误
+
+  D3. 趋势分析面板（核心价值产出）(权重 30%)
+      基于正确数据和算法，应得出的分析结论：
+      - 当前趋势: 阳线（从 4131.53 反转上行至 4169.54）
+      - 最近反转: 05-18→05-19，从阴线转阳线（涨幅 38.01 > 阈值 23.20）
+      - 距离下次反转: 当前最高 4169.54，反转需跌破 4169.54−23.20=4146.34
+        当前收盘 4162.18 距离反转点还差 4162.18−4146.34=15.84 点
+      - 趋势判断: 短期偏多（刚完成阴→阳反转，但最新收盘微跌需关注）
+      评分标准：
+      - 1.0: 趋势方向正确 + 反转点识别正确 + 给出可操作建议
+      - 0.7: 趋势方向正确但细节有误
+      - 0.3: 有分析面板但结论错误
+      - 0.0: 无分析面板或纯图表无结论
+
+  D4. D3.js v7 与页面可用性 (权重 20%)
+      - D3 v7 正确使用（无 d3.event 反模式）
+      - SVG 图表渲染
+      - 阳线/阴线颜色区分
+      - 底部标注 + 免责声明
+      评分标准：
+      - 1.0: 全部正确
+      - 0.5: 部分正确
+      - 0.0: 页面无法运行
+
+  最终评分 = 0.25*D1 + 0.25*D2 + 0.30*D3 + 0.20*D4
+
+reference_solution: |
+  此任务需要 3 类搜索 + 多步数据计算：
+
+  搜索1: Kagi 图绘制算法
+    - web_search("Kagi chart drawing algorithm rules reversal")
+    - web_search("カギ足 描画ルール" 或 "Kagi chart explained")
+    → 理解核心规则：反转阈值、方向切换、非等距X轴
+    → 关键：不是折线图！只在反转时产生新的 X 列
+
+  搜索2: 上证综指近 5 个交易日收盘价
+    - web_search("2026年5月 上证综指 历史数据 收盘价")
+    - web_fetch(Yahoo Finance 或 东方财富历史行情页)
+    → 必须识别交易日 vs 非交易日（跳过周末）
+    → 正确数据: [4177.92, 4135.39, 4131.53, 4169.54, 4162.18]
+    → 对应日期: [05-14, 05-15, 05-18, 05-19, 05-20]
+
+  搜索3: D3.js v7 API（如不确定）
+    - web_search("D3.js v7 migration changes from v6")
+    → 关键变化: d3.event 移除, 用 event 参数; pointer() 替代 mouse()
+
+  多步计算:
+    - max(收盘价序列) = 4177.92
+    - min(收盘价序列) = 4131.53
+    - 区间 = 4177.92 - 4131.53 = 46.39
+    - 反转阈值 = 46.39 × 50% = 23.20
+
+  Kagi 图绘制过程（用上述数据 + 阈值 23.20）:
+    - 起点: 4177.92
+    - 4177.92 → 4135.39: 跌 42.53 > 23.20 → 反转，画阴线
+    - 4135.39 → 4131.53: 继续跌 3.86 < 23.20 → 延长阴线
+    - 4131.53 → 4169.54: 涨 38.01 > 23.20 → 反转，画阳线
+    - 4169.54 → 4162.18: 跌 7.36 < 23.20 → 不反转（忽略）
+    最终图形: 3 列（初始阴线 | 阳线 | 阳线末端停留）
+
+  验证方法:
+  - 5日收盘价精确匹配
+  - 反转阈值 ≈ 23.20 (±1)
+  - 图形应有非等距 X 轴（仅 2-3 列，不是 5 列等距）
+  - D3 v7 反模式: 出现 d3.event 即扣分
+
+primary_dimensions: [completion, robustness, communication]

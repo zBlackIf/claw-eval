@@ -1,0 +1,12 @@
+2026-03-15 14:23:07.891 [http-nio-8080-exec-47] ERROR c.d.p.filter.AntiSqlInjectionfilter - Unhandled exception in filter
+java.util.ConcurrentModificationException
+	at java.util.ArrayList$Itr.checkForComodification(ArrayList.java:911)
+	at java.util.ArrayList$Itr.next(ArrayList.java:861)
+	at cn.dreamit.p1000.util.RequestUtil.contains(RequestUtil.java:37)
+	at cn.dreamit.p1000.util.RequestUtil.contains(RequestUtil.java:23)
+	at cn.dreamit.p1000.filter.AntiSqlInjectionfilter.doFilter(AntiSqlInjectionfilter.java:125)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:189)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:162)
+
+Context: Admin user added a new keyword via the management panel at 14:23:06 (1 second before the crash).
+Concurrent active threads at time of crash: 52

@@ -1,4 +1,9 @@
-"""Load config.yaml with env-var expansion."""
+"""Load config.yaml with env-var expansion.
+
+v0.30.1 ark overlay: adds `api_format` field to ModelConfig + JudgeConfig
+and a module-level _LAST_LOADED singleton so patched llm_judge / provider
+dispatchers can resolve which protocol to use without touching cli.py.
+"""
 
 from __future__ import annotations
 
@@ -42,6 +47,8 @@ class ModelConfig(BaseModel):
     api_key: str | None = None
     base_url: str | None = None
     model_id: str = "anthropic/claude-opus-4-6"
+    # v0.30.1: protocol dispatch — None means upstream default (openai-completions)
+    api_format: str | None = None
     input_modalities: list[str] = Field(default_factory=lambda: ["text"])
     system_prompt_prefix: str | None = None
     extra_body: dict | None = None
@@ -55,6 +62,9 @@ class JudgeConfig(BaseModel):
     base_url: str = "https://openrouter.ai/api/v1"
     model_id: str = "google/gemini-3-flash-preview"
     enabled: bool = True
+    # v0.30.1: protocol dispatch — None means upstream default (openai-completions)
+    api_format: str | None = None
+    extra_body: dict | None = None
 
 
 class DefaultsConfig(BaseModel):
@@ -148,6 +158,9 @@ class UserAgentModelConfig(BaseModel):
     api_key: str | None = None
     base_url: str = "https://openrouter.ai/api/v1"
     model_id: str = "google/gemini-3-flash-preview"
+    api_format: str | None = None
+    extra_body: dict | None = None
+    temperature: float | None = 0.7
 
 
 class Config(BaseModel):
@@ -160,12 +173,24 @@ class Config(BaseModel):
     user_agent_model: UserAgentModelConfig = UserAgentModelConfig()
 
 
+# v0.30.1: module-level singleton so patched LLMJudge / provider dispatchers
+# can resolve api_format without modifying cli.py construction sites.
+_LAST_LOADED: Config | None = None
+
+
+def get_last_loaded_config() -> Config | None:
+    """Return the most recently loaded Config, or None if load_config never ran."""
+    return _LAST_LOADED
+
+
 def load_config(path: str | Path | None = None) -> Config:
     """Load config from YAML file with ${ENV} expansion.
 
     Searches config.yaml in CWD then project root if path is not given.
     Returns defaults if no file is found.
     """
+    global _LAST_LOADED
+
     if path is not None:
         candidates = [Path(path)]
     else:
@@ -176,6 +201,10 @@ def load_config(path: str | Path | None = None) -> Config:
             with open(p) as f:
                 raw = yaml.safe_load(f) or {}
             expanded = _walk_expand(raw)
-            return Config.model_validate(expanded)
+            cfg = Config.model_validate(expanded)
+            _LAST_LOADED = cfg
+            return cfg
 
-    return Config()
+    cfg = Config()
+    _LAST_LOADED = cfg
+    return cfg

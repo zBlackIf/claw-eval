@@ -1,0 +1,32 @@
+[
+  {
+    "job_id": "OCG-JOB-001",
+    "name": "openclaw_gateway_health_check",
+    "cron_expression": "*/2 * * * *",
+    "enabled": true,
+    "last_run": "2026-05-25T03:46:00Z",
+    "last_status": "failed",
+    "next_run": "2026-05-25T03:48:00Z",
+    "tags": [
+      "openclaw",
+      "health"
+    ],
+    "action": "noop",
+    "created_by": "system"
+  },
+  {
+    "job_id": "OCG-JOB-002",
+    "name": "openclaw_gateway_log_rotate",
+    "cron_expression": "0 4 * * *",
+    "enabled": true,
+    "last_run": "2026-05-25T04:00:00Z",
+    "last_status": "success",
+    "next_run": "2026-05-26T04:00:00Z",
+    "tags": [
+      "openclaw",
+      "maintenance"
+    ],
+    "action": "noop",
+    "created_by": "system"
+  }
+]

@@ -1,0 +1,213 @@
+task_id: T166_zh_butterfly_curve_animejs_v4_realtime_data
+task_name: "A股每日行情播报 H5 页面（anime.js v4 + 实时行情数据）"
+version: "3.0"
+category: end_to_end
+difficulty: medium
+tags: [general]
+
+services:
+  - name: web_real
+    command: python mock_services/web_real/server.py
+    port: 9114
+    health_check: http://localhost:9114/web/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9114/web/reset
+
+prompt:
+  text: |
+    我是做 A 股日报的自媒体博主（公众号 + 读者社群），每天收盘后需要做一个行情播报 H5 页面发到群里。
+
+    之前用的模板太丑了，想升级一下。帮我做一个精美的单页 HTML 行情播报卡片，今天（2026-05-20）的数据先填进去。
+
+    具体需求：
+
+    1. 数据展示（请搜索获取今日上证综指的完整行情）：
+       - 收盘价（大字体）
+       - 涨跌额 + 涨跌幅（带颜色：涨红跌绿）
+       - 今开 / 最高 / 最低
+       - 成交额（亿或万亿单位）
+       所有数据都要标注来源和日期。
+
+    2. 动画效果：用 anime.js v4 实现
+       - 收盘价数字从 0 跳动到实际值（计数器动画）
+       - 各项指标错落入场（stagger 效果）
+       - 涨跌幅卡片有呼吸灯效果（涨红/跌绿脉冲）
+       注意：anime.js v4（2024年底重写）的 API 跟 v3 完全不同，请搜索最新文档。
+
+    3. 视觉设计：
+       - 深色背景（#1a1a2e）+ 卡片式布局
+       - 顶部标题："📊 A股收盘播报 · 2026.05.20"
+       - 整体风格参考财经类 App 的暗色模式
+       - 移动端适配（读者主要在手机上看）
+
+    4. 底部信息栏：数据来源、更新时间、免责声明（"仅供参考，不构成投资建议"）
+
+    输出完整 HTML 文件。要能直接在手机浏览器打开就好看的那种。
+
+  language: zh
+
+tools:
+  - name: web_search
+    description: 搜索互联网，返回相关网页结果列表（标题、链接、摘要）
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+          description: 搜索关键词或查询语句
+        max_results:
+          type: integer
+          description: 最大返回结果数
+          default: 10
+      required: [query]
+
+  - name: web_fetch
+    description: 获取指定URL的完整网页内容
+    input_schema:
+      type: object
+      properties:
+        url:
+          type: string
+          description: 要获取的网页URL
+        timeout_seconds:
+          type: integer
+          description: 请求超时时间（秒）
+          default: 30
+      required: [url]
+
+tool_endpoints:
+  - tool_name: web_search
+    url: http://localhost:9114/web/search
+    method: POST
+  - tool_name: web_fetch
+    url: http://localhost:9114/web/fetch
+    method: POST
+
+environment:
+  timeout_seconds: 900
+  max_turns: 40
+
+scoring_components:
+  - name: animejs_v4_correct
+    weight: 0.20
+    check:
+      type: keywords_present
+      keywords: ["animejs@4", "anime.", "createTimeline", "v4"]
+  - name: market_data_complete
+    weight: 0.35
+    check:
+      type: keywords_present
+      keywords: ["4162.18", "4169.85", "4139.97", "4152.70"]
+  - name: mobile_responsive
+    weight: 0.20
+    check:
+      type: keywords_present
+      keywords: ["viewport", "meta", "max-width", "rem"]
+  - name: html_runnable
+    weight: 0.25
+    check:
+      type: keywords_present
+      keywords: ["<!DOCTYPE", "<script", "anime", "#1a1a2e"]
+
+safety_checks: []
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 完成"A股行情播报 H5 页面"的质量。
+
+  场景价值：金融自媒体博主每天收盘后的核心工作流产物。
+  18.6% 的 CP 内容创作用户 + 15.6% 金融用户都有类似需求。
+  完成后可直接用于公众号推送 / 社群分享 / 飞书文档嵌入。
+
+  评分维度：
+
+  D1. 行情数据完整性与准确性 (权重 35%)
+      2026-05-20 上证综指真实数据：
+      - 收盘价: 4162.18 ✓
+      - 涨跌额: -7.36 ✓
+      - 涨跌幅: -0.18% ✓
+      - 今开: 4152.70 ✓
+      - 最高: 4169.85 ✓
+      - 最低: 4139.97 ✓
+      - 成交额: 约 1.36 万亿 ✓
+      - 昨收: 4169.54（用于涨跌计算验证）
+      评分标准：
+      - 1.0: 7 项数据全部正确 + 标注来源
+      - 0.8: 5-6 项正确
+      - 0.5: 3-4 项正确（至少有收盘价和涨跌幅）
+      - 0.2: 仅收盘价正确
+      - 0.0: 数据编造或全部错误
+
+  D2. anime.js v4 使用正确性 (权重 25%)
+      v4 必须正确使用的要素：
+      - CDN 引入 animejs@4
+      - 数字计数器动画（从 0 到目标值）
+      - stagger（错落入场）
+      - 不能出现 v3 语法（anime({targets:...})）
+      评分标准：
+      - 1.0: v4 API 正确 + 计数器 + stagger 都有
+      - 0.7: v4 正确但缺少某个动画效果
+      - 0.3: 引入了 v4 CDN 但用了 v3 语法
+      - 0.0: 未使用 anime.js 或完全是 v3
+
+  D3. 视觉设计与移动端适配 (权重 20%)
+      - 深色背景 + 卡片布局
+      - 涨跌颜色正确（今日跌→绿色）
+      - 移动端 viewport meta 标签
+      - 响应式布局（不会在小屏幕溢出）
+      评分标准：
+      - 1.0: 深色主题 + 涨跌颜色对 + 移动端适配完善
+      - 0.5: 基本样式正确但移动端有问题
+      - 0.0: 无样式或颜色方向反了
+
+  D4. 页面完整性与可用性 (权重 20%)
+      - HTML 结构完整可运行
+      - 底部有数据来源 + 日期 + 免责声明
+      - 标题含日期
+      - 整体可作为"日报产物"直接分享
+      评分标准：
+      - 1.0: 完整可用，有标题/来源/免责，直接可分享
+      - 0.5: 能运行但缺少部分元素
+      - 0.0: HTML 无法运行
+
+  最终评分 = 0.35*D1 + 0.25*D2 + 0.20*D3 + 0.20*D4
+
+reference_solution: |
+  此任务需要 2 类搜索 + 多字段数据获取：
+
+  搜索1: 今日上证综指完整行情（多步数据获取）
+    - web_search("2026年5月20日 上证综指 收盘 行情")
+    → 需要获取 7 个字段（不只是收盘价！）：
+      收盘: 4162.18 | 涨跌额: -7.36 | 涨跌幅: -0.18%
+      今开: 4152.70 | 最高: 4169.85 | 最低: 4139.97
+      成交额: ~1.36 万亿
+    → 可能需要多次搜索或访问详情页才能获取完整数据
+    → 必须确认涨跌方向: 跌 → 显示绿色
+
+  搜索2: anime.js v4 文档
+    - web_search("anime.js v4 documentation API counter animation stagger")
+    → v4 核心 API: createTimeline, animate
+    → 计数器动画: anime.createTimeline().add('.counter', {innerHTML: [0, target]})
+    → Stagger: anime.stagger(100) 或类似 v4 语法
+
+  关键验证点:
+  - 收盘价 4162.18 必须出现
+  - 涨跌幅 -0.18% 必须出现且为绿色
+  - 最高价 4169.85 和最低价 4139.97 必须出现
+  - anime.js v4 CDN 引入 + 无 v3 反模式
+  - viewport meta 标签存在
+  - 底部免责声明存在
+
+  不搜索时的典型错误:
+  - 错误1: anime.js v3 语法 → 动画不工作
+  - 错误2: 行情数据编造（收盘价、涨跌幅对不上）
+  - 错误3: 涨跌颜色搞反（中国 A 股：涨红跌绿）
+
+  用户价值验证:
+  - 产物可直接在手机浏览器打开
+  - 数据准确可信赖
+  - 视觉效果专业，可直接分享到读者群
+  - 底部有免责声明，合规
+
+primary_dimensions: [completion, robustness, communication]

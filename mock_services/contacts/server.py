@@ -1,4 +1,20 @@
-"""Mock Contacts API service for agent evaluation (FastAPI on port 9103)."""
+"""Mock Contacts API service for agent evaluation (FastAPI on port 9103).
+
+v0.30.3 ark overlay: fixes a framework-side fairness bug where the
+``search_contacts`` endpoint used case-sensitive substring matching on both
+``name`` and ``department``. Fixtures store department names capitalized
+(e.g. ``"Engineering"``); when a model normalizes case to lowercase (a
+reasonable default LLM behavior), the substring check fails and every
+contact gets filtered out — see docs/v0.30.3-claw_eval_mock_contacts_case_insensitive_fix.md
+for the full analysis (T010 / T026 / T030 / T032 / T040 affected).
+
+Diff vs upstream (39b27dcc):
+    name_match = req.query.lower() in c["name"].lower()
+    dept_match = (
+        req.department is None
+        or req.department.lower() in c["department"].lower()
+    )
+"""
 
 from __future__ import annotations
 
@@ -66,8 +82,16 @@ class SendMessageRequest(BaseModel):
 def search_contacts(req: SearchRequest) -> dict[str, Any]:
     results = []
     for c in _contacts:
-        name_match = req.query in c["name"]
-        dept_match = req.department is None or req.department in c["department"]
+        # v0.30.3 ark overlay: case-insensitive substring matching. Upstream
+        # 39b27dcc used `req.query in c["name"]` directly which fails when
+        # the agent normalizes case (e.g. department="engineering" vs
+        # fixture="Engineering"). Both directions .lower()'d so all 5 EN
+        # contact tasks (T010/T026/T030/T032/T040) get fair scoring.
+        name_match = req.query.lower() in c["name"].lower()
+        dept_match = (
+            req.department is None
+            or req.department.lower() in c["department"].lower()
+        )
         if name_match and dept_match:
             results.append(copy.deepcopy(c))
     resp = {"contacts": results, "total": len(results)}

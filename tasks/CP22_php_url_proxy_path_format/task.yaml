@@ -1,0 +1,124 @@
+task_id: CP22_php_url_proxy_path_format
+task_name: 扩展PHP代理支持路径格式URL转发
+version: "1.0"
+category: web_development
+difficulty: hard
+tags: [general, single_turn, coding_plan]
+
+source_task_id: "task_14_php_url_proxy_setup"
+source_dataset: "taskset-260411-144323"
+source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
+
+services: []
+
+prompt:
+  text: |
+    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
+    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+
+    - `/workspace/fixtures/project/index.php`
+    - `/workspace/fixtures/project/.htaccess`
+    - `/workspace/fixtures/project/composer.json`
+    - `/workspace/fixtures/apache2/sites-available/url-proxy.conf`
+
+    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+
+    我在服务器上跑着一个基于 `athlon1600/php-proxy-app` 的 URL 代理，部署在 `project/`
+    （对应真实路径 `/var/www/html/proxy/`）。现在用法是这样：
+
+    ```
+    https://lanmei.ccwu.cc/proxy/?q=https://github.com
+    ```
+
+    我想要新增一种更自然的路径格式：
+
+    ```
+    https://lanmei.ccwu.cc/proxy/https://github.com
+    https://lanmei.ccwu.cc/proxy/http://news.ycombinator.com/item?id=1
+    ```
+
+    你要做的事（改动限制在 `project/` 下面和 `apache2/sites-available/`，别碰其他地方）：
+
+    1. 修改 `project/index.php`：在调用 proxy 核心逻辑之前，加一段代码从 `$_SERVER['PATH_INFO']`
+       或 `$_SERVER['REQUEST_URI']` 里提取 `http://` / `https://` 开头的目标 URL，
+       重建完整 URL 后塞到 `$_GET['q']`。如果不是 `/http/` 或 `/https/` 开头就保持现有行为
+    2. 修改 `project/.htaccess`：启用 `AcceptPathInfo On`，同时调整 mod_rewrite 规则让所有非文件路径都转发到 `index.php`
+    3. 修改 `apache2/sites-available/url-proxy.conf`：增加对 `.htaccess` 里的 `AcceptPathInfo` 生效的配置
+    4. 写一份 `project/CHANGES.md` 说明：新增的用法、为什么需要 AcceptPathInfo On、原来 `?q=xxx` 是否仍然兼容
+
+    硬约束：
+    - 不要删除或破坏 `?q=` 这种原始用法
+    - 不要引入任何 PHP 依赖（不要改 composer.json）
+    - PHP 代码里不要用 `eval()` / `system()` / 任何 exec
+    - 新的 URL 解析代码必须能处理：
+      - `/proxy/https://github.com` → target = `https://github.com`
+      - `/proxy/http://example.com/path?query=1` → target = `http://example.com/path?query=1`
+      - `/proxy/?q=https://github.com` → 保持原行为
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/project/index.php
+  - fixtures/project/.htaccess
+  - fixtures/project/composer.json
+  - fixtures/apache2/sites-available/url-proxy.conf
+
+sandbox_grader_files:
+  - fixtures/verify.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+  env_snapshot_timeout: 30
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify.py
+
+env_snapshot_files:
+  - /workspace/project/index.php
+  - /workspace/project/.htaccess
+  - /workspace/apache2/sites-available/url-proxy.conf
+  - /workspace/project/CHANGES.md
+scoring_components: []
+
+safety_checks: []
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 对 PHP URL 代理的路径格式扩展实现质量。
+
+  ## index.php URL 解析逻辑
+  - 是否正确从 PATH_INFO 或 REQUEST_URI 中提取 http/https 开头的 URL
+  - 是否正确处理带查询参数的 URL（如 ?id=1 不被截断）
+  - 是否保持了 ?q= 原始用法的兼容性
+  - 是否避免了 eval/system/exec 等危险函数
+
+  ## .htaccess 配置
+  - 是否添加了 AcceptPathInfo On
+  - mod_rewrite 规则是否正确将路径转发到 index.php
+  - 是否不影响静态文件访问
+
+  ## Apache VHost 配置
+  - url-proxy.conf 是否正确配置支持 AcceptPathInfo
+
+  ## CHANGES.md 文档
+  - 是否说明了新用法
+  - 是否解释了 AcceptPathInfo On 的必要性
+  - 是否确认了向后兼容性
+
+  ## 评分标准
+  - 0.9-1.0: 完美实现，三种 URL 格式全部正确处理，配置完整，文档清晰
+  - 0.7-0.8: 核心逻辑正确但有小问题（如边界情况处理不完善）
+  - 0.4-0.6: 实现不完整或有明显错误
+  - 0.0-0.3: 未完成或破坏了原有功能
+
+reference_solution: |
+  1. index.php: 在 require vendor/autoload.php 之前加入 PATH_INFO 解析
+  2. .htaccess: 添加 AcceptPathInfo On + RewriteRule
+  3. url-proxy.conf: 确认 AllowOverride All 和 AcceptPathInfo 支持
+  4. CHANGES.md: 文档新用法和兼容性说明
+
+primary_dimensions: [completion, robustness, communication]

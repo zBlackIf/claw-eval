@@ -1,0 +1,28 @@
+orientdb-studio-3.2.x/
+├── src/
+│   ├── app/
+│   │   ├── administration/
+│   │   │   ├── etl/
+│   │   │   │   ├── etl.component.ts
+│   │   │   │   └── etl.component.html
+│   │   │   ├── importdb/
+│   │   │   │   ├── importdb.component.ts
+│   │   │   │   └── importdb.component.html
+│   │   │   └── backup/
+│   │   │       ├── backup.component.ts
+│   │   │       └── backup.component.html
+│   │   ├── shared/
+│   │   │   └── services/
+│   │   │       └── upload.service.ts
+│   │   └── core/
+│   │       └── http.interceptor.ts
+│   └── assets/
+├── server/
+│   ├── api/
+│   │   ├── UploadHandler.java
+│   │   ├── ImportHandler.java
+│   │   └── ETLHandler.java
+│   └── config/
+│       └── SecurityConfig.java
+├── package.json
+└── angular.json

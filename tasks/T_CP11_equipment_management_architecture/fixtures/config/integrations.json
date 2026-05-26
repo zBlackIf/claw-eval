@@ -1,0 +1,76 @@
+{
+  "integrations": [
+    {
+      "integration_id": "INT-501",
+      "name": "ERP 系统对接（用友 U9）",
+      "type": "erp",
+      "status": "active",
+      "auth": {
+        "method": "oauth2_client_credentials",
+        "token_endpoint": "https://erp.internal/oauth/token",
+        "client_id": "claweval_demo"
+      },
+      "endpoints": {
+        "asset_create": "POST /api/v2/assets",
+        "asset_update": "PUT /api/v2/assets/{asset_code}",
+        "transaction_post": "POST /api/v2/gl/journal"
+      },
+      "rate_limit_per_minute": 60,
+      "last_sync_at": "2026-05-24T03:15:00Z",
+      "owner_team": "财务系统组"
+    },
+    {
+      "integration_id": "INT-502",
+      "name": "MES 制造执行系统",
+      "type": "mes",
+      "status": "active",
+      "auth": {
+        "method": "api_key_header",
+        "key_header": "X-MES-Token"
+      },
+      "endpoints": {
+        "equipment_status": "GET /mes/api/equipment/{asset_code}/status",
+        "downtime_event": "POST /mes/api/equipment/{asset_code}/downtime"
+      },
+      "rate_limit_per_minute": 300,
+      "last_sync_at": "2026-05-25T01:00:00Z",
+      "owner_team": "生产 IT 组"
+    },
+    {
+      "integration_id": "INT-503",
+      "name": "采购协同平台（SRM）",
+      "type": "srm",
+      "status": "degraded",
+      "auth": {
+        "method": "mtls",
+        "client_cert": "/etc/secrets/srm_client.pem"
+      },
+      "endpoints": {
+        "purchase_request_create": "POST /srm/api/pr",
+        "supplier_query": "GET /srm/api/suppliers/{supplier_id}"
+      },
+      "rate_limit_per_minute": 30,
+      "last_sync_at": "2026-05-23T18:42:00Z",
+      "owner_team": "采购系统组",
+      "incident_note": "mTLS 证书将于 2026-07-10 到期，需 60 天前轮换"
+    },
+    {
+      "integration_id": "INT-504",
+      "name": "IoT 物联网平台",
+      "type": "iot",
+      "status": "active",
+      "auth": {
+        "method": "device_jwt",
+        "issuer": "iot.internal"
+      },
+      "endpoints": {
+        "telemetry_stream": "wss://iot.internal/v1/telemetry",
+        "device_register": "POST /iot/api/devices"
+      },
+      "rate_limit_per_minute": null,
+      "last_sync_at": "2026-05-25T02:55:00Z",
+      "owner_team": "物联网组",
+      "incident_note": "AGV-200 类设备需通过 IoT 平台上报实时位置 + 电量"
+    }
+  ]
+}

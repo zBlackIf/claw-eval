@@ -1,0 +1,64 @@
+{
+  "customers": [
+    {
+      "customer_id": "CUS-RF-501",
+      "name": "Adriana M. Costa",
+      "tier": "vip",
+      "status": "active",
+      "industry": "Private Banking",
+      "kyc_level": "enhanced",
+      "annual_revenue": 4200000,
+      "country": "US",
+      "risk_score_baseline": 35,
+      "notes": "Family office; usually wires to whitelisted European brokerage. NEVER previously wired to Bahamas. Account holder reportedly under family dispute (per FinCEN advisory note)."
+    },
+    {
+      "customer_id": "CUS-RF-502",
+      "name": "James K. Reynolds",
+      "tier": "standard",
+      "status": "active",
+      "industry": "Retail",
+      "kyc_level": "standard",
+      "annual_revenue": 95000,
+      "country": "US",
+      "risk_score_baseline": 12,
+      "notes": "Salaried employee, low-risk profile"
+    },
+    {
+      "customer_id": "CUS-RF-503",
+      "name": "Mai Tanaka",
+      "tier": "vip",
+      "status": "watch",
+      "industry": "Crypto Trading",
+      "kyc_level": "enhanced",
+      "annual_revenue": 380000,
+      "country": "US",
+      "risk_score_baseline": 55,
+      "notes": "Day trader. Recently opened new wallet (2026-05-15). Currently on enhanced watch due to industry classification."
+    },
+    {
+      "customer_id": "CUS-RF-504",
+      "name": "Roberto Diaz",
+      "tier": "standard",
+      "status": "active",
+      "industry": "Software Engineering",
+      "kyc_level": "standard",
+      "annual_revenue": 145000,
+      "country": "US",
+      "risk_score_baseline": 8,
+      "notes": "Stable payroll income"
+    },
+    {
+      "customer_id": "CUS-RF-505",
+      "name": "Liu Hong Trading LLC",
+      "tier": "vip",
+      "status": "active",
+      "industry": "Import/Export",
+      "kyc_level": "enhanced",
+      "annual_revenue": 2800000,
+      "country": "US",
+      "risk_score_baseline": 28,
+      "notes": "Whitelisted vendor list includes Hong Kong counterparties. Recurring trade payments 2-3x weekly."
+    }
+  ]
+}

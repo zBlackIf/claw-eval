@@ -1,0 +1,83 @@
+# provenance:
+#   themis_dataset: taskset-260408-163403
+#   themis_task_id: task_04_security_audit_file_upload
+#   themis_rank_original: 19
+#   themis_metrics: { std_trim: 0.415, range_trim: 1.000, mean_trim: 0.721 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525.md
+#   mapping_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525-mapping.md
+task_id: T_CP16_web_file_upload_security_audit
+task_name: "Web 项目文件上传漏洞安全审计（T_CP16 / 源 taskset-260408-163403:task_04_security_audit_file_upload）"
+version: "1.0"
+category: security
+difficulty: easy
+tags: [general]
+
+source_task_id: "task_04_security_audit_file_upload"
+source_dataset: "taskset-260408-163403"
+source_description: "从 Themis PinchBench top100（2026-05-25 二次筛选，killer bucket）中按跨模型 std_trim 排名精选的高区分度题（原始排名 #19，std_trim 0.415 / range_trim 1.000 / mean_trim 0.721），改编为 Claw-Eval Pattern D (sandbox-adapted) 格式，PinbenchAdaptedGrader 类属性声明自动评分。原始 prompt 重写以适配本仓库 mock service 与 fixtures，源映射见 docs/eval-result-analysis/themis-pinchbench-to-claw-top20-260525-mapping.md。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/code/ 下有两个 legacy 文件：
+    - upload_handler.php （文件上传后端）
+    - nginx_uploads.conf （nginx 上传目录配置）
+
+    18+ 个月未做安全 review。请你做一次完整的文件上传安全审计，输出一份 markdown
+    格式的审计报告。
+
+    报告必须用 markdown 标题分章节，覆盖：
+
+    1. **Critical 漏洞**（≥5 个）：列出每个漏洞 +
+       - 文件 + 行号定位
+       - 攻击者如何利用（≤2 句话）
+       - 严重等级（CVSS 大致档位）
+       - 修复建议
+    2. **High 漏洞**（≥3 个）：同上格式
+    3. **Medium / 配置漏洞**（≥2 个）：包括 nginx 配置缺失
+    4. **建议的修复优先级**：1-2-3 排序，每条带一句理由
+
+    必须覆盖的漏洞类型（命中越多分数越高）：
+    - 仅扩展名校验（绕过：double extension / .htaccess / case / URL 编码）
+    - 缺少 MIME / 内容嗅探（finfo）
+    - Path traversal（直接用用户文件名）
+    - 文件大小没强制限制（DoS）
+    - Race condition / TOCTOU（move_uploaded_file 前后）
+    - .htaccess 缺失 + nginx 没禁止 PHP 执行（RCE 直通车）
+    - CSRF token 缺失
+    - XSS（输出文件名未转义）
+    - 日志泄露 IP（GDPR）
+    - 错误处理：oversize 后未 return 仍保存
+
+    输出要求：≥600 字，使用 markdown 标题（#/##）和列表，引用具体 PHP / nginx 代码片段。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/code/upload_handler.php
+  - fixtures/code/nginx_uploads.conf
+
+environment:
+  timeout_seconds: 300
+  max_turns: 15
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a comprehensive security audit naming concrete vulnerabilities (extension-bypass, MIME, path traversal, RCE via .htaccess, race condition) with file:line citations and a prioritized fix list."
+
+reference_solution: |
+  Read upload_handler.php and nginx_uploads.conf from /workspace/fixtures/code/.
+  Identify ≥10 issues: extension-only whitelist (line ~25), missing MIME/finfo,
+  path traversal (line ~32), missing size enforcement (line ~36 oversize log without
+  return), TOCTOU on move_uploaded_file (line ~41), no .htaccess + nginx allows PHP,
+  XSS on filename echo (line ~47), GDPR log of REMOTE_ADDR (line ~50), missing CSRF
+  token, oversize check has wrong control flow. Produce markdown report with sections
+  Critical / High / Medium / 修复优先级.
+
+primary_dimensions: [completion, communication, safety]

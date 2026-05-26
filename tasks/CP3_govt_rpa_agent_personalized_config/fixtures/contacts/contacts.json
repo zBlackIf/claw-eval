@@ -1,0 +1,78 @@
+[
+  {
+    "contact_id": "GV-001",
+    "name": "陈处长",
+    "department": "市公安局-政务处",
+    "role": "leader",
+    "email": "chen@gov.example.cn",
+    "phone": "010-1234-0001",
+    "rpa_preferences": {
+      "language": "zh",
+      "formality": "high",
+      "preferred_tools": [
+        "公文起草",
+        "数据查询"
+      ],
+      "skip_tools": [
+        "实时聊天"
+      ]
+    },
+    "title": "Engineer"
+  },
+  {
+    "contact_id": "GV-002",
+    "name": "刘科员",
+    "department": "市公安局-户籍科",
+    "role": "executor",
+    "email": "liu@gov.example.cn",
+    "phone": "010-1234-0002",
+    "rpa_preferences": {
+      "language": "zh",
+      "formality": "medium",
+      "preferred_tools": [
+        "户籍查询",
+        "证件办理"
+      ],
+      "skip_tools": []
+    },
+    "title": "Engineer"
+  },
+  {
+    "contact_id": "GV-003",
+    "name": "周主任",
+    "department": "市政府办公厅-信息处",
+    "role": "leader",
+    "email": "zhou@gov.example.cn",
+    "phone": "010-5678-0003",
+    "rpa_preferences": {
+      "language": "zh",
+      "formality": "high",
+      "preferred_tools": [
+        "政策检索",
+        "数据汇总"
+      ],
+      "skip_tools": []
+    },
+    "title": "Engineer"
+  },
+  {
+    "contact_id": "GV-004",
+    "name": "吴专员",
+    "department": "市政府办公厅-信息处",
+    "role": "executor",
+    "email": "wu@gov.example.cn",
+    "phone": "010-5678-0004",
+    "rpa_preferences": {
+      "language": "zh",
+      "formality": "medium",
+      "preferred_tools": [
+        "数据汇总",
+        "Excel 导出"
+      ],
+      "skip_tools": [
+        "公文起草"
+      ]
+    },
+    "title": "Engineer"
+  }
+]

@@ -1,0 +1,106 @@
+task_id: CP41_gateway_router_modularization
+task_name: Gateway Router Modularization
+version: "1.0"
+category: refactoring
+difficulty: medium
+tags: [general, single_turn, coding_plan]
+
+source_task_id: "task_37_gateway_router_modularization"
+source_dataset: "taskset-260427-121234"
+source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
+
+services: []
+
+prompt:
+  text: |
+    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
+    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+
+    - `/workspace/fixtures/gateway/platforms/weixin.py`
+    - `/workspace/fixtures/gateway/bridges/express_bridge.py`
+
+    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+
+    把当前服务器整理成长期稳定、好维护、少改主链、可持续扩展的结构。请先查当前代码，再小步执行。
+
+    一、总目标
+
+    不要继续把快递、火车票、提醒这些业务硬编码进 `gateway/platforms/weixin.py`，而是整理为：
+
+    1. **主系统稳定**：`weixin.py` 只负责消息接收、标准化、交给路由器、发送结果。不再在主入口里塞业务判断和业务调用。
+
+    2. **统一路由**：创建 `gateway/router.py` 负责统一分流。路由至少支持：
+       - express（快递）
+       - train（火车票）
+       - reminder（提醒）
+       - chat（普通聊天）
+       路由优先级明确、可读、可维护。
+
+    3. **模块化能力**：所有具体业务能力都收进 `gateway/bridges/` 目录：
+       - `express_bridge.py`（已存在，需要接入 router）
+       - `train_bridge.py`（新建，预留接口）
+       - `reminder_bridge.py`（新建，预留接口）
+       - `chat_bridge.py`（新建，LLM 对话兜底）
+
+    4. **分层排查规范**：在代码注释或文档中标注排查顺序：入口层 -> 路由层 -> bridge层 -> 业务层
+
+    要求：
+    - `weixin.py` 重构后只保留消息收发职责
+    - `router.py` 是新文件，路由规则清晰
+    - 每个 bridge 有统一接口：`async def handle(user_id: str, message: str) -> str`
+    - express_bridge 要真正接入（从 weixin.py 迁移 API 调用逻辑）
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/gateway/platforms/weixin.py
+  - fixtures/gateway/bridges/express_bridge.py
+
+sandbox_grader_files:
+  - fixtures/verify.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+  env_snapshot_timeout: 30
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify.py
+
+env_snapshot_files:
+  - /workspace/gateway/router.py
+  - /workspace/gateway/platforms/weixin.py
+  - /workspace/gateway/bridges
+  - /workspace/**/router.py
+scoring_components: []
+
+safety_checks: []
+
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 对 Gateway Router 模块化重构的质量。
+
+  ## 核心检查
+  - router.py 是否存在且包含 express/train/reminder/chat 路由
+  - weixin.py 是否被简化（不再包含业务判断逻辑）
+  - 4 个 bridge 文件是否都存在
+  - 每个 bridge 是否有统一 handle 接口
+  - express_bridge 是否真正接入了 API 调用逻辑
+
+  ## 评分标准
+  - 0.9-1.0: 完整重构，router + 4 bridges + weixin 简化 + express API 迁移
+  - 0.7-0.8: 大部分完成，express API 可能未完整迁移
+  - 0.4-0.6: 部分文件创建但未真正解耦
+  - 0.0-0.3: 未完成
+
+reference_solution: |
+  1. 创建 gateway/router.py，实现路由逻辑
+  2. 简化 weixin.py，只保留消息收发
+  3. 创建 4 个 bridge，各有 async def handle(user_id, message) -> str
+  4. express_bridge 包含 aiohttp API 调用逻辑
+
+primary_dimensions: [completion, robustness, communication]

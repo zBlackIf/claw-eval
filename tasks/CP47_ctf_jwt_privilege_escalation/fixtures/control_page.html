@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Serverless Platform - Control Panel</title>
+</head>
+<body>
+<div class="dashboard">
+    <h1>Control Panel</h1>
+    <div class="user-info">
+        <span>Role: <strong>developer</strong></span>
+    </div>
+    <div class="menu">
+        <a href="/control.php?action=status">System Status</a>
+        <a href="/control.php?action=logs">View Logs</a>
+        <!-- Admin-only sections are hidden for developer role -->
+        <!-- Rule Engine editor (admin only): /control.php?action=rules -->
+    </div>
+    <div class="content">
+        <h2>System Status</h2>
+        <p>Platform: Serverless Rule Engine v2.1</p>
+        <p>Functions deployed: 12</p>
+        <p>Uptime: 99.7%</p>
+    </div>
+</div>
+</body>
+</html>

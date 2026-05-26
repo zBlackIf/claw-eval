@@ -1,0 +1,96 @@
+task_id: CP34_education_schedule_bug_fix
+task_name: Education Scheduling System Bug Fix
+version: "1.0"
+category: debugging
+difficulty: medium
+tags: [general, single_turn, coding_plan]
+
+source_task_id: "task_22_schedule_bug_fix"
+source_dataset: "taskset-260427-121234"
+source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
+
+services: []
+
+prompt:
+  text: |
+    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
+    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+
+    - `/workspace/fixtures/backend/schedule_api.py`
+    - `/workspace/fixtures/frontend/ScheduleView.vue`
+
+    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+
+    教务排课系统有几个用户反馈的bug，代码在 `backend/schedule_api.py` 和 `frontend/ScheduleView.vue`。
+
+    用户反馈：
+    1. 重复排课时，排的周二的课，但排到了每周三
+    2. 教师、教室下拉框选择不了
+    3. 排课成功后卡片不显示课程名、教师名和教室名，刷新后才正常
+    4. 排课卡片太窄，文字换行显示不全
+
+    请逐一排查并修复这些bug。每个bug需要：
+    - 说明根因
+    - 给出修复方案
+    - 修改代码
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/backend/schedule_api.py
+  - fixtures/frontend/ScheduleView.vue
+
+sandbox_grader_files:
+  - fixtures/verify.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+  env_snapshot_timeout: 30
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify.py
+
+env_snapshot_files:
+  - /workspace/backend/schedule_api.py
+  - /workspace/frontend/ScheduleView.vue
+scoring_components: []
+
+safety_checks: []
+
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 是否正确修复了排课系统的4个bug。
+
+  ## Bug 1: 星期偏移
+  - 是否识别了 DAY_MAP 的 off-by-one 问题
+  - 是否正确修复（前后端索引对齐）
+
+  ## Bug 2: 下拉框绑定
+  - 是否将 :value="t" 改为 :value="t.id"
+  - 或将 API 返回格式改为 value/label
+
+  ## Bug 3: 卡片不显示名称
+  - 是否让 API 返回 name 字段
+  - 或前端做本地 lookup
+
+  ## Bug 4: 卡片宽度
+  - 是否添加了 min-width CSS
+
+  ## 评分标准
+  - 0.9-1.0: 4个bug全部正确修复
+  - 0.7-0.8: 3个bug修复正确
+  - 0.4-0.6: 1-2个bug修复正确
+  - 0.0-0.3: 未能有效修复
+
+reference_solution: |
+  Bug 1: DAY_MAP Monday改为1（或前端发送时-1）
+  Bug 2: :value="t.id" / :value="r.id"
+  Bug 3: API join name 或前端 courses.find()
+  Bug 4: .schedule-card { min-width: 100px; }
+
+primary_dimensions: [completion, robustness, communication]

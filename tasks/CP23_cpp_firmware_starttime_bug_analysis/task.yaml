@@ -1,0 +1,113 @@
+task_id: CP23_cpp_firmware_starttime_bug_analysis
+task_name: C++ FirmwareItem startTime设置失败Bug分析修复
+version: "1.0"
+category: debugging
+difficulty: hard
+tags: [general, single_turn, coding_plan]
+
+source_task_id: "task_31_cpp_firmware_starttime_bug"
+source_dataset: "taskset-260427-121234"
+source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
+
+services: []
+
+prompt:
+  text: |
+    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
+    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+
+    - `/workspace/fixtures/src/item/firmware_item.cpp`
+    - `/workspace/fixtures/src/item/firmware_item.h`
+    - `/workspace/fixtures/src/item/iclone_item.cpp`
+    - `/workspace/fixtures/src/item/iclone_item.h`
+    - `/workspace/fixtures/src/core/upg_upgrade_interface.h`
+    - `/workspace/fixtures/src/helper/identifier_helper.h`
+
+    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+
+    `src/item/firmware_item.cpp` 中：
+
+    ```cpp
+    m_startTime = IdentifierHelper::getDateTimeString();
+    ```
+
+    FirmwareItem 设置 startTime 失败，请分析并修复。
+
+    要求：
+    1. 阅读 `firmware_item.cpp`、`firmware_item.h`、基类 `iclone_item.h` / `iclone_item.cpp` 以及相关的 `upg_upgrade_interface.h`
+    2. 分析 `FirmwareItem::preExecuteItem` 与基类 `ICloneItem::preExecuteItem` 的关系，找出 startTime 未被正确设置的根因
+    3. 将修复方案写入 `BUGFIX_REPORT.md`，包含：根因分析、修复方案（diff 或完整修改后代码片段）、影响面评估
+    4. 将修复后的 `firmware_item.cpp` 写入 `src/item/firmware_item.cpp`
+    5. 如果发现其他潜在问题（如 endTime 一致性、error path 中 startTime 未清空等），也在报告中说明
+
+    注意：不要修改基类 `ICloneItem` 的公共接口。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/src/item/firmware_item.cpp
+  - fixtures/src/item/firmware_item.h
+  - fixtures/src/item/iclone_item.cpp
+  - fixtures/src/item/iclone_item.h
+  - fixtures/src/core/upg_upgrade_interface.h
+  - fixtures/src/helper/identifier_helper.h
+
+sandbox_grader_files:
+  - fixtures/verify.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+  env_snapshot_timeout: 30
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify.py
+
+env_snapshot_files:
+  - /workspace/BUGFIX_REPORT.md
+  - /workspace/src/item/firmware_item.cpp
+  - /workspace/src/item/iclone_item.h
+scoring_components: []
+
+safety_checks: []
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 对 C++ FirmwareItem startTime bug 的分析和修复质量。
+
+  ## 根因分析
+  - 是否正确识别了 startTime 未被设置的根本原因
+  - 根因应该是：FirmwareItem::preExecuteItem 覆写了基类但没有调用 base::preExecuteItem()，导致基类中设置 startTime 的逻辑被跳过
+  - 或者：startTime 在基类 preExecuteItem 中设置，但子类重写后未调用 super
+
+  ## 修复方案
+  - 是否在 FirmwareItem::preExecuteItem 中正确调用了基类方法
+  - 或者是否在子类中显式添加了 startTime 设置
+  - 修复后的代码是否保持了原有功能完整性
+
+  ## BUGFIX_REPORT.md 质量
+  - 是否包含根因分析
+  - 是否包含修复方案（带代码片段或 diff）
+  - 是否评估了影响面
+  - 是否提及了其他潜在问题
+
+  ## 代码修改正确性
+  - firmware_item.cpp 的修改是否正确
+  - 是否没有破坏其他功能
+  - 是否没有修改基类公共接口
+
+  ## 评分标准
+  - 0.9-1.0: 正确识别根因，修复方案完整且安全，报告详尽
+  - 0.7-0.8: 根因正确但修复方案有小瑕疵或报告不够详细
+  - 0.4-0.6: 部分正确但遗漏了关键分析
+  - 0.0-0.3: 未识别根因或修复错误
+
+reference_solution: |
+  根因：FirmwareItem::preExecuteItem() 重写了基类 ICloneItem::preExecuteItem() 但没有调用 base，
+  基类中 m_startTime = IdentifierHelper::getDateTimeString() 从未执行。
+  修复：在 FirmwareItem::preExecuteItem() 开头添加 ICloneItem::preExecuteItem() 调用。
+
+primary_dimensions: [completion, robustness, communication]

@@ -1,0 +1,186 @@
+task_id: T177_zh_glm5_open_source_model_evaluation
+task_name: "智谱GLM-5.1开源模型能力评估"
+version: "2.0"
+category: research
+difficulty: easy
+tags: [general]
+
+services:
+  - name: web_real
+    command: python mock_services/web_real/server.py
+    port: 9114
+    health_check: http://localhost:9114/web/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9114/web/reset
+
+prompt:
+  text: |
+    我们企业AI团队正在评估智谱（Z.ai）的 GLM-5.1 模型，考虑用于企业级 Agentic Coding 场景
+    （自动化代码生成、长周期软件开发任务）。
+
+    请帮我搜索整理以下信息：
+
+    1. GLM-5 系列的演进路线：从 GLM-4.5（2025年7月）→ GLM-4.6（2025年9月）→ GLM-5（2026年2月）→ GLM-5.1（2026年4月），每个版本的核心改进是什么？
+
+    2. GLM-5.1 的核心能力：
+       - SWE-Bench Pro 排名第一的具体表现
+       - Agentic Engineering 能力（长周期任务、自主编码）
+       - 与前代 GLM-5 相比的改进（post-training优化）
+
+    3. 架构与部署：
+       - 模型架构特点
+       - 开源状态和 License（能否商用？）
+       - 部署推理框架支持（vLLM, SGLang等）
+
+    4. 竞品对比：
+       - vs DeepSeek V4（2026年4月）
+       - vs Qwen3（2025年4月）
+       - vs LLaMA 4
+       - 在 coding/agent 任务上的优劣势
+
+    5. 企业部署建议：对于我们的 Agentic Coding 场景，GLM-5.1 是否值得采用？
+       相比 DeepSeek V4 和 Qwen3，推荐哪个？
+
+    输出一份评估报告，重点关注 agentic engineering 和编程能力。
+  language: zh
+
+tools:
+  - name: web_search
+    description: 搜索互联网，返回相关网页结果列表（标题、链接、摘要）
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+          description: 搜索关键词或查询语句
+        max_results:
+          type: integer
+          description: 最大返回结果数
+          default: 10
+      required: [query]
+
+  - name: web_fetch
+    description: 获取指定URL的完整网页内容
+    input_schema:
+      type: object
+      properties:
+        url:
+          type: string
+          description: 要获取的网页URL
+        timeout_seconds:
+          type: integer
+          description: 请求超时时间（秒）
+          default: 30
+      required: [url]
+
+tool_endpoints:
+  - tool_name: web_search
+    url: http://localhost:9114/web/search
+    method: POST
+  - tool_name: web_fetch
+    url: http://localhost:9114/web/fetch
+    method: POST
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+scoring_components:
+  - name: model_evolution
+    weight: 0.25
+    check:
+      type: keywords_present
+      keywords: ["GLM-5.1", "GLM-5", "Z.ai", "智谱", "agentic"]
+  - name: capabilities_benchmarks
+    weight: 0.30
+    check:
+      type: keywords_present
+      keywords: ["SWE-Bench", "coding", "编程", "agent", "agentic engineering"]
+  - name: deployment_info
+    weight: 0.20
+    check:
+      type: keywords_present
+      keywords: ["开源", "open-source", "vLLM", "SGLang", "部署"]
+  - name: recommendation
+    weight: 0.25
+    check:
+      type: keywords_present
+      keywords: ["DeepSeek V4", "Qwen3", "推荐", "适合"]
+
+safety_checks: []
+expected_actions: []
+
+judge_rubric: |
+  评估 agent 完成智谱GLM-5.1模型评估的质量。
+
+  场景：企业AI团队为 Agentic Coding 场景选择大模型。
+  核心价值：帮团队基于最新信息选择最适合自动化编程的模型。
+
+  评分维度：
+
+  D1. 模型演进历史 (权重 25%)
+      GLM-5系列关键里程碑：
+      - GLM-4.5: 2025年7月，MoE架构，混合推理
+      - GLM-4.6: 2025年9月，开源权重领先者
+      - GLM-5: 2026年2月11日发布，下一代基础模型，Agentic Engineering方向，曾以"Pony Alpha"匿名出现在OpenRouter
+      - GLM-5.1: 2026年4月7日发布，post-training优化版，SWE-Bench Pro第一名
+      - 公司品牌：智谱AI → Z.ai，平台 chat.z.ai
+      评分标准：
+      - 1.0: 演进路线清晰 + 时间节点准确 + 品牌变更
+      - 0.5: 有版本信息但不完整或时间不准
+      - 0.0: 版本信息错误或缺失
+
+  D2. 核心能力与Benchmark (权重 30%)
+      GLM-5.1 的能力特征：
+      - SWE-Bench Pro 排名第一（编程能力标杆）
+      - Agentic Engineering：从"vibe coding"到工程化自动编程
+      - 长周期软件开发任务能力
+      - 开源模型中 coding 和 agent 任务 SOTA
+      - 关键对比：vs DeepSeek V4、vs Qwen3
+      评分标准：
+      - 1.0: 有SWE-Bench Pro数据 + agentic能力描述 + 竞品对比
+      - 0.5: 有定性描述但缺少具体benchmark
+      - 0.0: 无能力/benchmark信息
+
+  D3. 部署信息 (权重 20%)
+      - 开源状态和License
+      - 推理框架支持：vLLM, SGLang等
+      - GitHub: zai-org/GLM-5
+      - 硬件需求和部署方案
+      评分标准：
+      - 1.0: 开源状态 + 推理框架 + 部署方案
+      - 0.5: 有部署信息但不够详细
+      - 0.0: 无部署信息
+
+  D4. 推荐结论 (权重 25%)
+      对企业Agentic Coding场景的合理推荐：
+      - GLM-5.1: SWE-Bench Pro第一，agentic engineering强项
+      - DeepSeek V4: 2026年4月发布，综合能力强
+      - Qwen3: 2025年4月发布，生态成熟
+      - LLaMA 4: Meta开源
+      - 场景适配分析：coding agent vs 通用任务
+      评分标准：
+      - 1.0: 有针对性推荐 + 场景适配分析 + 竞品对比
+      - 0.5: 有推荐但不够具体
+      - 0.0: 无推荐
+
+  最终评分 = 0.25*D1 + 0.30*D2 + 0.20*D3 + 0.25*D4
+
+reference_solution: |
+  搜索策略：
+  1. web_search("GLM-5.1 Z.ai SWE-Bench Pro agentic engineering 2026") → 核心能力
+  2. web_search("GLM-5 系列 演进 GLM-4.5 GLM-4.6 智谱") → 版本历史
+  3. web_search("GLM-5.1 vs DeepSeek V4 vs Qwen3 coding agent comparison") → 竞品对比
+  4. web_search("GLM-5 开源 license 部署 vLLM SGLang") → 部署信息
+  5. web_search("智谱AI Z.ai 品牌 2026 chat.z.ai") → 公司信息
+  6. web_fetch(GitHub zai-org/GLM-5 页面) → 仓库数据
+
+  关键数据：
+  - GLM-5.1: 2026年4月7日发布，SWE-Bench Pro第一名
+  - GLM-5: 2026年2月11日发布，Agentic Engineering方向
+  - 公司: 智谱AI → Z.ai，平台 chat.z.ai
+  - 定位: 从 vibe coding 到 agentic engineering
+  - 竞品: DeepSeek V4(2026.4), Qwen3(2025.4), LLaMA 4
+
+primary_dimensions: [completion, robustness, communication]

@@ -1,0 +1,99 @@
+{
+  "products": [
+    {
+      "product_id": "SKU-CAM-001",
+      "name": "炫途 4K 智能行车记录仪 V2 Pro",
+      "category": "数码-汽车电子",
+      "stock_quantity": 320,
+      "unit_price": 599.00,
+      "reorder_level": 50,
+      "supplier_id": "SUP-CAM-A",
+      "listing_meta": {
+        "asin": "B0CXC4M001",
+        "title": "炫途 V2 Pro 4K 高清行车记录仪 GPS 测速 ADAS 辅助 256G 内存卡套装",
+        "bullet_points": [
+          "4K 超清记录，夜视增强 3 倍",
+          "GPS 测速 + ADAS 车道偏移预警",
+          "256G TF 卡随机赠送",
+          "支持手机 WiFi 实时查看"
+        ],
+        "avg_review_rating": 4.3,
+        "review_count": 1840,
+        "monthly_sales": 980,
+        "best_seller_rank": 47,
+        "competitor_top3_asins": ["B0CXX4M0AA", "B0CXX4M0BB", "B0CXX4M0CC"]
+      }
+    },
+    {
+      "product_id": "SKU-CAM-002",
+      "name": "炫途 1080P 入门行车记录仪 Lite",
+      "category": "数码-汽车电子",
+      "stock_quantity": 850,
+      "unit_price": 199.00,
+      "reorder_level": 200,
+      "supplier_id": "SUP-CAM-A",
+      "listing_meta": {
+        "asin": "B0CXC4M002",
+        "title": "炫途 Lite 1080P 行车记录仪 循环录像 130 度广角 紧凑款",
+        "bullet_points": [
+          "1080P 高清，130 度广角",
+          "循环录像不漏帧",
+          "G-sensor 碰撞自动锁存",
+          "USB 即插即用"
+        ],
+        "avg_review_rating": 4.0,
+        "review_count": 5230,
+        "monthly_sales": 2100,
+        "best_seller_rank": 12,
+        "competitor_top3_asins": ["B0CXY4M0AA", "B0CXY4M0BB", "B0CXY4M0CC"]
+      }
+    },
+    {
+      "product_id": "SKU-EBK-001",
+      "name": "新读 7 寸彩屏 Kindle 替代品 E-Reader",
+      "category": "数码-阅读器",
+      "stock_quantity": 180,
+      "unit_price": 1299.00,
+      "reorder_level": 30,
+      "supplier_id": "SUP-EBK-B",
+      "listing_meta": {
+        "asin": "B0DEK7001",
+        "title": "新读 7\" Color E-Reader 32G 防水 翻页键 PDF 支持",
+        "bullet_points": [
+          "7 寸彩色墨水屏",
+          "物理翻页键 + 触摸双控",
+          "防水 IPX8，浴缸阅读不怕水",
+          "支持 PDF / EPUB / TXT 等 12 种格式"
+        ],
+        "avg_review_rating": 4.6,
+        "review_count": 420,
+        "monthly_sales": 145,
+        "best_seller_rank": 230,
+        "competitor_top3_asins": ["B0DEK7AAA", "B0DEK7BBB", "B0DEK7CCC"]
+      }
+    },
+    {
+      "product_id": "SKU-EBK-002",
+      "name": "新读 10 寸学生写作平板 Note",
+      "category": "数码-阅读器",
+      "stock_quantity": 60,
+      "unit_price": 2199.00,
+      "reorder_level": 15,
+      "supplier_id": "SUP-EBK-B",
+      "listing_meta": {
+        "asin": "B0DEK7002",
+        "title": "新读 Note 10\" 黑白电子手写本 手写笔 PDF 批注",
+        "bullet_points": [
+          "10 寸大屏 + 手写笔",
+          "支持 PDF 批注、思维导图",
+          "云端同步 + 微信导出"
+        ],
+        "avg_review_rating": 3.7,
+        "review_count": 95,
+        "monthly_sales": 32,
+        "best_seller_rank": 1450,
+        "competitor_top3_asins": ["B0DEK7DDD", "B0DEK7EEE", "B0DEK7FFF"]
+      }
+    }
+  ]
+}

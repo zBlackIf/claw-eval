@@ -1,0 +1,94 @@
+task_id: CP38_java_concurrent_modification_debug
+task_name: Java ConcurrentModificationException Debug
+version: "1.0"
+category: debugging
+difficulty: medium
+tags: [general, single_turn, coding_plan]
+
+source_task_id: "task_33_concurrent_modification"
+source_dataset: "taskset-260421-225115"
+source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
+
+services: []
+
+prompt:
+  text: |
+    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
+    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+
+    - `/workspace/fixtures/src/main/java/cn/dreamit/p1000/util/RequestUtil.java`
+    - `/workspace/fixtures/src/main/java/cn/dreamit/p1000/filter/AntiSqlInjectionfilter.java`
+    - `/workspace/fixtures/error_stacktrace.txt`
+
+    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+
+    Caused by: java.util.ConcurrentModificationException
+        at java.util.ArrayList$Itr.checkForComodification(ArrayList.java:911)
+        at java.util.ArrayList$Itr.next(ArrayList.java:861)
+        at cn.dreamit.p1000.util.RequestUtil.contains(RequestUtil.java:37)
+        at cn.dreamit.p1000.util.RequestUtil.contains(RequestUtil.java:23)
+        at cn.dreamit.p1000.filter.AntiSqlInjectionfilter.doFilter(AntiSqlInjectionfilter.java:125)
+
+    This is a government OA system running on TongWeb (a domestic Java application server). The error happens intermittently under high concurrency when multiple requests hit the anti-SQL-injection filter simultaneously.
+
+    Examine `RequestUtil.java` and `AntiSqlInjectionfilter.java`, diagnose the root cause, and fix the code. Write a `diagnosis.md` explaining what causes the ConcurrentModificationException and why it only manifests under concurrency.
+  language: en
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/src/main/java/cn/dreamit/p1000/util/RequestUtil.java
+  - fixtures/src/main/java/cn/dreamit/p1000/filter/AntiSqlInjectionfilter.java
+  - fixtures/error_stacktrace.txt
+
+sandbox_grader_files:
+  - fixtures/verify.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+
+  env_snapshot_timeout: 30
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify.py
+
+env_snapshot_files:
+  - /workspace/src/main/java/cn/dreamit/p1000/util/RequestUtil.java
+  - /workspace/diagnosis.md
+scoring_components: []
+
+safety_checks: []
+
+expected_actions: []
+
+judge_rubric: |
+  Evaluate the agent's diagnosis and fix of the ConcurrentModificationException.
+
+  ## Root Cause Understanding
+  - Does the agent correctly identify the shared mutable static ArrayList as the root cause?
+  - Does it explain why iteration + modification from concurrent threads causes CME?
+  - Does it understand the fail-fast iterator mechanism?
+
+  ## Fix Quality
+  - Does the fix use a proper thread-safe approach (CopyOnWriteArrayList, Collections.unmodifiableList, synchronized, etc.)?
+  - Does the fix NOT simply catch and swallow the exception?
+  - Is the fix minimal and targeted?
+
+  ## Scoring
+  - 0.9-1.0: Correct root cause, proper thread-safe fix, clear explanation
+  - 0.7-0.8: Correct fix but explanation lacks depth
+  - 0.4-0.6: Partial fix or incorrect root cause
+  - 0.0-0.3: Suppresses exception or fails to fix
+
+reference_solution: |
+  Root cause: SQL_KEYWORDS is a static ArrayList shared across all threads.
+  The addKeyword/removeKeyword methods modify it while contains() iterates it.
+  Under concurrency, one thread iterates (for-each via Iterator) while another
+  thread calls addKeyword(), triggering the fail-fast CME.
+
+  Fix: Replace ArrayList with CopyOnWriteArrayList, or make the list unmodifiable
+  after initialization and use a separate lock for modifications.
+
+primary_dimensions: [completion, robustness, communication]
