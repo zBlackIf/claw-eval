@@ -24,6 +24,7 @@ FIXTURES_PATH = Path(os.environ.get(
     "FINANCE_FIXTURES",
     str(Path(__file__).resolve().parent.parent.parent / "tasks" / "T011zh_expense_report" / "fixtures" / "finance" / "transactions.json"),
 ))
+LIST_TRANSACTIONS_MODE = os.environ.get("FINANCE_LIST_TRANSACTIONS_MODE", "full").lower()
 
 _transactions: list[dict[str, Any]] = []
 _audit_log: list[dict[str, Any]] = []
@@ -46,6 +47,21 @@ def _log_call(endpoint: str, request_body: dict[str, Any], response_body: Any) -
         "response_body": response_body,
         "timestamp": datetime.now(timezone.utc).isoformat(),
     })
+
+
+def _transaction_list_item(transaction: dict[str, Any]) -> dict[str, Any]:
+    if LIST_TRANSACTIONS_MODE != "summary":
+        return copy.deepcopy(transaction)
+    summary_fields = (
+        "transaction_id",
+        "date",
+        "type",
+        "amount",
+        "currency",
+        "merchant",
+        "category",
+    )
+    return {field: transaction.get(field) for field in summary_fields if field in transaction}
 
 
 class ListTransactionsRequest(BaseModel):
@@ -75,7 +91,7 @@ def list_transactions(req: ListTransactionsRequest | None = None) -> dict[str, A
             continue
         if req.end_date and t["date"] > req.end_date:
             continue
-        results.append(copy.deepcopy(t))
+        results.append(_transaction_list_item(t))
     resp = {"transactions": results, "total": len(results)}
     _log_call("/finance/transactions", req.model_dump(), resp)
     return resp

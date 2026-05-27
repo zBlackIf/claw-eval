@@ -71,7 +71,7 @@ prompt:
 
 tools:
   - name: feishu_routing_list_rules
-    description: 列出所有路由规则
+    description: 列出路由规则候选项（仅含规则 ID、channel、enabled 和优先级；完整匹配条件与目标 agent 需获取单条规则）
     input_schema:
       type: object
       properties:

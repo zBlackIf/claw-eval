@@ -28,6 +28,7 @@ services:
     reset_endpoint: http://localhost:9109/rss/reset
     env:
       RSS_FIXTURES: tasks/CP15_flight_notice_filter_pipeline/fixtures/rss/articles.json
+      RSS_LIST_ARTICLES_MODE: thin
   - name: scheduler
     command: python mock_services/scheduler/server.py
     port: 9112
@@ -53,7 +54,7 @@ prompt:
 
 tools:
   - name: rss_list_articles
-    description: 列出航班通告
+    description: 列出航班通告候选项（仅含通告 ID、来源、分类、发布时间等概览；航班号、时间窗和处置理由需获取单条通告）
     input_schema:
       type: object
       properties:

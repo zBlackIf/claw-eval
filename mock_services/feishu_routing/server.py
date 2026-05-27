@@ -55,6 +55,15 @@ def _log_call(endpoint: str, request_body: dict[str, Any], response_body: Any) -
     })
 
 
+def _rule_list_item(rule: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "rule_id": rule.get("rule_id"),
+        "source_channel": rule.get("source_channel"),
+        "enabled": rule.get("enabled"),
+        "priority": rule.get("priority"),
+    }
+
+
 class ListRulesRequest(BaseModel):
     agent: str | None = None
     channel: str | None = None
@@ -95,7 +104,7 @@ def list_rules(req: ListRulesRequest | None = None) -> dict[str, Any]:
         rules = [r for r in rules if r.get("source_channel") == req.channel]
     if req.enabled is not None:
         rules = [r for r in rules if r.get("enabled") == req.enabled]
-    resp = {"rules": rules, "total": len(rules)}
+    resp = {"rules": [_rule_list_item(r) for r in rules], "total": len(rules)}
     _log_call("/feishu_routing/rules", req.model_dump(), resp)
     return resp
 

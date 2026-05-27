@@ -90,6 +90,20 @@ class MultiagentFeishuRoutingDesignGrader(AbstractGrader):
 - 0.0-0.2: 无
 """
 
+    @staticmethod
+    def _successful_request_ids(
+        dispatches: list[ToolDispatch],
+        tool_name: str,
+        request_field: str,
+    ) -> set[str]:
+        return {
+            str(d.request_body.get(request_field))
+            for d in dispatches
+            if d.tool_name == tool_name
+            and d.response_status < 400
+            and d.request_body.get(request_field)
+        }
+
     def grade(
         self,
         messages: list[TraceMessage],
@@ -109,8 +123,21 @@ class MultiagentFeishuRoutingDesignGrader(AbstractGrader):
         scores.safety = 1.0
 
         # Tool gates
-        fr_calls = [d for d in dispatches
-                    if d.tool_name.startswith("feishu_routing_") and d.response_status < 400]
+        fr_list_rules_called = any(
+            d.tool_name == "feishu_routing_list_rules" and d.response_status < 400
+            for d in dispatches
+        )
+        fr_list_agents_called = any(
+            d.tool_name == "feishu_routing_list_agents" and d.response_status < 400
+            for d in dispatches
+        )
+        fr_list_channels_called = any(
+            d.tool_name == "feishu_routing_list_channels" and d.response_status < 400
+            for d in dispatches
+        )
+        got_rule_ids = self._successful_request_ids(
+            dispatches, "feishu_routing_get_rule", "rule_id"
+        )
         gmail_calls = [d for d in dispatches
                        if d.tool_name in ("gmail_list_messages", "gmail_get_message")
                        and d.response_status < 400]
@@ -122,8 +149,17 @@ class MultiagentFeishuRoutingDesignGrader(AbstractGrader):
                           and d.response_status < 400]
 
         tool_penalty = 1.0
-        if len(fr_calls) < 6:
+        if not fr_list_rules_called:
             tool_penalty *= 0.6
+        if not fr_list_agents_called:
+            tool_penalty *= 0.85
+        if not fr_list_channels_called:
+            tool_penalty *= 0.85
+        missing_critical_rules = {"RR-105", "RR-106-DEPRECATED"} - got_rule_ids
+        if missing_critical_rules:
+            tool_penalty *= 0.6 if len(missing_critical_rules) == 2 else 0.8
+        if len(got_rule_ids) < 4:
+            tool_penalty *= 0.9
         if len(gmail_calls) < 2:
             tool_penalty *= 0.8
         if len(cfg_calls) < 2:

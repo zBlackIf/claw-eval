@@ -98,6 +98,20 @@ class ReceiverHealthMonitoringDesignGrader(AbstractGrader):
 - 0.0-0.2: DB 迁移框架缺失
 """
 
+    @staticmethod
+    def _successful_request_ids(
+        dispatches: list[ToolDispatch],
+        tool_name: str,
+        request_field: str,
+    ) -> set[str]:
+        return {
+            str(d.request_body.get(request_field))
+            for d in dispatches
+            if d.tool_name == tool_name
+            and d.response_status < 400
+            and d.request_body.get(request_field)
+        }
+
     def grade(
         self,
         messages: list[TraceMessage],
@@ -118,26 +132,75 @@ class ReceiverHealthMonitoringDesignGrader(AbstractGrader):
         scores.safety = 1.0
 
         # --- Tool usage gate ---
-        sch_calls = [d for d in dispatches
-                     if d.tool_name in ("scheduler_list_jobs", "scheduler_get_job",
-                                        "scheduler_job_history")
-                     and d.response_status < 400]
-        cfg_calls = [d for d in dispatches
-                     if d.tool_name in ("config_list_integrations", "config_get_integration")
-                     and d.response_status < 400]
-        hd_calls = [d for d in dispatches
-                    if d.tool_name in ("helpdesk_list_tickets", "helpdesk_get_ticket")
-                    and d.response_status < 400]
+        scheduler_list_called = any(
+            d.tool_name == "scheduler_list_jobs" and d.response_status < 400
+            for d in dispatches
+        )
+        got_job_ids = self._successful_request_ids(
+            dispatches, "scheduler_get_job", "job_id"
+        )
+        got_job_history_ids = self._successful_request_ids(
+            dispatches, "scheduler_job_history", "job_id"
+        )
+        config_list_called = any(
+            d.tool_name == "config_list_integrations" and d.response_status < 400
+            for d in dispatches
+        )
+        got_integration_ids = self._successful_request_ids(
+            dispatches, "config_get_integration", "integration_id"
+        )
+        helpdesk_list_called = any(
+            d.tool_name == "helpdesk_list_tickets" and d.response_status < 400
+            for d in dispatches
+        )
+        helpdesk_all_list_called = any(
+            d.tool_name == "helpdesk_list_tickets"
+            and d.response_status < 400
+            and d.request_body.get("status") == "all"
+            for d in dispatches
+        )
+        got_ticket_ids = self._successful_request_ids(
+            dispatches, "helpdesk_get_ticket", "ticket_id"
+        )
 
         tool_penalty = 1.0
-        if len(sch_calls) < 4:
+        if not scheduler_list_called:
             tool_penalty *= 0.7
-        if len(cfg_calls) < 4:
+        required_jobs = {"RECV-JOB-001", "RECV-JOB-002", "RECV-JOB-003", "RECV-JOB-004"}
+        job_coverage = len(required_jobs & got_job_ids)
+        if job_coverage < len(required_jobs):
+            tool_penalty *= 0.7 + 0.3 * job_coverage / len(required_jobs)
+        if "RECV-JOB-003" not in got_job_history_ids:
+            tool_penalty *= 0.9
+
+        if not config_list_called:
             tool_penalty *= 0.7
-        if len(hd_calls) < 5:
+        required_integrations = {
+            "RECV-INT-101",
+            "RECV-INT-102",
+            "RECV-INT-103",
+            "RECV-INT-104",
+        }
+        integration_coverage = len(required_integrations & got_integration_ids)
+        if integration_coverage < len(required_integrations):
+            tool_penalty *= 0.7 + 0.3 * integration_coverage / len(required_integrations)
+
+        if not helpdesk_list_called:
             tool_penalty *= 0.6
-        elif len(hd_calls) < 7:
+        if not helpdesk_all_list_called and "TK-RECV-002" not in got_ticket_ids:
             tool_penalty *= 0.85
+        required_ticket_groups = [
+            {"TK-RECV-002"},
+            {"TK-RECV-003"},
+            {"TK-RECV-004"},
+            {"TK-RECV-005"},
+            {"TK-RECV-006"},
+        ]
+        covered_ticket_groups = sum(
+            1 for group in required_ticket_groups if group & got_ticket_ids
+        )
+        if covered_ticket_groups < len(required_ticket_groups):
+            tool_penalty *= 0.6 + 0.4 * covered_ticket_groups / len(required_ticket_groups)
 
         # --- LLM judge ---
         completion = 0.0

@@ -28,6 +28,7 @@ services:
     reset_endpoint: http://localhost:9104/finance/reset
     env:
       FINANCE_FIXTURES: tasks/CP19_ifrs16_lease_design_doc/fixtures/finance/transactions.json
+      FINANCE_LIST_TRANSACTIONS_MODE: summary
   - name: kb
     command: python mock_services/kb/server.py
     port: 9106
@@ -47,15 +48,15 @@ prompt:
     2. 在知识库里读 v1 的代码逻辑摘要、IFRS 16 标准摘录、以及审计师之前
        提的反馈意见
     3. 根据这些资料反推一份完整的技术设计文档出来，下周交给审计师
-    请直接在最终回复中给出完整技术设计文档，包含计算样例、摊销表和会计
-    分录表；不要只写到文件或只给文件路径。
+    请直接在最终回复中给出完整技术设计文档，包含模块边界、核心数据模型、
+    关键算法、计算样例、摊销表和会计分录表；不要只写到文件或只给文件路径。
     注意：不要新建任何交易、也不要修改知识库；引用过的交易和资料必须是真实
     读到的，不要编造编号或数字。
   language: zh
 
 tools:
   - name: finance_list_transactions
-    description: 列出所有租赁财务交易（lease_initial_recognition / right_of_use_asset_creation 等）
+    description: 列出租赁财务交易候选项（仅含交易 ID、日期、类型、金额等概览；lease_meta、计算依据和备注需获取单笔交易）
     input_schema:
       type: object
       properties:

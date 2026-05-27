@@ -63,6 +63,20 @@ class IFRS16LeaseDesignDocGrader(AbstractGrader):
                 return ""
         return ""
 
+    @staticmethod
+    def _successful_request_ids(
+        dispatches: list[ToolDispatch],
+        tool_name: str,
+        request_field: str,
+    ) -> set[str]:
+        return {
+            str(d.request_body.get(request_field))
+            for d in dispatches
+            if d.tool_name == tool_name
+            and d.response_status < 400
+            and d.request_body.get(request_field)
+        }
+
     def _make_architecture_rubric(self) -> str:
         return """\
 评估「模块架构」（0.0-1.0）。
@@ -184,25 +198,45 @@ class IFRS16LeaseDesignDocGrader(AbstractGrader):
         scores.safety = 1.0
 
         # --- Tool usage gate (soft) ---
-        fin_calls = [d for d in dispatches
-                     if d.tool_name in ("finance_list_transactions", "finance_get_transaction")
-                     and d.response_status < 400]
-        kb_calls = [d for d in dispatches
-                    if d.tool_name in ("kb_search", "kb_get_article")
-                    and d.response_status < 400]
+        finance_list_called = any(
+            d.tool_name == "finance_list_transactions" and d.response_status < 400
+            for d in dispatches
+        )
+        got_transaction_ids = self._successful_request_ids(
+            dispatches, "finance_get_transaction", "transaction_id"
+        )
+        kb_search_called = any(
+            d.tool_name == "kb_search" and d.response_status < 400 for d in dispatches
+        )
+        got_kb_ids = self._successful_request_ids(
+            dispatches, "kb_get_article", "article_id"
+        )
 
         tool_penalty = 1.0
-        # 8 fixture transactions, must read at least 4 to understand business
-        if len(fin_calls) < 5:
+        if not finance_list_called:
             tool_penalty *= 0.5
-        elif len(fin_calls) < 8:
-            tool_penalty *= 0.8
+        finance_groups = [
+            {"LSE-2026-001", "LSE-2026-002", "LSE-2026-003"},
+            {"LSE-2026-004", "LSE-2026-005"},
+            {"LSE-2026-006"},
+            {"LSE-2026-007", "LSE-2026-008"},
+        ]
+        covered_finance_groups = sum(
+            1 for group in finance_groups if group & got_transaction_ids
+        )
+        if covered_finance_groups < len(finance_groups):
+            tool_penalty *= 0.5 + 0.5 * covered_finance_groups / len(finance_groups)
 
-        # 5 KB articles, must read at least 3
-        if len(kb_calls) < 3:
-            tool_penalty *= 0.6
-        elif len(kb_calls) < 5:
-            tool_penalty *= 0.85
+        if not kb_search_called:
+            tool_penalty *= 0.7
+        kb_groups = [
+            {"KB-LSE-001", "KB-LSE-004"},
+            {"KB-LSE-002", "KB-LSE-003"},
+            {"KB-LSE-005"},
+        ]
+        covered_kb_groups = sum(1 for group in kb_groups if group & got_kb_ids)
+        if covered_kb_groups < len(kb_groups):
+            tool_penalty *= 0.6 + 0.4 * covered_kb_groups / len(kb_groups)
 
         # --- LLM judge ---
         completion = 0.0

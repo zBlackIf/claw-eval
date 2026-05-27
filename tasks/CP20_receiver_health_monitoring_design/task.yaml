@@ -124,6 +124,7 @@ tools:
       properties:
         status:
           type: string
+          description: "按状态筛选 (open / closed / all)，默认 open"
         priority:
           type: string
         category:
@@ -289,7 +290,7 @@ reference_solution: |
   9. config_get_integration(RECV-INT-102) → DB, no advisory_lock
   10. config_get_integration(RECV-INT-103) → Kafka degraded, DLQ lag 5w+
   11. config_get_integration(RECV-INT-104) → Prometheus disabled
-  12. helpdesk_list_tickets() → 6 张 TK-RECV-*
+  12. helpdesk_list_tickets(status="all") → 6 张 TK-RECV-*
   13. helpdesk_get_ticket(TK-RECV-001..006) → 全读
   14. 撰写：
       (a) 健康检查：liveness + readiness (查 Kafka consumer state + DB write) +

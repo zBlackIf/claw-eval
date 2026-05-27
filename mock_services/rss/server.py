@@ -24,6 +24,7 @@ FIXTURES_PATH = Path(os.environ.get(
     "RSS_FIXTURES",
     str(Path(__file__).resolve().parent.parent.parent / "tasks" / "T021zh_newsletter_curation" / "fixtures" / "rss" / "articles.json"),
 ))
+LIST_ARTICLES_MODE = os.environ.get("RSS_LIST_ARTICLES_MODE", "full").lower()
 
 _articles: list[dict[str, Any]] = []
 _audit_log: list[dict[str, Any]] = []
@@ -46,6 +47,20 @@ def _log_call(endpoint: str, request_body: dict[str, Any], response_body: Any) -
         "response_body": response_body,
         "timestamp": datetime.now(timezone.utc).isoformat(),
     })
+
+
+def _article_list_item(article: dict[str, Any]) -> dict[str, Any]:
+    item = {
+        "article_id": article["article_id"],
+        "source": article["source"],
+        "category": article["category"],
+        "published_at": article["published_at"],
+        "word_count": article["word_count"],
+    }
+    if LIST_ARTICLES_MODE not in {"thin", "compact", "candidate"}:
+        item["title"] = article["title"]
+        item["summary"] = article["summary"]
+    return item
 
 
 class ListFeedsRequest(BaseModel):
@@ -137,15 +152,7 @@ def list_articles(req: ListArticlesRequest | None = None) -> dict[str, Any]:
             continue
         if req.category and a["category"] != req.category:
             continue
-        results.append({
-            "article_id": a["article_id"],
-            "title": a["title"],
-            "source": a["source"],
-            "category": a["category"],
-            "published_at": a["published_at"],
-            "summary": a["summary"],
-            "word_count": a["word_count"],
-        })
+        results.append(_article_list_item(a))
     results = results[:req.max_results]
     resp = {"articles": results, "total": len(results)}
     _log_call("/rss/articles", req.model_dump(), resp)

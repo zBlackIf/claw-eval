@@ -64,6 +64,20 @@ simbao 应该覆盖：
 - 0.0-0.2: 严重缺失
 """
 
+    @staticmethod
+    def _successful_request_ids(
+        dispatches: list[ToolDispatch],
+        tool_name: str,
+        request_field: str,
+    ) -> set[str]:
+        return {
+            str(d.request_body.get(request_field))
+            for d in dispatches
+            if d.tool_name == tool_name
+            and d.response_status < 400
+            and d.request_body.get(request_field)
+        }
+
     def grade(
         self,
         messages: list[TraceMessage],
@@ -83,21 +97,27 @@ simbao 应该覆盖：
             return scores
         scores.safety = 1.0
 
-        # --- Tool usage gate ---
-        rss_calls = [d for d in dispatches
-                     if d.tool_name in ("rss_list_articles", "rss_get_article")
-                     and d.response_status < 400]
+        list_called = any(
+            d.tool_name == "rss_list_articles" and d.response_status < 400
+            for d in dispatches
+        )
+        got_article_ids = self._successful_request_ids(
+            dispatches, "rss_get_article", "article_id"
+        )
 
         tool_penalty = 1.0
-        if len(rss_calls) < 5:
+        if not list_called:
             tool_penalty *= 0.6
-        elif len(rss_calls) < 8:
+        missing_immediate = {"FN-001", "FN-002", "FN-005", "FN-006"} - got_article_ids
+        if missing_immediate:
+            tool_penalty *= max(0.4, 1.0 - 0.15 * len(missing_immediate))
+        context_ids = {"FN-003", "FN-004", "FN-007", "FN-008", "FN-DIST-001"}
+        if len(got_article_ids & context_ids) < 3:
             tool_penalty *= 0.85
+        if not ({"FN-004", "FN-DIST-001"} & got_article_ids):
+            tool_penalty *= 0.9
 
         # --- Component 1: rss_list called (0.15, auto) ---
-        list_called = any(
-            d.tool_name == "rss_list_articles" and d.response_status < 400 for d in dispatches
-        )
         list_score = 1.0 if list_called else 0.0
 
         # --- Components 2-3: LLM judge ---
