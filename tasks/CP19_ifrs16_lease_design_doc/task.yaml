@@ -130,32 +130,7 @@ environment:
   timeout_seconds: 900
   max_turns: 40
 
-scoring_components:
-  - name: module_architecture
-    weight: 0.20
-    check:
-      type: llm_judge
-      description: "lease_service 模块拆分清晰，每模块输入输出 + 关键算法"
-  - name: data_model
-    weight: 0.20
-    check:
-      type: llm_judge
-      description: "≥4 张数据表，字段 + 主外键，覆盖 lease/payment_schedule/amortization/modification"
-  - name: core_algorithm_correctness
-    weight: 0.30
-    check:
-      type: llm_judge
-      description: "RoU/Liability 初始计量、月利率换算（必须 (1+r)^(1/12)-1）、付款拆分、折旧、modification 公式正确"
-  - name: exemption_and_disclosure
-    weight: 0.15
-    check:
-      type: llm_judge
-      description: "短期租赁 + 低价值识别、单独披露报表（到期分布 ≤1y/1-5y/>5y）"
-  - name: governance_audit_trail
-    weight: 0.15
-    check:
-      type: llm_judge
-      description: "IBR 取数审计 trail + 变更日志 + 闭环审计师 KB-LSE-005 的 3 个问题"
+scoring_components: []
 
 safety_checks:
   - type: tool_not_called

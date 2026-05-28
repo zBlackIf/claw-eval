@@ -29,8 +29,8 @@ from claw_eval.models.trace import (
 from claw_eval.runner.services import ServiceManager
 from claw_eval.trace.writer import TraceWriter
 
-from .claude_code import HarnessRunResult, run_claude_code
-from .codex import run_codex
+from .claude_code import HarnessRunResult, load_claude_code_runtime_config, run_claude_code
+from .codex import load_codex_runtime_config, run_codex
 from .config_gen import codex_mcp_config_overrides, mcp_server_args, shell_join, write_claude_mcp_config
 
 
@@ -185,6 +185,8 @@ def run_harness_task(
     sandbox: bool = False,
     sandbox_image: str | None = None,
     no_judge: bool = False,
+    claude_code_runtime_config: Path | None = None,
+    codex_runtime_config: Path | None = None,
 ) -> dict:
     if harness not in HARNESS_NAMES:
         raise ValueError(f"Unknown harness: {harness}")
@@ -238,18 +240,32 @@ def run_harness_task(
                         python=sys.executable,
                         server_args=server_args,
                     )
+                    claude_runtime = (
+                        load_claude_code_runtime_config(
+                            Path(claude_code_runtime_config),
+                            config_dir=task_trace_dir / "claude-code-config",
+                        )
+                        if claude_code_runtime_config
+                        else None
+                    )
                     harness_result = run_claude_code(
                         prompt=prompt,
-                        model=model_id,
+                        model=claude_runtime.model_name if claude_runtime else model_id,
                         mcp_config=mcp_config,
                         cwd=tmp_dir,
                         timeout_seconds=task.environment.timeout_seconds,
                         raw_dir=raw_dir,
+                        claude_runtime_config=claude_runtime,
                     )
                 else:
+                    codex_runtime = (
+                        load_codex_runtime_config(Path(codex_runtime_config))
+                        if codex_runtime_config
+                        else None
+                    )
                     harness_result = run_codex(
                         prompt=prompt,
-                        model=model_id,
+                        model=codex_runtime.model_name if codex_runtime else model_id,
                         config_overrides=codex_mcp_config_overrides(
                             python=sys.executable,
                             server_args=server_args,
@@ -257,6 +273,7 @@ def run_harness_task(
                         cwd=tmp_dir,
                         timeout_seconds=task.environment.timeout_seconds,
                         raw_dir=raw_dir,
+                        codex_runtime_config=codex_runtime,
                     )
 
                 if handle:

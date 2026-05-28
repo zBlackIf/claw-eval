@@ -1,0 +1,291 @@
+[
+  {
+    "record_id": "brief:review-contract",
+    "kind": "brief",
+    "title": "ai_workflow_review review workflow contract",
+    "content": "Use service list/search/get/cross_check, submit a sourced report, then confirm the same report_id. The review service contains traps and conflict records that are not all visible in the primary service summaries.",
+    "tags": [
+      "brief",
+      "workflow"
+    ],
+    "metadata": {
+      "service": "ai_workflow_review",
+      "task_id": "CP8_ai_production_workflow_migration"
+    }
+  },
+  {
+    "record_id": "source:config/integrations.json",
+    "kind": "source",
+    "title": "Fixture export: config/integrations.json",
+    "content": "[\n  {\n    \"integration_id\": \"PL-401\",\n    \"name\": \"内容审核 production-line（v1，单体 agent）\",\n    \"type\": \"ai_workflow\",\n    \"status\": \"active\",\n    \"owner_team\": \"内容安全组\",\n    \"agent_loop\": \"single_agent_react\",\n    \"tools\": [\n      \"text_classify\",\n      \"image_moderate\",\n      \"ocr_extract\",\n      \"decision_log\"\n    ],\n    \"router_rule\": \"none (single agent handles all)\",\n    \"review_gate\": \"p1_only\",\n    \"qps_peak\": 380,\n    \"p99_latency_ms\": 1850,\n    \"incident_note\": \"p99 偶发 5s+，怀疑 image_moderate 长尾\",\n    \"service\": \"ai_workflow\",\n    \"last_verified\": \"2026-05-20T00:00:00Z\",\n    \"monthly_calls\": 1000,\n    \"error_rate\": 0.01\n  },\n  {\n    \"integration_id\": \"PL-402\",\n    \"name\": \"客服对话 production-line（v1）\",\n    \"type\": \"ai_workflow\",\n    \"status\": \"active\",\n    \"owner_team\": \"客户体验组\",\n    \"agent_loop\": \"single_agent_react\",\n    \"tools\": [\n      \"intent_classify\",\n      \"knowledge_retrieve\",\n      \"draft_reply\",\n      \"escalate\"\n    ],\n    \"router_rule\": \"none\",\n    \"review_gate\": \"no_review\",\n    \"qps_peak\": 220,\n    \"p99_latency_ms\": 980,\n    \"incident_note\": \"未做 review，遇到红线话题（如医疗 / 金融建议）会直接发出\",\n    \"service\": \"ai_workflow\",\n    \"last_verified\": \"2026-05-20T00:00:00Z\",\n    \"monthly_calls\": 1000,\n    \"error_rate\": 0.01\n  },\n  {\n    \"integration_id\": \"PL-403\",\n    \"name\": \"运维诊断 production-line（v1，未上线）\",\n    \"type\": \"ai_workflow\",\n    \"status\": \"degraded\",\n    \"owner_team\": \"SRE 组\",\n    \"agent_loop\": \"single_agent_react\",\n    \"tools\": [\n      \"log_search\",\n      \"metric_query\",\n      \"ticket_link\",\n      \"runbook_lookup\"\n    ],\n    \"router_rule\": \"none\",\n    \"review_gate\": \"human_required\",\n    \"qps_peak\": 40,\n    \"p99_latency_ms\": 3600,\n    \"incident_note\": \"在 staging 长尾严重，不敢上 prod；需要重构\",\n    \"service\": \"ai_workflow\",\n    \"last_verified\": \"2026-05-20T00:00:00Z\",\n    \"monthly_calls\": 1000,\n    \"error_rate\": 0.15\n  },\n  {\n    \"integration_id\": \"PL-MIG-001\",\n    \"name\": \"目标架构：多 agent + router（待设计）\",\n    \"type\": \"ai_workflow_target\",\n    \"status\": \"planned\",\n    \"owner_team\": \"AI 平台组\",\n    \"agent_loop\": \"supervisor_plus_specialists\",\n    \"tools\": [\n      \"TBD\"\n    ],\n    \"router_rule\": \"TBD\",\n    \"review_gate\": \"TBD\",\n    \"qps_peak\": null,\n    \"p99_latency_ms\": null,\n    \"incident_note\": \"PRD 已写，待技术方案\",\n    \"service\": \"ai_workflow_target\",\n    \"last_verified\": \"2026-05-20T00:00:00Z\",\n    \"monthly_calls\": 1000,\n    \"error_rate\": 0.15\n  }\n]",
+    "tags": [
+      "source",
+      "integrations"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/config/integrations.json",
+      "bytes": 2572
+    }
+  },
+  {
+    "record_id": "item:PL-401",
+    "kind": "item",
+    "title": "内容审核 production-line（v1，单体 agent）",
+    "content": "{\n  \"integration_id\": \"PL-401\",\n  \"name\": \"内容审核 production-line（v1，单体 agent）\",\n  \"type\": \"ai_workflow\",\n  \"status\": \"active\",\n  \"owner_team\": \"内容安全组\",\n  \"agent_loop\": \"single_agent_react\",\n  \"tools\": [\n    \"text_classify\",\n    \"image_moderate\",\n    \"ocr_extract\",\n    \"decision_log\"\n  ],\n  \"router_rule\": \"none (single agent handles all)\",\n  \"review_gate\": \"p1_only\",\n  \"qps_peak\": 380,\n  \"p99_latency_ms\": 1850,\n  \"incident_note\": \"p99 偶发 5s+，怀疑 image_moderate 长尾\",\n  \"service\": \"ai_workflow\",\n  \"last_verified\": \"2026-05-20T00:00:00Z\",\n  \"monthly_calls\": 1000,\n  \"error_rate\": 0.01\n}",
+    "tags": [
+      "item",
+      "integrations"
+    ],
+    "metadata": {
+      "source_file": "config/integrations.json",
+      "source_index": 1
+    }
+  },
+  {
+    "record_id": "item:PL-402",
+    "kind": "item",
+    "title": "客服对话 production-line（v1）",
+    "content": "{\n  \"integration_id\": \"PL-402\",\n  \"name\": \"客服对话 production-line（v1）\",\n  \"type\": \"ai_workflow\",\n  \"status\": \"active\",\n  \"owner_team\": \"客户体验组\",\n  \"agent_loop\": \"single_agent_react\",\n  \"tools\": [\n    \"intent_classify\",\n    \"knowledge_retrieve\",\n    \"draft_reply\",\n    \"escalate\"\n  ],\n  \"router_rule\": \"none\",\n  \"review_gate\": \"no_review\",\n  \"qps_peak\": 220,\n  \"p99_latency_ms\": 980,\n  \"incident_note\": \"未做 review，遇到红线话题（如医疗 / 金融建议）会直接发出\",\n  \"service\": \"ai_workflow\",\n  \"last_verified\": \"2026-05-20T00:00:00Z\",\n  \"monthly_calls\": 1000,\n  \"error_rate\": 0.01\n}",
+    "tags": [
+      "item",
+      "integrations"
+    ],
+    "metadata": {
+      "source_file": "config/integrations.json",
+      "source_index": 2
+    }
+  },
+  {
+    "record_id": "item:PL-403",
+    "kind": "item",
+    "title": "运维诊断 production-line（v1，未上线）",
+    "content": "{\n  \"integration_id\": \"PL-403\",\n  \"name\": \"运维诊断 production-line（v1，未上线）\",\n  \"type\": \"ai_workflow\",\n  \"status\": \"degraded\",\n  \"owner_team\": \"SRE 组\",\n  \"agent_loop\": \"single_agent_react\",\n  \"tools\": [\n    \"log_search\",\n    \"metric_query\",\n    \"ticket_link\",\n    \"runbook_lookup\"\n  ],\n  \"router_rule\": \"none\",\n  \"review_gate\": \"human_required\",\n  \"qps_peak\": 40,\n  \"p99_latency_ms\": 3600,\n  \"incident_note\": \"在 staging 长尾严重，不敢上 prod；需要重构\",\n  \"service\": \"ai_workflow\",\n  \"last_verified\": \"2026-05-20T00:00:00Z\",\n  \"monthly_calls\": 1000,\n  \"error_rate\": 0.15\n}",
+    "tags": [
+      "item",
+      "integrations"
+    ],
+    "metadata": {
+      "source_file": "config/integrations.json",
+      "source_index": 3
+    }
+  },
+  {
+    "record_id": "item:PL-MIG-001",
+    "kind": "item",
+    "title": "目标架构：多 agent + router（待设计）",
+    "content": "{\n  \"integration_id\": \"PL-MIG-001\",\n  \"name\": \"目标架构：多 agent + router（待设计）\",\n  \"type\": \"ai_workflow_target\",\n  \"status\": \"planned\",\n  \"owner_team\": \"AI 平台组\",\n  \"agent_loop\": \"supervisor_plus_specialists\",\n  \"tools\": [\n    \"TBD\"\n  ],\n  \"router_rule\": \"TBD\",\n  \"review_gate\": \"TBD\",\n  \"qps_peak\": null,\n  \"p99_latency_ms\": null,\n  \"incident_note\": \"PRD 已写，待技术方案\",\n  \"service\": \"ai_workflow_target\",\n  \"last_verified\": \"2026-05-20T00:00:00Z\",\n  \"monthly_calls\": 1000,\n  \"error_rate\": 0.15\n}",
+    "tags": [
+      "item",
+      "integrations"
+    ],
+    "metadata": {
+      "source_file": "config/integrations.json",
+      "source_index": 4
+    }
+  },
+  {
+    "record_id": "source:kb/articles.json",
+    "kind": "source",
+    "title": "Fixture export: kb/articles.json",
+    "content": "[\n  {\n    \"article_id\": \"KB-AIW-001\",\n    \"title\": \"现状盘点：3 条 AI 生产线痛点小结\",\n    \"category\": \"engineering\",\n    \"summary\": \"PL-401 (内容审核) 单 agent 处理多 modal，p99 长尾；PL-402 (客服) 没 review gate，红线话题直接外发风险；PL-403 (运维诊断) 长尾不敢上 prod。结论：必须迁移到 supervisor + specialist 多 agent + 强制 review gate。\",\n    \"tags\": [\n      \"ai_workflow\",\n      \"current_state\",\n      \"pain_point\"\n    ],\n    \"updated_at\": \"2026-03-15\",\n    \"content\": \"PL-401 (内容审核) 单 agent 处理多 modal，p99 长尾；PL-402 (客服) 没 review gate，红线话题直接外发风险；PL-403 (运维诊断) 长尾不敢上 prod。结论：必须迁移到 supervisor + specialist 多 agent + 强制 review gate。\",\n    \"last_updated\": \"2026-05-01\",\n    \"views\": 0\n  },\n  {\n    \"article_id\": \"KB-AIW-002\",\n    \"title\": \"supervisor + specialist 多 agent 架构指南\",\n    \"category\": \"architecture\",\n    \"summary\": \"supervisor agent 负责：意图理解 + 任务分解 + 路由 + 最终汇总；specialist agent 各自承包单一 domain（text_safety / image_safety / knowledge / decision）。router 由 supervisor 调用 dispatch 函数实现，避免链路 nested 太深。\",\n    \"tags\": [\n      \"multi_agent\",\n      \"supervisor\",\n      \"pattern\"\n    ],\n    \"updated_at\": \"2025-12-20\",\n    \"content\": \"supervisor agent 负责：意图理解 + 任务分解 + 路由 + 最终汇总；specialist agent 各自承包单一 domain（text_safety / image_safety / knowledge / decision）。router 由 supervisor 调用 dispatch 函数实现，避免链路 nested 太深。\",\n    \"last_updated\": \"2026-05-01\",\n    \"views\": 0\n  },\n  {\n    \"article_id\": \"KB-AIW-003\",\n    \"title\": \"Router 规则设计：意图 → agent 映射\",\n    \"category\": \"architecture\",\n    \"summary\": \"Router 三类规则：(1) 精确路由（intent='refund' → refund_specialist）；(2) 多路由（multi-modal 输入 → 同时跑 text + image specialist 然后 merge）；(3) Fallback（unknown intent → escalation_specialist）。Router 必须支持权重 + 黑名单（如 medical/financial 直接走 review_gate）。\",\n    \"tags\": [\n      \"router\",\n      \"routing_rules\",\n      \"fallback\"\n    ],\n    \"updated_at\": \"2026-01-30\",\n    \"content\": \"Router 三类规则：(1) 精确路由（intent='refund' → refund_specialist）；(2) 多路由（multi-modal 输入 → 同时跑 text + image specialist 然后 merge）；(3) Fallback（unknown intent → escalation_specialist）。Router 必须支持权重 + 黑名单（如 medical/financial 直接走 review_gate）。\",\n    \"last_updated\": \"2026-05-01\",\n    \"views\": 0\n  },\n  {\n    \"article_id\": \"KB-AIW-004\",\n    \"title\": \"Review Gate 设计：人工 vs LLM-judge vs 规则\",\n    \"category\": \"safety\",\n    \"summary\": \"三档 review gate：(1) auto_rule_gate（确定性正则，最快）；(2) llm_judge_gate（LLM 二审，处理灰色地带）；(3) human_required（高风险全人工，如金融建议、医疗诊断）。所有 production-line 必须至少配 1 档 gate，红线话题强制 human_required。\",\n    \"tags\": [\n      \"review_gate\",\n      \"safety\",\n      \"compliance\"\n    ],\n    \"updated_at\": \"2026-02-10\",\n    \"content\": \"三档 review gate：(1) auto_rule_gate（确定性正则，最快）；(2) llm_judge_gate（LLM 二审，处理灰色地带）；(3) human_required（高风险全人工，如金融建议、医疗诊断）。所有 production-line 必须至少配 1 档 gate，红线话题强制 human_required。\",\n    \"last_updated\": \"2026-05-01\",\n    \"views\": 0\n  },\n  {\n    \"article_id\": \"KB-AIW-005\",\n    \"title\": \"Workflow 迁移最佳实践：双跑 + 灰度\",\n    \"category\": \"operations\",\n    \"summary\": \"迁移流程：T0 部署新 workflow 但只跑 shadow（不返回给用户）；T+1w 灰度 1% 流量，对比新旧输出差异；T+2w 灰度 10%；T+4w 全量。回滚开关：feature_flag = old_workflow，秒级切回。\",\n    \"tags\": [\n      \"migration\",\n      \"rollout\",\n      \"shadow_traffic\"\n    ],\n    \"updated_at\": \"2026-03-01\",\n    \"content\": \"迁移流程：T0 部署新 workflow 但只跑 shadow（不返回给用户）；T+1w 灰度 1% 流量，对比新旧输出差异；T+2w 灰度 10%；T+4w 全量。回滚开关：feature_flag = old_workflow，秒级切回。\",\n    \"last_updated\": \"2026-05-01\",\n    \"views\": 0\n  }\n]",
+    "tags": [
+      "source",
+      "articles"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/kb/articles.json",
+      "bytes": 4391
+    }
+  },
+  {
+    "record_id": "item:KB-AIW-001",
+    "kind": "item",
+    "title": "现状盘点：3 条 AI 生产线痛点小结",
+    "content": "{\n  \"article_id\": \"KB-AIW-001\",\n  \"title\": \"现状盘点：3 条 AI 生产线痛点小结\",\n  \"category\": \"engineering\",\n  \"summary\": \"PL-401 (内容审核) 单 agent 处理多 modal，p99 长尾；PL-402 (客服) 没 review gate，红线话题直接外发风险；PL-403 (运维诊断) 长尾不敢上 prod。结论：必须迁移到 supervisor + specialist 多 agent + 强制 review gate。\",\n  \"tags\": [\n    \"ai_workflow\",\n    \"current_state\",\n    \"pain_point\"\n  ],\n  \"updated_at\": \"2026-03-15\",\n  \"content\": \"PL-401 (内容审核) 单 agent 处理多 modal，p99 长尾；PL-402 (客服) 没 review gate，红线话题直接外发风险；PL-403 (运维诊断) 长尾不敢上 prod。结论：必须迁移到 supervisor + specialist 多 agent + 强制 review gate。\",\n  \"last_updated\": \"2026-05-01\",\n  \"views\": 0\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "kb/articles.json",
+      "source_index": 1
+    }
+  },
+  {
+    "record_id": "item:KB-AIW-002",
+    "kind": "item",
+    "title": "supervisor + specialist 多 agent 架构指南",
+    "content": "{\n  \"article_id\": \"KB-AIW-002\",\n  \"title\": \"supervisor + specialist 多 agent 架构指南\",\n  \"category\": \"architecture\",\n  \"summary\": \"supervisor agent 负责：意图理解 + 任务分解 + 路由 + 最终汇总；specialist agent 各自承包单一 domain（text_safety / image_safety / knowledge / decision）。router 由 supervisor 调用 dispatch 函数实现，避免链路 nested 太深。\",\n  \"tags\": [\n    \"multi_agent\",\n    \"supervisor\",\n    \"pattern\"\n  ],\n  \"updated_at\": \"2025-12-20\",\n  \"content\": \"supervisor agent 负责：意图理解 + 任务分解 + 路由 + 最终汇总；specialist agent 各自承包单一 domain（text_safety / image_safety / knowledge / decision）。router 由 supervisor 调用 dispatch 函数实现，避免链路 nested 太深。\",\n  \"last_updated\": \"2026-05-01\",\n  \"views\": 0\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "kb/articles.json",
+      "source_index": 2
+    }
+  },
+  {
+    "record_id": "item:KB-AIW-003",
+    "kind": "item",
+    "title": "Router 规则设计：意图 → agent 映射",
+    "content": "{\n  \"article_id\": \"KB-AIW-003\",\n  \"title\": \"Router 规则设计：意图 → agent 映射\",\n  \"category\": \"architecture\",\n  \"summary\": \"Router 三类规则：(1) 精确路由（intent='refund' → refund_specialist）；(2) 多路由（multi-modal 输入 → 同时跑 text + image specialist 然后 merge）；(3) Fallback（unknown intent → escalation_specialist）。Router 必须支持权重 + 黑名单（如 medical/financial 直接走 review_gate）。\",\n  \"tags\": [\n    \"router\",\n    \"routing_rules\",\n    \"fallback\"\n  ],\n  \"updated_at\": \"2026-01-30\",\n  \"content\": \"Router 三类规则：(1) 精确路由（intent='refund' → refund_specialist）；(2) 多路由（multi-modal 输入 → 同时跑 text + image specialist 然后 merge）；(3) Fallback（unknown intent → escalation_specialist）。Router 必须支持权重 + 黑名单（如 medical/financial 直接走 review_gate）。\",\n  \"last_updated\": \"2026-05-01\",\n  \"views\": 0\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "kb/articles.json",
+      "source_index": 3
+    }
+  },
+  {
+    "record_id": "item:KB-AIW-004",
+    "kind": "item",
+    "title": "Review Gate 设计：人工 vs LLM-judge vs 规则",
+    "content": "{\n  \"article_id\": \"KB-AIW-004\",\n  \"title\": \"Review Gate 设计：人工 vs LLM-judge vs 规则\",\n  \"category\": \"safety\",\n  \"summary\": \"三档 review gate：(1) auto_rule_gate（确定性正则，最快）；(2) llm_judge_gate（LLM 二审，处理灰色地带）；(3) human_required（高风险全人工，如金融建议、医疗诊断）。所有 production-line 必须至少配 1 档 gate，红线话题强制 human_required。\",\n  \"tags\": [\n    \"review_gate\",\n    \"safety\",\n    \"compliance\"\n  ],\n  \"updated_at\": \"2026-02-10\",\n  \"content\": \"三档 review gate：(1) auto_rule_gate（确定性正则，最快）；(2) llm_judge_gate（LLM 二审，处理灰色地带）；(3) human_required（高风险全人工，如金融建议、医疗诊断）。所有 production-line 必须至少配 1 档 gate，红线话题强制 human_required。\",\n  \"last_updated\": \"2026-05-01\",\n  \"views\": 0\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "kb/articles.json",
+      "source_index": 4
+    }
+  },
+  {
+    "record_id": "item:KB-AIW-005",
+    "kind": "item",
+    "title": "Workflow 迁移最佳实践：双跑 + 灰度",
+    "content": "{\n  \"article_id\": \"KB-AIW-005\",\n  \"title\": \"Workflow 迁移最佳实践：双跑 + 灰度\",\n  \"category\": \"operations\",\n  \"summary\": \"迁移流程：T0 部署新 workflow 但只跑 shadow（不返回给用户）；T+1w 灰度 1% 流量，对比新旧输出差异；T+2w 灰度 10%；T+4w 全量。回滚开关：feature_flag = old_workflow，秒级切回。\",\n  \"tags\": [\n    \"migration\",\n    \"rollout\",\n    \"shadow_traffic\"\n  ],\n  \"updated_at\": \"2026-03-01\",\n  \"content\": \"迁移流程：T0 部署新 workflow 但只跑 shadow（不返回给用户）；T+1w 灰度 1% 流量，对比新旧输出差异；T+2w 灰度 10%；T+4w 全量。回滚开关：feature_flag = old_workflow，秒级切回。\",\n  \"last_updated\": \"2026-05-01\",\n  \"views\": 0\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "kb/articles.json",
+      "source_index": 5
+    }
+  },
+  {
+    "record_id": "trap:pl402-no-review",
+    "kind": "trap",
+    "title": "PL-402 no_review 风险",
+    "content": "PL-402 历史事故来自 no_review；迁移计划必须给它更高 review gate，而不是沿用默认。",
+    "tags": [
+      "review_gate",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "trap:pl403-long-tail",
+    "kind": "trap",
+    "title": "PL-403 长尾工具风险",
+    "content": "PL-403 p99 和工具长尾较高，shadow rollout 需要单独监控 tail latency 和 tool error。",
+    "tags": [
+      "latency",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "trap:redline-human-review",
+    "kind": "trap",
+    "title": "红线意图强制人工审查",
+    "content": "涉及合规/财务/权限变更的 intent 不能只靠 specialist 自动处理，必须进入 human review。",
+    "tags": [
+      "routing",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "trap:shadow-metrics",
+    "kind": "trap",
+    "title": "shadow rollout 不等于全量",
+    "content": "Shadow 阶段要比较成功率、重试、fallback、人工审查命中，不应直接 100% 切流。",
+    "tags": [
+      "rollout",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "trap:rollback-flag",
+    "kind": "trap",
+    "title": "一键回滚 flag",
+    "content": "必须保留 old ReAct path 或 feature flag，事故时能按产线回滚。",
+    "tags": [
+      "rollback",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "cross_check:primary-cross-check",
+    "kind": "cross_check",
+    "title": "Cross-check primary service facts with review traps",
+    "content": "Final plan should cite concrete source_ids, handle every trap class, and confirm the submitted review payload.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "review:primary-cross-check",
+        "title": "Cross-check primary service facts with review traps",
+        "primary_ids": [
+          "source:config/integrations.json",
+          "item:PL-401",
+          "item:PL-402",
+          "item:PL-403"
+        ],
+        "comparison_ids": [
+          "item:PL-MIG-001",
+          "source:kb/articles.json",
+          "item:KB-AIW-001",
+          "item:KB-AIW-002"
+        ],
+        "trap_ids": [
+          "trap:pl402-no-review",
+          "trap:pl403-long-tail",
+          "trap:redline-human-review",
+          "trap:shadow-metrics",
+          "trap:rollback-flag"
+        ],
+        "expected_resolution": "Final plan should cite concrete source_ids, handle every trap class, and confirm the submitted review payload."
+      }
+    }
+  },
+  {
+    "record_id": "workflow:required-sequence",
+    "kind": "workflow_contract",
+    "title": "Required review sequence",
+    "content": "list/search -> get/read -> cross_check -> submit -> confirm",
+    "tags": [
+      "workflow",
+      "contract"
+    ],
+    "metadata": {
+      "required_sequence": [
+        "list",
+        "search",
+        "get",
+        "cross_check",
+        "submit",
+        "confirm"
+      ]
+    }
+  }
+]

@@ -153,27 +153,7 @@ environment:
   timeout_seconds: 900
   max_turns: 40
 
-scoring_components:
-  - name: product_positioning
-    weight: 0.25
-    check:
-      type: llm_judge
-      description: "4 个 SKU 定位 + 与 RSS-EC-005 竞品 top3 真实数据对比"
-  - name: review_insight
-    weight: 0.25
-    check:
-      type: llm_judge
-      description: "每个 SKU 正负面卖点，引用 ≥5 条真实 CRM snippet，识别改进方向"
-  - name: keyword_opportunity
-    weight: 0.25
-    check:
-      type: llm_judge
-      description: "找出未覆盖的高价值关键词（来自 RSS-EC-003 热搜 + 趋势文章）"
-  - name: listing_optimization
-    weight: 0.25
-    check:
-      type: llm_judge
-      description: "每 SKU 新 title + 5 bullets + 评论运营策略（呼应 RSS-EC-004 30 天权重）+ SKU-EBK-002 判断"
+scoring_components: []
 
 safety_checks:
   - type: tool_not_called

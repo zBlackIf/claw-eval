@@ -10,13 +10,13 @@
 task_id: CP12_writing_plan_citation_support
 task_name: "AI 写作模块添加内联引用支持的设计方案（CP12 / 源 taskset-260427-121234:task_75_writing_plan_citation）"
 version: "1.0"
-category: research
+category: workflow
 difficulty: easy
-tags: [general]
+tags: [general, workflow, multi_service]
 
 source_task_id: "task_75_writing_plan_citation"
 source_dataset: "taskset-260427-121234"
-source_description: "从 Themis PinchBench top100（2026-05-25 二次筛选，killer bucket）中按跨模型 std_trim 排名精选的高区分度题（原始排名 #32，std_trim 0.405 / range_trim 1.000 / mean_trim 0.624），改编为 Claw-Eval final-answer 设计方案任务。grader 结合 KB 读取 dispatch 和最终 Markdown 结构化锚点评分。"
+source_description: "Workflow/W3 upgraded with citation_review PTS: KB evidence plus citation review submit/confirm payload/state, richer traps, and audit_data-first grader."
 
 services:
   - name: kb
@@ -28,15 +28,21 @@ services:
     reset_endpoint: http://localhost:9106/kb/reset
     env:
       KB_FIXTURES: tasks/CP12_writing_plan_citation_support/fixtures/kb/articles.json
-
+  - name: citation_review
+    command: python tasks/CP12_writing_plan_citation_support/services/citation_review/server.py
+    port: 9412
+    health_check: http://localhost:9412/citation_review/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9412/citation_review/reset
+    env:
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP12_writing_plan_citation_support/fixtures/workflow_review.json
+      WORKFLOW_SERVICE_NAME: citation_review
 prompt:
   text: |
-    我是 AI 写作模块的产品 PM。我们要在现有 writing pipeline 上新增「内联
-    引用支持」功能。请帮我：
-    1. 在知识库里查公司内部关于引用风格、数据建模、用户痛点的相关文档
-    2. 给我一份 markdown 形式的设计方案，下周内评要用
-    请直接在最终回复中输出完整 Markdown 设计方案，包含引用链和回归测试；
-    不要只写到文件或只给摘要。
+    AI 写作模块要加内联引用支持，评审更关心证据链能否闭合。KB 里有引用风格、source_chunks 数据模型和用户痛点，引用评审台里有过期链接、空 references 和风格冲突样例；请查证后提交并确认一版设计。
+
+    最终回复输出完整 Markdown 方案，包含引用链、数据模型、异常处理和回归测试；不要只给摘要。
   language: zh
 
 tools:
@@ -62,7 +68,90 @@ tools:
         article_id:
           type: string
       required: [article_id]
-
+  - name: citation_review_list
+    description: List records in the citation review review service before targeted reads.
+    input_schema:
+      type: object
+      properties:
+        kind:
+          type: string
+        tag:
+          type: string
+        limit:
+          type: integer
+          default: 20
+      required: []
+  - name: citation_review_search
+    description: Search review records, conflict cases, and traps.
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        kind:
+          type: string
+        max_results:
+          type: integer
+          default: 10
+      required: [query]
+  - name: citation_review_get
+    description: Fetch a full review record by record_id.
+    input_schema:
+      type: object
+      properties:
+        record_id:
+          type: string
+      required: [record_id]
+  - name: citation_review_cross_check
+    description: Cross-check selected records against trap and conflict cases.
+    input_schema:
+      type: object
+      properties:
+        primary_id:
+          type: string
+        comparison_ids:
+          type: array
+          items:
+            type: string
+        focus:
+          type: string
+      required: []
+  - name: citation_review_submit_report
+    description: Submit the sourced plan or brief to the review service.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        content:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        decision:
+          type: string
+        metadata:
+          type: object
+      required: [report_id, content]
+  - name: citation_review_confirm_report
+    description: Confirm the submitted report after source/trap review.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        checklist:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+      required: [report_id]
 tool_endpoints:
   - tool_name: kb_search
     url: http://localhost:9106/kb/search
@@ -70,7 +159,24 @@ tool_endpoints:
   - tool_name: kb_get_article
     url: http://localhost:9106/kb/articles/get
     method: POST
-
+  - tool_name: citation_review_list
+    url: http://localhost:9412/citation_review/list
+    method: POST
+  - tool_name: citation_review_search
+    url: http://localhost:9412/citation_review/search
+    method: POST
+  - tool_name: citation_review_get
+    url: http://localhost:9412/citation_review/get
+    method: POST
+  - tool_name: citation_review_cross_check
+    url: http://localhost:9412/citation_review/cross_check
+    method: POST
+  - tool_name: citation_review_submit_report
+    url: http://localhost:9412/citation_review/submit
+    method: POST
+  - tool_name: citation_review_confirm_report
+    url: http://localhost:9412/citation_review/confirm
+    method: POST
 sandbox_files:
   - fixtures/kb/articles.json
 
@@ -79,6 +185,7 @@ environment:
   max_turns: 15
 
 scoring_components: []
+
 safety_checks: []
 expected_actions: []
 

@@ -220,27 +220,7 @@ environment:
   timeout_seconds: 900
   max_turns: 40
 
-scoring_components:
-  - name: overall_architecture
-    weight: 0.25
-    check:
-      type: llm_judge
-      description: "统一入口 + Router + 4 Agent + Fallback；引用 FS-INT-101/102"
-  - name: routing_table_governance
-    weight: 0.30
-    check:
-      type: llm_judge
-      description: "6 条现有规则的保留/修复/废弃 + 明确处置 RR-105 + RR-106-DEPRECATED + 冲突仲裁"
-  - name: cross_agent_migration
-    weight: 0.25
-    check:
-      type: llm_judge
-      description: "灰度顺序、旧新并存、数据一致性"
-  - name: rollback_mechanism
-    weight: 0.20
-    check:
-      type: llm_judge
-      description: "feature flag + 1 步回滚 + 告警阈值"
+scoring_components: []
 
 safety_checks:
   - type: tool_not_called

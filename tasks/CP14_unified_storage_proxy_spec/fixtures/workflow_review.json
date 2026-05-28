@@ -1,0 +1,291 @@
+[
+  {
+    "record_id": "brief:review-contract",
+    "kind": "brief",
+    "title": "storage_proxy_review review workflow contract",
+    "content": "Use service list/search/get/cross_check, submit a sourced report, then confirm the same report_id. The review service contains traps and conflict records that are not all visible in the primary service summaries.",
+    "tags": [
+      "brief",
+      "workflow"
+    ],
+    "metadata": {
+      "service": "storage_proxy_review",
+      "task_id": "CP14_unified_storage_proxy_spec"
+    }
+  },
+  {
+    "record_id": "source:config/integrations.json",
+    "kind": "source",
+    "title": "Fixture export: config/integrations.json",
+    "content": "[\n  {\n    \"integration_id\": \"STG-101\",\n    \"name\": \"AWS S3 海外主存储\",\n    \"type\": \"object_storage\",\n    \"vendor\": \"aws_s3\",\n    \"region\": \"us-east-1\",\n    \"status\": \"active\",\n    \"auth\": {\n      \"method\": \"iam_role\",\n      \"role_arn\": \"arn:aws:iam::123456789012:role/clawhub-s3-reader\"\n    },\n    \"buckets\": [\n      \"clawhub-prod-assets\",\n      \"clawhub-prod-logs\"\n    ],\n    \"max_object_size_mb\": 5120,\n    \"supports_multipart\": true,\n    \"supports_presigned_url\": true,\n    \"presigned_url_max_ttl_seconds\": 604800,\n    \"monthly_traffic_gb\": 8200,\n    \"owner_team\": \"海外平台组\",\n    \"service\": \"object_storage\",\n    \"last_verified\": \"2026-05-20T00:00:00Z\",\n    \"monthly_calls\": 1000,\n    \"error_rate\": 0.01\n  },\n  {\n    \"integration_id\": \"STG-102\",\n    \"name\": \"阿里云 OSS 国内主存储\",\n    \"type\": \"object_storage\",\n    \"vendor\": \"aliyun_oss\",\n    \"region\": \"cn-hangzhou\",\n    \"status\": \"active\",\n    \"auth\": {\n      \"method\": \"sts_token\",\n      \"ram_role\": \"acs:ram::cn-hangzhou:role/clawhub-oss-prod\"\n    },\n    \"buckets\": [\n      \"clawhub-cn-assets\",\n      \"clawhub-cn-logs\",\n      \"clawhub-cn-cold\"\n    ],\n    \"max_object_size_mb\": 51200,\n    \"supports_multipart\": true,\n    \"supports_presigned_url\": true,\n    \"presigned_url_max_ttl_seconds\": 32400,\n    \"monthly_traffic_gb\": 14500,\n    \"owner_team\": \"国内平台组\",\n    \"service\": \"object_storage\",\n    \"last_verified\": \"2026-05-20T00:00:00Z\",\n    \"monthly_calls\": 1000,\n    \"error_rate\": 0.01\n  },\n  {\n    \"integration_id\": \"STG-103\",\n    \"name\": \"Azure Blob 备份存储\",\n    \"type\": \"object_storage\",\n    \"vendor\": \"azure_blob\",\n    \"region\": \"eastasia\",\n    \"status\": \"degraded\",\n    \"auth\": {\n      \"method\": \"azure_ad_app\",\n      \"tenant_id\": \"tenant-redacted\",\n      \"client_id\": \"client-redacted\"\n    },\n    \"buckets\": [\n      \"clawhub-backup-warm\",\n      \"clawhub-backup-cold\"\n    ],\n    \"max_object_size_mb\": 4750,\n    \"supports_multipart\": true,\n    \"supports_presigned_url\": true,\n    \"presigned_url_max_ttl_seconds\": 86400,\n    \"monthly_traffic_gb\": 320,\n    \"owner_team\": \"DR 组\",\n    \"incident_note\": \"Azure AD app secret 将于 2026-06-15 到期，需提前 14 天轮换\",\n    \"service\": \"object_storage\",\n    \"last_verified\": \"2026-05-20T00:00:00Z\",\n    \"monthly_calls\": 1000,\n    \"error_rate\": 0.15\n  },\n  {\n    \"integration_id\": \"STG-104\",\n    \"name\": \"MinIO 内部对象存储\",\n    \"type\": \"object_storage\",\n    \"vendor\": \"minio\",\n    \"region\": \"intranet\",\n    \"status\": \"active\",\n    \"auth\": {\n      \"method\": \"access_key\",\n      \"access_key_id\": \"minioadmin\"\n    },\n    \"buckets\": [\n      \"dev-sandbox\",\n      \"ci-artifacts\"\n    ],\n    \"max_object_size_mb\": 5120,\n    \"supports_multipart\": true,\n    \"supports_presigned_url\": true,\n    \"presigned_url_max_ttl_seconds\": 604800,\n    \"monthly_traffic_gb\": 90,\n    \"owner_team\": \"开发体验组\",\n    \"service\": \"object_storage\",\n    \"last_verified\": \"2026-05-20T00:00:00Z\",\n    \"monthly_calls\": 1000,\n    \"error_rate\": 0.01\n  }\n]",
+    "tags": [
+      "source",
+      "integrations"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/config/integrations.json",
+      "bytes": 2983
+    }
+  },
+  {
+    "record_id": "item:STG-101",
+    "kind": "item",
+    "title": "AWS S3 海外主存储",
+    "content": "{\n  \"integration_id\": \"STG-101\",\n  \"name\": \"AWS S3 海外主存储\",\n  \"type\": \"object_storage\",\n  \"vendor\": \"aws_s3\",\n  \"region\": \"us-east-1\",\n  \"status\": \"active\",\n  \"auth\": {\n    \"method\": \"iam_role\",\n    \"role_arn\": \"arn:aws:iam::123456789012:role/clawhub-s3-reader\"\n  },\n  \"buckets\": [\n    \"clawhub-prod-assets\",\n    \"clawhub-prod-logs\"\n  ],\n  \"max_object_size_mb\": 5120,\n  \"supports_multipart\": true,\n  \"supports_presigned_url\": true,\n  \"presigned_url_max_ttl_seconds\": 604800,\n  \"monthly_traffic_gb\": 8200,\n  \"owner_team\": \"海外平台组\",\n  \"service\": \"object_storage\",\n  \"last_verified\": \"2026-05-20T00:00:00Z\",\n  \"monthly_calls\": 1000,\n  \"error_rate\": 0.01\n}",
+    "tags": [
+      "item",
+      "integrations"
+    ],
+    "metadata": {
+      "source_file": "config/integrations.json",
+      "source_index": 1
+    }
+  },
+  {
+    "record_id": "item:STG-102",
+    "kind": "item",
+    "title": "阿里云 OSS 国内主存储",
+    "content": "{\n  \"integration_id\": \"STG-102\",\n  \"name\": \"阿里云 OSS 国内主存储\",\n  \"type\": \"object_storage\",\n  \"vendor\": \"aliyun_oss\",\n  \"region\": \"cn-hangzhou\",\n  \"status\": \"active\",\n  \"auth\": {\n    \"method\": \"sts_token\",\n    \"ram_role\": \"acs:ram::cn-hangzhou:role/clawhub-oss-prod\"\n  },\n  \"buckets\": [\n    \"clawhub-cn-assets\",\n    \"clawhub-cn-logs\",\n    \"clawhub-cn-cold\"\n  ],\n  \"max_object_size_mb\": 51200,\n  \"supports_multipart\": true,\n  \"supports_presigned_url\": true,\n  \"presigned_url_max_ttl_seconds\": 32400,\n  \"monthly_traffic_gb\": 14500,\n  \"owner_team\": \"国内平台组\",\n  \"service\": \"object_storage\",\n  \"last_verified\": \"2026-05-20T00:00:00Z\",\n  \"monthly_calls\": 1000,\n  \"error_rate\": 0.01\n}",
+    "tags": [
+      "item",
+      "integrations"
+    ],
+    "metadata": {
+      "source_file": "config/integrations.json",
+      "source_index": 2
+    }
+  },
+  {
+    "record_id": "item:STG-103",
+    "kind": "item",
+    "title": "Azure Blob 备份存储",
+    "content": "{\n  \"integration_id\": \"STG-103\",\n  \"name\": \"Azure Blob 备份存储\",\n  \"type\": \"object_storage\",\n  \"vendor\": \"azure_blob\",\n  \"region\": \"eastasia\",\n  \"status\": \"degraded\",\n  \"auth\": {\n    \"method\": \"azure_ad_app\",\n    \"tenant_id\": \"tenant-redacted\",\n    \"client_id\": \"client-redacted\"\n  },\n  \"buckets\": [\n    \"clawhub-backup-warm\",\n    \"clawhub-backup-cold\"\n  ],\n  \"max_object_size_mb\": 4750,\n  \"supports_multipart\": true,\n  \"supports_presigned_url\": true,\n  \"presigned_url_max_ttl_seconds\": 86400,\n  \"monthly_traffic_gb\": 320,\n  \"owner_team\": \"DR 组\",\n  \"incident_note\": \"Azure AD app secret 将于 2026-06-15 到期，需提前 14 天轮换\",\n  \"service\": \"object_storage\",\n  \"last_verified\": \"2026-05-20T00:00:00Z\",\n  \"monthly_calls\": 1000,\n  \"error_rate\": 0.15\n}",
+    "tags": [
+      "item",
+      "integrations"
+    ],
+    "metadata": {
+      "source_file": "config/integrations.json",
+      "source_index": 3
+    }
+  },
+  {
+    "record_id": "item:STG-104",
+    "kind": "item",
+    "title": "MinIO 内部对象存储",
+    "content": "{\n  \"integration_id\": \"STG-104\",\n  \"name\": \"MinIO 内部对象存储\",\n  \"type\": \"object_storage\",\n  \"vendor\": \"minio\",\n  \"region\": \"intranet\",\n  \"status\": \"active\",\n  \"auth\": {\n    \"method\": \"access_key\",\n    \"access_key_id\": \"minioadmin\"\n  },\n  \"buckets\": [\n    \"dev-sandbox\",\n    \"ci-artifacts\"\n  ],\n  \"max_object_size_mb\": 5120,\n  \"supports_multipart\": true,\n  \"supports_presigned_url\": true,\n  \"presigned_url_max_ttl_seconds\": 604800,\n  \"monthly_traffic_gb\": 90,\n  \"owner_team\": \"开发体验组\",\n  \"service\": \"object_storage\",\n  \"last_verified\": \"2026-05-20T00:00:00Z\",\n  \"monthly_calls\": 1000,\n  \"error_rate\": 0.01\n}",
+    "tags": [
+      "item",
+      "integrations"
+    ],
+    "metadata": {
+      "source_file": "config/integrations.json",
+      "source_index": 4
+    }
+  },
+  {
+    "record_id": "source:kb/articles.json",
+    "kind": "source",
+    "title": "Fixture export: kb/articles.json",
+    "content": "[\n  {\n    \"article_id\": \"KB-STG-001\",\n    \"title\": \"对象存储统一接入历史方案 v1（已废弃）\",\n    \"category\": \"infrastructure\",\n    \"summary\": \"2024 年第一版 storage SDK 直接在业务代码引入 boto3 / oss2 / azure-storage-blob 三套 SDK。引发的问题：版本冲突、auth 散落、跨云迁移成本高、断点续传各自实现。\",\n    \"tags\": [\n      \"storage\",\n      \"legacy\",\n      \"lesson_learned\"\n    ],\n    \"updated_at\": \"2024-11-08\",\n    \"content\": \"2024 年第一版 storage SDK 直接在业务代码引入 boto3 / oss2 / azure-storage-blob 三套 SDK。引发的问题：版本冲突、auth 散落、跨云迁移成本高、断点续传各自实现。\",\n    \"last_updated\": \"2026-05-01\",\n    \"views\": 0\n  },\n  {\n    \"article_id\": \"KB-STG-002\",\n    \"title\": \"签名 URL 的安全实践（GDPR 合规要点）\",\n    \"category\": \"security\",\n    \"summary\": \"TTL 上限：用户下载 24h、机器服务 7d；URL 不应记日志全文（截短 query）；OSS / S3 / Azure 的 TTL 上限不一致（aliyun_oss 32400s, s3 604800s, azure 86400s），统一代理必须对外暴露稳定上限并在内部转译。\",\n    \"tags\": [\n      \"storage\",\n      \"security\",\n      \"presigned_url\",\n      \"compliance\"\n    ],\n    \"updated_at\": \"2025-08-22\",\n    \"content\": \"TTL 上限：用户下载 24h、机器服务 7d；URL 不应记日志全文（截短 query）；OSS / S3 / Azure 的 TTL 上限不一致（aliyun_oss 32400s, s3 604800s, azure 86400s），统一代理必须对外暴露稳定上限并在内部转译。\",\n    \"last_updated\": \"2026-05-01\",\n    \"views\": 0\n  },\n  {\n    \"article_id\": \"KB-STG-003\",\n    \"title\": \"断点续传 / 分片上传跨云差异速查\",\n    \"category\": \"infrastructure\",\n    \"summary\": \"AWS S3 multipart 最小分片 5 MB，OSS 最小分片 100 KB，Azure block blob 最大 4000 块。统一代理需将这些差异封装为单一 InitiateUpload / UploadPart / CompleteUpload 三段式 API。\",\n    \"tags\": [\n      \"storage\",\n      \"multipart\",\n      \"cross_cloud\"\n    ],\n    \"updated_at\": \"2025-12-03\",\n    \"content\": \"AWS S3 multipart 最小分片 5 MB，OSS 最小分片 100 KB，Azure block blob 最大 4000 块。统一代理需将这些差异封装为单一 InitiateUpload / UploadPart / CompleteUpload 三段式 API。\",\n    \"last_updated\": \"2026-05-01\",\n    \"views\": 0\n  },\n  {\n    \"article_id\": \"KB-STG-004\",\n    \"title\": \"成本治理：冷热分层与生命周期策略\",\n    \"category\": \"finops\",\n    \"summary\": \"OSS / S3 都有 IA / Archive / Cold 多档；统一代理需暴露 storage_class 抽象（hot/warm/cold/archive），并在 IaC 层固化生命周期规则。\",\n    \"tags\": [\n      \"storage\",\n      \"finops\",\n      \"lifecycle\"\n    ],\n    \"updated_at\": \"2025-10-15\",\n    \"content\": \"OSS / S3 都有 IA / Archive / Cold 多档；统一代理需暴露 storage_class 抽象（hot/warm/cold/archive），并在 IaC 层固化生命周期规则。\",\n    \"last_updated\": \"2026-05-01\",\n    \"views\": 0\n  },\n  {\n    \"article_id\": \"KB-STG-005\",\n    \"title\": \"Azure AD app secret 轮换 SOP\",\n    \"category\": \"security\",\n    \"summary\": \"轮换流程：T-14 创建新 secret → T-7 双 secret 灰度 → T-0 切换主用 → T+7 删除旧 secret。需要监控 401 错误率。\",\n    \"tags\": [\n      \"azure\",\n      \"secret_rotation\",\n      \"ops\"\n    ],\n    \"updated_at\": \"2026-02-11\",\n    \"content\": \"轮换流程：T-14 创建新 secret → T-7 双 secret 灰度 → T-0 切换主用 → T+7 删除旧 secret。需要监控 401 错误率。\",\n    \"last_updated\": \"2026-05-01\",\n    \"views\": 0\n  }\n]",
+    "tags": [
+      "source",
+      "articles"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/kb/articles.json",
+      "bytes": 3574
+    }
+  },
+  {
+    "record_id": "item:KB-STG-001",
+    "kind": "item",
+    "title": "对象存储统一接入历史方案 v1（已废弃）",
+    "content": "{\n  \"article_id\": \"KB-STG-001\",\n  \"title\": \"对象存储统一接入历史方案 v1（已废弃）\",\n  \"category\": \"infrastructure\",\n  \"summary\": \"2024 年第一版 storage SDK 直接在业务代码引入 boto3 / oss2 / azure-storage-blob 三套 SDK。引发的问题：版本冲突、auth 散落、跨云迁移成本高、断点续传各自实现。\",\n  \"tags\": [\n    \"storage\",\n    \"legacy\",\n    \"lesson_learned\"\n  ],\n  \"updated_at\": \"2024-11-08\",\n  \"content\": \"2024 年第一版 storage SDK 直接在业务代码引入 boto3 / oss2 / azure-storage-blob 三套 SDK。引发的问题：版本冲突、auth 散落、跨云迁移成本高、断点续传各自实现。\",\n  \"last_updated\": \"2026-05-01\",\n  \"views\": 0\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "kb/articles.json",
+      "source_index": 1
+    }
+  },
+  {
+    "record_id": "item:KB-STG-002",
+    "kind": "item",
+    "title": "签名 URL 的安全实践（GDPR 合规要点）",
+    "content": "{\n  \"article_id\": \"KB-STG-002\",\n  \"title\": \"签名 URL 的安全实践（GDPR 合规要点）\",\n  \"category\": \"security\",\n  \"summary\": \"TTL 上限：用户下载 24h、机器服务 7d；URL 不应记日志全文（截短 query）；OSS / S3 / Azure 的 TTL 上限不一致（aliyun_oss 32400s, s3 604800s, azure 86400s），统一代理必须对外暴露稳定上限并在内部转译。\",\n  \"tags\": [\n    \"storage\",\n    \"security\",\n    \"presigned_url\",\n    \"compliance\"\n  ],\n  \"updated_at\": \"2025-08-22\",\n  \"content\": \"TTL 上限：用户下载 24h、机器服务 7d；URL 不应记日志全文（截短 query）；OSS / S3 / Azure 的 TTL 上限不一致（aliyun_oss 32400s, s3 604800s, azure 86400s），统一代理必须对外暴露稳定上限并在内部转译。\",\n  \"last_updated\": \"2026-05-01\",\n  \"views\": 0\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "kb/articles.json",
+      "source_index": 2
+    }
+  },
+  {
+    "record_id": "item:KB-STG-003",
+    "kind": "item",
+    "title": "断点续传 / 分片上传跨云差异速查",
+    "content": "{\n  \"article_id\": \"KB-STG-003\",\n  \"title\": \"断点续传 / 分片上传跨云差异速查\",\n  \"category\": \"infrastructure\",\n  \"summary\": \"AWS S3 multipart 最小分片 5 MB，OSS 最小分片 100 KB，Azure block blob 最大 4000 块。统一代理需将这些差异封装为单一 InitiateUpload / UploadPart / CompleteUpload 三段式 API。\",\n  \"tags\": [\n    \"storage\",\n    \"multipart\",\n    \"cross_cloud\"\n  ],\n  \"updated_at\": \"2025-12-03\",\n  \"content\": \"AWS S3 multipart 最小分片 5 MB，OSS 最小分片 100 KB，Azure block blob 最大 4000 块。统一代理需将这些差异封装为单一 InitiateUpload / UploadPart / CompleteUpload 三段式 API。\",\n  \"last_updated\": \"2026-05-01\",\n  \"views\": 0\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "kb/articles.json",
+      "source_index": 3
+    }
+  },
+  {
+    "record_id": "item:KB-STG-004",
+    "kind": "item",
+    "title": "成本治理：冷热分层与生命周期策略",
+    "content": "{\n  \"article_id\": \"KB-STG-004\",\n  \"title\": \"成本治理：冷热分层与生命周期策略\",\n  \"category\": \"finops\",\n  \"summary\": \"OSS / S3 都有 IA / Archive / Cold 多档；统一代理需暴露 storage_class 抽象（hot/warm/cold/archive），并在 IaC 层固化生命周期规则。\",\n  \"tags\": [\n    \"storage\",\n    \"finops\",\n    \"lifecycle\"\n  ],\n  \"updated_at\": \"2025-10-15\",\n  \"content\": \"OSS / S3 都有 IA / Archive / Cold 多档；统一代理需暴露 storage_class 抽象（hot/warm/cold/archive），并在 IaC 层固化生命周期规则。\",\n  \"last_updated\": \"2026-05-01\",\n  \"views\": 0\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "kb/articles.json",
+      "source_index": 4
+    }
+  },
+  {
+    "record_id": "item:KB-STG-005",
+    "kind": "item",
+    "title": "Azure AD app secret 轮换 SOP",
+    "content": "{\n  \"article_id\": \"KB-STG-005\",\n  \"title\": \"Azure AD app secret 轮换 SOP\",\n  \"category\": \"security\",\n  \"summary\": \"轮换流程：T-14 创建新 secret → T-7 双 secret 灰度 → T-0 切换主用 → T+7 删除旧 secret。需要监控 401 错误率。\",\n  \"tags\": [\n    \"azure\",\n    \"secret_rotation\",\n    \"ops\"\n  ],\n  \"updated_at\": \"2026-02-11\",\n  \"content\": \"轮换流程：T-14 创建新 secret → T-7 双 secret 灰度 → T-0 切换主用 → T+7 删除旧 secret。需要监控 401 错误率。\",\n  \"last_updated\": \"2026-05-01\",\n  \"views\": 0\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "kb/articles.json",
+      "source_index": 5
+    }
+  },
+  {
+    "record_id": "trap:multipart-dialect",
+    "kind": "trap",
+    "title": "S3/OSS/Azure multipart 差异",
+    "content": "三家后端 multipart init/upload/complete 语义不同，状态机必须抽象差异和重试。",
+    "tags": [
+      "multipart",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "trap:signed-url-ttl",
+    "kind": "trap",
+    "title": "签名 URL TTL 转译",
+    "content": "不同后端 TTL 上限与签名参数不同，SPEC 需要转译表和过期错误码。",
+    "tags": [
+      "signed_url",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "trap:azure-cert-rotation",
+    "kind": "trap",
+    "title": "Azure 证书轮换 SOP",
+    "content": "Azure 后端证书即将轮换，代理必须有证书轮换与灰度验证流程。",
+    "tags": [
+      "security",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "trap:log-redaction",
+    "kind": "trap",
+    "title": "日志脱敏",
+    "content": "代理日志不能记录完整签名 URL、AK/SK、bucket secret 或用户 PII。",
+    "tags": [
+      "security",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "trap:storage-class-map",
+    "kind": "trap",
+    "title": "storage_class 抽象",
+    "content": "不同厂商 storage class 命名和计费语义不同，需要统一抽象与降级策略。",
+    "tags": [
+      "finops",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "cross_check:primary-cross-check",
+    "kind": "cross_check",
+    "title": "Cross-check primary service facts with review traps",
+    "content": "Final plan should cite concrete source_ids, handle every trap class, and confirm the submitted review payload.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "review:primary-cross-check",
+        "title": "Cross-check primary service facts with review traps",
+        "primary_ids": [
+          "source:config/integrations.json",
+          "item:STG-101",
+          "item:STG-102",
+          "item:STG-103"
+        ],
+        "comparison_ids": [
+          "item:STG-104",
+          "source:kb/articles.json",
+          "item:KB-STG-001",
+          "item:KB-STG-002"
+        ],
+        "trap_ids": [
+          "trap:multipart-dialect",
+          "trap:signed-url-ttl",
+          "trap:azure-cert-rotation",
+          "trap:log-redaction",
+          "trap:storage-class-map"
+        ],
+        "expected_resolution": "Final plan should cite concrete source_ids, handle every trap class, and confirm the submitted review payload."
+      }
+    }
+  },
+  {
+    "record_id": "workflow:required-sequence",
+    "kind": "workflow_contract",
+    "title": "Required review sequence",
+    "content": "list/search -> get/read -> cross_check -> submit -> confirm",
+    "tags": [
+      "workflow",
+      "contract"
+    ],
+    "metadata": {
+      "required_sequence": [
+        "list",
+        "search",
+        "get",
+        "cross_check",
+        "submit",
+        "confirm"
+      ]
+    }
+  }
+]

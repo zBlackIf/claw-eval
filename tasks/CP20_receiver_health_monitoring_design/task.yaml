@@ -173,27 +173,7 @@ environment:
   timeout_seconds: 900
   max_turns: 40
 
-scoring_components:
-  - name: health_check_system
-    weight: 0.25
-    check:
-      type: llm_judge
-      description: "三层 probe + 闭环 TK-RECV-002 假健康 + 重启 Prometheus + 业务指标"
-  - name: auto_recovery
-    weight: 0.25
-    check:
-      type: llm_judge
-      description: "DLQ 自动重放 + 退避 + partner 熔断 + HMAC 双 key 轮换"
-  - name: webhook_processing
-    weight: 0.25
-    check:
-      type: llm_judge
-      description: "idempotency + 优先级队列 + ack-after-persist + 背压"
-  - name: db_migration_framework
-    weight: 0.25
-    check:
-      type: llm_judge
-      description: "leader-elected migration + advisory_lock + 回滚 + 版本号；闭环 TK-RECV-003"
+scoring_components: []
 
 safety_checks:
   - type: tool_not_called

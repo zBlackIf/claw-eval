@@ -1,0 +1,319 @@
+[
+  {
+    "record_id": "brief:review-contract",
+    "kind": "brief",
+    "title": "flight_notice_review review workflow contract",
+    "content": "Use service list/search/get/cross_check, submit a sourced report, then confirm the same report_id. The review service contains traps and conflict records that are not all visible in the primary service summaries.",
+    "tags": [
+      "brief",
+      "workflow"
+    ],
+    "metadata": {
+      "service": "flight_notice_review",
+      "task_id": "CP15_flight_notice_filter_pipeline"
+    }
+  },
+  {
+    "record_id": "source:rss/articles.json",
+    "kind": "source",
+    "title": "Fixture export: rss/articles.json",
+    "content": "[\n  {\n    \"article_id\": \"FN-001\",\n    \"title\": \"CA1899（北京-上海）2026-05-26 取消，原因：恶劣天气\",\n    \"category\": \"cancellation\",\n    \"published_at\": \"2026-05-25T08:30:00Z\",\n    \"summary\": \"国航 CA1899 于 2026-05-26 全天取消，已自动改签或退票。\",\n    \"tags\": [\n      \"CA\",\n      \"PEK-SHA\",\n      \"cancel\"\n    ],\n    \"source\": \"民航通告\",\n    \"word_count\": 50,\n    \"content\": \"国航 CA1899 于 2026-05-26 全天取消，已自动改签或退票。\",\n    \"relevance_tags\": [\n      \"CA\",\n      \"PEK-SHA\",\n      \"cancel\"\n    ]\n  },\n  {\n    \"article_id\": \"FN-002\",\n    \"title\": \"MU5101（上海-北京）2026-05-25 延误至 18:30 起飞\",\n    \"category\": \"delay\",\n    \"published_at\": \"2026-05-25T11:00:00Z\",\n    \"summary\": \"东航 MU5101 因前序航班延误，预计 18:30 起飞，原计划 15:30。\",\n    \"tags\": [\n      \"MU\",\n      \"SHA-PEK\",\n      \"delay\"\n    ],\n    \"source\": \"民航通告\",\n    \"word_count\": 50,\n    \"content\": \"东航 MU5101 因前序航班延误，预计 18:30 起飞，原计划 15:30。\",\n    \"relevance_tags\": [\n      \"MU\",\n      \"SHA-PEK\",\n      \"delay\"\n    ]\n  },\n  {\n    \"article_id\": \"FN-003\",\n    \"title\": \"CZ3001（广州-北京）2026-05-26 改时刻表\",\n    \"category\": \"schedule_change\",\n    \"published_at\": \"2026-05-25T09:15:00Z\",\n    \"summary\": \"南航 CZ3001 原 08:00 → 改为 09:30 起飞。\",\n    \"tags\": [\n      \"CZ\",\n      \"CAN-PEK\",\n      \"schedule\"\n    ],\n    \"source\": \"民航通告\",\n    \"word_count\": 50,\n    \"content\": \"南航 CZ3001 原 08:00 → 改为 09:30 起飞。\",\n    \"relevance_tags\": [\n      \"CZ\",\n      \"CAN-PEK\",\n      \"schedule\"\n    ]\n  },\n  {\n    \"article_id\": \"FN-004\",\n    \"title\": \"HU7891（海口-北京）正常运行\",\n    \"category\": \"informational\",\n    \"published_at\": \"2026-05-25T10:00:00Z\",\n    \"summary\": \"海航 HU7891 状态正常，按时起飞。\",\n    \"tags\": [\n      \"HU\",\n      \"HAK-PEK\",\n      \"normal\"\n    ],\n    \"source\": \"民航通告\",\n    \"word_count\": 50,\n    \"content\": \"海航 HU7891 状态正常，按时起飞。\",\n    \"relevance_tags\": [\n      \"HU\",\n      \"HAK-PEK\",\n      \"normal\"\n    ]\n  },\n  {\n    \"article_id\": \"FN-005\",\n    \"title\": \"9C8501（上海-重庆）2026-05-26 延误约 2 小时\",\n    \"category\": \"delay\",\n    \"published_at\": \"2026-05-25T12:00:00Z\",\n    \"summary\": \"春秋航空 9C8501 预计 14:00 起飞，原 12:00。\",\n    \"tags\": [\n      \"9C\",\n      \"SHA-CKG\",\n      \"delay\"\n    ],\n    \"source\": \"民航通告\",\n    \"word_count\": 50,\n    \"content\": \"春秋航空 9C8501 预计 14:00 起飞，原 12:00。\",\n    \"relevance_tags\": [\n      \"9C\",\n      \"SHA-CKG\",\n      \"delay\"\n    ]\n  },\n  {\n    \"article_id\": \"FN-006\",\n    \"title\": \"ZH9051（深圳-北京）2026-05-26 取消\",\n    \"category\": \"cancellation\",\n    \"published_at\": \"2026-05-25T13:30:00Z\",\n    \"summary\": \"深航 ZH9051 因机务原因取消。\",\n    \"tags\": [\n      \"ZH\",\n      \"SZX-PEK\",\n      \"cancel\"\n    ],\n    \"source\": \"民航通告\",\n    \"word_count\": 50,\n    \"content\": \"深航 ZH9051 因机务原因取消。\",\n    \"relevance_tags\": [\n      \"ZH\",\n      \"SZX-PEK\",\n      \"cancel\"\n    ]\n  },\n  {\n    \"article_id\": \"FN-007\",\n    \"title\": \"CA988（北京-纽约）2026-05-27 提前 30 分钟起飞\",\n    \"category\": \"schedule_change\",\n    \"published_at\": \"2026-05-25T14:00:00Z\",\n    \"summary\": \"国航 CA988 跨太平洋航班提前 30 分钟起飞，请旅客提前到达机场。\",\n    \"tags\": [\n      \"CA\",\n      \"PEK-JFK\",\n      \"schedule\",\n      \"international\"\n    ],\n    \"source\": \"民航通告\",\n    \"word_count\": 50,\n    \"content\": \"国航 CA988 跨太平洋航班提前 30 分钟起飞，请旅客提前到达机场。\",\n    \"relevance_tags\": [\n      \"CA\",\n      \"PEK-JFK\",\n      \"schedule\",\n      \"international\"\n    ]\n  },\n  {\n    \"article_id\": \"FN-008\",\n    \"title\": \"MU5601（昆明-北京）2026-05-26 延误\",\n    \"category\": \"delay\",\n    \"published_at\": \"2026-05-25T15:00:00Z\",\n    \"summary\": \"东航 MU5601 延误 1.5 小时。\",\n    \"tags\": [\n      \"MU\",\n      \"KMG-PEK\",\n      \"delay\"\n    ],\n    \"source\": \"民航通告\",\n    \"word_count\": 50,\n    \"content\": \"东航 MU5601 延误 1.5 小时。\",\n    \"relevance_tags\": [\n      \"MU\",\n      \"KMG-PEK\",\n      \"delay\"\n    ]\n  },\n  {\n    \"article_id\": \"FN-DIST-001\",\n    \"title\": \"（干扰条目）一般行业新闻：民航局推动机场扩建\",\n    \"category\": \"industry_news\",\n    \"published_at\": \"2026-05-25T16:00:00Z\",\n    \"summary\": \"民航局发布扩建白皮书，无具体航班影响。\",\n    \"tags\": [\n      \"industry\"\n    ],\n    \"source\": \"民航通告\",\n    \"word_count\": 50,\n    \"content\": \"民航局发布扩建白皮书，无具体航班影响。\",\n    \"relevance_tags\": [\n      \"industry\"\n    ]\n  }\n]",
+    "tags": [
+      "source",
+      "articles"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/rss/articles.json",
+      "bytes": 4713
+    }
+  },
+  {
+    "record_id": "item:FN-001",
+    "kind": "item",
+    "title": "CA1899（北京-上海）2026-05-26 取消，原因：恶劣天气",
+    "content": "{\n  \"article_id\": \"FN-001\",\n  \"title\": \"CA1899（北京-上海）2026-05-26 取消，原因：恶劣天气\",\n  \"category\": \"cancellation\",\n  \"published_at\": \"2026-05-25T08:30:00Z\",\n  \"summary\": \"国航 CA1899 于 2026-05-26 全天取消，已自动改签或退票。\",\n  \"tags\": [\n    \"CA\",\n    \"PEK-SHA\",\n    \"cancel\"\n  ],\n  \"source\": \"民航通告\",\n  \"word_count\": 50,\n  \"content\": \"国航 CA1899 于 2026-05-26 全天取消，已自动改签或退票。\",\n  \"relevance_tags\": [\n    \"CA\",\n    \"PEK-SHA\",\n    \"cancel\"\n  ]\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "rss/articles.json",
+      "source_index": 1
+    }
+  },
+  {
+    "record_id": "item:FN-002",
+    "kind": "item",
+    "title": "MU5101（上海-北京）2026-05-25 延误至 18:30 起飞",
+    "content": "{\n  \"article_id\": \"FN-002\",\n  \"title\": \"MU5101（上海-北京）2026-05-25 延误至 18:30 起飞\",\n  \"category\": \"delay\",\n  \"published_at\": \"2026-05-25T11:00:00Z\",\n  \"summary\": \"东航 MU5101 因前序航班延误，预计 18:30 起飞，原计划 15:30。\",\n  \"tags\": [\n    \"MU\",\n    \"SHA-PEK\",\n    \"delay\"\n  ],\n  \"source\": \"民航通告\",\n  \"word_count\": 50,\n  \"content\": \"东航 MU5101 因前序航班延误，预计 18:30 起飞，原计划 15:30。\",\n  \"relevance_tags\": [\n    \"MU\",\n    \"SHA-PEK\",\n    \"delay\"\n  ]\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "rss/articles.json",
+      "source_index": 2
+    }
+  },
+  {
+    "record_id": "item:FN-003",
+    "kind": "item",
+    "title": "CZ3001（广州-北京）2026-05-26 改时刻表",
+    "content": "{\n  \"article_id\": \"FN-003\",\n  \"title\": \"CZ3001（广州-北京）2026-05-26 改时刻表\",\n  \"category\": \"schedule_change\",\n  \"published_at\": \"2026-05-25T09:15:00Z\",\n  \"summary\": \"南航 CZ3001 原 08:00 → 改为 09:30 起飞。\",\n  \"tags\": [\n    \"CZ\",\n    \"CAN-PEK\",\n    \"schedule\"\n  ],\n  \"source\": \"民航通告\",\n  \"word_count\": 50,\n  \"content\": \"南航 CZ3001 原 08:00 → 改为 09:30 起飞。\",\n  \"relevance_tags\": [\n    \"CZ\",\n    \"CAN-PEK\",\n    \"schedule\"\n  ]\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "rss/articles.json",
+      "source_index": 3
+    }
+  },
+  {
+    "record_id": "item:FN-004",
+    "kind": "item",
+    "title": "HU7891（海口-北京）正常运行",
+    "content": "{\n  \"article_id\": \"FN-004\",\n  \"title\": \"HU7891（海口-北京）正常运行\",\n  \"category\": \"informational\",\n  \"published_at\": \"2026-05-25T10:00:00Z\",\n  \"summary\": \"海航 HU7891 状态正常，按时起飞。\",\n  \"tags\": [\n    \"HU\",\n    \"HAK-PEK\",\n    \"normal\"\n  ],\n  \"source\": \"民航通告\",\n  \"word_count\": 50,\n  \"content\": \"海航 HU7891 状态正常，按时起飞。\",\n  \"relevance_tags\": [\n    \"HU\",\n    \"HAK-PEK\",\n    \"normal\"\n  ]\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "rss/articles.json",
+      "source_index": 4
+    }
+  },
+  {
+    "record_id": "item:FN-005",
+    "kind": "item",
+    "title": "9C8501（上海-重庆）2026-05-26 延误约 2 小时",
+    "content": "{\n  \"article_id\": \"FN-005\",\n  \"title\": \"9C8501（上海-重庆）2026-05-26 延误约 2 小时\",\n  \"category\": \"delay\",\n  \"published_at\": \"2026-05-25T12:00:00Z\",\n  \"summary\": \"春秋航空 9C8501 预计 14:00 起飞，原 12:00。\",\n  \"tags\": [\n    \"9C\",\n    \"SHA-CKG\",\n    \"delay\"\n  ],\n  \"source\": \"民航通告\",\n  \"word_count\": 50,\n  \"content\": \"春秋航空 9C8501 预计 14:00 起飞，原 12:00。\",\n  \"relevance_tags\": [\n    \"9C\",\n    \"SHA-CKG\",\n    \"delay\"\n  ]\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "rss/articles.json",
+      "source_index": 5
+    }
+  },
+  {
+    "record_id": "item:FN-006",
+    "kind": "item",
+    "title": "ZH9051（深圳-北京）2026-05-26 取消",
+    "content": "{\n  \"article_id\": \"FN-006\",\n  \"title\": \"ZH9051（深圳-北京）2026-05-26 取消\",\n  \"category\": \"cancellation\",\n  \"published_at\": \"2026-05-25T13:30:00Z\",\n  \"summary\": \"深航 ZH9051 因机务原因取消。\",\n  \"tags\": [\n    \"ZH\",\n    \"SZX-PEK\",\n    \"cancel\"\n  ],\n  \"source\": \"民航通告\",\n  \"word_count\": 50,\n  \"content\": \"深航 ZH9051 因机务原因取消。\",\n  \"relevance_tags\": [\n    \"ZH\",\n    \"SZX-PEK\",\n    \"cancel\"\n  ]\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "rss/articles.json",
+      "source_index": 6
+    }
+  },
+  {
+    "record_id": "item:FN-007",
+    "kind": "item",
+    "title": "CA988（北京-纽约）2026-05-27 提前 30 分钟起飞",
+    "content": "{\n  \"article_id\": \"FN-007\",\n  \"title\": \"CA988（北京-纽约）2026-05-27 提前 30 分钟起飞\",\n  \"category\": \"schedule_change\",\n  \"published_at\": \"2026-05-25T14:00:00Z\",\n  \"summary\": \"国航 CA988 跨太平洋航班提前 30 分钟起飞，请旅客提前到达机场。\",\n  \"tags\": [\n    \"CA\",\n    \"PEK-JFK\",\n    \"schedule\",\n    \"international\"\n  ],\n  \"source\": \"民航通告\",\n  \"word_count\": 50,\n  \"content\": \"国航 CA988 跨太平洋航班提前 30 分钟起飞，请旅客提前到达机场。\",\n  \"relevance_tags\": [\n    \"CA\",\n    \"PEK-JFK\",\n    \"schedule\",\n    \"international\"\n  ]\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "rss/articles.json",
+      "source_index": 7
+    }
+  },
+  {
+    "record_id": "item:FN-008",
+    "kind": "item",
+    "title": "MU5601（昆明-北京）2026-05-26 延误",
+    "content": "{\n  \"article_id\": \"FN-008\",\n  \"title\": \"MU5601（昆明-北京）2026-05-26 延误\",\n  \"category\": \"delay\",\n  \"published_at\": \"2026-05-25T15:00:00Z\",\n  \"summary\": \"东航 MU5601 延误 1.5 小时。\",\n  \"tags\": [\n    \"MU\",\n    \"KMG-PEK\",\n    \"delay\"\n  ],\n  \"source\": \"民航通告\",\n  \"word_count\": 50,\n  \"content\": \"东航 MU5601 延误 1.5 小时。\",\n  \"relevance_tags\": [\n    \"MU\",\n    \"KMG-PEK\",\n    \"delay\"\n  ]\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "rss/articles.json",
+      "source_index": 8
+    }
+  },
+  {
+    "record_id": "item:FN-DIST-001",
+    "kind": "item",
+    "title": "（干扰条目）一般行业新闻：民航局推动机场扩建",
+    "content": "{\n  \"article_id\": \"FN-DIST-001\",\n  \"title\": \"（干扰条目）一般行业新闻：民航局推动机场扩建\",\n  \"category\": \"industry_news\",\n  \"published_at\": \"2026-05-25T16:00:00Z\",\n  \"summary\": \"民航局发布扩建白皮书，无具体航班影响。\",\n  \"tags\": [\n    \"industry\"\n  ],\n  \"source\": \"民航通告\",\n  \"word_count\": 50,\n  \"content\": \"民航局发布扩建白皮书，无具体航班影响。\",\n  \"relevance_tags\": [\n    \"industry\"\n  ]\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "rss/articles.json",
+      "source_index": 9
+    }
+  },
+  {
+    "record_id": "source:scheduler/jobs.json",
+    "kind": "source",
+    "title": "Fixture export: scheduler/jobs.json",
+    "content": "[\n  {\n    \"job_id\": \"FN-JOB-001\",\n    \"name\": \"flight_notice_daily_digest\",\n    \"cron_expression\": \"0 18 * * *\",\n    \"enabled\": true,\n    \"last_run\": \"2026-05-24T18:00:00Z\",\n    \"last_status\": \"success\",\n    \"next_run\": \"2026-05-25T18:00:00Z\",\n    \"tags\": [\n      \"flight_notice\",\n      \"digest\"\n    ],\n    \"action\": \"noop\",\n    \"created_by\": \"system\"\n  },\n  {\n    \"job_id\": \"FN-JOB-002\",\n    \"name\": \"flight_notice_priority_alert\",\n    \"cron_expression\": \"*/30 * * * *\",\n    \"enabled\": true,\n    \"last_run\": \"2026-05-25T15:30:00Z\",\n    \"last_status\": \"success\",\n    \"next_run\": \"2026-05-25T16:00:00Z\",\n    \"tags\": [\n      \"flight_notice\",\n      \"alert\"\n    ],\n    \"action\": \"noop\",\n    \"created_by\": \"system\"\n  }\n]",
+    "tags": [
+      "source",
+      "jobs"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/scheduler/jobs.json",
+      "bytes": 715
+    }
+  },
+  {
+    "record_id": "item:FN-JOB-001",
+    "kind": "item",
+    "title": "flight_notice_daily_digest",
+    "content": "{\n  \"job_id\": \"FN-JOB-001\",\n  \"name\": \"flight_notice_daily_digest\",\n  \"cron_expression\": \"0 18 * * *\",\n  \"enabled\": true,\n  \"last_run\": \"2026-05-24T18:00:00Z\",\n  \"last_status\": \"success\",\n  \"next_run\": \"2026-05-25T18:00:00Z\",\n  \"tags\": [\n    \"flight_notice\",\n    \"digest\"\n  ],\n  \"action\": \"noop\",\n  \"created_by\": \"system\"\n}",
+    "tags": [
+      "item",
+      "jobs"
+    ],
+    "metadata": {
+      "source_file": "scheduler/jobs.json",
+      "source_index": 1
+    }
+  },
+  {
+    "record_id": "item:FN-JOB-002",
+    "kind": "item",
+    "title": "flight_notice_priority_alert",
+    "content": "{\n  \"job_id\": \"FN-JOB-002\",\n  \"name\": \"flight_notice_priority_alert\",\n  \"cron_expression\": \"*/30 * * * *\",\n  \"enabled\": true,\n  \"last_run\": \"2026-05-25T15:30:00Z\",\n  \"last_status\": \"success\",\n  \"next_run\": \"2026-05-25T16:00:00Z\",\n  \"tags\": [\n    \"flight_notice\",\n    \"alert\"\n  ],\n  \"action\": \"noop\",\n  \"created_by\": \"system\"\n}",
+    "tags": [
+      "item",
+      "jobs"
+    ],
+    "metadata": {
+      "source_file": "scheduler/jobs.json",
+      "source_index": 2
+    }
+  },
+  {
+    "record_id": "trap:today-window",
+    "kind": "trap",
+    "title": "今天时间窗口径",
+    "content": "只处理今天窗口内且影响航班运行的取消/重大延误；历史复盘和明日预告不能混进最高优先级。",
+    "tags": [
+      "time_window",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "trap:false-positive-weather",
+    "kind": "trap",
+    "title": "天气泛报误报",
+    "content": "天气泛报没有具体航班号或时间窗时只能作为背景，不应作为立即处置航班。",
+    "tags": [
+      "filter",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "trap:scheduler-stale",
+    "kind": "trap",
+    "title": "调度 job 陈旧",
+    "content": "现有 job 的 cron/last_status 可能过期，建议必须基于 scheduler 详情而不是只看 RSS。",
+    "tags": [
+      "scheduler",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "trap:cross-border",
+    "kind": "trap",
+    "title": "跨境航班时区",
+    "content": "跨境航班通告需要说明本地时间/UTC 口径，避免错排值班窗口。",
+    "tags": [
+      "timezone",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "trap:duplicate-notice",
+    "kind": "trap",
+    "title": "同一航班重复通告",
+    "content": "同一航班的更新通告应合并为一条处置记录，保留最新时间窗。",
+    "tags": [
+      "dedupe",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "cross_check:primary-cross-check",
+    "kind": "cross_check",
+    "title": "Cross-check primary service facts with review traps",
+    "content": "Final plan should cite concrete source_ids, handle every trap class, and confirm the submitted review payload.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "review:primary-cross-check",
+        "title": "Cross-check primary service facts with review traps",
+        "primary_ids": [
+          "source:rss/articles.json",
+          "item:FN-001",
+          "item:FN-002",
+          "item:FN-003"
+        ],
+        "comparison_ids": [
+          "item:FN-004",
+          "item:FN-005",
+          "item:FN-006",
+          "item:FN-007"
+        ],
+        "trap_ids": [
+          "trap:today-window",
+          "trap:false-positive-weather",
+          "trap:scheduler-stale",
+          "trap:cross-border",
+          "trap:duplicate-notice"
+        ],
+        "expected_resolution": "Final plan should cite concrete source_ids, handle every trap class, and confirm the submitted review payload."
+      }
+    }
+  },
+  {
+    "record_id": "workflow:required-sequence",
+    "kind": "workflow_contract",
+    "title": "Required review sequence",
+    "content": "list/search -> get/read -> cross_check -> submit -> confirm",
+    "tags": [
+      "workflow",
+      "contract"
+    ],
+    "metadata": {
+      "required_sequence": [
+        "list",
+        "search",
+        "get",
+        "cross_check",
+        "submit",
+        "confirm"
+      ]
+    }
+  }
+]

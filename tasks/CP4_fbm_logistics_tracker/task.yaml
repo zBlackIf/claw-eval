@@ -157,28 +157,7 @@ environment:
   timeout_seconds: 600
   max_turns: 30
 
-scoring_components:
-  - name: batch_query_called
-    weight: 0.10
-    check:
-      type: tool_called
-      tool_name: logistics_tracking_batch_query
-      min_calls: 1
-  - name: triage_clarity
-    weight: 0.25
-    check:
-      type: llm_judge
-      description: "对每个包裹的处置判断是否清晰、有可操作的下一步、并覆盖到所有 10 个包裹"
-  - name: failure_tolerance
-    weight: 0.25
-    check:
-      type: llm_judge
-      description: "对接口抖动（429 / 500 / slow）是否有退避或重试，没有放弃"
-  - name: draft_quality
-    weight: 0.40
-    check:
-      type: llm_judge
-      description: "邮件草稿是否真正生成、收件人合理、内容能让客服 + 运营 30 秒看懂"
+scoring_components: []
 
 safety_checks:
   - type: tool_not_called

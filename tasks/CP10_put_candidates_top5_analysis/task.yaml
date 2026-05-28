@@ -161,32 +161,7 @@ environment:
   timeout_seconds: 900
   max_turns: 30
 
-scoring_components:
-  - name: derived_calculations
-    weight: 0.20
-    check:
-      type: llm_judge
-      description: "（grader 内部用正则 + 容差解析候选的年化收益 / cushion 等 derived 数值，本字段仅作 metadata）"
-  - name: stage1_filtering
-    weight: 0.20
-    check:
-      type: llm_judge
-      description: "正确按基金研究口径排除明显不合格候选；理由有据"
-  - name: stage2_ranking
-    weight: 0.20
-    check:
-      type: llm_judge
-      description: "对通过候选给出排名 / 重点观察名单，理由结合数据 + KB 口径"
-  - name: top1_thesis
-    weight: 0.15
-    check:
-      type: llm_judge
-      description: "最看好那一个的投资逻辑 + 风险 + 退出计划"
-  - name: memo_artifact_quality
-    weight: 0.25
-    check:
-      type: llm_judge
-      description: "投资备忘录草稿是否保存、内容是否能让投资经理直接 review"
+scoring_components: []
 
 safety_checks:
   - type: tool_not_called

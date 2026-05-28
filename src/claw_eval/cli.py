@@ -1582,6 +1582,8 @@ def cmd_harness(args: argparse.Namespace) -> None:
         sandbox=getattr(args, "sandbox", False) or cfg.sandbox.enabled,
         sandbox_image=getattr(args, "sandbox_image", None),
         no_judge=getattr(args, "no_judge", False),
+        claude_code_runtime_config=Path(args.claude_code_runtime_config) if args.claude_code_runtime_config else None,
+        codex_runtime_config=Path(args.codex_runtime_config) if args.codex_runtime_config else None,
     )
 
     print(f"Trace:          {result['trace']}")
@@ -1642,6 +1644,8 @@ def cmd_harness_batch(args: argparse.Namespace) -> None:
                     sandbox=getattr(args, "sandbox", False) or cfg.sandbox.enabled,
                     sandbox_image=getattr(args, "sandbox_image", None),
                     no_judge=getattr(args, "no_judge", False),
+                    claude_code_runtime_config=Path(args.claude_code_runtime_config) if args.claude_code_runtime_config else None,
+                    codex_runtime_config=Path(args.codex_runtime_config) if args.codex_runtime_config else None,
                 )
             except Exception as exc:
                 result = {
@@ -1783,6 +1787,8 @@ def main(argv: list[str] | None = None) -> None:
     p_harness.add_argument("--agent", required=True, choices=["claude-code", "codex"])
     p_harness.add_argument("--model", default=None, help="Model ID passed to the external harness")
     p_harness.add_argument("--config", default=None, help="Path to config.yaml")
+    p_harness.add_argument("--claude-code-runtime-config", default=None, help="Path to Claude Code runtime sidecar JSON")
+    p_harness.add_argument("--codex-runtime-config", default=None, help="Path to Codex runtime sidecar JSON")
     p_harness.add_argument("--trace-dir", default=None, help="Output directory for traces")
     p_harness.add_argument("--port-offset", type=int, default=0, help="Offset for all service ports")
     p_harness.add_argument("--sandbox", action="store_true", help="Run sandbox tools inside Docker containers")
@@ -1796,6 +1802,8 @@ def main(argv: list[str] | None = None) -> None:
     p_harness_batch.add_argument("--agent", required=True, help="Comma-separated agents: claude-code,codex")
     p_harness_batch.add_argument("--model", default=None, help="Model ID passed to the external harness")
     p_harness_batch.add_argument("--config", default=None, help="Path to config.yaml")
+    p_harness_batch.add_argument("--claude-code-runtime-config", default=None, help="Path to Claude Code runtime sidecar JSON")
+    p_harness_batch.add_argument("--codex-runtime-config", default=None, help="Path to Codex runtime sidecar JSON")
     p_harness_batch.add_argument("--trace-dir", default=None, help="Output directory for traces")
     p_harness_batch.add_argument("--filter", default=None, help="Only run tasks matching this substring")
     p_harness_batch.add_argument("--limit", type=int, default=None, help="Limit number of matched tasks")

@@ -23,6 +23,62 @@ class HarnessRunResult:
     output_tokens: int = 0
 
 
+@dataclass
+class ClaudeCodeRuntimeConfig:
+    auth_token: str
+    base_url: str
+    model_name: str
+    config_dir: Path
+
+
+_CLAUDE_RUNTIME_ENV_PREFIXES = (
+    "ANTHROPIC_",
+    "CLAUDE_CODE_",
+    "OPENAI_",
+    "CODEX_",
+    "AWS_",
+    "BEDROCK_",
+    "VERTEX_",
+    "GOOGLE_VERTEX_",
+    "FOUNDRY_",
+)
+
+
+def load_claude_code_runtime_config(path: Path, *, config_dir: Path) -> ClaudeCodeRuntimeConfig:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    return ClaudeCodeRuntimeConfig(
+        auth_token=str(payload["auth_token"]),
+        base_url=str(payload["base_url"]),
+        model_name=str(payload["model_name"]),
+        config_dir=config_dir,
+    )
+
+
+def _write_claude_code_settings(runtime: ClaudeCodeRuntimeConfig) -> None:
+    runtime.config_dir.mkdir(parents=True, exist_ok=True)
+    settings = {
+        "env": {
+            "ANTHROPIC_AUTH_TOKEN": runtime.auth_token,
+            "ANTHROPIC_BASE_URL": runtime.base_url,
+            "ANTHROPIC_MODEL": runtime.model_name,
+        }
+    }
+    (runtime.config_dir / "settings.json").write_text(
+        json.dumps(settings, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    (runtime.config_dir / ".claude.json").write_text(
+        json.dumps({"hasCompletedOnboarding": True}, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _scrub_runtime_env(env: dict[str, str], prefixes: tuple[str, ...]) -> None:
+    for key in list(env):
+        if key.startswith(prefixes):
+            env.pop(key, None)
+
+
 def _extract_text(value) -> str:
     if isinstance(value, str):
         return value
@@ -87,8 +143,10 @@ def run_claude_code(
     cwd: Path,
     timeout_seconds: int,
     raw_dir: Path,
+    claude_runtime_config: ClaudeCodeRuntimeConfig | None = None,
 ) -> HarnessRunResult:
     raw_dir.mkdir(parents=True, exist_ok=True)
+    effective_model = claude_runtime_config.model_name if claude_runtime_config else model
     command = [
         "claude",
         "-p",
@@ -104,11 +162,21 @@ def run_claude_code(
         "dontAsk",
         "--no-session-persistence",
     ]
-    if model:
-        command.extend(["--model", model])
+    if effective_model:
+        command.extend(["--model", effective_model])
     command.append(prompt)
 
     env = dict(os.environ)
+    if claude_runtime_config:
+        _write_claude_code_settings(claude_runtime_config)
+        _scrub_runtime_env(env, _CLAUDE_RUNTIME_ENV_PREFIXES)
+        env.update({
+            "ANTHROPIC_AUTH_TOKEN": claude_runtime_config.auth_token,
+            "ANTHROPIC_BASE_URL": claude_runtime_config.base_url,
+            "ANTHROPIC_MODEL": claude_runtime_config.model_name,
+            "CLAUDE_CONFIG_DIR": str(claude_runtime_config.config_dir),
+            "CI": "1",
+        })
     env.setdefault("NO_PROXY", "localhost,127.0.0.1")
     env.setdefault("no_proxy", "localhost,127.0.0.1")
 
@@ -130,6 +198,10 @@ def run_claude_code(
         stdout = _to_text(exc.stdout)
         stderr = _to_text(exc.stderr)
         stderr = (stderr + "\n" if stderr else "") + f"Timed out after {timeout_seconds} seconds"
+    except OSError as exc:
+        returncode = 127
+        stdout = ""
+        stderr = str(exc)
     wall_time_s = time.monotonic() - started
     (raw_dir / "claude-code.stdout.jsonl").write_text(stdout, encoding="utf-8")
     (raw_dir / "claude-code.stderr.log").write_text(stderr, encoding="utf-8")

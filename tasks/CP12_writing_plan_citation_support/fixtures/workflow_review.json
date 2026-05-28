@@ -1,0 +1,204 @@
+[
+  {
+    "record_id": "brief:review-contract",
+    "kind": "brief",
+    "title": "citation_review review workflow contract",
+    "content": "Use service list/search/get/cross_check, submit a sourced report, then confirm the same report_id. The review service contains traps and conflict records that are not all visible in the primary service summaries.",
+    "tags": [
+      "brief",
+      "workflow"
+    ],
+    "metadata": {
+      "service": "citation_review",
+      "task_id": "CP12_writing_plan_citation_support"
+    }
+  },
+  {
+    "record_id": "source:kb/articles.json",
+    "kind": "source",
+    "title": "Fixture export: kb/articles.json",
+    "content": "[\n  {\n    \"article_id\": \"KB-CITE-001\",\n    \"title\": \"AI 写作工具引用规范（v1 内部标准）\",\n    \"category\": \"engineering\",\n    \"summary\": \"写作时每个事实性陈述必须带引用；引用形式：[1] 或 [来源]；文末统一 References 列表，列出每条引用的标题 + 链接 + 访问日期。模型可见引用但不要瞎编。\",\n    \"tags\": [\n      \"citation\",\n      \"standard\",\n      \"writing\"\n    ],\n    \"updated_at\": \"2025-12-01\",\n    \"content\": \"写作时每个事实性陈述必须带引用；引用形式：[1] 或 [来源]；文末统一 References 列表，列出每条引用的标题 + 链接 + 访问日期。模型可见引用但不要瞎编。\",\n    \"last_updated\": \"2026-05-01\",\n    \"views\": 0\n  },\n  {\n    \"article_id\": \"KB-CITE-002\",\n    \"title\": \"学术写作 vs 科技博客的引用风格差异\",\n    \"category\": \"writing\",\n    \"summary\": \"学术：APA / IEEE 编号制，作者姓 + 年份；科技博客：超链接内联 + 文末 References；新闻稿：括号注 + 文末 sources。本模块默认采用「内联超链接 + 文末 References」科技博客风格。\",\n    \"tags\": [\n      \"citation\",\n      \"style\"\n    ],\n    \"updated_at\": \"2025-10-12\",\n    \"content\": \"学术：APA / IEEE 编号制，作者姓 + 年份；科技博客：超链接内联 + 文末 References；新闻稿：括号注 + 文末 sources。本模块默认采用「内联超链接 + 文末 References」科技博客风格。\",\n    \"last_updated\": \"2026-05-01\",\n    \"views\": 0\n  },\n  {\n    \"article_id\": \"KB-CITE-003\",\n    \"title\": \"Provenance Tracking 设计：写作模块的引用追踪机制\",\n    \"category\": \"engineering\",\n    \"summary\": \"每个 paragraph 在内部保存 source_chunks: [{url, fetched_at, snippet_hash}]；输出时渲染为内联引用；avoid hallucination 的关键是把 retrieval 结果 ID 串入 prompt。\",\n    \"tags\": [\n      \"provenance\",\n      \"rag\",\n      \"design\"\n    ],\n    \"updated_at\": \"2026-01-18\",\n    \"content\": \"每个 paragraph 在内部保存 source_chunks: [{url, fetched_at, snippet_hash}]；输出时渲染为内联引用；avoid hallucination 的关键是把 retrieval 结果 ID 串入 prompt。\",\n    \"last_updated\": \"2026-05-01\",\n    \"views\": 0\n  },\n  {\n    \"article_id\": \"KB-CITE-004\",\n    \"title\": \"用户反馈 2025 Q4：引用缺失 / 错误的 top 3 抱怨\",\n    \"category\": \"ux\",\n    \"summary\": \"(1) 模型说\\\"研究显示...\\\"但没有具体引用；(2) 引用链接 404 或指向无关页面；(3) References 列表里有空条目或重复。本次升级要解决全部 3 个。\",\n    \"tags\": [\n      \"feedback\",\n      \"pain_point\"\n    ],\n    \"updated_at\": \"2026-02-08\",\n    \"content\": \"(1) 模型说\\\"研究显示...\\\"但没有具体引用；(2) 引用链接 404 或指向无关页面；(3) References 列表里有空条目或重复。本次升级要解决全部 3 个。\",\n    \"last_updated\": \"2026-05-01\",\n    \"views\": 0\n  }\n]",
+    "tags": [
+      "source",
+      "articles"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/kb/articles.json",
+      "bytes": 2915
+    }
+  },
+  {
+    "record_id": "item:KB-CITE-001",
+    "kind": "item",
+    "title": "AI 写作工具引用规范（v1 内部标准）",
+    "content": "{\n  \"article_id\": \"KB-CITE-001\",\n  \"title\": \"AI 写作工具引用规范（v1 内部标准）\",\n  \"category\": \"engineering\",\n  \"summary\": \"写作时每个事实性陈述必须带引用；引用形式：[1] 或 [来源]；文末统一 References 列表，列出每条引用的标题 + 链接 + 访问日期。模型可见引用但不要瞎编。\",\n  \"tags\": [\n    \"citation\",\n    \"standard\",\n    \"writing\"\n  ],\n  \"updated_at\": \"2025-12-01\",\n  \"content\": \"写作时每个事实性陈述必须带引用；引用形式：[1] 或 [来源]；文末统一 References 列表，列出每条引用的标题 + 链接 + 访问日期。模型可见引用但不要瞎编。\",\n  \"last_updated\": \"2026-05-01\",\n  \"views\": 0\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "kb/articles.json",
+      "source_index": 1
+    }
+  },
+  {
+    "record_id": "item:KB-CITE-002",
+    "kind": "item",
+    "title": "学术写作 vs 科技博客的引用风格差异",
+    "content": "{\n  \"article_id\": \"KB-CITE-002\",\n  \"title\": \"学术写作 vs 科技博客的引用风格差异\",\n  \"category\": \"writing\",\n  \"summary\": \"学术：APA / IEEE 编号制，作者姓 + 年份；科技博客：超链接内联 + 文末 References；新闻稿：括号注 + 文末 sources。本模块默认采用「内联超链接 + 文末 References」科技博客风格。\",\n  \"tags\": [\n    \"citation\",\n    \"style\"\n  ],\n  \"updated_at\": \"2025-10-12\",\n  \"content\": \"学术：APA / IEEE 编号制，作者姓 + 年份；科技博客：超链接内联 + 文末 References；新闻稿：括号注 + 文末 sources。本模块默认采用「内联超链接 + 文末 References」科技博客风格。\",\n  \"last_updated\": \"2026-05-01\",\n  \"views\": 0\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "kb/articles.json",
+      "source_index": 2
+    }
+  },
+  {
+    "record_id": "item:KB-CITE-003",
+    "kind": "item",
+    "title": "Provenance Tracking 设计：写作模块的引用追踪机制",
+    "content": "{\n  \"article_id\": \"KB-CITE-003\",\n  \"title\": \"Provenance Tracking 设计：写作模块的引用追踪机制\",\n  \"category\": \"engineering\",\n  \"summary\": \"每个 paragraph 在内部保存 source_chunks: [{url, fetched_at, snippet_hash}]；输出时渲染为内联引用；avoid hallucination 的关键是把 retrieval 结果 ID 串入 prompt。\",\n  \"tags\": [\n    \"provenance\",\n    \"rag\",\n    \"design\"\n  ],\n  \"updated_at\": \"2026-01-18\",\n  \"content\": \"每个 paragraph 在内部保存 source_chunks: [{url, fetched_at, snippet_hash}]；输出时渲染为内联引用；avoid hallucination 的关键是把 retrieval 结果 ID 串入 prompt。\",\n  \"last_updated\": \"2026-05-01\",\n  \"views\": 0\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "kb/articles.json",
+      "source_index": 3
+    }
+  },
+  {
+    "record_id": "item:KB-CITE-004",
+    "kind": "item",
+    "title": "用户反馈 2025 Q4：引用缺失 / 错误的 top 3 抱怨",
+    "content": "{\n  \"article_id\": \"KB-CITE-004\",\n  \"title\": \"用户反馈 2025 Q4：引用缺失 / 错误的 top 3 抱怨\",\n  \"category\": \"ux\",\n  \"summary\": \"(1) 模型说\\\"研究显示...\\\"但没有具体引用；(2) 引用链接 404 或指向无关页面；(3) References 列表里有空条目或重复。本次升级要解决全部 3 个。\",\n  \"tags\": [\n    \"feedback\",\n    \"pain_point\"\n  ],\n  \"updated_at\": \"2026-02-08\",\n  \"content\": \"(1) 模型说\\\"研究显示...\\\"但没有具体引用；(2) 引用链接 404 或指向无关页面；(3) References 列表里有空条目或重复。本次升级要解决全部 3 个。\",\n  \"last_updated\": \"2026-05-01\",\n  \"views\": 0\n}",
+    "tags": [
+      "item",
+      "articles"
+    ],
+    "metadata": {
+      "source_file": "kb/articles.json",
+      "source_index": 4
+    }
+  },
+  {
+    "record_id": "trap:empty-references",
+    "kind": "trap",
+    "title": "空 References 陷阱",
+    "content": "正文有 [1] 但 References 为空是用户高频投诉，设计必须有生成后校验。",
+    "tags": [
+      "citation",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "trap:source-chunks",
+    "kind": "trap",
+    "title": "source_chunks 是核心数据模型",
+    "content": "引用不能只存 URL；需要 source_chunks/page/span/hash 等 provenance 字段支撑回放。",
+    "tags": [
+      "data_model",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "trap:style-conflict",
+    "kind": "trap",
+    "title": "Inline vs blog style",
+    "content": "内部写作同时支持内联引用和文末 References；需定义风格选择规则，不要混乱输出。",
+    "tags": [
+      "style",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "trap:404-stale-source",
+    "kind": "trap",
+    "title": "过期链接处理",
+    "content": "被引用链接 404 或内容变化时应降级、重检索或标记 stale，而不是保留假引用。",
+    "tags": [
+      "quality",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "trap:regression-cases",
+    "kind": "trap",
+    "title": "回归测试至少覆盖三类",
+    "content": "需要覆盖 hallucinated citation、empty references、source_chunks mismatch 等测试。",
+    "tags": [
+      "testing",
+      "trap"
+    ],
+    "metadata": {
+      "risk": "requires_cross_check"
+    }
+  },
+  {
+    "record_id": "cross_check:primary-cross-check",
+    "kind": "cross_check",
+    "title": "Cross-check primary service facts with review traps",
+    "content": "Final plan should cite concrete source_ids, handle every trap class, and confirm the submitted review payload.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "review:primary-cross-check",
+        "title": "Cross-check primary service facts with review traps",
+        "primary_ids": [
+          "source:kb/articles.json",
+          "item:KB-CITE-001",
+          "item:KB-CITE-002",
+          "item:KB-CITE-003"
+        ],
+        "comparison_ids": [
+          "item:KB-CITE-004"
+        ],
+        "trap_ids": [
+          "trap:empty-references",
+          "trap:source-chunks",
+          "trap:style-conflict",
+          "trap:404-stale-source",
+          "trap:regression-cases"
+        ],
+        "expected_resolution": "Final plan should cite concrete source_ids, handle every trap class, and confirm the submitted review payload."
+      }
+    }
+  },
+  {
+    "record_id": "workflow:required-sequence",
+    "kind": "workflow_contract",
+    "title": "Required review sequence",
+    "content": "list/search -> get/read -> cross_check -> submit -> confirm",
+    "tags": [
+      "workflow",
+      "contract"
+    ],
+    "metadata": {
+      "required_sequence": [
+        "list",
+        "search",
+        "get",
+        "cross_check",
+        "submit",
+        "confirm"
+      ]
+    }
+  }
+]

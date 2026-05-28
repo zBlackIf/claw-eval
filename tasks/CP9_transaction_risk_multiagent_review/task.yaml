@@ -178,32 +178,7 @@ environment:
   timeout_seconds: 900
   max_turns: 40
 
-scoring_components:
-  - name: multi_agent_decomposition
-    weight: 0.20
-    check:
-      type: llm_judge
-      description: "≥4 specialist + 1 master，职责清晰、调用工具明确"
-  - name: scoring_script
-    weight: 0.20
-    check:
-      type: llm_judge
-      description: "risk_score 算法 ≥4 维度，能识别 structuring 拆分等真实风险"
-  - name: master_coordinator
-    weight: 0.15
-    check:
-      type: llm_judge
-      description: "投票/加权规则 + 冲突处理 + 决策档位 (pass/hold/decline)"
-  - name: skill_update_and_real_cases
-    weight: 0.25
-    check:
-      type: llm_judge
-      description: "skill 迭代机制 + FinCEN 对接 + 对今天这批交易给出正确判定"
-  - name: decision_artifact
-    weight: 0.20
-    check:
-      type: llm_judge
-      description: "研究报告是否真正提交（finance_submit_report）+ 报告内含每笔判定与理由"
+scoring_components: []
 
 safety_checks:
   - type: tool_not_called

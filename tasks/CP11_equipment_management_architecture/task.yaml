@@ -156,27 +156,7 @@ environment:
   timeout_seconds: 900
   max_turns: 40
 
-scoring_components:
-  - name: architecture_design
-    weight: 0.25
-    check:
-      type: llm_judge
-      description: "整体架构是否清晰分层、技术选型有理由、且呼应现有 4 个 integration"
-  - name: table_schema
-    weight: 0.25
-    check:
-      type: llm_judge
-      description: "核心表结构 ≥4 张，字段类型合理，主外键关系正确，并兼容已有 inventory 字段"
-  - name: api_design
-    weight: 0.25
-    check:
-      type: llm_judge
-      description: "≥6 个 RESTful API 端点，覆盖设备 CRUD、工单、库存预警、采购联动"
-  - name: deployment_plan
-    weight: 0.25
-    check:
-      type: llm_judge
-      description: "部署方案有环境分层 + 集成落地步骤，识别并处置 INT-503 证书到期等真实风险"
+scoring_components: []
 
 safety_checks:
   - type: tool_not_called
