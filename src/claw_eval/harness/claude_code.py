@@ -6,7 +6,7 @@ import json
 import os
 import subprocess
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
@@ -21,6 +21,8 @@ class HarnessRunResult:
     wall_time_s: float
     input_tokens: int = 0
     output_tokens: int = 0
+    turns: int = 1
+    failure_modes: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -99,10 +101,12 @@ def _extract_text(value) -> str:
     return ""
 
 
-def _extract_final_text(stdout: str) -> tuple[str, int, int]:
+def _extract_final_text(stdout: str) -> tuple[str, int, int, int, list[str]]:
     final_text = ""
     input_tokens = 0
     output_tokens = 0
+    turns = 1
+    failure_modes: list[str] = []
     for line in stdout.splitlines():
         line = line.strip()
         if not line:
@@ -118,13 +122,31 @@ def _extract_final_text(stdout: str) -> tuple[str, int, int]:
         if isinstance(usage, dict):
             input_tokens += int(usage.get("input_tokens") or usage.get("input") or 0)
             output_tokens += int(usage.get("output_tokens") or usage.get("output") or 0)
+        if isinstance(event, dict):
+            raw_turns = event.get("num_turns") or event.get("turns")
+            if raw_turns:
+                try:
+                    turns = max(1, int(raw_turns))
+                except (TypeError, ValueError):
+                    pass
+            for server in event.get("mcp_servers") or []:
+                if not isinstance(server, dict):
+                    continue
+                if str(server.get("name") or "") != "claw-eval":
+                    continue
+                status = str(server.get("status") or "").lower()
+                if status in {"failed", "error", "errored", "unavailable"}:
+                    detail = server.get("error") or server.get("detail") or server.get("message") or status
+                    failure = f"claw-eval MCP server failed to initialize: {detail}"
+                    if failure not in failure_modes:
+                        failure_modes.append(failure)
     if not final_text:
         try:
             payload = json.loads(stdout)
             final_text = _extract_text(payload)
         except json.JSONDecodeError:
             final_text = stdout.strip()
-    return final_text, input_tokens, output_tokens
+    return final_text, input_tokens, output_tokens, turns, failure_modes
 
 
 def _to_text(value) -> str:
@@ -156,6 +178,8 @@ def run_claude_code(
         "--mcp-config",
         str(mcp_config),
         "--strict-mcp-config",
+        "--tools",
+        "",
         "--allowedTools",
         "mcp__claw-eval__*",
         "--permission-mode",
@@ -205,7 +229,7 @@ def run_claude_code(
     wall_time_s = time.monotonic() - started
     (raw_dir / "claude-code.stdout.jsonl").write_text(stdout, encoding="utf-8")
     (raw_dir / "claude-code.stderr.log").write_text(stderr, encoding="utf-8")
-    final_text, input_tokens, output_tokens = _extract_final_text(stdout)
+    final_text, input_tokens, output_tokens, turns, failure_modes = _extract_final_text(stdout)
     return HarnessRunResult(
         harness="claude-code",
         command=command,
@@ -216,4 +240,6 @@ def run_claude_code(
         wall_time_s=wall_time_s,
         input_tokens=input_tokens,
         output_tokens=output_tokens,
+        turns=turns,
+        failure_modes=failure_modes,
     )

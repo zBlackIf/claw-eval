@@ -20,11 +20,11 @@ def mcp_server_args(
         "-m",
         "claw_eval.harness.mcp_server",
         "--task",
-        str(task_yaml),
+        str(task_yaml.resolve()),
         "--trace-id",
         trace_id,
         "--dispatch-log",
-        str(dispatch_log),
+        str(dispatch_log.resolve()),
     ]
     if sandbox_url:
         args.extend(["--sandbox-url", sandbox_url])

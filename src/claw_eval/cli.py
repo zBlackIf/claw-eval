@@ -1571,32 +1571,50 @@ def cmd_harness(args: argparse.Namespace) -> None:
         args.trace_dir or cfg.defaults.trace_dir,
         f"{args.agent}_{model_id}",
     )
+    trials = max(1, int(getattr(args, "trials", 1) or 1))
+    results = []
 
-    result = run_harness_task(
-        task_yaml=task_yaml,
-        harness=args.agent,
-        model_id=model_id,
-        cfg=cfg,
-        trace_dir=trace_dir,
-        port_offset=getattr(args, "port_offset", 0) or 0,
-        sandbox=getattr(args, "sandbox", False) or cfg.sandbox.enabled,
-        sandbox_image=getattr(args, "sandbox_image", None),
-        no_judge=getattr(args, "no_judge", False),
-        claude_code_runtime_config=Path(args.claude_code_runtime_config) if args.claude_code_runtime_config else None,
-        codex_runtime_config=Path(args.codex_runtime_config) if args.codex_runtime_config else None,
-    )
+    for trial_index in range(trials):
+        result = run_harness_task(
+            task_yaml=task_yaml,
+            harness=args.agent,
+            model_id=model_id,
+            cfg=cfg,
+            trace_dir=trace_dir,
+            port_offset=(getattr(args, "port_offset", 0) or 0) + trial_index * 50,
+            sandbox=getattr(args, "sandbox", False) or cfg.sandbox.enabled,
+            sandbox_image=getattr(args, "sandbox_image", None),
+            no_judge=getattr(args, "no_judge", False),
+            claude_code_runtime_config=Path(args.claude_code_runtime_config) if args.claude_code_runtime_config else None,
+            codex_runtime_config=Path(args.codex_runtime_config) if args.codex_runtime_config else None,
+        )
+        result["trial"] = trial_index + 1
+        results.append(result)
 
-    print(f"Trace:          {result['trace']}")
-    print(f"Raw transcript: {result['raw_dir']}")
-    print(f"Harness:        {result['harness']}")
-    print(f"Model:          {result['model']}")
-    print(f"Exit code:      {result['returncode']}")
-    print(f"completion:     {result['completion']:.2f}")
-    print(f"robustness:     {result['robustness']:.2f}")
-    print(f"communication:  {result['communication']:.2f}")
-    print(f"safety:         {result['safety']:.1f}")
-    print(f"task_score:     {result['task_score']:.2f}")
-    print(f"passed:         {result['passed']}")
+        print(f"Trace:          {result['trace']}")
+        print(f"Raw transcript: {result['raw_dir']}")
+        print(f"Harness:        {result['harness']}")
+        print(f"Model:          {result['model']}")
+        print(f"Trial:          {result['trial']}/{trials}")
+        print(f"Exit code:      {result['returncode']}")
+        if result.get("error"):
+            print(f"error:          {result['error']}")
+        print(f"completion:     {result['completion']:.2f}")
+        print(f"robustness:     {result['robustness']:.2f}")
+        print(f"communication:  {result['communication']:.2f}")
+        print(f"safety:         {result['safety']:.1f}")
+        print(f"task_score:     {result['task_score']:.2f}")
+        print(f"passed:         {result['passed']}")
+        if trial_index + 1 < trials:
+            print()
+
+    if trials > 1:
+        from .models.scoring import compute_pass_at_k, compute_pass_hat_k
+
+        scores = [float(result.get("task_score") or 0.0) for result in results]
+        print(f"\n--- Harness multi-trial summary ({trials} trials) ---")
+        print(f"pass@{trials}:  {compute_pass_at_k(scores, k=trials):.3f}")
+        print(f"pass^{trials}:  {compute_pass_hat_k(scores, k=trials):.3f}")
 
 
 def cmd_harness_batch(args: argparse.Namespace) -> None:
@@ -1625,42 +1643,46 @@ def cmd_harness_batch(args: argparse.Namespace) -> None:
     model_id = args.model or cfg.model.model_id
     trace_dir = Path(args.trace_dir or cfg.defaults.trace_dir)
     results = []
-    total = len(task_dirs) * len(agents)
+    trials = max(1, int(getattr(args, "trials", 1) or 1))
+    total = len(task_dirs) * len(agents) * trials
     idx = 0
     for agent in agents:
         agent_trace_dir = _make_trace_dir(trace_dir, f"{agent}_{model_id}")
         for task_dir in task_dirs:
-            idx += 1
-            offset = (getattr(args, "port_base_offset", 0) or 0) + (idx - 1) * 50
-            print(f"[{idx}/{total}] {agent} {task_dir.name}")
-            try:
-                result = run_harness_task(
-                    task_yaml=task_dir / "task.yaml",
-                    harness=agent,
-                    model_id=model_id,
-                    cfg=cfg,
-                    trace_dir=agent_trace_dir,
-                    port_offset=offset,
-                    sandbox=getattr(args, "sandbox", False) or cfg.sandbox.enabled,
-                    sandbox_image=getattr(args, "sandbox_image", None),
-                    no_judge=getattr(args, "no_judge", False),
-                    claude_code_runtime_config=Path(args.claude_code_runtime_config) if args.claude_code_runtime_config else None,
-                    codex_runtime_config=Path(args.codex_runtime_config) if args.codex_runtime_config else None,
-                )
-            except Exception as exc:
-                result = {
-                    "task_id": task_dir.name,
-                    "harness": agent,
-                    "model": model_id,
-                    "error": str(exc),
-                    "task_score": 0.0,
-                    "passed": False,
-                }
-                print(f"  ERROR: {exc}")
-            else:
-                status = "PASS" if result["passed"] else "FAIL"
-                print(f"  {result['task_score']:.2f} {status} trace={result['trace']}")
-            results.append(result)
+            for trial_index in range(trials):
+                idx += 1
+                offset = (getattr(args, "port_base_offset", 0) or 0) + (idx - 1) * 50
+                print(f"[{idx}/{total}] {agent} {task_dir.name} trial={trial_index + 1}/{trials}")
+                try:
+                    result = run_harness_task(
+                        task_yaml=task_dir / "task.yaml",
+                        harness=agent,
+                        model_id=model_id,
+                        cfg=cfg,
+                        trace_dir=agent_trace_dir,
+                        port_offset=offset,
+                        sandbox=getattr(args, "sandbox", False) or cfg.sandbox.enabled,
+                        sandbox_image=getattr(args, "sandbox_image", None),
+                        no_judge=getattr(args, "no_judge", False),
+                        claude_code_runtime_config=Path(args.claude_code_runtime_config) if args.claude_code_runtime_config else None,
+                        codex_runtime_config=Path(args.codex_runtime_config) if args.codex_runtime_config else None,
+                    )
+                    result["trial"] = trial_index + 1
+                except Exception as exc:
+                    result = {
+                        "task_id": task_dir.name,
+                        "harness": agent,
+                        "model": model_id,
+                        "trial": trial_index + 1,
+                        "error": str(exc),
+                        "task_score": 0.0,
+                        "passed": False,
+                    }
+                    print(f"  ERROR: {exc}")
+                else:
+                    status = "PASS" if result["passed"] else "FAIL"
+                    print(f"  {result['task_score']:.2f} {status} trace={result['trace']}")
+                results.append(result)
 
     out = trace_dir / "harness_batch_results.json"
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -1790,6 +1812,7 @@ def main(argv: list[str] | None = None) -> None:
     p_harness.add_argument("--claude-code-runtime-config", default=None, help="Path to Claude Code runtime sidecar JSON")
     p_harness.add_argument("--codex-runtime-config", default=None, help="Path to Codex runtime sidecar JSON")
     p_harness.add_argument("--trace-dir", default=None, help="Output directory for traces")
+    p_harness.add_argument("--trials", type=int, default=1, help="Number of trials")
     p_harness.add_argument("--port-offset", type=int, default=0, help="Offset for all service ports")
     p_harness.add_argument("--sandbox", action="store_true", help="Run sandbox tools inside Docker containers")
     p_harness.add_argument("--sandbox-image", default=None, help="Override sandbox Docker image name")
@@ -1805,6 +1828,7 @@ def main(argv: list[str] | None = None) -> None:
     p_harness_batch.add_argument("--claude-code-runtime-config", default=None, help="Path to Claude Code runtime sidecar JSON")
     p_harness_batch.add_argument("--codex-runtime-config", default=None, help="Path to Codex runtime sidecar JSON")
     p_harness_batch.add_argument("--trace-dir", default=None, help="Output directory for traces")
+    p_harness_batch.add_argument("--trials", type=int, default=1, help="Number of trials per task")
     p_harness_batch.add_argument("--filter", default=None, help="Only run tasks matching this substring")
     p_harness_batch.add_argument("--limit", type=int, default=None, help="Limit number of matched tasks")
     p_harness_batch.add_argument("--port-base-offset", type=int, default=0, help="Base port offset")

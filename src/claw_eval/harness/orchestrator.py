@@ -3,16 +3,18 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 import tempfile
 import time
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
 from claw_eval.config import Config
 from claw_eval.graders.registry import get_grader
-from claw_eval.models.content import TextBlock
+from claw_eval.models.content import TextBlock, ToolResultBlock, ToolUseBlock
 from claw_eval.models.message import Message
 from claw_eval.models.scoring import compute_task_score, is_pass
 from claw_eval.models.task import TaskDefinition
@@ -35,6 +37,14 @@ from .config_gen import codex_mcp_config_overrides, mcp_server_args, shell_join,
 
 
 HARNESS_NAMES = ("claude-code", "codex")
+
+
+@dataclass
+class McpPreflightResult:
+    ok: bool
+    detail: str = ""
+    tool_count: int = 0
+    command: list[str] | None = None
 
 
 def _resolve_tasks_dir(task_yaml: Path) -> Path:
@@ -93,6 +103,86 @@ def _make_prompt(task: TaskDefinition) -> str:
     )
 
 
+_MCP_PREFLIGHT_CODE = r"""
+import asyncio
+import json
+import sys
+
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+
+
+async def main() -> None:
+    server_command = sys.argv[1]
+    server_args = json.loads(sys.argv[2])
+    params = StdioServerParameters(command=server_command, args=server_args)
+    async with stdio_client(params) as (read_stream, write_stream):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+            tools = await session.list_tools()
+            names = [tool.name for tool in tools.tools]
+            print(json.dumps({"tool_count": len(names), "tools": names}, ensure_ascii=False))
+
+
+asyncio.run(main())
+"""
+
+
+def _preflight_mcp_server(
+    *,
+    python: str,
+    server_args: list[str],
+    timeout_seconds: int = 15,
+) -> McpPreflightResult:
+    command = [
+        python,
+        "-c",
+        _MCP_PREFLIGHT_CODE,
+        python,
+        json.dumps(server_args),
+    ]
+    try:
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+        )
+    except subprocess.TimeoutExpired as exc:
+        detail = f"timed out after {timeout_seconds}s"
+        if exc.stderr:
+            detail += f": {exc.stderr}"
+        return McpPreflightResult(ok=False, detail=detail, command=command)
+    except OSError as exc:
+        return McpPreflightResult(ok=False, detail=str(exc), command=command)
+
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout or f"exit {result.returncode}").strip()
+        return McpPreflightResult(ok=False, detail=detail[:2000], command=command)
+    try:
+        payload = json.loads((result.stdout or "{}").splitlines()[-1])
+        tool_count = int(payload.get("tool_count") or 0)
+    except Exception:
+        tool_count = 0
+    if tool_count <= 0:
+        return McpPreflightResult(
+            ok=False,
+            detail="MCP server initialized but returned no tools",
+            tool_count=tool_count,
+            command=command,
+        )
+    return McpPreflightResult(ok=True, detail=result.stdout.strip(), tool_count=tool_count, command=command)
+
+
+def _response_body_text(value) -> str:
+    if isinstance(value, str):
+        return value
+    try:
+        return json.dumps(value, ensure_ascii=False)
+    except TypeError:
+        return str(value)
+
+
 def _write_trace(
     *,
     trace_path: Path,
@@ -126,6 +216,38 @@ def _write_trace(
                 message=Message(role="user", content=[TextBlock(text=task.prompt.text)]),
             )
         )
+        for dispatch in dispatches:
+            writer.write_event(
+                TraceMessage(
+                    trace_id=trace_id,
+                    message=Message(
+                        role="assistant",
+                        content=[
+                            ToolUseBlock(
+                                id=dispatch.tool_use_id,
+                                name=dispatch.tool_name,
+                                input=dispatch.request_body,
+                            )
+                        ],
+                    ),
+                )
+            )
+            writer.write_event(dispatch)
+            writer.write_event(
+                TraceMessage(
+                    trace_id=trace_id,
+                    message=Message(
+                        role="user",
+                        content=[
+                            ToolResultBlock(
+                                tool_use_id=dispatch.tool_use_id,
+                                content=[TextBlock(text=_response_body_text(dispatch.response_body))],
+                                is_error=dispatch.response_status >= 400,
+                            )
+                        ],
+                    ),
+                )
+            )
         if harness_result.final_text:
             writer.write_event(
                 TraceMessage(
@@ -137,17 +259,15 @@ def _write_trace(
                     ),
                 )
             )
-        for dispatch in dispatches:
-            writer.write_event(dispatch)
         for audit in audits:
             writer.write_event(audit)
-        failure_modes = []
+        failure_modes = list(harness_result.failure_modes)
         if harness_result.returncode != 0:
             failure_modes.append(f"{harness_result.harness} exited with {harness_result.returncode}")
         writer.write_event(
             TraceEnd(
                 trace_id=trace_id,
-                total_turns=1,
+                total_turns=max(1, harness_result.turns),
                 model_input_tokens=harness_result.input_tokens,
                 model_output_tokens=harness_result.output_tokens,
                 input_tokens=harness_result.input_tokens,
@@ -170,6 +290,7 @@ def _write_trace(
                     scores=scores,
                     task_score=task_score,
                     passed=passed,
+                    failure_modes=failure_modes,
                 )
             )
 
@@ -234,47 +355,66 @@ def run_harness_task(
                     port_offset=port_offset,
                 )
                 prompt = _make_prompt(task)
-                if harness == "claude-code":
-                    mcp_config = write_claude_mcp_config(
-                        path=tmp_dir / "claude_mcp_config.json",
-                        python=sys.executable,
-                        server_args=server_args,
+                preflight = _preflight_mcp_server(
+                    python=sys.executable,
+                    server_args=server_args,
+                    timeout_seconds=min(20, max(5, task.environment.timeout_seconds)),
+                )
+                if not preflight.ok:
+                    harness_result = HarnessRunResult(
+                        harness=harness,
+                        command=preflight.command or [sys.executable, *server_args],
+                        returncode=126,
+                        stdout=preflight.detail,
+                        stderr=preflight.detail,
+                        final_text="",
+                        wall_time_s=0.0,
+                        failure_modes=[f"MCP preflight failed: {preflight.detail}"],
                     )
-                    claude_runtime = (
-                        load_claude_code_runtime_config(
-                            Path(claude_code_runtime_config),
-                            config_dir=task_trace_dir / "claude-code-config",
-                        )
-                        if claude_code_runtime_config
-                        else None
-                    )
-                    harness_result = run_claude_code(
-                        prompt=prompt,
-                        model=claude_runtime.model_name if claude_runtime else model_id,
-                        mcp_config=mcp_config,
-                        cwd=tmp_dir,
-                        timeout_seconds=task.environment.timeout_seconds,
-                        raw_dir=raw_dir,
-                        claude_runtime_config=claude_runtime,
-                    )
+                    raw_dir.mkdir(parents=True, exist_ok=True)
+                    (raw_dir / "mcp_preflight_error.log").write_text(preflight.detail, encoding="utf-8")
                 else:
-                    codex_runtime = (
-                        load_codex_runtime_config(Path(codex_runtime_config))
-                        if codex_runtime_config
-                        else None
-                    )
-                    harness_result = run_codex(
-                        prompt=prompt,
-                        model=codex_runtime.model_name if codex_runtime else model_id,
-                        config_overrides=codex_mcp_config_overrides(
+                    if harness == "claude-code":
+                        mcp_config = write_claude_mcp_config(
+                            path=tmp_dir / "claude_mcp_config.json",
                             python=sys.executable,
                             server_args=server_args,
-                        ),
-                        cwd=tmp_dir,
-                        timeout_seconds=task.environment.timeout_seconds,
-                        raw_dir=raw_dir,
-                        codex_runtime_config=codex_runtime,
-                    )
+                        )
+                        claude_runtime = (
+                            load_claude_code_runtime_config(
+                                Path(claude_code_runtime_config),
+                                config_dir=task_trace_dir / "claude-code-config",
+                            )
+                            if claude_code_runtime_config
+                            else None
+                        )
+                        harness_result = run_claude_code(
+                            prompt=prompt,
+                            model=claude_runtime.model_name if claude_runtime else model_id,
+                            mcp_config=mcp_config,
+                            cwd=tmp_dir,
+                            timeout_seconds=task.environment.timeout_seconds,
+                            raw_dir=raw_dir,
+                            claude_runtime_config=claude_runtime,
+                        )
+                    else:
+                        codex_runtime = (
+                            load_codex_runtime_config(Path(codex_runtime_config))
+                            if codex_runtime_config
+                            else None
+                        )
+                        harness_result = run_codex(
+                            prompt=prompt,
+                            model=codex_runtime.model_name if codex_runtime else model_id,
+                            config_overrides=codex_mcp_config_overrides(
+                                python=sys.executable,
+                                server_args=server_args,
+                            ),
+                            cwd=tmp_dir,
+                            timeout_seconds=task.environment.timeout_seconds,
+                            raw_dir=raw_dir,
+                            codex_runtime_config=codex_runtime,
+                        )
 
                 if handle:
                     from claw_eval.cli import _collect_env_snapshot, _save_env_snapshot
@@ -300,6 +440,54 @@ def run_harness_task(
         wall_time_s=wall_time_s,
         start_timestamp=start_timestamp,
     )
+
+    if harness_result.failure_modes or harness_result.returncode != 0:
+        scores = DimensionScores()
+        passed = False
+        task_score = 0.0
+        _write_trace(
+            trace_path=trace_path,
+            trace_id=trace_id,
+            task=task,
+            model_id=model_id,
+            harness_result=harness_result,
+            dispatches=dispatches,
+            audits=audits,
+            wall_time_s=wall_time_s,
+            start_timestamp=start_timestamp,
+            scores=scores,
+            task_score=task_score,
+            passed=passed,
+        )
+        return {
+            "task_id": task.task_id,
+            "task_name": task.task_name,
+            "harness": harness,
+            "model": model_id,
+            "trace": str(trace_path),
+            "raw_dir": str(raw_dir),
+            "command": shell_join(harness_result.command),
+            "returncode": harness_result.returncode,
+            "error": "; ".join(harness_result.failure_modes) or f"{harness} exited with {harness_result.returncode}",
+            "failure_modes": harness_result.failure_modes,
+            "turns": harness_result.turns,
+            "input_tokens": harness_result.input_tokens,
+            "output_tokens": harness_result.output_tokens,
+            "tokens": harness_result.input_tokens + harness_result.output_tokens,
+            "model_input_tokens": harness_result.input_tokens,
+            "model_output_tokens": harness_result.output_tokens,
+            "model_time_s": round(harness_result.wall_time_s, 2),
+            "tool_time_s": round(sum(d.latency_ms for d in dispatches) / 1000.0, 2),
+            "other_time_s": 0.0,
+            "wall_time_s": round(wall_time_s, 2),
+            "completion": scores.completion,
+            "robustness": scores.robustness,
+            "communication": scores.communication,
+            "safety": scores.safety,
+            "task_score": task_score,
+            "passed": passed,
+            "judge_calls": [],
+        }
 
     from claw_eval.cli import _grade_with_optional_params, _make_judge
     from claw_eval.trace.reader import load_trace
@@ -342,6 +530,17 @@ def run_harness_task(
         "raw_dir": str(raw_dir),
         "command": shell_join(harness_result.command),
         "returncode": harness_result.returncode,
+        "failure_modes": harness_result.failure_modes,
+        "turns": harness_result.turns,
+        "input_tokens": harness_result.input_tokens,
+        "output_tokens": harness_result.output_tokens,
+        "tokens": harness_result.input_tokens + harness_result.output_tokens,
+        "model_input_tokens": harness_result.input_tokens,
+        "model_output_tokens": harness_result.output_tokens,
+        "model_time_s": round(harness_result.wall_time_s, 2),
+        "tool_time_s": round(sum(d.latency_ms for d in dispatches) / 1000.0, 2),
+        "other_time_s": round(max(0.0, wall_time_s - harness_result.wall_time_s - sum(d.latency_ms for d in dispatches) / 1000.0), 2),
+        "wall_time_s": round(wall_time_s, 2),
         "completion": scores.completion,
         "robustness": scores.robustness,
         "communication": scores.communication,

@@ -89,6 +89,40 @@ def _extract_final_text(stdout: str, last_message_path: Path) -> str:
     return final_text
 
 
+def _extract_usage(stdout: str) -> tuple[int, int, int]:
+    input_tokens = 0
+    output_tokens = 0
+    turns = 1
+    for line in stdout.splitlines():
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(event, dict):
+            continue
+        usage = event.get("usage") or event.get("token_usage")
+        if isinstance(usage, dict):
+            input_tokens += int(
+                usage.get("input_tokens")
+                or usage.get("prompt_tokens")
+                or usage.get("input")
+                or 0
+            )
+            output_tokens += int(
+                usage.get("output_tokens")
+                or usage.get("completion_tokens")
+                or usage.get("output")
+                or 0
+            )
+        raw_turns = event.get("num_turns") or event.get("turns")
+        if raw_turns:
+            try:
+                turns = max(turns, int(raw_turns))
+            except (TypeError, ValueError):
+                pass
+    return input_tokens, output_tokens, turns
+
+
 def run_codex(
     *,
     prompt: str,
@@ -156,6 +190,7 @@ def run_codex(
     wall_time_s = time.monotonic() - started
     (raw_dir / "codex.stdout.jsonl").write_text(stdout, encoding="utf-8")
     (raw_dir / "codex.stderr.log").write_text(stderr, encoding="utf-8")
+    input_tokens, output_tokens, turns = _extract_usage(stdout)
     return HarnessRunResult(
         harness="codex",
         command=command,
@@ -164,4 +199,7 @@ def run_codex(
         stderr=stderr,
         final_text=_extract_final_text(stdout, last_message_path),
         wall_time_s=wall_time_s,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        turns=turns,
     )
