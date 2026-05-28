@@ -1,0 +1,68 @@
+# provenance:
+#   themis_dataset: taskset-260427-195223
+#   themis_task_id: task_81_cpp_log_rotation
+#   themis_rank_original: 17
+#   themis_metrics: { std_trim: 0.417, range_trim: 0.833, mean_trim: 0.583 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP60_cpp_file_storage_manager_log_rotation
+task_name: "C++ FileStorageManager 日志轮转完整实现（CP60 / 源 taskset-260427-195223:task_81_cpp_log_rotation）"
+version: "1.0"
+category: coding
+difficulty: hard
+tags: [general]
+
+source_task_id: "task_81_cpp_log_rotation"
+source_dataset: "taskset-260427-195223"
+source_description: "PinchBench top100 rank 17 高区分度题（std_trim 0.417）。改编为 Claw-Eval sandbox C++ 实现任务：把空壳 file_storage_manager.cpp 补全为完整的日志轮转 + zlib 压缩 + 保留策略实现。verifier 隐藏 9 个锚点（压缩/轮转/保留/文件名格式/启动扫描/RAII/不动 header 等）。"
+
+services: []
+
+prompt:
+  text: |
+    车载日志框架的 FileStorageManager 一直是空壳，核心功能（启动扫描、轮转、
+    压缩、保留策略、统计）都没实现。头文件接口在 /workspace/fixtures/include/，
+    现有空壳在 /workspace/fixtures/src/。补全成生产可用的版本，写到
+    /workspace/src/file_storage_manager.cpp。AUTOSAR C++17 规范。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/include/file_storage_manager.h
+  - fixtures/src/file_storage_manager.cpp
+
+sandbox_grader_files:
+  - fixtures/verify_cpp_log_rotation.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_cpp_log_rotation.py
+
+env_snapshot_files:
+  - /workspace/src/file_storage_manager.cpp
+  - /workspace/include/file_storage_manager.h
+
+environment:
+  timeout_seconds: 900
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a substantive cpp file (>2KB, >10 brace blocks) implementing CompressFile+ValidateCompressedFile with zlib/gz APIs, size-based RotateFile, retention policy that prefers deleting compressed files first, ussdata_{file_no}_{timestamp}.log naming with chrono-based 16-digit timestamp, directory-scan startup, and RAII/exception-safe constructs. Header file should remain structurally intact."
+
+reference_solution: |
+  Implement FileStorageManager methods in /workspace/src/file_storage_manager.cpp:
+  Init() runs StartupScan via directory_iterator, parsing existing file_no values
+  to set m_next_file_number. Write() checks m_current_file_size >= max_file_size,
+  calls RotateFile() which closes current ofstream, opens new file with
+  BuildFilename(ussdata_{file_no}_{timestamp}), spawns CompressFile() (zlib
+  gzopen/gzwrite/gzclose) + ValidateCompressedFile(), deletes original only if
+  validation passes. EnforceRetentionPolicy() sorts files, prefers .gz, removes
+  oldest beyond max_total_files. Use std::lock_guard, RAII wrappers, try/catch.
+  Don't change header signatures.
+
+primary_dimensions: [completion, communication, safety]

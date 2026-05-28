@@ -1,25 +1,26 @@
 task_id: CP34_education_schedule_bug_fix
 task_name: Education Scheduling System Bug Fix
-version: "1.0"
+version: '2.0'
 category: debugging
 difficulty: medium
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_22_schedule_bug_fix"
-source_dataset: "taskset-260427-121234"
-source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
-
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_22_schedule_bug_fix
+source_dataset: taskset-260427-121234
+source_description: Redesigned from taskset-260427-121234/task_22_schedule_bug_fix with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
 services: []
-
 prompt:
   text: |
-    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
-    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+    我已经把原始项目素材放在容器的 `/workspace/fixtures/` 目录下，请把这些文件当作只读输入。
 
-    - `/workspace/fixtures/backend/schedule_api.py`
-    - `/workspace/fixtures/frontend/ScheduleView.vue`
+    输入文件如下（右侧是它在原项目中的相对路径）：
+    - `/workspace/fixtures/backend/schedule_api.py` -> `backend/schedule_api.py`
+    - `/workspace/fixtures/frontend/ScheduleView.vue` -> `frontend/ScheduleView.vue`
 
-    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+    请基于这些输入完成下面的原始需求：
 
     教务排课系统有几个用户反馈的bug，代码在 `backend/schedule_api.py` 和 `frontend/ScheduleView.vue`。
 
@@ -33,64 +34,147 @@ prompt:
     - 说明根因
     - 给出修复方案
     - 修改代码
-  language: zh
 
+    交付要求：
+    - 需要修改已有文件时，请把修改后的版本写到 `/workspace/` 下对应的原项目相对路径。
+    - 需要新增文件时，请按需求中的文件名或上面列出的目标路径写到 `/workspace/` 下。
+    - 最终回复只需概述完成情况、关键改动和生成的文件；不要只在最终回复中贴代码或报告正文。
+  language: zh
 tools: []
 tool_endpoints: []
-
 sandbox_files:
-  - fixtures/backend/schedule_api.py
-  - fixtures/frontend/ScheduleView.vue
-
+- fixtures/backend/schedule_api.py
+- fixtures/frontend/ScheduleView.vue
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
   timeout_seconds: 600
   max_turns: 30
-
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/backend/schedule_api.py
-  - /workspace/frontend/ScheduleView.vue
+- /workspace/backend/schedule_api.py
+- /workspace/frontend/ScheduleView.vue
 scoring_components: []
-
 safety_checks: []
-
 expected_actions: []
-
 judge_rubric: |
-  评估 agent 是否正确修复了排课系统的4个bug。
+  ## Expected Behavior
 
-  ## Bug 1: 星期偏移
-  - 是否识别了 DAY_MAP 的 off-by-one 问题
-  - 是否正确修复（前后端索引对齐）
+  1. Agent reads both files thoroughly
+  2. Agent identifies 4 distinct bugs:
+     - Day-of-week off-by-one in repeat scheduling (DAY_MAP vs frontend indexing)
+     - Dropdown binding: :value="t" binds object instead of t.id
+     - Schedule cards: API returns only IDs, not joined names; frontend push without name resolution
+     - CSS: schedule-card has no min-width
+  3. Agent fixes all bugs in both backend and frontend code
+  4. Agent explains root cause for each
 
-  ## Bug 2: 下拉框绑定
-  - 是否将 :value="t" 改为 :value="t.id"
-  - 或将 API 返回格式改为 value/label
+  ## Grading Criteria
 
-  ## Bug 3: 卡片不显示名称
-  - 是否让 API 返回 name 字段
-  - 或前端做本地 lookup
+  - [ ] day_off_by_one_identified: Root cause of wrong-day bug explained
+  - [ ] day_off_by_one_fixed: Code fix applied to resolve day mapping
+  - [ ] dropdown_binding_fixed: Teacher/classroom dropdown :value uses ID not object
+  - [ ] api_returns_names: Backend get_teachers/get_classrooms returns value/label format OR schedule response includes names
+  - [ ] card_display_fixed: Frontend schedule cards show names immediately after creation (not requiring refresh)
+  - [ ] card_min_width_added: CSS min-width added to schedule-card
 
-  ## Bug 4: 卡片宽度
-  - 是否添加了 min-width CSS
+  ## LLM Judge Rubric
 
-  ## 评分标准
-  - 0.9-1.0: 4个bug全部正确修复
-  - 0.7-0.8: 3个bug修复正确
-  - 0.4-0.6: 1-2个bug修复正确
-  - 0.0-0.3: 未能有效修复
+  ### Criterion 1: Root Cause Analysis (Weight: 30%)
 
+  **Score 1.0**: All 4 bugs have clear, correct root cause explanations with reference to specific code lines. Day-off-by-one traced to DAY_MAP vs frontend 1-indexing. Dropdown traced to :value binding object vs ID. Card display traced to API returning only IDs. CSS width explicitly mentioned.
+  **Score 0.75**: 3 of 4 root causes correctly identified and explained.
+  **Score 0.5**: 2 root causes correct.
+  **Score 0.25**: Only 1 correct.
+  **Score 0.0**: No correct root cause analysis.
+
+  ### Criterion 2: Fix Correctness (Weight: 35%)
+
+  **Score 1.0**: All 4 fixes are correct and complete. Day mapping adjusted properly. Dropdown binds to integer ID. API enriches response with names (either in list endpoint or in creation response). CSS has min-width.
+  **Score 0.75**: 3 of 4 fixes correct and complete.
+  **Score 0.5**: 2 fixes correct.
+  **Score 0.25**: 1 fix correct.
+  **Score 0.0**: No correct fix.
+
+  ### Criterion 3: Code Quality of Fixes (Weight: 20%)
+
+  **Score 1.0**: Fixes are minimal, targeted, and idiomatic for both Python and Vue. No unnecessary refactoring. Comments explain the fix rationale.
+  **Score 0.75**: Good quality but slightly over-engineered or under-documented.
+  **Score 0.5**: Fixes work but code quality is poor (e.g., duplicated lookup logic).
+  **Score 0.25**: Fixes partially work with significant code issues.
+  **Score 0.0**: Broken code.
+
+  ### Criterion 4: Completeness (Weight: 15%)
+
+  **Score 1.0**: All 4 bugs addressed with both backend and frontend changes where needed. No introduced regressions.
+  **Score 0.75**: 3 of 4 fully addressed.
+  **Score 0.5**: 2 of 4 addressed.
+  **Score 0.25**: Only 1 addressed.
+  **Score 0.0**: None addressed.
 reference_solution: |
-  Bug 1: DAY_MAP Monday改为1（或前端发送时-1）
-  Bug 2: :value="t.id" / :value="r.id"
-  Bug 3: API join name 或前端 courses.find()
-  Bug 4: .schedule-card { min-width: 100px; }
+  原始来源：taskset-260427-121234/task_22_schedule_bug_fix
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：edu_schedule_debugging
+
+  隐藏 verifier 主要检查项：api_returns_names, card_display_fixed, card_min_width_added, day_off_by_one_fixed, day_off_by_one_identified, dropdown_binding_fixed
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent reads both files thoroughly
+  2. Agent identifies 4 distinct bugs:
+     - Day-of-week off-by-one in repeat scheduling (DAY_MAP vs frontend indexing)
+     - Dropdown binding: :value="t" binds object instead of t.id
+     - Schedule cards: API returns only IDs, not joined names; frontend push without name resolution
+     - CSS: schedule-card has no min-width
+  3. Agent fixes all bugs in both backend and frontend code
+  4. Agent explains root cause for each
+
+  ## Grading Criteria
+
+  - [ ] day_off_by_one_identified: Root cause of wrong-day bug explained
+  - [ ] day_off_by_one_fixed: Code fix applied to resolve day mapping
+  - [ ] dropdown_binding_fixed: Teacher/classroom dropdown :value uses ID not object
+  - [ ] api_returns_names: Backend get_teachers/get_classrooms returns value/label format OR schedule response includes names
+  - [ ] card_display_fixed: Frontend schedule cards show names immediately after creation (not requiring refresh)
+  - [ ] card_min_width_added: CSS min-width added to schedule-card
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Root Cause Analysis (Weight: 30%)
+
+  **Score 1.0**: All 4 bugs have clear, correct root cause explanations with reference to specific code lines. Day-off-by-one traced to DAY_MAP vs frontend 1-indexing. Dropdown traced to :value binding object vs ID. Card display traced to API returning only IDs. CSS width explicitly mentioned.
+  **Score 0.75**: 3 of 4 root causes correctly identified and explained.
+  **Score 0.5**: 2 root causes correct.
+  **Score 0.25**: Only 1 correct.
+  **Score 0.0**: No correct root cause analysis.
+
+  ### Criterion 2: Fix Correctness (Weight: 35%)
+
+  **Score 1.0**: All 4 fixes are correct and complete. Day mapping adjusted properly. Dropdown binds to integer ID. API enriches response with names (either in list endpoint or in creation response). CSS has min-width.
+  **Score 0.75**: 3 of 4 fixes correct and complete.
+  **Score 0.5**: 2 fixes correct.
+  **Score 0.25**: 1 fix correct.
+  **Score 0.0**: No correct fix.
+
+  ### Criterion 3: Code Quality of Fixes (Weight: 20%)
+
+  **Score 1.0**: Fixes are minimal, targeted, and idiomatic for both Python and Vue. No unnecessary refactoring. Comments explain the fix rationale.
+  **Score 0.75**: Good quality but slightly over-engineered or under-documented.
+  **Score 0.5**: Fixes work but code quality is poor (e.g., duplicated lookup logic).
+  **Score 0.25**: Fixes partially work with significant code issues.
+  **Score 0.0**: Broken code.
+
+  ### Criterion 4: Completeness (Weight: 15%)
+
+  **Score 1.0**: All 4 bugs addressed with both backend and frontend changes where needed. No introduced regressions.
+  **Score 0.75**: 3 of 4 fully addressed.
+  **Score 0.5**: 2 of 4 addressed.
+  **Score 0.25**: Only 1 addressed.
+  **Score 0.0**: None addressed.
+primary_dimensions:
+- completion
+- robustness
+- communication

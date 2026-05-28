@@ -1,0 +1,174 @@
+# provenance:
+#   themis_dataset: taskset-260424-pinchbench-v2rc2
+#   themis_task_id: task_csv_temp_decades
+#   themis_rank_original: 10
+#   themis_metrics: { std_trim: 0.425, range_trim: 0.955, mean_trim: 0.644 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP56_global_temperature_decade_comparison
+task_name: "全球气温年代对比分析（CP56 / 源 taskset-260424-pinchbench-v2rc2:task_csv_temp_decades）"
+version: "1.0"
+category: workflow
+difficulty: medium
+tags: [general, workflow, sandbox]
+
+source_task_id: "task_csv_temp_decades"
+source_dataset: "taskset-260424-pinchbench-v2rc2"
+source_description: "Workflow + sandbox hybrid redesigned with claw-eval-task-designer-v2: climate data service supplies source notes, decade slices, boundary traps, submit/confirm audit evidence; hidden verifier checks decade_report.md."
+
+services:
+  - name: climate_data
+    command: python tasks/CP56_global_temperature_decade_comparison/services/climate_data/server.py
+    port: 9356
+    health_check: http://localhost:9356/climate_data/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9356/climate_data/reset
+    env:
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP56_global_temperature_decade_comparison/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_NAME: climate_data
+
+prompt:
+  text: |
+    气候数据审阅台里已经挂了 GISTEMP/gcag 的年代切片、来源说明和几条边界陷阱；/workspace/fixtures/global_temperature.csv 是同一批明细导出。请先用审阅台查资料并做交叉复核，再写 /workspace/decade_report.md。
+
+    报告归档前把年代对比结论提交并确认到审阅台，最终回复说关键结论。
+  language: zh
+
+tools:
+  - name: climate_data_list
+    description: List records available in the climate data service; use this before targeted reads.
+    input_schema:
+      type: object
+      properties:
+        kind:
+          type: string
+        tag:
+          type: string
+        limit:
+          type: integer
+          default: 20
+      required: []
+  - name: climate_data_search
+    description: Search the climate data service for candidate records, source notes, and trap cases.
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        kind:
+          type: string
+        max_results:
+          type: integer
+          default: 10
+      required: [query]
+  - name: climate_data_get
+    description: Fetch one full service record by record_id.
+    input_schema:
+      type: object
+      properties:
+        record_id:
+          type: string
+      required: [record_id]
+  - name: climate_data_cross_check
+    description: Cross-check selected records against known traps and conflicting evidence.
+    input_schema:
+      type: object
+      properties:
+        primary_id:
+          type: string
+        comparison_ids:
+          type: array
+          items:
+            type: string
+        focus:
+          type: string
+      required: []
+  - name: climate_data_submit_report
+    description: Submit the working conclusion or artifact summary back to the service.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        content:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        decision:
+          type: string
+        metadata:
+          type: object
+      required: [report_id, content]
+  - name: climate_data_confirm_report
+    description: Confirm the submitted conclusion after cross-checking source_ids.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        checklist:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+      required: [report_id]
+tool_endpoints:
+  - tool_name: climate_data_list
+    url: http://localhost:9356/climate_data/list
+    method: POST
+  - tool_name: climate_data_search
+    url: http://localhost:9356/climate_data/search
+    method: POST
+  - tool_name: climate_data_get
+    url: http://localhost:9356/climate_data/get
+    method: POST
+  - tool_name: climate_data_cross_check
+    url: http://localhost:9356/climate_data/cross_check
+    method: POST
+  - tool_name: climate_data_submit_report
+    url: http://localhost:9356/climate_data/submit
+    method: POST
+  - tool_name: climate_data_confirm_report
+    url: http://localhost:9356/climate_data/confirm
+    method: POST
+
+sandbox_files:
+  - fixtures/global_temperature.csv
+
+sandbox_grader_files:
+  - fixtures/verify_decade_report.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_decade_report.py
+
+env_snapshot_files:
+  - /workspace/decade_report.md
+
+environment:
+  timeout_seconds: 480
+  max_turns: 22
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a substantive decade comparison report covering 1880s-2010s GISTEMP averages in a table, correct coldest (1910s ~-0.33) and warmest (2010s ~+0.80) identification, decade-to-decade transitions with largest warming flagged (~+0.21 in 1970s→1980s or 2000s→2010s), intra-decade variability via std dev, per-decade extreme years, and GISTEMP↔gcag agreement check."
+
+reference_solution: |
+  Read /workspace/fixtures/global_temperature.csv. Aggregate monthly → annual
+  means for each Source. Group annual means by decade; compute mean + std +
+  warmest/coldest year. Identify 1910s as coldest (~-0.33), 2010s as warmest
+  full decade (~0.80), and largest transition ~+0.21 (1970s→1980s) or +0.22
+  (2000s→2010s). Compare GISTEMP vs gcag overlapping decades (gcag ~0.07-0.12
+  lower). Write /workspace/decade_report.md with markdown tables.
+
+primary_dimensions: [completion, communication, safety]

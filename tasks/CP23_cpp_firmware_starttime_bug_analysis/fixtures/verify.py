@@ -22,27 +22,39 @@ def automated_score(workspace: Path) -> dict[str, float]:
     report = workspace / "BUGFIX_REPORT.md"
     if report.exists():
         content = report.read_text()
+        lower = content.lower()
         scores["bugfix_report_present"] = 1.0
         scores["report_has_root_cause"] = 1.0 if any(
-            k in content.lower() for k in ["根因", "root cause", "原因", "问题分析"]
+            k in lower for k in ["根因", "root cause", "原因", "问题分析"]
         ) else 0.0
         scores["report_has_fix"] = 1.0 if any(
-            k in content.lower() for k in ["修复", "fix", "解决方案", "修改"]
+            k in lower for k in ["修复", "fix", "解决方案", "修改"]
         ) else 0.0
         scores["report_has_impact"] = 1.0 if any(
-            k in content.lower() for k in ["影响", "impact", "副作用", "风险"]
+            k in lower for k in ["影响", "impact", "副作用", "风险"]
+        ) else 0.0
+        scores["report_identifies_base_call"] = 1.0 if re.search(
+            r"(ICloneItem|基类|base).{0,80}(preExecuteItem|未调用|not call|override)",
+            content,
+            re.IGNORECASE | re.DOTALL,
         ) else 0.0
     else:
         scores["bugfix_report_present"] = 0.0
         scores["report_has_root_cause"] = 0.0
         scores["report_has_fix"] = 0.0
         scores["report_has_impact"] = 0.0
+        scores["report_identifies_base_call"] = 0.0
 
     # Check firmware_item.cpp was modified
     cpp_file = workspace / "src" / "item" / "firmware_item.cpp"
     if cpp_file.exists():
         content = cpp_file.read_text()
         scores["firmware_cpp_present"] = 1.0
+        original_cpp = workspace / "fixtures" / "src" / "item" / "firmware_item.cpp"
+        if original_cpp.exists():
+            scores["firmware_cpp_modified"] = 1.0 if content != original_cpp.read_text() else 0.0
+        else:
+            scores["firmware_cpp_modified"] = 1.0
         # Check if base class call was added (the fix)
         has_base_call = bool(re.search(
             r'(ICloneItem::preExecuteItem|base::preExecuteItem|'
@@ -54,17 +66,31 @@ def automated_score(workspace: Path) -> dict[str, float]:
         has_explicit_starttime = "m_startTime" in content and "getDateTimeString" in content
         if not has_base_call and has_explicit_starttime:
             scores["base_class_call_added"] = 0.7
+        preexecute_match = re.search(r"FirmwareItem::preExecuteItem\s*\([^)]*\)\s*\{(?P<body>.*?)(?:\n\}|$)", content, re.DOTALL)
+        if preexecute_match:
+            body = preexecute_match.group("body")
+            starts_or_resets = "m_startTime" in body and ("m_endTime" in body or "setStart" in body or "preExecuteItem" in body)
+            scores["fix_touches_preexecute_lifecycle"] = 1.0 if starts_or_resets else 0.0
+            scores["no_recursive_preexecute_call"] = 0.0 if re.search(r"FirmwareItem::preExecuteItem\s*\(", body) else 1.0
+        else:
+            scores["fix_touches_preexecute_lifecycle"] = 0.0
+            scores["no_recursive_preexecute_call"] = 1.0
     else:
         scores["firmware_cpp_present"] = 0.0
+        scores["firmware_cpp_modified"] = 0.0
         scores["base_class_call_added"] = 0.0
+        scores["fix_touches_preexecute_lifecycle"] = 0.0
+        scores["no_recursive_preexecute_call"] = 1.0
 
     # Check that iclone_item.h was NOT modified (constraint)
     iclone_h = workspace / "src" / "item" / "iclone_item.h"
     if iclone_h.exists():
-        original_size = 2048  # approximate
-        current_size = iclone_h.stat().st_size
-        # Allow small size changes (formatting) but flag major changes
-        scores["base_class_not_modified"] = 1.0 if abs(current_size - original_size) < 500 else 0.5
+        original_h = workspace / "fixtures" / "src" / "item" / "iclone_item.h"
+        if original_h.exists():
+            scores["base_class_not_modified"] = 1.0 if iclone_h.read_text(errors="ignore") == original_h.read_text(errors="ignore") else 0.0
+        else:
+            public_api_changed = bool(re.search(r"preExecuteItem\s*\([^)]*\)\s*(?:const|override|=|;)", iclone_h.read_text(errors="ignore")))
+            scores["base_class_not_modified"] = 0.5 if public_api_changed else 1.0
     else:
         scores["base_class_not_modified"] = 1.0
 

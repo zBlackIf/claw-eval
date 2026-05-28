@@ -6,107 +6,82 @@ using System.Threading.Tasks;
 namespace MinqiaIndustrialComponentLibrary.Communication.Modbus
 {
     /// <summary>
-    /// Modbus TCP 客户端，提供寄存器读写功能。
+    /// Modbus TCP client for industrial device communication.
+    /// Supports read/write of holding registers and coils.
     /// </summary>
     public class ModbusTcpClient : IDisposable
     {
-        private TcpClient _client;
-        private NetworkStream _stream;
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
-        private bool _disposed;
-
-        public string Host { get; }
-        public int Port { get; }
-        public int Timeout { get; set; } = 3000;
-        public bool IsConnected => _client?.Connected ?? false;
+        private TcpClient? _client;
+        private NetworkStream? _stream;
+        private readonly string _host;
+        private readonly int _port;
+        private readonly SemaphoreSlim _lock = new(1, 1);
+        private ushort _transactionId;
 
         public ModbusTcpClient(string host, int port = 502)
         {
-            Host = host ?? throw new ArgumentNullException(nameof(host));
-            Port = port;
+            _host = host ?? throw new ArgumentNullException(nameof(host));
+            _port = port;
         }
 
-        public async Task ConnectAsync(CancellationToken cancellationToken = default)
+        public bool IsConnected => _client?.Connected ?? false;
+
+        public async Task ConnectAsync(CancellationToken ct = default)
         {
-            await _semaphore.WaitAsync(cancellationToken);
-            try
-            {
-                _client = new TcpClient();
-                await _client.ConnectAsync(Host, Port);
-                _stream = _client.GetStream();
-                _stream.ReadTimeout = Timeout;
-                _stream.WriteTimeout = Timeout;
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
+            _client = new TcpClient();
+            await _client.ConnectAsync(_host, _port, ct);
+            _stream = _client.GetStream();
         }
 
         public async Task<ushort[]> ReadHoldingRegistersAsync(
             byte unitId, ushort startAddress, ushort quantity,
-            CancellationToken cancellationToken = default)
+            CancellationToken ct = default)
         {
-            await _semaphore.WaitAsync(cancellationToken);
+            await _lock.WaitAsync(ct);
             try
             {
                 var request = BuildReadRequest(unitId, 0x03, startAddress, quantity);
-                await _stream.WriteAsync(request, 0, request.Length, cancellationToken);
-
+                await _stream!.WriteAsync(request, ct);
                 var response = new byte[256];
-                var bytesRead = await _stream.ReadAsync(response, 0, response.Length, cancellationToken);
-
-                return ParseRegisters(response, bytesRead, quantity);
+                var bytesRead = await _stream.ReadAsync(response, ct);
+                return ParseRegisters(response, bytesRead);
             }
             finally
             {
-                _semaphore.Release();
+                _lock.Release();
             }
         }
 
-        private byte[] BuildReadRequest(byte unitId, byte functionCode, ushort startAddress, ushort quantity)
+        private byte[] BuildReadRequest(byte unitId, byte functionCode,
+            ushort startAddress, ushort quantity)
         {
-            // MBAP Header (7 bytes) + PDU (5 bytes)
-            var request = new byte[12];
-            // Transaction ID (2 bytes) - auto increment
-            request[0] = 0; request[1] = 1;
-            // Protocol ID (2 bytes) - always 0
-            request[2] = 0; request[3] = 0;
-            // Length (2 bytes)
-            request[4] = 0; request[5] = 6;
-            // Unit ID
-            request[6] = unitId;
-            // Function code
-            request[7] = functionCode;
-            // Start address
-            request[8] = (byte)(startAddress >> 8);
-            request[9] = (byte)(startAddress & 0xFF);
-            // Quantity
-            request[10] = (byte)(quantity >> 8);
-            request[11] = (byte)(quantity & 0xFF);
-            return request;
+            var txId = Interlocked.Increment(ref _transactionId);
+            return new byte[]
+            {
+                (byte)(txId >> 8), (byte)txId,
+                0x00, 0x00, 0x00, 0x06,
+                unitId, functionCode,
+                (byte)(startAddress >> 8), (byte)startAddress,
+                (byte)(quantity >> 8), (byte)quantity
+            };
         }
 
-        private ushort[] ParseRegisters(byte[] response, int bytesRead, ushort quantity)
+        private static ushort[] ParseRegisters(byte[] response, int length)
         {
-            var registers = new ushort[quantity];
-            int dataStart = 9; // MBAP(7) + FC(1) + ByteCount(1)
-            for (int i = 0; i < quantity && (dataStart + i * 2 + 1) < bytesRead; i++)
+            var byteCount = response[8];
+            var registers = new ushort[byteCount / 2];
+            for (int i = 0; i < registers.Length; i++)
             {
-                registers[i] = (ushort)((response[dataStart + i * 2] << 8) | response[dataStart + i * 2 + 1]);
+                registers[i] = (ushort)((response[9 + i * 2] << 8) | response[10 + i * 2]);
             }
             return registers;
         }
 
         public void Dispose()
         {
-            if (!_disposed)
-            {
-                _stream?.Dispose();
-                _client?.Dispose();
-                _semaphore?.Dispose();
-                _disposed = true;
-            }
+            _stream?.Dispose();
+            _client?.Dispose();
+            _lock.Dispose();
         }
     }
 }

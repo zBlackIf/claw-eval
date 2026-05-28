@@ -1,84 +1,162 @@
 task_id: CP44_k8s_script_multi_app_deployment
 task_name: K8s Script Multi-App Deployment
-version: "1.0"
+version: '2.0'
 category: code_generation
 difficulty: medium
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_05_k8s_script_multi_app"
-source_dataset: "taskset-260427-121234"
-source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
-
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_05_k8s_script_multi_app
+source_dataset: taskset-260427-121234
+source_description: Redesigned from taskset-260427-121234/task_05_k8s_script_multi_app with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
 services: []
-
 prompt:
   text: |
-    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
-    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+    我已经把原始项目素材放在容器的 `/workspace/fixtures/` 目录下，请把这些文件当作只读输入。
 
-    - `/workspace/fixtures/config.conf`
-    - `/workspace/fixtures/prevent_app_basic_12b_001.sh`
-    - `/workspace/fixtures/prevent_app_basic_03b_002.sh`
-    - `/workspace/fixtures/common_utils.sh`
+    输入文件如下（右侧是它在原项目中的相对路径）：
+    - `/workspace/fixtures/scripts/prevent_app_basic_03b_002.sh` -> `scripts/prevent_app_basic_03b_002.sh`
+    - `/workspace/fixtures/scripts/prevent_app_basic_12b_001.sh` -> `scripts/prevent_app_basic_12b_001.sh`
+    - `/workspace/fixtures/scripts/config.conf` -> `scripts/config.conf`
+    - `/workspace/fixtures/scripts/common_utils.sh` -> `scripts/common_utils.sh`
 
-    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+    请基于这些输入完成下面的原始需求：
 
     我有一套云应用弹性评估脚本。config.conf 里已经写好了 dify 和 halo 两种部署形态的配置（包括 K8s 和 Docker 两种方式，以及各自的访问地址）。
 
     请参照 prevent_app_basic_12b_001.sh 里切换应用和部署形式的逻辑，改进 prevent_app_basic_03b_002.sh 脚本，让它能根据 config.conf 的配置自动选择当前要评估的应用和部署方式。
-  language: zh
 
+    交付要求：
+    - 需要修改已有文件时，请把修改后的版本写到 `/workspace/` 下对应的原项目相对路径。
+    - 需要新增文件时，请按需求中的文件名或上面列出的目标路径写到 `/workspace/` 下。
+    - 最终回复只需概述完成情况、关键改动和生成的文件；不要只在最终回复中贴代码或报告正文。
+  language: zh
 tools: []
 tool_endpoints: []
-
 sandbox_files:
-  - fixtures/config.conf
-  - fixtures/prevent_app_basic_12b_001.sh
-  - fixtures/prevent_app_basic_03b_002.sh
-  - fixtures/common_utils.sh
-
+- fixtures/scripts/prevent_app_basic_03b_002.sh
+- fixtures/scripts/prevent_app_basic_12b_001.sh
+- fixtures/scripts/config.conf
+- fixtures/scripts/common_utils.sh
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
   timeout_seconds: 600
   max_turns: 30
-
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/prevent_app_basic_03b_002.sh
-  - /workspace/**/prevent_app_basic_03b_002.sh
+- /workspace/scripts/prevent_app_basic_03b_002.sh
+- /workspace/**/prevent_app_basic_03b_002.sh
+- /workspace/scripts/prevent_app_basic_12b_001.sh
+- /workspace/scripts/config.conf
+- /workspace/scripts/common_utils.sh
 scoring_components: []
-
 safety_checks: []
-
 expected_actions: []
-
 judge_rubric: |
-  评估 agent 对 K8s 评估脚本改进的质量。
+  ## Expected Behavior
 
-  ## 核心检查
-  - 是否 source 了 config.conf
-  - 是否支持 halo/dify 应用切换（case/if 逻辑）
-  - 是否区分 K8s 和 Docker 部署方式
-  - 是否沿用 12b_001.sh 的模式（common_utils, log functions, main()）
-  - shell 语法是否正确（then/fi 匹配，shebang 存在）
+  1. 读取 config.conf 中的应用配置
+  2. 支持在 dify 和 halo 之间切换
+  3. 支持 K8s 和 Docker 两种部署形态
+  4. 遵循 12b_001.sh 中已有的模式
+  5. 保持 common_utils.sh 的日志函数调用不变
 
-  ## 评分标准
-  - 0.9-1.0: 全部满足，pattern 一致，可运行
-  - 0.7-0.8: 大部分正确，小细节遗漏
-  - 0.4-0.6: 部分改动但不完整
-  - 0.0-0.3: 未修改或破坏原有功能
+  ## Grading Criteria
 
+  - [ ] criterion_config_read: Script sources and uses config.conf variables
+  - [ ] criterion_app_switch: Supports switching between at least 2 applications
+  - [ ] criterion_deploy_type: Handles both K8s and Docker deployment types
+  - [ ] criterion_pattern_follow: Follows the pattern from 12b_001.sh
+  - [ ] criterion_shellcheck: Script has no critical shellcheck errors
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Config Integration (Weight: 30%)
+    - 1.0: Correctly reads app_keyword, namespace, app_k8s flag from config.conf with proper variable expansion
+    - 0.75: Reads config but misses some variables
+    - 0.5: Partially integrates config
+    - 0.25: Hardcodes values instead of reading config
+    - 0.0: Ignores config.conf entirely
+
+  ### Criterion 2: Multi-App Support (Weight: 30%)
+    - 1.0: Clean branching logic for dify/halo with appropriate per-app test parameters
+    - 0.75: Supports both apps but branching is messy
+    - 0.5: Only supports one app
+    - 0.25: App switching logic is broken
+    - 0.0: No multi-app support
+
+  ### Criterion 3: Pattern Consistency (Weight: 25%)
+    - 1.0: Follows 12b_001.sh patterns exactly (same variable names, same function structure, same log format)
+    - 0.75: Mostly consistent with minor deviations
+    - 0.5: Some patterns followed, others invented
+    - 0.25: Largely ignores existing patterns
+    - 0.0: Completely different style
+
+  ### Criterion 4: Script Quality (Weight: 15%)
+    - 1.0: Proper quoting, error handling, exit codes, and bash best practices
+    - 0.75: Minor shell scripting issues
+    - 0.5: Several best practice violations
+    - 0.25: Script may fail on edge cases
+    - 0.0: Script has syntax errors
 reference_solution: |
-  在 03b_002.sh 中：
-  1. source ./config.conf
-  2. 添加 select_app() 函数（从 12b_001.sh 参考）
-  3. 在 main() 中调用 select_app
-  4. 用 $app_url 替换硬编码的 APP_URL
+  原始来源：taskset-260427-121234/task_05_k8s_script_multi_app
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：Refactor a cloud evaluation shell script to support switching between multiple applications and deployment types based on a config file
+
+  隐藏 verifier 主要检查项：criterion_app_switch, criterion_config_read, criterion_deploy_type, criterion_pattern_follow, criterion_shellcheck
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. 读取 config.conf 中的应用配置
+  2. 支持在 dify 和 halo 之间切换
+  3. 支持 K8s 和 Docker 两种部署形态
+  4. 遵循 12b_001.sh 中已有的模式
+  5. 保持 common_utils.sh 的日志函数调用不变
+
+  ## Grading Criteria
+
+  - [ ] criterion_config_read: Script sources and uses config.conf variables
+  - [ ] criterion_app_switch: Supports switching between at least 2 applications
+  - [ ] criterion_deploy_type: Handles both K8s and Docker deployment types
+  - [ ] criterion_pattern_follow: Follows the pattern from 12b_001.sh
+  - [ ] criterion_shellcheck: Script has no critical shellcheck errors
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Config Integration (Weight: 30%)
+    - 1.0: Correctly reads app_keyword, namespace, app_k8s flag from config.conf with proper variable expansion
+    - 0.75: Reads config but misses some variables
+    - 0.5: Partially integrates config
+    - 0.25: Hardcodes values instead of reading config
+    - 0.0: Ignores config.conf entirely
+
+  ### Criterion 2: Multi-App Support (Weight: 30%)
+    - 1.0: Clean branching logic for dify/halo with appropriate per-app test parameters
+    - 0.75: Supports both apps but branching is messy
+    - 0.5: Only supports one app
+    - 0.25: App switching logic is broken
+    - 0.0: No multi-app support
+
+  ### Criterion 3: Pattern Consistency (Weight: 25%)
+    - 1.0: Follows 12b_001.sh patterns exactly (same variable names, same function structure, same log format)
+    - 0.75: Mostly consistent with minor deviations
+    - 0.5: Some patterns followed, others invented
+    - 0.25: Largely ignores existing patterns
+    - 0.0: Completely different style
+
+  ### Criterion 4: Script Quality (Weight: 15%)
+    - 1.0: Proper quoting, error handling, exit codes, and bash best practices
+    - 0.75: Minor shell scripting issues
+    - 0.5: Several best practice violations
+    - 0.25: Script may fail on edge cases
+    - 0.0: Script has syntax errors
+primary_dimensions:
+- completion
+- robustness
+- communication

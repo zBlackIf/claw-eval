@@ -1,0 +1,66 @@
+# provenance:
+#   themis_dataset: taskset-260421-225115-strict-v2
+#   themis_task_id: task_24_interrupt_cluster_gen
+#   themis_rank_original: 62
+#   themis_metrics: { std_trim: 0.358, range_trim: 0.852, mean_trim: 0.486 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP92_interrupt_verification_component_generator
+task_name: "中断五件套验证组件生成器（CP92 / 源 taskset-260421-225115-strict-v2:task_24_interrupt_cluster_gen）"
+version: "1.0"
+category: coding
+difficulty: hard
+tags: [general]
+
+source_task_id: "task_24_interrupt_cluster_gen"
+source_dataset: "taskset-260421-225115-strict-v2"
+source_description: "PinchBench top100 rank 62（std_trim 0.358，strict-v2）。Workspace WS2 芯片验证脚本生成。verifier 7 个隐藏锚点（脚本存在/verdi+tcl+kdb 集成/excel 生成+6 列/excel 读取/SystemVerilog 任务+RAL+force/重复 5 次/level vs pulse 处理）。"
+
+services: []
+
+prompt:
+  text: |
+    我是芯片验证组的，要做一个 Python 脚本帮我自动生成中断五件套的验证组件
+    （SystemVerilog task）。流程：用 verdi cli + kdb 找出所有 interrupt_cluster
+    例化的 hierarchy，写到 excel 里让用户补 trigger 类型和 RAL 信息，再据此
+    生成 SV 检查 task。脚本放到 /workspace/interrupt_cluster_check_gen.py。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/requirements.txt
+
+sandbox_grader_files:
+  - fixtures/verify_interrupt_gen.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_interrupt_gen.py
+
+env_snapshot_files:
+  - /workspace/interrupt_cluster_check_gen.py
+
+environment:
+  timeout_seconds: 720
+  max_turns: 16
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward interrupt_cluster_check_gen.py integrating Verdi (subprocess + tcl + kdb), generating interrupt_cluster_check.xlsx with 6 columns (hierarchy/trigger/info/level-or-pulse/ral_def/en_clr_cnt_info_status), reading existing xlsx to drive SV generation, emitting SystemVerilog task with RAL configure + force trigger (level=持续/pulse=1 clk) + status/cnt/info read-back + 5x repeat loop."
+
+reference_solution: |
+  Two-phase script:
+  Phase A (no xlsx): subprocess.run(['verdi', '-tcl', '...kdb', '-script',
+  hierarchy_dump.tcl]) → parse output for interrupt_cluster paths. Write
+  interrupt_cluster_check.xlsx with 6 columns, exit guiding user to fill.
+  Phase B (xlsx exists): read each row, generate SV task body:
+  ral.<x>.en.write(1'b1); foreach trigger: force <trigger>=1 for (level?
+  until check : pulse: 1 clk); ral.<x>.status.read; ral.<x>.cnt.read;
+  ral.<x>.info.read; ral.<x>.clr.write(...); loop x5. Concatenate into
+  *_check.sv, save include-able.
+
+primary_dimensions: [completion, communication, safety]

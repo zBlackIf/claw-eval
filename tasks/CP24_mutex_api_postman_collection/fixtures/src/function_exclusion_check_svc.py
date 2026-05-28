@@ -1,23 +1,25 @@
-"""Function exclusion check service logic."""
+"""Service layer — request/response DTOs + exclusion check."""
+from pydantic import BaseModel
+from typing import List
 from .function_exclusion_enum import FunctionCode, MUTEX_GROUPS
 
 
-class FunctionExclusionService:
-    """Service to check mutual exclusion between function codes."""
+class ExclusionCheckRequest(BaseModel):
+    tenant_id: str
+    user_id: str
+    function_codes: List[FunctionCode]
 
-    def check(self, function_codes: list[str]) -> dict:
-        """Check if any pair of codes belongs to the same mutex group."""
-        conflicts = []
 
-        for group in MUTEX_GROUPS:
-            group_set = set(group)
-            matched = group_set.intersection(set(function_codes))
-            if len(matched) >= 2:
-                conflicts.append({
-                    "group": list(group),
-                    "matched": sorted(list(matched))
-                })
+class ExclusionCheckResponse(BaseModel):
+    ok: bool
+    conflicting: List[List[str]] = []
 
-        if conflicts:
-            return {"result": "conflict", "conflicts": conflicts}
-        return {"result": "pass", "conflicts": []}
+
+def check_exclusion(req: ExclusionCheckRequest) -> ExclusionCheckResponse:
+    codes = {c.value for c in req.function_codes}
+    conflicts = []
+    for group in MUTEX_GROUPS:
+        hit = codes & group
+        if len(hit) >= 2:
+            conflicts.append(sorted(hit))
+    return ExclusionCheckResponse(ok=not conflicts, conflicting=conflicts)

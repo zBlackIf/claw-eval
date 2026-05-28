@@ -1,0 +1,65 @@
+# provenance:
+#   themis_dataset: taskset-260421-225115-strict-v2
+#   themis_task_id: task_52_github_repo_analysis
+#   themis_rank_original: 65
+#   themis_metrics: { std_trim: 0.350, range_trim: 0.906, mean_trim: 0.525 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP95_github_repository_viral_analysis_report
+task_name: "GitHub 仓库爆火深度分析报告（CP95 / 源 taskset-260421-225115-strict-v2:task_52_github_repo_analysis）"
+version: "1.0"
+category: research
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_52_github_repo_analysis"
+source_dataset: "taskset-260421-225115-strict-v2"
+source_description: "PinchBench top100 rank 65（std_trim 0.350）。Workspace WS2 综合分析任务：基于仓库快照 + 社交传播数据写中文深度分析报告。verifier 5 个隐藏锚点（报告 ≥1500 字 / 仓库基本信息 / 社交传播分析 / 评价与建议 / 中文比例 ≥30%）。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/ 下有一个最近爆火 GitHub 仓库的快照数据和社交传播
+    数据。帮我做一份深度分析报告（中文），写到 /workspace/analysis_report.md，
+    要有深度，别泛泛而谈。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/repo_readme.md
+  - fixtures/repo_snapshot.json
+  - fixtures/social_media_mentions.json
+
+sandbox_grader_files:
+  - fixtures/verify_repo_analysis.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_repo_analysis.py
+
+env_snapshot_files:
+  - /workspace/analysis_report.md
+
+environment:
+  timeout_seconds: 600
+  max_turns: 14
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward analysis_report.md (Chinese, ≥1500 chars, ≥30% Chinese ratio) covering: repo basics (Karpathy/Claude/skill/star/fork), viral analysis (Twitter/Hacker News/Reddit/influencer/trending paths), evaluation (限制 / 借鉴 / 启示 / suggestions). Penalize generic 'this is a great project' without specifics from the snapshot data."
+
+reference_solution: |
+  Read repo_snapshot.json (star count, created_at, top contributors) +
+  repo_readme.md (project description) + social_media_mentions.json (timeline).
+  Compose Chinese report covering: (1) repo 基本信息 (star/fork/创建时间/
+  Karpathy 关系); (2) 项目内容 (做了什么/技术原理/与 Claude Code skill 生态
+  的关系); (3) 爆火原因 (社交传播路径 - 哪些 KOL 转发，时机为什么对，
+  Claude Code 生态因素); (4) 评价与建议 (实际价值/局限/对 AI agent 开发者
+  的借鉴).
+
+primary_dimensions: [completion, communication, safety]

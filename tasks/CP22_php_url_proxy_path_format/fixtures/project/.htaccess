@@ -1,9 +1,9 @@
-RewriteEngine On
-RewriteBase /proxy/
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /proxy/
 
-# If file or directory exists, serve it directly
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-
-# Forward everything else to index.php
-RewriteRule ^(.*)$ index.php?q=$1 [QSA,L]
+    # If the request is not for a valid file/directory, forward to index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>

@@ -1557,6 +1557,113 @@ def cmd_batch(args: argparse.Namespace) -> None:
     print(f"  Summary saved to {summary_file}")
 
 
+def cmd_harness(args: argparse.Namespace) -> None:
+    """Run a task through an external Claude Code or Codex harness."""
+    _apply_proxy(getattr(args, "proxy", None))
+
+    from .config import load_config
+    from .harness.orchestrator import run_harness_task
+
+    cfg = load_config(args.config)
+    task_yaml = _resolve_task_yaml(args.task)
+    model_id = args.model or cfg.model.model_id
+    trace_dir = _make_trace_dir(
+        args.trace_dir or cfg.defaults.trace_dir,
+        f"{args.agent}_{model_id}",
+    )
+
+    result = run_harness_task(
+        task_yaml=task_yaml,
+        harness=args.agent,
+        model_id=model_id,
+        cfg=cfg,
+        trace_dir=trace_dir,
+        port_offset=getattr(args, "port_offset", 0) or 0,
+        sandbox=getattr(args, "sandbox", False) or cfg.sandbox.enabled,
+        sandbox_image=getattr(args, "sandbox_image", None),
+        no_judge=getattr(args, "no_judge", False),
+    )
+
+    print(f"Trace:          {result['trace']}")
+    print(f"Raw transcript: {result['raw_dir']}")
+    print(f"Harness:        {result['harness']}")
+    print(f"Model:          {result['model']}")
+    print(f"Exit code:      {result['returncode']}")
+    print(f"completion:     {result['completion']:.2f}")
+    print(f"robustness:     {result['robustness']:.2f}")
+    print(f"communication:  {result['communication']:.2f}")
+    print(f"safety:         {result['safety']:.1f}")
+    print(f"task_score:     {result['task_score']:.2f}")
+    print(f"passed:         {result['passed']}")
+
+
+def cmd_harness_batch(args: argparse.Namespace) -> None:
+    """Run a set of tasks through one or more external harnesses."""
+    _apply_proxy(getattr(args, "proxy", None))
+
+    from .config import load_config
+    from .harness.orchestrator import run_harness_task
+
+    cfg = load_config(args.config)
+    tasks_dir = Path(args.tasks_dir)
+    task_dirs = sorted(
+        d for d in tasks_dir.iterdir()
+        if d.is_dir() and (d / "task.yaml").exists()
+    )
+    if args.filter:
+        filt = args.filter.lower()
+        task_dirs = [d for d in task_dirs if filt in d.name.lower()]
+    if args.limit:
+        task_dirs = task_dirs[: args.limit]
+    if not task_dirs:
+        print("No tasks matched.")
+        return
+
+    agents = [item.strip() for item in args.agent.split(",") if item.strip()]
+    model_id = args.model or cfg.model.model_id
+    trace_dir = Path(args.trace_dir or cfg.defaults.trace_dir)
+    results = []
+    total = len(task_dirs) * len(agents)
+    idx = 0
+    for agent in agents:
+        agent_trace_dir = _make_trace_dir(trace_dir, f"{agent}_{model_id}")
+        for task_dir in task_dirs:
+            idx += 1
+            offset = (getattr(args, "port_base_offset", 0) or 0) + (idx - 1) * 50
+            print(f"[{idx}/{total}] {agent} {task_dir.name}")
+            try:
+                result = run_harness_task(
+                    task_yaml=task_dir / "task.yaml",
+                    harness=agent,
+                    model_id=model_id,
+                    cfg=cfg,
+                    trace_dir=agent_trace_dir,
+                    port_offset=offset,
+                    sandbox=getattr(args, "sandbox", False) or cfg.sandbox.enabled,
+                    sandbox_image=getattr(args, "sandbox_image", None),
+                    no_judge=getattr(args, "no_judge", False),
+                )
+            except Exception as exc:
+                result = {
+                    "task_id": task_dir.name,
+                    "harness": agent,
+                    "model": model_id,
+                    "error": str(exc),
+                    "task_score": 0.0,
+                    "passed": False,
+                }
+                print(f"  ERROR: {exc}")
+            else:
+                status = "PASS" if result["passed"] else "FAIL"
+                print(f"  {result['task_score']:.2f} {status} trace={result['trace']}")
+            results.append(result)
+
+    out = trace_dir / "harness_batch_results.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"Results saved to {out}")
+
+
 def cmd_cleanup(args: argparse.Namespace) -> None:
     """Remove all claw-eval Docker containers."""
     from .config import load_config
@@ -1670,6 +1777,34 @@ def main(argv: list[str] | None = None) -> None:
                               "skips tasks with enough completed trials, and only runs the rest. "
                               "Results are merged into the same directory.")
 
+    # harness
+    p_harness = sub.add_parser("harness", help="Run a task through Claude Code or Codex")
+    p_harness.add_argument("--task", required=True, help="Path to task dir or YAML")
+    p_harness.add_argument("--agent", required=True, choices=["claude-code", "codex"])
+    p_harness.add_argument("--model", default=None, help="Model ID passed to the external harness")
+    p_harness.add_argument("--config", default=None, help="Path to config.yaml")
+    p_harness.add_argument("--trace-dir", default=None, help="Output directory for traces")
+    p_harness.add_argument("--port-offset", type=int, default=0, help="Offset for all service ports")
+    p_harness.add_argument("--sandbox", action="store_true", help="Run sandbox tools inside Docker containers")
+    p_harness.add_argument("--sandbox-image", default=None, help="Override sandbox Docker image name")
+    p_harness.add_argument("--no-judge", action="store_true", help="Disable LLM judge")
+    p_harness.add_argument("--proxy", default=None, help="HTTP proxy URL for model/judge API traffic")
+
+    # harness-batch
+    p_harness_batch = sub.add_parser("harness-batch", help="Run multiple tasks through Claude Code and/or Codex")
+    p_harness_batch.add_argument("--tasks-dir", default="tasks", help="Tasks directory")
+    p_harness_batch.add_argument("--agent", required=True, help="Comma-separated agents: claude-code,codex")
+    p_harness_batch.add_argument("--model", default=None, help="Model ID passed to the external harness")
+    p_harness_batch.add_argument("--config", default=None, help="Path to config.yaml")
+    p_harness_batch.add_argument("--trace-dir", default=None, help="Output directory for traces")
+    p_harness_batch.add_argument("--filter", default=None, help="Only run tasks matching this substring")
+    p_harness_batch.add_argument("--limit", type=int, default=None, help="Limit number of matched tasks")
+    p_harness_batch.add_argument("--port-base-offset", type=int, default=0, help="Base port offset")
+    p_harness_batch.add_argument("--sandbox", action="store_true", help="Run sandbox tools inside Docker containers")
+    p_harness_batch.add_argument("--sandbox-image", default=None, help="Override sandbox Docker image name")
+    p_harness_batch.add_argument("--no-judge", action="store_true", help="Disable LLM judge")
+    p_harness_batch.add_argument("--proxy", default=None, help="HTTP proxy URL for model/judge API traffic")
+
     # cleanup
     p_cleanup = sub.add_parser("cleanup", help="Remove all claw-eval Docker containers")
     p_cleanup.add_argument("--config", default=None, help="Path to config.yaml")
@@ -1690,6 +1825,10 @@ def main(argv: list[str] | None = None) -> None:
         cmd_grade(args)
     elif args.command == "batch":
         cmd_batch(args)
+    elif args.command == "harness":
+        cmd_harness(args)
+    elif args.command == "harness-batch":
+        cmd_harness_batch(args)
     elif args.command == "cleanup":
         cmd_cleanup(args)
     elif args.command == "list":

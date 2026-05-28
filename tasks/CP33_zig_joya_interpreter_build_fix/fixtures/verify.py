@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -29,7 +31,7 @@ def automated_score(workspace: Path) -> dict[str, float]:
 
     # build.zig fixed (removed old API, uses new root_module or equivalent)
     has_old_api = bool(re.search(r"\.root_source_file\s*=\s*b\.path", build_zig))
-    has_new_api = bool(re.search(r"(\.root_module\s*=|addExecutable\s*\(\s*\.?\{)", build_zig))
+    has_new_api = bool(re.search(r"(\.root_module\s*=|createModule\s*\(|addExecutable\s*\(\s*\.?\{)", build_zig))
     if has_new_api and not has_old_api:
         scores["build_zig_fixed"] = 1.0
     elif has_new_api:
@@ -47,10 +49,11 @@ def automated_score(workspace: Path) -> dict[str, float]:
     )
     scores["lexer_compiles"] = 1.0 if lexer_looks_clean else 0.0
 
-    # parser fixes
-    has_var_tok = bool(re.search(r"var tok\s*=\s*self\.peek", parser_zig))
-    has_const_tok = bool(re.search(r"const tok\s*=\s*self\.peek", parser_zig))
-    fixed_deinit = bool(re.search(r"(pub fn deinit\(.*_.*\)|_ = self)", parser_zig))
+    # parser fixes. Accept equivalent names and whitespace instead of one exact
+    # hidden solution shape.
+    has_var_tok = bool(re.search(r"\bvar\s+\w+\s*=\s*self\.peek", parser_zig))
+    has_const_tok = bool(re.search(r"\bconst\s+\w+\s*=\s*self\.peek", parser_zig))
+    fixed_deinit = bool(re.search(r"(pub fn deinit\([^)]*_\s*:|_ = self|self\.\w+)", parser_zig))
     score = 0.0
     if fixed_deinit:
         score += 0.5
@@ -77,6 +80,27 @@ def automated_score(workspace: Path) -> dict[str, float]:
         scores["example_preserved"] = 1.0 if (has_let and has_print) else 0.5
     else:
         scores["example_preserved"] = 0.0
+
+    # If Zig is available in the sandbox, prefer the real build signal. Keep it
+    # optional so verifier remains portable in stripped-down runners.
+    if shutil.which("zig") and (workspace / "build.zig").exists():
+        try:
+            proc = subprocess.run(
+                ["zig", "build"],
+                cwd=str(workspace),
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            scores["zig_build_passes"] = 1.0 if proc.returncode == 0 else 0.0
+        except Exception:
+            scores["zig_build_passes"] = 0.0
+    else:
+        scores["zig_build_passes"] = 1.0 if (
+            scores["build_zig_fixed"] >= 0.75
+            and scores["lexer_compiles"] >= 1.0
+            and scores["parser_compiles"] >= 0.75
+        ) else 0.0
 
     return scores
 

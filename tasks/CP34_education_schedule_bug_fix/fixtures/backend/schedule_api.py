@@ -41,11 +41,14 @@ DAY_MAP = {
 
 def get_teachers():
     """Return list of teachers for dropdown."""
+    # BUG: Returns raw dict instead of serializable format with 'value'/'label' keys
+    # Frontend expects: [{"value": id, "label": name}, ...]
     return _teachers
 
 
 def get_classrooms():
     """Return list of classrooms for dropdown."""
+    # Same bug as get_teachers
     return _classrooms
 
 
@@ -58,12 +61,29 @@ def create_schedule(
     end_time: str,
     repeat_weeks: int = 1,
 ) -> dict:
-    """Create a schedule entry, optionally repeating for multiple weeks."""
+    """Create a schedule entry, optionally repeating for multiple weeks.
+
+    Args:
+        course_id: ID of the course
+        teacher_id: ID of the teacher
+        classroom_id: ID of the classroom
+        day_of_week: Day name (e.g., "Tuesday")
+        start_time: Start time (e.g., "09:00")
+        end_time: End time (e.g., "10:30")
+        repeat_weeks: Number of weeks to repeat (1 = no repeat)
+
+    Returns:
+        dict with created schedule entries
+    """
     created = []
     base_date = _get_next_weekday(day_of_week)
 
     for week in range(repeat_weeks):
         schedule_date = base_date + timedelta(weeks=week)
+        # BUG: When repeat_weeks > 1, the day shifts by +1 because
+        # _get_next_weekday already returns next occurrence, and adding
+        # timedelta(weeks=week) when week=0 is correct, but the _get_next_weekday
+        # function itself has the off-by-one from DAY_MAP
         entry = {
             "id": len(_schedules) + 1,
             "course_id": course_id,
@@ -73,6 +93,8 @@ def create_schedule(
             "date": schedule_date.strftime("%Y-%m-%d"),
             "start_time": start_time,
             "end_time": end_time,
+            # BUG: Only stores IDs, not names - frontend needs names for display
+            # without an extra lookup
         }
         _schedules.append(entry)
         created.append(entry)
@@ -80,8 +102,27 @@ def create_schedule(
     return {"status": "success", "created": created}
 
 
+def get_schedule_display(schedule_id: int) -> Optional[dict]:
+    """Get schedule entry with display information.
+
+    BUG: Does not join course/teacher/classroom names into the response.
+    Frontend has to make 3 extra API calls to display card content.
+    """
+    for s in _schedules:
+        if s["id"] == schedule_id:
+            return s
+    return None
+
+
 def _get_next_weekday(day_name: str) -> datetime:
-    """Get the date of the next occurrence of the given weekday."""
+    """Get the date of the next occurrence of the given weekday.
+
+    BUG: Uses DAY_MAP which maps Monday=0, but Python's weekday()
+    also uses Monday=0. The real bug is that the frontend sends
+    day_of_week as 1-indexed (Monday=1, Tuesday=2, etc.) while
+    this function treats it as 0-indexed via DAY_MAP.
+    Result: Tuesday schedule ends up on Wednesday.
+    """
     target_day = DAY_MAP.get(day_name, 0)
     today = datetime.now()
     days_ahead = target_day - today.weekday()

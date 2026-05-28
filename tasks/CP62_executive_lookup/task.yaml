@@ -1,0 +1,92 @@
+# provenance:
+#   themis_dataset: taskset-260424-pinchbench-v2rc2
+#   themis_task_id: task_executive_lookup
+#   themis_rank_original: 20
+#   themis_metrics: { std_trim: 0.415, range_trim: 1.000, mean_trim: 0.600 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP62_executive_lookup
+task_name: "GitLab CFO 高管事实查询（CP62 / 源 taskset-260424-pinchbench-v2rc2:task_executive_lookup）"
+version: "1.0"
+category: research
+difficulty: easy
+tags: [general]
+
+source_task_id: "task_executive_lookup"
+source_dataset: "taskset-260424-pinchbench-v2rc2"
+source_description: "PinchBench top100 rank 20 高区分度题（std_trim 0.415）。改编为 Pattern A + sandbox 文件混合：agent 查 GitLab 当前 CFO（Jessica Ross，2026 年初公布）并写入 /workspace/gitlab_cfo.txt。verifier 4 个锚点（正确姓名/CFO 角色/2026 年来源/可读性），强模型靠 web 命中，弱模型靠陈旧训练数据答错。"
+
+services:
+  - name: web_real
+    command: python mock_services/web_real/server.py
+    port: 9114
+    health_check: http://localhost:9114/web/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9114/web/reset
+
+prompt:
+  text: |
+    GitLab 现在的 CFO 是谁？写到 /workspace/gitlab_cfo.txt，
+    附一句来源。
+  language: zh
+
+tools:
+  - name: web_search
+    description: 搜索互联网
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        max_results:
+          type: integer
+          default: 10
+      required: [query]
+  - name: web_fetch
+    description: 获取指定 URL 内容
+    input_schema:
+      type: object
+      properties:
+        url:
+          type: string
+        timeout_seconds:
+          type: integer
+          default: 30
+      required: [url]
+
+tool_endpoints:
+  - tool_name: web_search
+    url: http://localhost:9114/web/search
+    method: POST
+  - tool_name: web_fetch
+    url: http://localhost:9114/web/fetch
+    method: POST
+
+sandbox_grader_files:
+  - fixtures/verify_cfo_lookup.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_cfo_lookup.py
+
+env_snapshot_files:
+  - /workspace/gitlab_cfo.txt
+
+environment:
+  timeout_seconds: 360
+  max_turns: 15
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward gitlab_cfo.txt that names Jessica Ross as GitLab's CFO with a 2026-dated source citation (investor relations, press release, Reuters, Bloomberg). Penalize stale names like Brian Robins (former CFO) or fabricated sourcing."
+
+reference_solution: |
+  web_search('GitLab CFO 2026 Jessica Ross') / web_fetch GitLab Investor
+  Relations announcement page. Write /workspace/gitlab_cfo.txt:
+  "Jessica Ross — GitLab CFO (announced early 2026). Source: GitLab
+  Investor Relations press release, March 3, 2026."
+
+primary_dimensions: [completion, robustness, communication]

@@ -40,7 +40,7 @@ pub const Parser = struct {
     }
 
     fn parseLetStatement(self: *Parser) !ast.Statement {
-        _ = self.advance();
+        _ = self.advance(); // consume 'let'
         const name_tok = self.advance() orelse return error.UnexpectedEof;
         _ = self.expect(.equals) orelse return error.ExpectedEquals;
         const expr = try self.parseExpression();
@@ -49,7 +49,7 @@ pub const Parser = struct {
     }
 
     fn parsePrintStatement(self: *Parser) !ast.Statement {
-        _ = self.advance();
+        _ = self.advance(); // consume 'print'
         _ = self.expect(.lparen) orelse return error.ExpectedLParen;
         const expr = try self.parseExpression();
         _ = self.expect(.rparen);
@@ -58,7 +58,7 @@ pub const Parser = struct {
     }
 
     fn parseIfStatement(self: *Parser) !ast.Statement {
-        _ = self.advance();
+        _ = self.advance(); // consume 'if'
         _ = self.expect(.lparen) orelse return error.ExpectedLParen;
         const cond = try self.parseExpression();
         _ = self.expect(.rparen);
@@ -78,7 +78,10 @@ pub const Parser = struct {
     fn parseBlock(self: *Parser) ![]ast.Statement {
         var stmts = std.ArrayList(ast.Statement).init(self.allocator);
         while (self.peek()) |tok| {
-            if (tok.type == .rbrace) { _ = self.advance(); break; }
+            if (tok.type == .rbrace) {
+                _ = self.advance();
+                break;
+            }
             if (tok.type == .eof) break;
             try stmts.append(try self.parseStatement());
         }
@@ -88,12 +91,20 @@ pub const Parser = struct {
     fn parseExpression(self: *Parser) !ast.Expression {
         var left = try self.parsePrimary();
         while (self.peek()) |tok| {
-            if (tok.type == .plus or tok.type == .minus or tok.type == .star or
-                tok.type == .slash or tok.type == .gt or tok.type == .lt) {
+            if (tok.type == .plus or tok.type == .minus or
+                tok.type == .star or tok.type == .slash or
+                tok.type == .gt or tok.type == .lt)
+            {
                 const op = self.advance().?;
                 const right = try self.parsePrimary();
-                left = .{ .binary = .{ .left = &left, .op = op.type, .right = &right } };
-            } else { break; }
+                left = .{ .binary = .{
+                    .left = &left,
+                    .op = op.type,
+                    .right = &right,
+                } };
+            } else {
+                break;
+            }
         }
         return left;
     }
@@ -104,7 +115,11 @@ pub const Parser = struct {
             .number => .{ .number_lit = std.fmt.parseInt(i64, tok.lexeme, 10) catch 0 },
             .string_lit => .{ .string_lit = tok.lexeme },
             .ident => .{ .identifier = tok.lexeme },
-            .lparen => blk: { const expr = try self.parseExpression(); _ = self.expect(.rparen); break :blk expr; },
+            .lparen => blk: {
+                const expr = try self.parseExpression();
+                _ = self.expect(.rparen);
+                break :blk expr;
+            },
             else => error.UnexpectedToken,
         };
     }
@@ -115,12 +130,18 @@ pub const Parser = struct {
     }
 
     fn advance(self: *Parser) ?Token {
-        if (self.pos < self.tokens.len) { const tok = self.tokens[self.pos]; self.pos += 1; return tok; }
+        if (self.pos < self.tokens.len) {
+            const tok = self.tokens[self.pos];
+            self.pos += 1;
+            return tok;
+        }
         return null;
     }
 
     fn expect(self: *Parser, expected: TokenType) ?Token {
-        if (self.peek()) |tok| { if (tok.type == expected) return self.advance(); }
+        if (self.peek()) |tok| {
+            if (tok.type == expected) return self.advance();
+        }
         return null;
     }
 };

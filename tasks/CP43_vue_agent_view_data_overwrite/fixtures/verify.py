@@ -38,22 +38,22 @@ def automated_score(workspace: Path) -> dict[str, float]:
             ]:
                 all_code += read_safe(p)
 
-    # Race condition fix: pinned ID or removed debounce
+    # Race condition fix: pinned ID or removed/cancelled debounce.
     has_pinned_id = bool(re.search(
-        r"(const|let|ref)\s*\(?\s*(savedId|chatIdSnapshot|pinnedId|targetId|capturedId)\s*=",
+        r"(const|let|ref)\s*\(?\s*(savedId|chatIdSnapshot|pinnedId|targetId|capturedId|chatIdAtSave|selectedChatId|saveChatId)\s*=",
         plan_panel, re.IGNORECASE,
     ))
     removed_debounce = "debounce" not in plan_panel.lower()
-    uses_ref_tracking = bool(re.search(r"(activeChatId|currentSavingId)\.value", plan_panel))
+    uses_ref_tracking = bool(re.search(r"(activeChatId|currentSavingId|savingChatId|pendingChatId)\.value", plan_panel))
     scores["race_condition_fixed"] = 1.0 if (has_pinned_id or removed_debounce or uses_ref_tracking) else 0.0
 
     # Dirty check added
     has_dirty = bool(re.search(
-        r"(const|let|ref|computed)\s*\(?\s*(isDirty|dirty|hasChanges|isModified)",
+        r"(const|let|ref|computed)\s*\(?\s*(isDirty|dirty|hasChanges|isModified|unsaved|pendingChanges)",
         agent_view + plan_panel, re.IGNORECASE,
     ))
-    has_confirm = bool(re.search(r"(confirm\(|window\.confirm|showConfirm)", agent_view, re.IGNORECASE))
-    has_save_before_switch = bool(re.search(r"handleSelectChat[^}]*await\s+.*save", agent_view, re.DOTALL))
+    has_confirm = bool(re.search(r"(confirm\(|window\.confirm|showConfirm|discard|放弃|保存)", agent_view, re.IGNORECASE))
+    has_save_before_switch = bool(re.search(r"handleSelectChat[\s\S]{0,900}await\s+.*save", agent_view, re.IGNORECASE))
     if has_dirty and (has_confirm or has_save_before_switch):
         scores["dirty_check_added"] = 1.0
     elif has_dirty:
@@ -62,15 +62,18 @@ def automated_score(workspace: Path) -> dict[str, float]:
         scores["dirty_check_added"] = 0.0
 
     # Request dedup or cancel
-    has_abort = bool(re.search(r"AbortController|abort.*signal", all_code, re.IGNORECASE))
-    has_cancel = bool(re.search(r"\.cancel\(\)", all_code))
+    has_abort = bool(re.search(r"AbortController|abort.*signal|controller\.abort", all_code, re.IGNORECASE))
+    has_cancel = bool(re.search(r"\.cancel\(\)|clearTimeout|cancelPending|pendingSave", all_code))
     has_save_lock = bool(re.search(r"(isSaving|saveLock|mutex)", all_code, re.IGNORECASE))
     count = sum([has_abort, has_cancel, has_save_lock])
     scores["request_dedup"] = min(count / 2.0, 1.0)
 
-    # Server concurrency
+    # Server concurrency is optional extra credit: the user-visible prompt is
+    # primarily about client-side data overwrite. Do not make optimistic
+    # locking a hard blocker unless the solution touches server routes.
     has_version = bool(re.search(r"(version|etag|if-match|optimistic)", server_routes, re.IGNORECASE))
-    scores["server_concurrency"] = 1.0 if has_version else 0.0
+    server_touched = "PUT" in server_routes or "router.put" in server_routes or "agentChats" in server_routes
+    scores["server_concurrency"] = 1.0 if has_version else (0.7 if not server_touched else 0.4)
 
     return scores
 

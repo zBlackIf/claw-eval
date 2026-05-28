@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import re
 import sys
+import ast
 from pathlib import Path
 
 WORKSPACE = Path("/workspace")
@@ -18,7 +19,7 @@ WORKSPACE = Path("/workspace")
 def automated_score(workspace: Path) -> dict[str, float]:
     scores = {}
 
-    video_loader = workspace / "video_loader.py"
+    video_loader = workspace / "app" / "services" / "video_loader.py"
     if not video_loader.exists():
         return {
             "stream_mode": 0.0,
@@ -28,7 +29,12 @@ def automated_score(workspace: Path) -> dict[str, float]:
             "interface_compat": 0.0,
         }
 
-    content = video_loader.read_text()
+    content = video_loader.read_text(encoding="utf-8", errors="ignore")
+    try:
+        ast.parse(content)
+        scores["python_syntax_valid"] = 1.0
+    except SyntaxError:
+        scores["python_syntax_valid"] = 0.0
 
     # Check streaming implementation
     stream_patterns = [
@@ -40,7 +46,8 @@ def automated_score(workspace: Path) -> dict[str, float]:
         r'async\s+for\s+\w+\s+in\s+\w+',
     ]
     has_stream = any(re.search(p, content) for p in stream_patterns)
-    scores["stream_mode"] = 1.0 if has_stream else 0.0
+    no_full_content_primary = "response.content" not in content or "fallback" in content.lower()
+    scores["stream_mode"] = 1.0 if (has_stream and no_full_content_primary) else (0.5 if has_stream else 0.0)
 
     # Check early termination logic
     early_stop_patterns = [
@@ -53,7 +60,8 @@ def automated_score(workspace: Path) -> dict[str, float]:
     has_early_stop = sum(
         1 for p in early_stop_patterns if re.search(p, content, re.IGNORECASE)
     )
-    scores["early_stop"] = min(has_early_stop / 2.0, 1.0)
+    has_capture_probe = bool(re.search(r"VideoCapture|cv2\.", content))
+    scores["early_stop"] = min((has_early_stop + (1 if has_capture_probe else 0)) / 3.0, 1.0)
 
     # Check fallback mechanism
     fallback_patterns = [
@@ -68,16 +76,17 @@ def automated_score(workspace: Path) -> dict[str, float]:
     )
     scores["fallback"] = 1.0 if has_fallback else 0.0
 
-    # Check config updates
-    config_file = workspace / "config.py"
+    # Config updates are useful but optional: the visible prompt asks for
+    # video_loader.py, while older rubric expected app/config.py too.
+    config_file = workspace / "app" / "config.py"
     if config_file.exists():
         config_content = config_file.read_text()
         has_stream_config = any(k in config_content.upper() for k in [
             "STREAM", "CHUNK_SIZE", "CHECK_INTERVAL", "FRAME_CHECK"
         ])
-        scores["config_updated"] = 1.0 if has_stream_config else 0.0
+        scores["config_updated"] = 1.0 if has_stream_config else 0.7
     else:
-        scores["config_updated"] = 0.0
+        scores["config_updated"] = 0.7
 
     # Check interface compatibility (load_video signature preserved)
     has_load_video = bool(re.search(
@@ -91,6 +100,9 @@ def automated_score(workspace: Path) -> dict[str, float]:
         0.5 * (1.0 if has_load_video else 0.0)
         + 0.5 * (1.0 if has_return_tuple else 0.0)
     )
+
+    cleanup_present = bool(re.search(r"(finally|cleanup|os\.remove|unlink|delete)", content, re.IGNORECASE))
+    scores["temp_cleanup"] = 1.0 if cleanup_present else 0.0
 
     return scores
 

@@ -1,17 +1,27 @@
 task_id: CP21_tcg_card_rule_schema_construction
 task_name: TCG卡牌游戏规则系统Schema构建
-version: "1.1"
+version: '2.0'
 category: code_generation
 difficulty: hard
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_32_tcg_card_rule_schema"
-source_dataset: "taskset-260427-121234"
-
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_32_tcg_card_rule_schema
+source_dataset: taskset-260427-121234
+source_description: Redesigned from taskset-260427-121234/task_32_tcg_card_rule_schema with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
 services: []
-
 prompt:
   text: |
+    我已经把原始项目素材放在容器的 `/workspace/fixtures/` 目录下，请把这些文件当作只读输入。
+
+    输入文件如下（右侧是它在原项目中的相对路径）：
+    - `/workspace/fixtures/data/rules/arena_tcg/rule_template.json` -> `data/rules/arena_tcg/rule_template.json`
+    - `/workspace/fixtures/data/rules/arena_tcg/cards/sample_hero.json` -> `data/rules/arena_tcg/cards/sample_hero.json`
+
+    请基于这些输入完成下面的原始需求：
+
     我要为一个 TCG 引擎创建新的游戏规则。游戏名为"Arena TCG"。请严格按照我描述的规则进行，不要添加任何额外内容。如果有不明确的细节，请向我询问。
 
     规则如下：
@@ -39,77 +49,149 @@ prompt:
 
     7. **击败与胜负**：英雄HP归零则被击败 -> 支付击败代价(从卡组顶部弃N张) -> 死亡英雄留在场上(死亡状态) -> 若在前场须与后场存活英雄交换 -> 对手翻野怪牌结算奖励。卡组耗尽或全部英雄死亡则输。
 
-    请完成以下任务（所有产物必须落到容器 `/workspace` 下）：
-    1. 在 `/workspace/data/rules/arena_tcg/rule.json` 中写入完整的游戏规则定义(JSON格式)
-    2. 创建至少6张卡牌JSON文件在 `/workspace/data/rules/arena_tcg/cards/` 目录下(至少包含：2张英雄牌不同阶、1张装备牌、1张谋略牌、1张技能牌、1张野怪牌)
-    3. 创建 `/workspace/skills/arena_tcg_card_import.md` 描述从卡图提取卡牌信息的标准操作流程
+    请完成以下任务：
+    1. 在 `data/rules/arena_tcg/rule.json` 中写入完整的游戏规则定义(JSON格式)
+    2. 创建至少6张卡牌JSON文件在 `data/rules/arena_tcg/cards/` 目录下(至少包含：2张英雄牌不同阶、1张装备牌、1张谋略牌、1张技能牌、1张野怪牌)
+    3. 创建 `skills/arena_tcg_card_import.md` 描述从卡图提取卡牌信息的标准操作流程
     4. 所有卡牌JSON必须包含上述英雄卡的全部9个要素(非英雄卡不适用的字段留null)
-  language: zh
 
+    交付要求：
+    - 需要修改已有文件时，请把修改后的版本写到 `/workspace/` 下对应的原项目相对路径。
+    - 需要新增文件时，请按需求中的文件名或上面列出的目标路径写到 `/workspace/` 下。
+    - 最终回复只需概述完成情况、关键改动和生成的文件；不要只在最终回复中贴代码或报告正文。
+  language: zh
 tools: []
 tool_endpoints: []
-
-sandbox_files: []
-
+sandbox_files:
+- fixtures/data/rules/arena_tcg/rule_template.json
+- fixtures/data/rules/arena_tcg/cards/sample_hero.json
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
   timeout_seconds: 600
   max_turns: 30
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/data/rules/arena_tcg/rule.json
-  - /workspace/data/rules/arena_tcg/cards/*.json
-  - /workspace/skills/arena_tcg_card_import.md
-
+- /workspace/data/rules/arena_tcg/rule.json
+- /workspace/data/rules/arena_tcg/cards/*.json
+- /workspace/skills/arena_tcg_card_import.md
+- /workspace/data/rules/arena_tcg/rule_template.json
+- /workspace/data/rules/arena_tcg/cards/sample_hero.json
 scoring_components: []
-
 safety_checks: []
-
 expected_actions: []
-
 judge_rubric: |
-  评估 agent 是否严格按照用户描述的规则创建了完整的 TCG 游戏规则系统。
+  ## Expected Behavior
 
-  ## 规则完整性
-  - rule.json 是否包含全部 7 个规则模块（卡牌类型、场面结构、卡组构筑、费用系统、回合操作、英雄卡要素、击败与胜负）
-  - 每个模块的细节是否与 prompt 完全一致（如手牌上限 7、卡组 30 张、同名至多 4 张等数字）
-  - 回合操作的 9 个阶段是否按正确顺序列出
+  1. Agent creates rule.json with all game mechanics faithfully encoded
+  2. Agent creates 6+ card JSON files following the schema
+  3. Agent creates the skill file
+  4. Agent does NOT invent extra rules or mechanics not stated
 
-  ## 卡牌文件质量
-  - 是否创建了至少 6 张卡牌（2 英雄不同阶 + 装备 + 谋略 + 技能 + 野怪）
-  - 英雄卡是否包含全部 9 个要素（name, card_art, hp, retreat_cost, defeat_cost, revive_cost, effects, tags, tier）
-  - 非英雄卡是否对不适用字段留 null
-  - JSON 格式是否合法且 schema 一致
+  **Hard red lines**:
+  - rule.json missing any of the 5 card types -> card_types_complete = 0
+  - Any card JSON missing required fields (name, type, tier for heroes) -> card_schema_valid = 0
+  - Adding game mechanics not described in the prompt -> no_extra_rules = 0
 
-  ## 严格性
-  - 是否添加了 prompt 未要求的额外规则或机制
-  - 是否遗漏了 prompt 中明确要求的任何内容
+  ## Grading Criteria
 
-  ## 文档质量
-  - arena_tcg_card_import.md 是否描述了标准操作流程
+  - [ ] rule_json_present: rule.json exists and is valid JSON
+  - [ ] card_types_complete: all 5 card types defined in rule.json
+  - [ ] card_files_count: at least 6 card JSON files created
+  - [ ] card_schema_valid: all card files contain required fields
+  - [ ] turn_actions_complete: all 9 turn actions defined in rule.json
+  - [ ] no_extra_rules: no mechanics invented beyond the prompt
 
-  ## 评分标准
-  - 0.9-1.0: 完美执行，所有规则模块完整且精确，6+ 张卡牌 schema 一致，无额外内容
-  - 0.7-0.8: 大部分正确，少量细节遗漏或 schema 不一致
-  - 0.4-0.6: 结构存在但有明显错误或遗漏
-  - 0.0-0.3: 未完成或严重偏离要求
+  ## LLM Judge Rubric
 
+  ### Criterion 1: Workflow Design (Weight: 30%)
+    - 1.0: Clear step-by-step workflow with proper sequencing, conditions, and error handling
+    - 0.75: Good workflow with minor sequencing or condition gaps
+    - 0.5: Basic workflow present but missing important steps or conditions
+    - 0.25: Incomplete or poorly designed workflow
+    - 0.0: No meaningful workflow design
+
+  ### Criterion 2: Implementation Completeness (Weight: 30%)
+    - 1.0: All required components implemented, tested, and documented
+    - 0.75: Most components present with minor omissions
+    - 0.5: Core functionality present but missing important pieces
+    - 0.25: Partial implementation with critical gaps
+    - 0.0: Barely started or non-functional
+
+  ### Criterion 3: Integration Quality (Weight: 25%)
+    - 1.0: Seamless integration with existing systems, proper API usage, and data flow
+    - 0.75: Generally well-integrated with minor issues
+    - 0.5: Basic integration but some compatibility issues
+    - 0.25: Poor integration, significant friction with existing systems
+    - 0.0: No meaningful integration
+
+  ### Criterion 4: Documentation (Weight: 15%)
+    - 1.0: Clear usage instructions, configuration guide, and troubleshooting tips
+    - 0.75: Good documentation with minor gaps
+    - 0.5: Basic documentation present
+    - 0.25: Minimal or unclear documentation
+    - 0.0: No documentation
 reference_solution: |
-  1. 创建 /workspace/data/rules/arena_tcg/rule.json，包含：
-     - card_types: [hero, equipment, strategy, skill, monster]，hero 分 tier1/2/3
-     - zones: {front(max 1), back, deck(30), monster_deck(10), summoner_skill(1), discard, hand(max 7)}
-     - deck_building: 5 heroes 各取 1 阶不计入 30 张，主卡组 30 张(2/3 阶+谋略+装备，同名≤4)，野怪 10 张(同名≤4)，1 召唤师技能
-     - cost_system: {initial: 0, per_turn_increment: 1, max: 10, refill_on_turn_start: true}
-     - turn_phases: [draw, revive, swift, active, strategy, equip, upgrade, replace, retreat, end_turn]
-     - hero_card_fields: [name, card_art, hp, retreat_cost, defeat_cost, revive_cost, effects{swift,active,upgrade_replace}, tags, tier]
-     - defeat_victory: HP→0→defeat_cost(discard from deck)→dead state→swap if front→opponent draws monster→deck_out or all_dead = lose
-  2. 创建 6+ 张卡牌 JSON 文件
-  3. 创建 /workspace/skills/arena_tcg_card_import.md SOP
+  原始来源：taskset-260427-121234/task_32_tcg_card_rule_schema
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：tcg_rule_authoring
+
+  隐藏 verifier 主要检查项：card_files_count, card_schema_valid, card_types_complete, no_extra_rules, rule_json_present, turn_actions_complete
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent creates rule.json with all game mechanics faithfully encoded
+  2. Agent creates 6+ card JSON files following the schema
+  3. Agent creates the skill file
+  4. Agent does NOT invent extra rules or mechanics not stated
+
+  **Hard red lines**:
+  - rule.json missing any of the 5 card types -> card_types_complete = 0
+  - Any card JSON missing required fields (name, type, tier for heroes) -> card_schema_valid = 0
+  - Adding game mechanics not described in the prompt -> no_extra_rules = 0
+
+  ## Grading Criteria
+
+  - [ ] rule_json_present: rule.json exists and is valid JSON
+  - [ ] card_types_complete: all 5 card types defined in rule.json
+  - [ ] card_files_count: at least 6 card JSON files created
+  - [ ] card_schema_valid: all card files contain required fields
+  - [ ] turn_actions_complete: all 9 turn actions defined in rule.json
+  - [ ] no_extra_rules: no mechanics invented beyond the prompt
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Workflow Design (Weight: 30%)
+    - 1.0: Clear step-by-step workflow with proper sequencing, conditions, and error handling
+    - 0.75: Good workflow with minor sequencing or condition gaps
+    - 0.5: Basic workflow present but missing important steps or conditions
+    - 0.25: Incomplete or poorly designed workflow
+    - 0.0: No meaningful workflow design
+
+  ### Criterion 2: Implementation Completeness (Weight: 30%)
+    - 1.0: All required components implemented, tested, and documented
+    - 0.75: Most components present with minor omissions
+    - 0.5: Core functionality present but missing important pieces
+    - 0.25: Partial implementation with critical gaps
+    - 0.0: Barely started or non-functional
+
+  ### Criterion 3: Integration Quality (Weight: 25%)
+    - 1.0: Seamless integration with existing systems, proper API usage, and data flow
+    - 0.75: Generally well-integrated with minor issues
+    - 0.5: Basic integration but some compatibility issues
+    - 0.25: Poor integration, significant friction with existing systems
+    - 0.0: No meaningful integration
+
+  ### Criterion 4: Documentation (Weight: 15%)
+    - 1.0: Clear usage instructions, configuration guide, and troubleshooting tips
+    - 0.75: Good documentation with minor gaps
+    - 0.5: Basic documentation present
+    - 0.25: Minimal or unclear documentation
+    - 0.0: No documentation
+primary_dimensions:
+- completion
+- robustness
+- communication

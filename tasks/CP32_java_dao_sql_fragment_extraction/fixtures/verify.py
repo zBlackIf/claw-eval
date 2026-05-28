@@ -52,6 +52,13 @@ def automated_score(workspace: Path) -> dict[str, float]:
     ]
     is_conditional = any(re.search(p, sql_content, re.IGNORECASE) for p in conditional_patterns)
     scores["sql_is_conditional"] = 1.0 if is_conditional else 0.0
+    scores["sql_has_student_filters"] = 1.0 if re.search(r"student|booking|exam", sql_no_comments, re.I) else 0.0
+    scores["sql_not_duplicate_fragments"] = (
+        1.0
+        if sql_no_comments.lower().count("startedcourse") <= 2
+        and sql_no_comments.lower().count("examstudenttestqualification") <= 2
+        else 0.5
+    )
 
     # Java simplified (no more inline SQL concatenation)
     has_inline_started = bool(re.search(
@@ -66,6 +73,11 @@ def automated_score(workspace: Path) -> dict[str, float]:
         scores["java_simplified"] = 0.5
     else:
         scores["java_simplified"] = 0.0
+    scores["java_references_external_sql"] = (
+        1.0
+        if re.search(r"total_score_query|student_booking_list|mapper|xml|sql/", java_content, re.I)
+        else 0.0
+    )
 
     # Risk assessment exists
     risk_files = list(workspace.rglob("*risk*")) + list(workspace.rglob("*风险*"))

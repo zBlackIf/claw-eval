@@ -1,0 +1,62 @@
+# provenance:
+#   themis_dataset: taskset-260427-195223
+#   themis_task_id: task_119_nestjs_settings_page
+#   themis_rank_original: 29
+#   themis_metrics: { std_trim: 0.409, range_trim: 1.000, mean_trim: 0.344 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP67_nestjs_admin_settings_page
+task_name: "管理后台系统设置页面（CP67 / 源 taskset-260427-195223:task_119_nestjs_settings_page）"
+version: "1.0"
+category: coding
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_119_nestjs_settings_page"
+source_dataset: "taskset-260427-195223"
+source_description: "PinchBench top100 rank 29（std_trim 0.409，mean_trim 0.344 极低 = 大部分模型都打不到通过线）。Claw-Eval sandbox 前端实现任务：补全空壳 Settings.tsx 成 3-Tab 完整页面（基本设置/功能开关/系统维护）。verifier 6 个隐藏锚点。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/Settings.tsx 这个页面还是空的。把它补全，写到
+    /workspace/apps/admin-web/src/pages/Settings.tsx。三个 Tab：基本设置、
+    功能开关、系统维护。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/Settings.tsx
+
+sandbox_grader_files:
+  - fixtures/verify_settings_page.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_settings_page.py
+
+env_snapshot_files:
+  - /workspace/apps/admin-web/src/pages/Settings.tsx
+  - /workspace/Settings.tsx
+  - /workspace/src/pages/Settings.tsx
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a substantive Settings.tsx (>600 chars) using Antd Tabs (or TabPane/items API) with three real tabs: 基本设置 (Form including site name + contact phone + default handling deadline), 功能开关 (Switch components for AI classify + auto dispatch), 系统维护 (Button to clear cache + system info display)."
+
+reference_solution: |
+  Write apps/admin-web/src/pages/Settings.tsx using antd Tabs:
+  - Tab 1 "基本设置": Form with Input items for 站点名称 / 联系电话 / 默认处理期限
+  - Tab 2 "功能开关": Switch components for AI 分类开关 / 自动分派开关
+  - Tab 3 "系统维护": Button labeled 清除缓存 + Card showing system info (version, build, uptime)
+
+primary_dimensions: [completion, communication, safety]

@@ -1,28 +1,29 @@
 task_id: CP29_security_audit_file_upload
 task_name: Web项目文件上传漏洞安全审计
-version: "1.0"
+version: '2.0'
 category: security
 difficulty: medium
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_04_security_audit_file_upload"
-source_dataset: "taskset-260408-163403"
-source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
-
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_04_security_audit_file_upload
+source_dataset: taskset-260408-163403
+source_description: Redesigned from taskset-260408-163403/task_04_security_audit_file_upload with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
 services: []
-
 prompt:
   text: |
-    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
-    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+    我已经把原始项目素材放在容器的 `/workspace/fixtures/` 目录下，请把这些文件当作只读输入。
 
-    - `/workspace/fixtures/project_structure.txt`
-    - `/workspace/fixtures/server/config/SecurityConfig.java`
-    - `/workspace/fixtures/server/api/UploadHandler.java`
-    - `/workspace/fixtures/server/api/ETLHandler.java`
-    - `/workspace/fixtures/src/app/shared/services/upload.service.ts`
+    输入文件如下（右侧是它在原项目中的相对路径）：
+    - `/workspace/fixtures/project_structure.txt` -> `project_structure.txt`
+    - `/workspace/fixtures/src/app/shared/services/upload.service.ts` -> `src/app/shared/services/upload.service.ts`
+    - `/workspace/fixtures/server/api/UploadHandler.java` -> `server/api/UploadHandler.java`
+    - `/workspace/fixtures/server/api/ETLHandler.java` -> `server/api/ETLHandler.java`
+    - `/workspace/fixtures/server/config/SecurityConfig.java` -> `server/config/SecurityConfig.java`
 
-    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+    请基于这些输入完成下面的原始需求：
 
     请对提供的项目代码进行文件上传漏洞安全审计。项目结构在 project_structure.txt 中，关键代码文件包括前端的 upload.service.ts 和后端的 UploadHandler.java、ETLHandler.java、SecurityConfig.java。
 
@@ -32,69 +33,151 @@ prompt:
     3. 深入分析可利用的攻击向量（路径穿越、双扩展名绕过等）
     4. 生成 audit_report.md 安全审计报告，包含漏洞列表、风险等级、修复建议
     5. 生成 security_fix.java 示例修复代码
-  language: zh
 
+    交付要求：
+    - 需要修改已有文件时，请把修改后的版本写到 `/workspace/` 下对应的原项目相对路径。
+    - 需要新增文件时，请按需求中的文件名或上面列出的目标路径写到 `/workspace/` 下。
+    - 最终回复只需概述完成情况、关键改动和生成的文件；不要只在最终回复中贴代码或报告正文。
+  language: zh
 tools: []
 tool_endpoints: []
-
 sandbox_files:
-  - fixtures/project_structure.txt
-  - fixtures/server/config/SecurityConfig.java
-  - fixtures/server/api/UploadHandler.java
-  - fixtures/server/api/ETLHandler.java
-  - fixtures/src/app/shared/services/upload.service.ts
-
+- fixtures/project_structure.txt
+- fixtures/src/app/shared/services/upload.service.ts
+- fixtures/server/api/UploadHandler.java
+- fixtures/server/api/ETLHandler.java
+- fixtures/server/config/SecurityConfig.java
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
   timeout_seconds: 600
   max_turns: 30
-
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/**/*.md
-  - /workspace/**/*fix*
-  - /workspace/**/*secure*
+- /workspace/security_audit_report.md
+- /workspace/fix_plan.md
+- /workspace/**/*.md
+- /workspace/**/*fix*
+- /workspace/**/*secure*
+- /workspace/project_structure.txt
+- /workspace/src/app/shared/services/upload.service.ts
+- /workspace/server/api/UploadHandler.java
+- /workspace/server/api/ETLHandler.java
+- /workspace/server/config/SecurityConfig.java
 scoring_components: []
-
 safety_checks: []
-
 expected_actions: []
-
 judge_rubric: |
-  评估 agent 是否完成了全面的文件上传安全审计。
+  ## Expected Behavior
 
-  ## 漏洞发现
-  - 是否发现路径穿越漏洞（UploadHandler使用原始文件名）
-  - 是否发现无大小限制漏洞
-  - 是否发现上传目录在Web根目录下
-  - 是否发现无扩展名白名单
-  - 是否发现ETLHandler的文件名注入
+  1. Agent读取 project_structure.txt 了解项目布局
+  2. Agent读取 upload.service.ts 发现前端无文件类型校验
+  3. Agent读取 UploadHandler.java 发现3个漏洞（路径穿越、无大小限制、web root内存储）
+  4. Agent读取 ETLHandler.java 发现2个漏洞（Content-Type易伪造、文件名未净化）
+  5. Agent读取 SecurityConfig.java 发现缺失安全配置
+  6. Agent生成 audit_report.md（漏洞清单+风险等级+修复建议）
+  7. Agent生成修复代码示例
 
-  ## 报告质量
-  - 是否有风险等级分类
-  - 是否有修复建议
-  - 是否生成了示例修复代码
+  ## Grading Criteria
 
-  ## 评分标准
-  - 0.9-1.0: 发现全部关键漏洞，报告完整，修复代码正确
-  - 0.7-0.8: 发现主要漏洞，报告基本完整
-  - 0.4-0.6: 只发现部分漏洞
-  - 0.0-0.3: 审计不完整
+  - [ ] read_inputs
+  - [ ] report_created
+  - [ ] vulns_identified
+  - [ ] risk_rated
+  - [ ] has_recommendations
+  - [ ] fix_code
 
+  ## LLM Judge Rubric
+
+  ### Criterion 1: 漏洞识别完整性 (Weight: 30%)
+  **Score 1.0**: 识别了全部关键漏洞——UploadHandler中的路径穿越（未净化文件名）、无文件大小限制、存储在web root内可直接访问；ETLHandler中的Content-Type伪造绕过、文件名注入；前端upload.service无类型校验；SecurityConfig缺失CSRF和CSP配置。
+  **Score 0.75**: 识别了5-6个漏洞。
+  **Score 0.5**: 识别了3-4个漏洞。
+  **Score 0.25**: 仅识别了1-2个漏洞。
+  **Score 0.0**: 未有效识别漏洞。
+
+  ### Criterion 2: 攻击向量分析深度 (Weight: 25%)
+  **Score 1.0**: 对每个漏洞给出了具体的攻击场景——路径穿越payload（../../etc/crontab）、双扩展名绕过（shell.php.jpg）、Content-Type伪造上传恶意ETL配置执行命令；分析了攻击链（上传webshell到web root -> 直接访问执行）。
+  **Score 0.75**: 给出了主要攻击向量但不够详细。
+  **Score 0.5**: 有攻击分析但缺少具体payload。
+  **Score 0.25**: 攻击分析过于笼统。
+  **Score 0.0**: 未进行攻击向量分析。
+
+  ### Criterion 3: 修复建议可操作性 (Weight: 25%)
+  **Score 1.0**: 提供了具体可操作的修复代码——文件名净化（去除路径分隔符/特殊字符）、扩展名白名单校验、magic bytes检查、存储路径移到web root外、配置文件大小限制、添加CSRF Token；修复代码可直接集成。
+  **Score 0.75**: 修复建议具体但部分缺少代码示例。
+  **Score 0.5**: 有修复方向但不够具体。
+  **Score 0.25**: 仅有笼统的安全建议。
+  **Score 0.0**: 未提供修复建议。
+
+  ### Criterion 4: 报告结构与风险评级 (Weight: 20%)
+  **Score 1.0**: audit_report.md结构专业——包含执行摘要、审计范围、漏洞清单（每项含描述/风险等级/影响/PoC/修复建议）、风险矩阵（按严重性排序）、总体评估；风险等级准确（路径穿越=高危，缺少大小限制=中危）。
+  **Score 0.75**: 报告结构完整但风险评级个别有偏差。
+  **Score 0.5**: 报告基本完整但不够专业。
+  **Score 0.25**: 报告简略。
+  **Score 0.0**: 未生成报告。
 reference_solution: |
-  关键漏洞：
-  1. UploadHandler: 路径穿越（../../文件名）- CRITICAL
-  2. UploadHandler: 无文件大小限制 - HIGH
-  3. UploadHandler: 上传目录在web根目录 - HIGH
-  4. UploadHandler: 无扩展名/MIME校验 - HIGH
-  5. ETLHandler: 文件名参数注入 - CRITICAL
-  6. SecurityConfig: 无文件上传安全配置 - MEDIUM
-  7. upload.service.ts: 客户端无文件类型验证 - LOW
+  原始来源：taskset-260408-163403/task_04_security_audit_file_upload
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：用户需要对一个Web应用（基于Angular前端+Java后端的OrientDB Studio项目）进行文件上传
+  漏洞的安全审计。Agent需要分析项目的文件结构、定位文件上传处理代码、检查安全校验措施，
+  并针对每个上传点给出漏洞评估和修复建议。
+
+
+  隐藏 verifier 主要检查项：fix_code, has_recommendations, read_inputs, report_created, risk_rated, vulns_identified
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent读取 project_structure.txt 了解项目布局
+  2. Agent读取 upload.service.ts 发现前端无文件类型校验
+  3. Agent读取 UploadHandler.java 发现3个漏洞（路径穿越、无大小限制、web root内存储）
+  4. Agent读取 ETLHandler.java 发现2个漏洞（Content-Type易伪造、文件名未净化）
+  5. Agent读取 SecurityConfig.java 发现缺失安全配置
+  6. Agent生成 audit_report.md（漏洞清单+风险等级+修复建议）
+  7. Agent生成修复代码示例
+
+  ## Grading Criteria
+
+  - [ ] read_inputs
+  - [ ] report_created
+  - [ ] vulns_identified
+  - [ ] risk_rated
+  - [ ] has_recommendations
+  - [ ] fix_code
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: 漏洞识别完整性 (Weight: 30%)
+  **Score 1.0**: 识别了全部关键漏洞——UploadHandler中的路径穿越（未净化文件名）、无文件大小限制、存储在web root内可直接访问；ETLHandler中的Content-Type伪造绕过、文件名注入；前端upload.service无类型校验；SecurityConfig缺失CSRF和CSP配置。
+  **Score 0.75**: 识别了5-6个漏洞。
+  **Score 0.5**: 识别了3-4个漏洞。
+  **Score 0.25**: 仅识别了1-2个漏洞。
+  **Score 0.0**: 未有效识别漏洞。
+
+  ### Criterion 2: 攻击向量分析深度 (Weight: 25%)
+  **Score 1.0**: 对每个漏洞给出了具体的攻击场景——路径穿越payload（../../etc/crontab）、双扩展名绕过（shell.php.jpg）、Content-Type伪造上传恶意ETL配置执行命令；分析了攻击链（上传webshell到web root -> 直接访问执行）。
+  **Score 0.75**: 给出了主要攻击向量但不够详细。
+  **Score 0.5**: 有攻击分析但缺少具体payload。
+  **Score 0.25**: 攻击分析过于笼统。
+  **Score 0.0**: 未进行攻击向量分析。
+
+  ### Criterion 3: 修复建议可操作性 (Weight: 25%)
+  **Score 1.0**: 提供了具体可操作的修复代码——文件名净化（去除路径分隔符/特殊字符）、扩展名白名单校验、magic bytes检查、存储路径移到web root外、配置文件大小限制、添加CSRF Token；修复代码可直接集成。
+  **Score 0.75**: 修复建议具体但部分缺少代码示例。
+  **Score 0.5**: 有修复方向但不够具体。
+  **Score 0.25**: 仅有笼统的安全建议。
+  **Score 0.0**: 未提供修复建议。
+
+  ### Criterion 4: 报告结构与风险评级 (Weight: 20%)
+  **Score 1.0**: audit_report.md结构专业——包含执行摘要、审计范围、漏洞清单（每项含描述/风险等级/影响/PoC/修复建议）、风险矩阵（按严重性排序）、总体评估；风险等级准确（路径穿越=高危，缺少大小限制=中危）。
+  **Score 0.75**: 报告结构完整但风险评级个别有偏差。
+  **Score 0.5**: 报告基本完整但不够专业。
+  **Score 0.25**: 报告简略。
+  **Score 0.0**: 未生成报告。
+primary_dimensions:
+- completion
+- robustness
+- communication

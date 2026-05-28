@@ -1,0 +1,66 @@
+# provenance:
+#   themis_dataset: taskset-260424-pinchbench-v2rc2
+#   themis_task_id: task_test_generation
+#   themis_rank_original: 57
+#   themis_metrics: { std_trim: 0.367, range_trim: 0.915, mean_trim: 0.703 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP87_general_test_case_generation
+task_name: "OrderProcessor pytest 测试用例生成（CP87 / 源 taskset-260424-pinchbench-v2rc2:task_test_generation）"
+version: "1.0"
+category: testing
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_test_generation"
+source_dataset: "taskset-260424-pinchbench-v2rc2"
+source_description: "PinchBench top100 rank 57（std_trim 0.367）。Workspace WS2 测试生成任务：给 e-commerce OrderProcessor 写完整 pytest 套件。verifier 8 个隐藏锚点（文件创建/AST 合法/pytest+module import/7 个方法覆盖/fixtures/pytest.raises/InvalidOrderError）。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/order_processor.py 帮我写一份完整的 pytest 测试套件
+    /workspace/test_order_processor.py，覆盖所有 public 方法和异常路径，原文件
+    不要改。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/order_processor.py
+
+sandbox_grader_files:
+  - fixtures/verify_test_gen.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_test_gen.py
+
+env_snapshot_files:
+  - /workspace/test_order_processor.py
+
+environment:
+  timeout_seconds: 540
+  max_turns: 14
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward test_order_processor.py with valid Python, importing pytest and order_processor/OrderProcessor, covering 7 public methods (validate_order, calculate_subtotal, apply_discount, calculate_tax, check_stock, estimate_delivery, process_order), using @pytest.fixture or helper functions to DRY, using pytest.raises for exception tests, and asserting InvalidOrderError for invalid inputs."
+
+reference_solution: |
+  Read order_processor.py to enumerate methods + InvalidOrderError +
+  edge cases (empty order, zero qty, unknown region, coupon stacking,
+  out of stock). Write test_order_processor.py:
+  - import pytest, from order_processor import OrderProcessor, InvalidOrderError
+  - @pytest.fixture for processor + sample order
+  - test_validate_order_happy, test_validate_order_raises_when_empty
+  - test_calculate_subtotal, test_apply_discount_tier_X, test_apply_discount_coupon_stacking
+  - test_calculate_tax_region_X / test_calculate_tax_unknown_region_raises
+  - test_check_stock_out_of_stock_raises
+  - test_estimate_delivery, test_process_order_integration
+
+primary_dimensions: [completion, communication, safety]

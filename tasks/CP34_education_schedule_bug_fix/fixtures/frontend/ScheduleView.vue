@@ -2,6 +2,7 @@
   <div class="schedule-container">
     <h2>Course Schedule</h2>
 
+    <!-- Schedule Form -->
     <div class="schedule-form">
       <div class="form-group">
         <label>Course</label>
@@ -12,7 +13,9 @@
 
       <div class="form-group">
         <label>Teacher</label>
-        <!-- BUG: :value="t" binds whole object instead of t.id -->
+        <!-- BUG: v-model binds to teacher object, but options use :value="t"
+             which sets the whole object. Should use :value="t.id" or
+             the dropdown data should have value/label format -->
         <select v-model="form.teacher_id">
           <option v-for="t in teachers" :key="t.id" :value="t">{{ t.name }}</option>
         </select>
@@ -20,7 +23,7 @@
 
       <div class="form-group">
         <label>Classroom</label>
-        <!-- Same bug -->
+        <!-- Same bug as teacher dropdown -->
         <select v-model="form.classroom_id">
           <option v-for="r in classrooms" :key="r.id" :value="r">{{ r.name }}</option>
         </select>
@@ -52,6 +55,7 @@
       <button @click="createSchedule">Add Schedule</button>
     </div>
 
+    <!-- Schedule Grid -->
     <table class="schedule-grid">
       <thead>
         <tr>
@@ -63,8 +67,14 @@
         <tr v-for="slot in timeSlots" :key="slot">
           <td>{{ slot }}</td>
           <td v-for="day in weekdays" :key="day">
-            <div v-for="s in getSchedulesForSlot(day, slot)" :key="s.id" class="schedule-card">
-              <!-- BUG: names are undefined, only IDs come from API -->
+            <div
+              v-for="s in getSchedulesForSlot(day, slot)"
+              :key="s.id"
+              class="schedule-card"
+            >
+              <!-- BUG: s.course_name, s.teacher_name, s.classroom_name are undefined
+                   because API only returns IDs. Need to look up names locally
+                   or have the API return them. -->
               <div class="card-course">{{ s.course_name }}</div>
               <div class="card-teacher">{{ s.teacher_name }}</div>
               <div class="card-room">{{ s.classroom_name }}</div>
@@ -82,17 +92,28 @@ export default {
   data() {
     return {
       form: {
-        course_id: null, teacher_id: null, classroom_id: null,
-        day_of_week: 'Monday', start_time: '09:00', end_time: '10:30', repeat_weeks: 1,
+        course_id: null,
+        teacher_id: null,
+        classroom_id: null,
+        day_of_week: 'Monday',
+        start_time: '09:00',
+        end_time: '10:30',
+        repeat_weeks: 1,
       },
-      courses: [], teachers: [], classrooms: [], schedules: [],
+      courses: [],
+      teachers: [],
+      classrooms: [],
+      schedules: [],
       weekdays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
       timeSlots: ['08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
     }
   },
-  mounted() { this.loadData() },
+  mounted() {
+    this.loadData()
+  },
   methods: {
     async loadData() {
+      // Load dropdown data
       this.courses = await this.fetchApi('/api/courses')
       this.teachers = await this.fetchApi('/api/teachers')
       this.classrooms = await this.fetchApi('/api/classrooms')
@@ -100,15 +121,23 @@ export default {
     },
     async createSchedule() {
       const payload = { ...this.form }
+      // BUG: form.teacher_id is actually the whole teacher object (from dropdown bug)
+      // API expects integer ID but gets {id: 1, name: "Zhang Wei", subject: "Math"}
       const result = await this.fetchApi('/api/schedules', 'POST', payload)
       if (result.status === 'success') {
+        // BUG: Pushes raw API response to schedules array.
+        // The response only has IDs, not names.
+        // Cards appear empty until full page refresh re-fetches with names.
         this.schedules.push(...result.created)
       }
     },
     getSchedulesForSlot(day, timeSlot) {
-      return this.schedules.filter(s => s.day_of_week === day && s.start_time === timeSlot)
+      return this.schedules.filter(
+        s => s.day_of_week === day && s.start_time === timeSlot
+      )
     },
     async fetchApi(url, method = 'GET', body = null) {
+      // Simulated API call
       const options = { method, headers: { 'Content-Type': 'application/json' } }
       if (body) options.body = JSON.stringify(body)
       const res = await fetch(url, options)
@@ -125,7 +154,7 @@ export default {
   padding: 4px 8px;
   margin: 2px;
   font-size: 12px;
-  /* BUG: No min-width set */
+  /* BUG: No min-width set, card collapses when names are empty */
 }
 .card-course { font-weight: bold; }
 .card-teacher { color: #666; }

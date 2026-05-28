@@ -40,12 +40,20 @@ def automated_score(workspace: Path) -> dict[str, float]:
         # Check backward compatibility preserved (?q= still works)
         has_q_param = "$_GET['q']" in content or '$_GET["q"]' in content or "_GET['q']" in content
         scores["backward_compatible"] = 1.0 if has_q_param else 0.0
+        scores["decodes_path_url"] = 1.0 if re.search(r"(rawurldecode|urldecode|parse_url)", content) else 0.0
+        scores["validates_scheme"] = 1.0 if re.search(r"https?\s*\)|https?\s*[:]|in_array.*https?", content, re.I | re.S) else 0.0
+        scores["rejects_invalid_url"] = 1.0 if re.search(r"(400|invalid|filter_var|FILTER_VALIDATE_URL)", content, re.I) else 0.0
+        scores["query_string_preserved"] = 1.0 if re.search(r"QUERY_STRING|\$_SERVER\[['\"]QUERY_STRING|\\?", content) else 0.0
     else:
         scores["index_php_present"] = 0.0
         scores["path_info_extraction"] = 0.0
         scores["url_scheme_detection"] = 0.0
         scores["no_dangerous_functions"] = 0.0
         scores["backward_compatible"] = 0.0
+        scores["decodes_path_url"] = 0.0
+        scores["validates_scheme"] = 0.0
+        scores["rejects_invalid_url"] = 0.0
+        scores["query_string_preserved"] = 0.0
 
     # Check .htaccess
     htaccess = workspace / "project" / ".htaccess"

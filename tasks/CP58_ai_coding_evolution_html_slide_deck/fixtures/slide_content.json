@@ -1,0 +1,52 @@
+{
+  "title": "AI Coding 范式革命：从氛围编程到规范驱动",
+  "target_audience": "开发者和技术决策者",
+  "total_slides": 18,
+  "style": "Neon Cyber / 未来科技感",
+  "output_format": "单独HTML文件，含导航控件和动画",
+  "sections": [
+    {
+      "name": "封面与目录",
+      "slides": [
+        {"page": 1, "type": "cover", "title": "AI Coding 范式革命", "subtitle": "从氛围编程到规范驱动"},
+        {"page": 2, "type": "toc", "items": ["历史的回响", "SDD范式与四大支柱", "多智能体协作与上下文工程", "行动指南"]}
+      ]
+    },
+    {
+      "name": "第一部分：历史的回响",
+      "slides": [
+        {"page": 3, "title": "传统编程范式的基石", "bullets": ["结构化、面向对象、函数式编程", "开发者心智模型"]},
+        {"page": 4, "title": "AI编程的早期探索", "bullets": ["IntelliSense与代码片段", "GitHub Copilot与Vibe Coding", "输出不稳定、上下文理解有限"]},
+        {"page": 5, "title": "Vibe Coding的局限性与转折点", "bullets": ["模糊描述导致不可预测", "缺乏工程化约束", "需要更严谨方法论"]}
+      ]
+    },
+    {
+      "name": "第二部分：SDD范式",
+      "slides": [
+        {"page": 6, "title": "规范驱动开发(SDD)总论", "bullets": ["Spec为单一事实来源", "从感觉到契约"]},
+        {"page": 7, "title": "支柱一：Spec", "bullets": ["产品文档、API设计、验收标准", "可执行的约束"]},
+        {"page": 8, "title": "支柱二：Skill", "bullets": ["模块化的AI能力单元", "专业工具箱"]},
+        {"page": 9, "title": "支柱三：Rule", "bullets": ["工程化规则集", "代码风格、安全规范、架构约束"]},
+        {"page": 10, "title": "支柱四：TDD进化为AI-ATDD", "bullets": ["Spec生成验收测试", "测试驱动的质量闭环"]},
+        {"page": 11, "title": "SDD工作流全景图", "bullets": ["Spec输入 -> 规则调度 -> 生成测试循环 -> 交付物"]},
+        {"page": 12, "title": "当前生态与工具", "bullets": ["AI编程助手对SDD支持", "上下文工程演进"]},
+        {"page": 13, "title": "SDD范式优势", "bullets": ["可预测性提升", "团队协作", "代码质量"]}
+      ]
+    },
+    {
+      "name": "第三部分：未来的浪潮",
+      "slides": [
+        {"page": 14, "title": "SDD+TDD终极形态", "bullets": ["Spec、测试、代码自动同步", "开发即文档"]},
+        {"page": 15, "title": "多智能体协作开发", "bullets": ["角色化智能体分工", "通信与共识机制"]},
+        {"page": 16, "title": "核心挑战与前沿方向", "bullets": ["上下文工程", "Token成本与精度平衡"]}
+      ]
+    },
+    {
+      "name": "第四部分：行动指南",
+      "slides": [
+        {"page": 17, "title": "如何开始SDD实践", "bullets": ["撰写Spec", "定义Rules", "积累Skills", "纳入TDD"]},
+        {"page": 18, "title": "Q&A", "text": "谢谢"}
+      ]
+    }
+  ]
+}

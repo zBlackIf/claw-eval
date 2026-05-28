@@ -1,0 +1,174 @@
+# provenance:
+#   themis_dataset: taskset-260424-pinchbench-v2rc2
+#   themis_task_id: task_csv_temp_trend
+#   themis_rank_original: 33
+#   themis_metrics: { std_trim: 0.403, range_trim: 1.000, mean_trim: 0.749 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP69_global_temperature_trend_analysis
+task_name: "全球气温长期趋势分析（CP69 / 源 taskset-260424-pinchbench-v2rc2:task_csv_temp_trend）"
+version: "1.0"
+category: workflow
+difficulty: medium
+tags: [general, workflow, sandbox]
+
+source_task_id: "task_csv_temp_trend"
+source_dataset: "taskset-260424-pinchbench-v2rc2"
+source_description: "Workflow + sandbox hybrid redesigned with claw-eval-task-designer-v2: climate data service supplies trend segments, milestone traps, source caveats, submit/confirm audit evidence; hidden verifier checks trend_report.md."
+
+services:
+  - name: climate_data
+    command: python tasks/CP69_global_temperature_trend_analysis/services/climate_data/server.py
+    port: 9369
+    health_check: http://localhost:9369/climate_data/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9369/climate_data/reset
+    env:
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP69_global_temperature_trend_analysis/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_NAME: climate_data
+
+prompt:
+  text: |
+    气候数据审阅台里有 GISTEMP/gcag 的长期切片、回归口径、里程碑年份和几条容易误读的基准陷阱；/workspace/fixtures/global_temperature.csv 是同一批明细导出。请先用审阅台交叉复核，再写 /workspace/trend_report.md。
+
+    报告归档前把趋势结论提交并确认到审阅台，最终回复说关键结论。
+  language: zh
+
+tools:
+  - name: climate_data_list
+    description: List records available in the climate data service; use this before targeted reads.
+    input_schema:
+      type: object
+      properties:
+        kind:
+          type: string
+        tag:
+          type: string
+        limit:
+          type: integer
+          default: 20
+      required: []
+  - name: climate_data_search
+    description: Search the climate data service for candidate records, source notes, and trap cases.
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        kind:
+          type: string
+        max_results:
+          type: integer
+          default: 10
+      required: [query]
+  - name: climate_data_get
+    description: Fetch one full service record by record_id.
+    input_schema:
+      type: object
+      properties:
+        record_id:
+          type: string
+      required: [record_id]
+  - name: climate_data_cross_check
+    description: Cross-check selected records against known traps and conflicting evidence.
+    input_schema:
+      type: object
+      properties:
+        primary_id:
+          type: string
+        comparison_ids:
+          type: array
+          items:
+            type: string
+        focus:
+          type: string
+      required: []
+  - name: climate_data_submit_report
+    description: Submit the working conclusion or artifact summary back to the service.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        content:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        decision:
+          type: string
+        metadata:
+          type: object
+      required: [report_id, content]
+  - name: climate_data_confirm_report
+    description: Confirm the submitted conclusion after cross-checking source_ids.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        checklist:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+      required: [report_id]
+tool_endpoints:
+  - tool_name: climate_data_list
+    url: http://localhost:9369/climate_data/list
+    method: POST
+  - tool_name: climate_data_search
+    url: http://localhost:9369/climate_data/search
+    method: POST
+  - tool_name: climate_data_get
+    url: http://localhost:9369/climate_data/get
+    method: POST
+  - tool_name: climate_data_cross_check
+    url: http://localhost:9369/climate_data/cross_check
+    method: POST
+  - tool_name: climate_data_submit_report
+    url: http://localhost:9369/climate_data/submit
+    method: POST
+  - tool_name: climate_data_confirm_report
+    url: http://localhost:9369/climate_data/confirm
+    method: POST
+
+sandbox_files:
+  - fixtures/global_temperature.csv
+
+sandbox_grader_files:
+  - fixtures/verify_trend_report.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_trend_report.py
+
+env_snapshot_files:
+  - /workspace/trend_report.md
+
+environment:
+  timeout_seconds: 480
+  max_turns: 22
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward trend_report.md citing overall warming ~0.08°C/decade with linear regression, pre-1950 ~0.04°C/decade, post-1950 ~0.15°C/decade with explicit acceleration language (3-4x faster), milestone years 1998 (first >+0.5°C) and 2016 (first >+1.0°C), decade comparison 2014-2023 vs 1880-1889 (~1°C diff), and a coherent summary."
+
+reference_solution: |
+  Filter GISTEMP rows. Aggregate monthly→annual mean. Fit linear regression
+  on annual values (numpy polyfit or scipy linregress). Report overall slope
+  ~0.008/yr (~0.08/decade). Split by year, refit pre-1950 (~0.04/decade) and
+  post-1950 (~0.15/decade). Identify first year annual mean > 0.5 (1998) and
+  > 1.0 (2016). Compute 2014-2023 mean (~0.96) vs 1880-1889 mean (~-0.21).
+  Write /workspace/trend_report.md with sections + summary.
+
+primary_dimensions: [completion, communication, safety]

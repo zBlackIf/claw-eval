@@ -1,115 +1,176 @@
 task_id: CP40_persistent_rule_engine_implementation
 task_name: Persistent Rule Engine Implementation
-version: "1.0"
+version: '2.0'
 category: code_generation
 difficulty: medium
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_29_persistent_rules"
-source_dataset: "taskset-260427-121234"
-source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
-
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_29_persistent_rules
+source_dataset: taskset-260427-121234
+source_description: Redesigned from taskset-260427-121234/task_29_persistent_rules with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
 services: []
-
 prompt:
   text: |
-    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
-    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+    我已经把原始项目素材放在容器的 `/workspace/fixtures/` 目录下，请把这些文件当作只读输入。
 
-    - `/workspace/fixtures/rule_engine.py`
-    - `/workspace/fixtures/app_config.json`
+    输入文件如下（右侧是它在原项目中的相对路径）：
+    - `/workspace/fixtures/app_config.json` -> `app_config.json`
+    - `/workspace/fixtures/rule_engine.py` -> `rule_engine.py`
+    - `/workspace/fixtures/implementation_requirements.md` -> `implementation_requirements.md`
 
-    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+    请基于这些输入完成下面的原始需求：
 
-    workspace有 `app_config.json`（应用配置）和 `rule_engine.py`（规则引擎骨架，有TODO方法需要实现）。
+    workspace 有 `app_config.json`（应用配置）、`rule_engine.py`（规则引擎骨架）和 `implementation_requirements.md`（实现与验收要求）。
 
-    需要：
+    请按要求补完整个规则引擎，并写一个 `test_rules.py` 覆盖持久化、排序、提示前缀、配置建议和重启加载场景。
 
-    1. **实现 `rule_engine.py` 中所有 TODO 方法**：
-       - `add_rule`: 生成唯一rule_id（用UUID或时间戳），添加规则并持久化到JSON
-       - `remove_rule`: 按ID删除规则并持久化
-       - `get_active_rules`: 返回活跃规则，按priority降序
-       - `build_system_prompt_prefix`: 将规则格式化为系统提示前缀
-       - `apply_rules_to_config`: 根据规则内容推断配置变更建议
-
-    2. **写测试脚本 `test_rules.py`**，模拟以下场景：
-       - 添加规则："所有回复必须使用中文"（priority=10）
-       - 添加规则："每条回复开头显示当前使用的模型名称"（priority=5）
-       - 添加规则："使用暗色主题"（priority=1）
-       - 列出所有活跃规则（应按priority排序：10, 5, 1）
-       - 生成system prompt prefix并打印
-       - 调用apply_rules_to_config，验证是否建议将frontend.language改为zh-CN
-       - 删除第三条规则
-       - 重新加载RuleEngine（模拟重启），验证剩余2条规则仍存在
-       - 将最终的 `app_config.json` 中的 rules 数量打印出来
-
-    **红线**：
-    - 规则必须持久化到 `app_config.json`（不能只存内存）
-    - 重启后（重新实例化RuleEngine）规则必须还在
-    - rule_id 必须唯一
-    - 不能修改 app_config.json 中 rules 以外的其他字段
+    交付要求：
+    - 需要修改已有文件时，请把修改后的版本写到 `/workspace/` 下对应的原项目相对路径。
+    - 需要新增文件时，请按需求中的文件名或上面列出的目标路径写到 `/workspace/` 下。
+    - 最终回复只需概述完成情况、关键改动和生成的文件；不要只在最终回复中贴代码或报告正文。
   language: zh
-
 tools: []
 tool_endpoints: []
-
 sandbox_files:
-  - fixtures/rule_engine.py
-  - fixtures/app_config.json
-
+- fixtures/app_config.json
+- fixtures/rule_engine.py
+- fixtures/implementation_requirements.md
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
   timeout_seconds: 600
   max_turns: 30
-
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/rule_engine.py
-  - /workspace/test_rules.py
-  - /workspace/test.py
-  - /workspace/test_rule_engine.py
-  - /workspace/app_config.json
+- /workspace/rule_engine.py
+- /workspace/test_rule_engine.py
+- /workspace/test_rules.py
+- /workspace/app_config.json
+- /workspace/implementation_requirements.md
 scoring_components: []
-
 safety_checks: []
-
 expected_actions: []
-
 judge_rubric: |
-  评估 agent 对规则引擎实现任务的执行质量。
+  ## Expected Behavior
 
-  ## 方法实现
-  - 5 个 TODO 方法是否全部实现（不再抛出 NotImplementedError）
-  - add_rule 是否生成唯一 ID（UUID 或时间戳）
-  - get_active_rules 是否按 priority 降序排列
-  - build_system_prompt_prefix 格式是否清晰
+  1. Agent reads both files
+  2. Agent implements all 5 TODO methods in rule_engine.py
+  3. Agent creates test_rules.py
+  4. Agent runs test to verify persistence across re-instantiation
 
-  ## 持久化
-  - 规则是否持久化到 app_config.json
-  - 重新实例化后规则是否仍存在
-  - app_config.json 中 rules 以外的字段是否保持不变
+  ## Grading Criteria
 
-  ## 测试脚本
-  - test_rules.py 是否存在
-  - 是否覆盖了所有要求的测试场景
+  - [ ] add_rule_implemented (not NotImplementedError)
+  - [ ] remove_rule_implemented
+  - [ ] get_active_rules_implemented
+  - [ ] build_prompt_prefix_implemented
+  - [ ] apply_rules_implemented
+  - [ ] rules_persisted_to_json (app_config.json modified with rules)
+  - [ ] rule_id_unique (uses uuid or timestamp-based ID)
+  - [ ] priority_sorting (get_active_rules returns descending priority)
+  - [ ] test_script_exists
+  - [ ] config_other_fields_preserved (app.name, modules, etc. unchanged)
 
-  ## 评分标准
-  - 0.9-1.0: 全部方法正确实现，持久化有效，测试完整
-  - 0.7-0.8: 大部分方法实现，小问题（如排序方向错误）
-  - 0.4-0.6: 部分方法实现或持久化有问题
-  - 0.0-0.3: 未完成或核心红线违反
+  ## LLM Judge Rubric
 
+  ### Criterion 1: Implementation Correctness (Weight: 35%)
+
+  **Score 1.0**: All 5 methods correctly implemented. add_rule generates unique IDs and persists. remove_rule finds by ID and persists. get_active_rules filters active=True and sorts by priority descending. build_system_prompt_prefix formats as numbered list. apply_rules_to_config maps language/theme rules to config paths.
+  **Score 0.75**: 4 of 5 methods correct.
+  **Score 0.5**: 3 methods correct.
+  **Score 0.25**: 1-2 methods correct.
+  **Score 0.0**: None implemented or all raise NotImplementedError.
+
+  ### Criterion 2: Persistence Guarantee (Weight: 30%)
+
+  **Score 1.0**: Rules written to app_config.json on every add/remove. Re-instantiating RuleEngine loads rules from file. Test proves persistence by creating new instance and checking rules exist. Config structure preserved (rules array only, other fields untouched).
+  **Score 0.75**: Persistence works but test doesn't verify re-instantiation.
+  **Score 0.5**: Saves to file but loading has issues.
+  **Score 0.25**: Partial persistence.
+  **Score 0.0**: No persistence (memory only).
+
+  ### Criterion 3: Rule-to-Config Mapping (Weight: 20%)
+
+  **Score 1.0**: apply_rules_to_config correctly maps: "Chinese" rules -> frontend.language="zh-CN", "dark theme" -> frontend.theme="dark", model display rules -> ai config suggestions. Returns structured dict of config path -> value.
+  **Score 0.75**: Maps 2 of 3 rule types correctly.
+  **Score 0.5**: Maps 1 rule type.
+  **Score 0.25**: Returns something but wrong mappings.
+  **Score 0.0**: Not implemented.
+
+  ### Criterion 4: Test Coverage (Weight: 15%)
+
+  **Score 1.0**: Test covers full CRUD cycle: add 3 rules, list sorted, generate prefix, check config suggestions, remove 1, re-instantiate and verify 2 remain. Prints clear pass/fail for each step.
+  **Score 0.75**: Tests most operations but misses re-instantiation check.
+  **Score 0.5**: Basic test covering add and list.
+  **Score 0.25**: Minimal test.
+  **Score 0.0**: No test.
 reference_solution: |
-  1. add_rule: 用 uuid.uuid4() 生成 ID，append to self.rules，调用 _save()
-  2. remove_rule: filter out by ID，调用 _save()
-  3. get_active_rules: sorted([r for r in self.rules if r.active], key=lambda r: r.priority, reverse=True)
-  4. build_system_prompt_prefix: 格式化为编号列表
-  5. apply_rules_to_config: 解析规则文本中的关键词（中文→language: zh-CN, 暗色→theme: dark）
+  原始来源：taskset-260427-121234/task_29_persistent_rules
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：rule_persistence_system
+
+  隐藏 verifier 主要检查项：add_rule_implemented, apply_rules_implemented, build_prompt_prefix_implemented, config_other_fields_preserved, get_active_rules_implemented, priority_sorting, remove_rule_implemented, rule_id_unique, rules_persisted_to_json, test_script_exists
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent reads both files
+  2. Agent implements all 5 TODO methods in rule_engine.py
+  3. Agent creates test_rules.py
+  4. Agent runs test to verify persistence across re-instantiation
+
+  ## Grading Criteria
+
+  - [ ] add_rule_implemented (not NotImplementedError)
+  - [ ] remove_rule_implemented
+  - [ ] get_active_rules_implemented
+  - [ ] build_prompt_prefix_implemented
+  - [ ] apply_rules_implemented
+  - [ ] rules_persisted_to_json (app_config.json modified with rules)
+  - [ ] rule_id_unique (uses uuid or timestamp-based ID)
+  - [ ] priority_sorting (get_active_rules returns descending priority)
+  - [ ] test_script_exists
+  - [ ] config_other_fields_preserved (app.name, modules, etc. unchanged)
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Implementation Correctness (Weight: 35%)
+
+  **Score 1.0**: All 5 methods correctly implemented. add_rule generates unique IDs and persists. remove_rule finds by ID and persists. get_active_rules filters active=True and sorts by priority descending. build_system_prompt_prefix formats as numbered list. apply_rules_to_config maps language/theme rules to config paths.
+  **Score 0.75**: 4 of 5 methods correct.
+  **Score 0.5**: 3 methods correct.
+  **Score 0.25**: 1-2 methods correct.
+  **Score 0.0**: None implemented or all raise NotImplementedError.
+
+  ### Criterion 2: Persistence Guarantee (Weight: 30%)
+
+  **Score 1.0**: Rules written to app_config.json on every add/remove. Re-instantiating RuleEngine loads rules from file. Test proves persistence by creating new instance and checking rules exist. Config structure preserved (rules array only, other fields untouched).
+  **Score 0.75**: Persistence works but test doesn't verify re-instantiation.
+  **Score 0.5**: Saves to file but loading has issues.
+  **Score 0.25**: Partial persistence.
+  **Score 0.0**: No persistence (memory only).
+
+  ### Criterion 3: Rule-to-Config Mapping (Weight: 20%)
+
+  **Score 1.0**: apply_rules_to_config correctly maps: "Chinese" rules -> frontend.language="zh-CN", "dark theme" -> frontend.theme="dark", model display rules -> ai config suggestions. Returns structured dict of config path -> value.
+  **Score 0.75**: Maps 2 of 3 rule types correctly.
+  **Score 0.5**: Maps 1 rule type.
+  **Score 0.25**: Returns something but wrong mappings.
+  **Score 0.0**: Not implemented.
+
+  ### Criterion 4: Test Coverage (Weight: 15%)
+
+  **Score 1.0**: Test covers full CRUD cycle: add 3 rules, list sorted, generate prefix, check config suggestions, remove 1, re-instantiate and verify 2 remain. Prints clear pass/fail for each step.
+  **Score 0.75**: Tests most operations but misses re-instantiation check.
+  **Score 0.5**: Basic test covering add and list.
+  **Score 0.25**: Minimal test.
+  **Score 0.0**: No test.
+primary_dimensions:
+- completion
+- robustness
+- communication

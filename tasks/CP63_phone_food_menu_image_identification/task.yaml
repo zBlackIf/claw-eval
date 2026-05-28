@@ -1,0 +1,68 @@
+# provenance:
+#   themis_dataset: taskset-260424-pinchbench-v2rc2
+#   themis_task_id: task_image_identification
+#   themis_rank_original: 24
+#   themis_metrics: { std_trim: 0.411, range_trim: 1.000, mean_trim: 0.721 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP63_phone_food_menu_image_identification
+task_name: "Phone/Food/Menu 三图分类（CP63 / 源 taskset-260424-pinchbench-v2rc2:task_image_identification）"
+version: "1.0"
+category: multimodal
+difficulty: easy
+tags: [multimodal]
+
+source_task_id: "task_image_identification"
+source_dataset: "taskset-260424-pinchbench-v2rc2"
+source_description: "PinchBench top100 rank 24 高区分度题（std_trim 0.411）。改编为 Claw-Eval 多模态分类任务：3 张未标注图通过 prompt.attachments 注入，agent 写 /workspace/image_categories.json 把每张图归类为 phone / food / menu。verifier 8 个锚点（文件/JSON 格式/类别完整/路径合法/唯一映射/三个真值），强 VLM 全对，无视觉能力的模型靠瞎猜。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/images/ 下三张图（item_a/b/c.jpg），分别属于
+    phone / food / menu 哪一类？给我一份 image_categories.json，
+    key 是类别名（phone/food/menu），value 是对应图的相对路径
+    （images/item_x.jpg），写到 /workspace/ 下。
+  language: zh
+  attachments:
+    - fixtures/images/item_a.jpg
+    - fixtures/images/item_b.jpg
+    - fixtures/images/item_c.jpg
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/images/item_a.jpg
+  - fixtures/images/item_b.jpg
+  - fixtures/images/item_c.jpg
+
+sandbox_grader_files:
+  - fixtures/verify_image_categories.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_image_categories.py
+
+env_snapshot_files:
+  - /workspace/image_categories.json
+
+environment:
+  timeout_seconds: 360
+  max_turns: 10
+  env_snapshot_timeout: 20
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward image_categories.json with exact schema (keys phone/food/menu, each → images/item_<x>.jpg), each image used exactly once, and all three categorizations correct against the verified truth (item_a=phone, item_b=food, item_c=menu)."
+
+reference_solution: |
+  View the three attached images via VLM. item_a shows an iPhone home
+  screen, item_b shows a pizza in a delivery box, item_c shows a
+  crumpled grocery store receipt. Write
+  /workspace/image_categories.json with:
+  {"phone": "images/item_a.jpg", "food": "images/item_b.jpg", "menu": "images/item_c.jpg"}
+
+primary_dimensions: [completion, robustness, communication]

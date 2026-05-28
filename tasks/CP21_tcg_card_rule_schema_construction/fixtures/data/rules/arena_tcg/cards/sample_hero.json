@@ -1,0 +1,12 @@
+{
+  "id": "0001",
+  "name": "Sample Hero",
+  "type": "hero",
+  "tier": 1,
+  "hp": 100,
+  "retreat_cost": 1,
+  "defeat_cost": 3,
+  "revive_cost": 2,
+  "effects": [],
+  "tags": []
+}

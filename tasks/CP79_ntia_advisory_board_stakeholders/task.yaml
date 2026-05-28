@@ -1,0 +1,87 @@
+# provenance:
+#   themis_dataset: taskset-260424-pinchbench-v2rc2
+#   themis_task_id: task_meeting_advisory_stakeholders
+#   themis_rank_original: 47
+#   themis_metrics: { std_trim: 0.382, range_trim: 0.955, mean_trim: 0.683 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP79_ntia_advisory_board_stakeholders
+task_name: "NTIA CSMAC 利益相关方分析（CP79 / 源 taskset-260424-pinchbench-v2rc2:task_meeting_advisory_stakeholders）"
+version: "1.1"
+category: synthesis
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_meeting_advisory_stakeholders"
+source_dataset: "taskset-260424-pinchbench-v2rc2"
+source_description: "PinchBench top100 rank 47（std_trim 0.382）。Workflow + workspace 混合：notes 提供会议纪要，agent notes_list/notes_get + 写 sandbox stakeholder_analysis.md。grader 评 sandbox content + notes tool gate。"
+
+services:
+  - name: notes
+    command: python mock_services/notes/server.py
+    port: 9105
+    health_check: http://localhost:9105/notes/list
+    health_check_method: POST
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9105/notes/reset
+    env:
+      NOTES_FIXTURES: tasks/CP79_ntia_advisory_board_stakeholders/fixtures/notes/meetings.json
+
+prompt:
+  text: |
+    上次 CSMAC 委员会会议讨论联邦频谱共享给商业宽带的事，纪要在会议系统里。
+    帮我做一份利益相关方分析（各方诉求、立场、分歧、共识），写到
+    /workspace/stakeholder_analysis.md。
+  language: zh
+
+tools:
+  - name: notes_list
+    description: 列出最近的会议纪要
+    input_schema:
+      type: object
+      properties:
+        max_results: {type: integer, default: 10}
+        tag: {type: string}
+        days_back: {type: integer}
+      required: []
+  - name: notes_get
+    description: 按 note_id 取会议纪要全文
+    input_schema:
+      type: object
+      properties:
+        note_id: {type: string}
+      required: [note_id]
+
+tool_endpoints:
+  - tool_name: notes_list
+    url: http://localhost:9105/notes/list
+    method: POST
+  - tool_name: notes_get
+    url: http://localhost:9105/notes/get
+    method: POST
+
+sandbox_grader_files:
+  - fixtures/verify_stakeholders.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_stakeholders.py
+
+env_snapshot_files:
+  - /workspace/stakeholder_analysis.md
+
+environment:
+  timeout_seconds: 600
+  max_turns: 16
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward agent that uses notes_list → notes_get to read transcript, writes stakeholder_analysis.md with ≥4 government entities (NTIA/DoD/DHS/White House-OSTP), ≥4 commercial (AT&T/Verizon/Intel), NTIA sharing-over-relocation preference, $18B cost, sharing-vs-relocation tension, common-parameters debate (Rush/Warren/Kahn), conflict + agreement areas, ≥3 member↔organization position mappings."
+
+reference_solution: |
+  notes_list() → find note_csmac_2012_05_30. notes_get(that id). Compose
+  /workspace/stakeholder_analysis.md with all required dimensions.
+
+primary_dimensions: [completion, robustness, communication]

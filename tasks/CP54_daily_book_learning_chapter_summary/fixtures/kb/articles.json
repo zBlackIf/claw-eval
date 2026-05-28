@@ -1,0 +1,38 @@
+[
+  {
+    "article_id": "KB-PATTERN-LIBRARY",
+    "title": "叙事套路知识库（自动维护）",
+    "category": "narrative_pattern",
+    "tags": ["叙事套路", "提炼库"],
+    "content": "# 叙事套路知识库\n\n> 自动维护，每条标注来源书名+章节\n\n## 已收录套路\n\n| 编号 | 套路名称 | 描述 | 适用场景 | 来源 |\n|------|----------|------|----------|------|\n| P001 | 峰终定律应用 | 在体验末尾和高潮处集中资源 | 用户体验设计 | 情感设计 第3章 |\n| P002 | 情感锚点设计 | 将正面情感与特定设计元素绑定 | 品牌建设 | 情感设计 第5章 |\n",
+    "last_updated": "2026-03-25",
+    "views": 412
+  },
+  {
+    "article_id": "KB-EMOTION-LIBRARY",
+    "title": "情感规律知识库（自动维护）",
+    "category": "emotion_pattern",
+    "tags": ["情感规律", "提炼库"],
+    "content": "# 情感规律知识库\n\n> 自动维护，每条标注来源书名+章节\n\n## 已收录规律\n\n| 编号 | 规律名称 | 描述 | 情感效果 | 来源 |\n|------|----------|------|----------|------|\n| E001 | 认知失调引发探索 | 当现实与预期不符时产生强烈探索欲 | 好奇+不安 | 情感设计 第2章 |\n| E002 | 掌控感带来愉悦 | 用户感受到控制力时产生正面情感 | 满足+自信 | 情感设计 第4章 |\n",
+    "last_updated": "2026-03-25",
+    "views": 387
+  },
+  {
+    "article_id": "KB-WORKFLOW-DAILY-LEARNING",
+    "title": "每日拆书工作流（流程参考）",
+    "category": "workflow",
+    "tags": ["每日拆书", "工作流"],
+    "content": "# 每日拆书工作流\n\n1. 从 books/catalog.json 找一本 status=unanalyzed 的书\n2. 读对应 books/ 下的 .md 全文\n3. 按 templates/chapter-pattern-review-template.md 的格式提炼\n4. 看 KB-PATTERN-LIBRARY / KB-EMOTION-LIBRARY 现状，避免重复编号\n5. 把新发现追加进库（每条标注书名+章节）\n6. 把当天学习记录归档到 KB-DAILY-LEARNING-LOG-20260328，含本次新增条目和洞察\n",
+    "last_updated": "2026-03-01",
+    "views": 156
+  },
+  {
+    "article_id": "KB-DAILY-LEARNING-LOG-20260328",
+    "title": "每日拆书学习记录 2026-03-28",
+    "category": "learning_log",
+    "tags": ["每日拆书", "学习记录", "2026-03-28"],
+    "content": "# 每日拆书学习记录 2026-03-28\n\n> 待整理。请记录本轮分析的书名、章节范围、新增 P/E 编号和关键洞察。\n",
+    "last_updated": "2026-03-28",
+    "views": 0
+  }
+]

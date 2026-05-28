@@ -1,101 +1,175 @@
 task_id: CP37_video_content_analysis_improvement
 task_name: 短视频内容分析与改进建议
-version: "1.0"
+version: '2.0'
 category: data_analysis
 difficulty: medium
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_20_video_content_analysis"
-source_dataset: "taskset-260408-163403"
-source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
-
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_20_video_content_analysis
+source_dataset: taskset-260408-163403
+source_description: Redesigned from taskset-260408-163403/task_20_video_content_analysis with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
 services: []
-
 prompt:
   text: |
-    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
-    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+    我已经把原始项目素材放在容器的 `/workspace/fixtures/` 目录下，请把这些文件当作只读输入。
 
-    - `/workspace/fixtures/video_metadata.json`
-    - `/workspace/fixtures/video_transcript.txt`
-    - `/workspace/fixtures/competitor_analysis.csv`
-    - `/workspace/fixtures/task_spec.md`
+    输入文件如下（右侧是它在原项目中的相对路径）：
+    - `/workspace/fixtures/video_metadata.json` -> `video_metadata.json`
+    - `/workspace/fixtures/video_transcript.txt` -> `video_transcript.txt`
+    - `/workspace/fixtures/competitor_analysis.csv` -> `competitor_analysis.csv`
+    - `/workspace/fixtures/task_spec.md` -> `task_spec.md`
 
-    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+    请基于这些输入完成下面的原始需求：
 
     用户分享了一个短视频链接让你分析问题。视频已经无法直接打开，但我已经把视频的元数据、逐帧文字描述和竞品数据整理好了。请读取所有文件，从标题、内容结构、标签策略、受众定位、数据表现五个维度进行分析，生成详细报告和结构化改进方案。
 
-    分析维度：
-    1. 标题与封面 - 标题吸引力、关键词密度、搜索友好度
-    2. 内容结构 - 开头钩子、节奏把控、信息密度、结尾引导
-    3. 标签策略 - 标签数量、精准度、热度与竞争度平衡
-    4. 受众定位 - 目标用户画像、内容与受众匹配度
-    5. 数据诊断 - 基于互动数据判断问题环节
-
-    输出要求：
-    1. 生成 video_analysis_report.md - 详细分析报告
-    2. 生成 improvement_plan.json - 结构化改进方案，格式包含：video_id, overall_score(0-100), issues数组(dimension/severity/description/suggestion), optimized_title_options数组, recommended_hashtags数组, content_structure_suggestion
+    交付要求：
+    - 需要修改已有文件时，请把修改后的版本写到 `/workspace/` 下对应的原项目相对路径。
+    - 需要新增文件时，请按需求中的文件名或上面列出的目标路径写到 `/workspace/` 下。
+    - 最终回复只需概述完成情况、关键改动和生成的文件；不要只在最终回复中贴代码或报告正文。
   language: zh
-
 tools: []
 tool_endpoints: []
-
 sandbox_files:
-  - fixtures/video_metadata.json
-  - fixtures/video_transcript.txt
-  - fixtures/competitor_analysis.csv
-  - fixtures/task_spec.md
-
+- fixtures/video_metadata.json
+- fixtures/video_transcript.txt
+- fixtures/competitor_analysis.csv
+- fixtures/task_spec.md
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
   timeout_seconds: 600
   max_turns: 30
-
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/video_analysis_report.md
-  - /workspace/improvement_plan.json
+- /workspace/video_analysis_report.md
+- /workspace/improvement_plan.json
+- /workspace/video_metadata.json
+- /workspace/video_transcript.txt
+- /workspace/competitor_analysis.csv
+- /workspace/task_spec.md
 scoring_components: []
-
 safety_checks: []
-
 expected_actions: []
-
 judge_rubric: |
-  评估 agent 对短视频内容分析任务的执行质量。
+  ## Expected Behavior
 
-  ## 输入处理
-  - 是否读取了全部 4 个输入文件
-  - 分析是否基于真实数据而非泛泛而谈
+  1. Agent 读取 video_metadata.json 了解视频基本数据（低互动率）
+  2. Agent 读取 video_transcript.txt 了解视频具体内容和问题
+  3. Agent 读取 competitor_analysis.csv 了解同类账号表现
+  4. Agent 读取 task_spec.md 了解分析维度要求
+  5. 分析问题：标题缺关键词、标签太少、结尾无互动引导、画面模糊、节奏问题
+  6. 生成 video_analysis_report.md
+  7. 生成 improvement_plan.json
 
-  ## 报告质量
-  - 是否覆盖了全部 5 个分析维度
-  - 问题诊断是否精准（如：标签太少、结尾缺引导等）
-  - 改进建议是否具体可操作
+  ## Grading Criteria
 
-  ## 结构化输出
-  - improvement_plan.json 是否为合法 JSON
-  - 是否包含 overall_score、issues、optimized_title_options、recommended_hashtags
-  - issues 中的 severity 判断是否合理
+  - [ ] read_meta
+  - [ ] read_transcript
+  - [ ] read_competitor
+  - [ ] read_spec
+  - [ ] report_created
+  - [ ] dimensions_coverage
+  - [ ] plan_created
+  - [ ] plan_quality
 
-  ## 评分标准
-  - 0.9-1.0: 全面准确的分析，具体可行的改进方案
-  - 0.7-0.8: 覆盖大部分维度，建议较为具体
-  - 0.4-0.6: 分析浮于表面或遗漏维度
-  - 0.0-0.3: 未完成或输出格式错误
+  ## LLM Judge Rubric
 
+  ### Criterion 1: 问题诊断准确性 (Weight: 30%)
+  **Score 1.0**: 准确识别全部关键问题：标题"终于实现笔记自由了"缺少搜索关键词（如AI、笔记工具）；仅2个标签太少（行业标准5-8个）；结尾没有互动引导（关注、点赞、评论引导）；20-30秒画面切换快且模糊影响完播；整体互动率（5.3%点赞率、0.9%评论率）低于竞品平均水平。
+  **Score 0.75**: 识别了4个以上问题，分析基本准确。
+  **Score 0.5**: 识别了2-3个主要问题，部分分析不够深入。
+  **Score 0.25**: 仅发现了明显问题，分析浅表。
+  **Score 0.0**: 未能有效诊断问题。
+
+  ### Criterion 2: 竞品数据对比分析 (Weight: 20%)
+  **Score 1.0**: 将视频数据与competitor_analysis.csv中的4个竞品进行了定量对比；指出了互动率差距（视频5.3% vs 竞品8%+）；分析了竞品的标签策略特点；基于竞品数据给出了可量化的改进目标。
+  **Score 0.75**: 有竞品对比但不够系统化或数据引用不准确。
+  **Score 0.5**: 提到了竞品但未做定量分析。
+  **Score 0.25**: 仅简单提及竞品存在。
+  **Score 0.0**: 未利用竞品数据。
+
+  ### Criterion 3: 改进建议可操作性 (Weight: 30%)
+  **Score 1.0**: improvement_plan.json包含具体可执行的优化方案：提供了3-5个优化标题选项（含关键词）；推荐了8-10个精准标签（热度与竞争度平衡）；给出了重新编排的内容结构（强开头钩子+清晰步骤+互动引导结尾）；每个issue都有severity等级和具体suggestion。
+  **Score 0.75**: 建议具体但部分维度的可操作性不足。
+  **Score 0.5**: 有改进建议但较为笼统。
+  **Score 0.25**: 建议空泛，缺乏针对性。
+  **Score 0.0**: 未提供改进建议。
+
+  ### Criterion 4: 报告结构与专业度 (Weight: 20%)
+  **Score 1.0**: 分析报告结构清晰，按5个维度分别论述；使用了数据支撑（引用具体互动率数字）；improvement_plan.json格式完全符合task_spec要求的schema；overall_score评分有合理依据；语言专业，体现了短视频运营领域知识。
+  **Score 0.75**: 结构合理但部分维度论述深度不一。
+  **Score 0.5**: 有基本结构但数据支撑不足。
+  **Score 0.25**: 结构松散，专业度不够。
+  **Score 0.0**: 未按要求生成结构化输出。
 reference_solution: |
-  关键发现：
-  - 标题"终于实现笔记自由了"缺乏关键词，搜索不友好
-  - 只有2个标签且非精准标签
-  - 结尾突然，缺乏互动引导（未让观众点赞、关注、评论）
-  - 互动率极低(点赞率5.3%，评论率0.9%)
-  - 建议：增加精准标签、优化标题含关键词、结尾加CTA
+  原始来源：taskset-260408-163403/task_20_video_content_analysis
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：用户分享了一个短视频平台（类似抖音/TikTok）的视频链接，要求Agent分析视频内容存在的问题
+  并给出改进建议。由于Agent无法直接访问视频URL，workspace中提供了视频的文字描述和元数据。
+  Agent需要基于这些信息进行内容分析，从标题优化、标签策略、内容结构、受众定位等维度
+  给出专业的短视频运营建议。
+
+
+  隐藏 verifier 主要检查项：dimensions_coverage, plan_created, plan_quality, read_competitor, read_meta, read_spec, read_transcript, report_created
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent 读取 video_metadata.json 了解视频基本数据（低互动率）
+  2. Agent 读取 video_transcript.txt 了解视频具体内容和问题
+  3. Agent 读取 competitor_analysis.csv 了解同类账号表现
+  4. Agent 读取 task_spec.md 了解分析维度要求
+  5. 分析问题：标题缺关键词、标签太少、结尾无互动引导、画面模糊、节奏问题
+  6. 生成 video_analysis_report.md
+  7. 生成 improvement_plan.json
+
+  ## Grading Criteria
+
+  - [ ] read_meta
+  - [ ] read_transcript
+  - [ ] read_competitor
+  - [ ] read_spec
+  - [ ] report_created
+  - [ ] dimensions_coverage
+  - [ ] plan_created
+  - [ ] plan_quality
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: 问题诊断准确性 (Weight: 30%)
+  **Score 1.0**: 准确识别全部关键问题：标题"终于实现笔记自由了"缺少搜索关键词（如AI、笔记工具）；仅2个标签太少（行业标准5-8个）；结尾没有互动引导（关注、点赞、评论引导）；20-30秒画面切换快且模糊影响完播；整体互动率（5.3%点赞率、0.9%评论率）低于竞品平均水平。
+  **Score 0.75**: 识别了4个以上问题，分析基本准确。
+  **Score 0.5**: 识别了2-3个主要问题，部分分析不够深入。
+  **Score 0.25**: 仅发现了明显问题，分析浅表。
+  **Score 0.0**: 未能有效诊断问题。
+
+  ### Criterion 2: 竞品数据对比分析 (Weight: 20%)
+  **Score 1.0**: 将视频数据与competitor_analysis.csv中的4个竞品进行了定量对比；指出了互动率差距（视频5.3% vs 竞品8%+）；分析了竞品的标签策略特点；基于竞品数据给出了可量化的改进目标。
+  **Score 0.75**: 有竞品对比但不够系统化或数据引用不准确。
+  **Score 0.5**: 提到了竞品但未做定量分析。
+  **Score 0.25**: 仅简单提及竞品存在。
+  **Score 0.0**: 未利用竞品数据。
+
+  ### Criterion 3: 改进建议可操作性 (Weight: 30%)
+  **Score 1.0**: improvement_plan.json包含具体可执行的优化方案：提供了3-5个优化标题选项（含关键词）；推荐了8-10个精准标签（热度与竞争度平衡）；给出了重新编排的内容结构（强开头钩子+清晰步骤+互动引导结尾）；每个issue都有severity等级和具体suggestion。
+  **Score 0.75**: 建议具体但部分维度的可操作性不足。
+  **Score 0.5**: 有改进建议但较为笼统。
+  **Score 0.25**: 建议空泛，缺乏针对性。
+  **Score 0.0**: 未提供改进建议。
+
+  ### Criterion 4: 报告结构与专业度 (Weight: 20%)
+  **Score 1.0**: 分析报告结构清晰，按5个维度分别论述；使用了数据支撑（引用具体互动率数字）；improvement_plan.json格式完全符合task_spec要求的schema；overall_score评分有合理依据；语言专业，体现了短视频运营领域知识。
+  **Score 0.75**: 结构合理但部分维度论述深度不一。
+  **Score 0.5**: 有基本结构但数据支撑不足。
+  **Score 0.25**: 结构松散，专业度不够。
+  **Score 0.0**: 未按要求生成结构化输出。
+primary_dimensions:
+- completion
+- robustness
+- communication

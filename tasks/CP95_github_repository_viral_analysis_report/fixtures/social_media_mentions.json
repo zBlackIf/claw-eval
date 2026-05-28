@@ -1,0 +1,53 @@
+{
+  "twitter_mentions": [
+    {
+      "author": "@forrestchang_",
+      "date": "2026-04-10T08:30:00Z",
+      "text": "I extracted Andrej Karpathy's Claude Code setup from his public streams. Rules, skills, agents - everything in one repo.",
+      "likes": 2340,
+      "retweets": 876,
+      "url": "https://twitter.com/forrestchang_/status/example1"
+    },
+    {
+      "author": "@swyx",
+      "date": "2026-04-10T14:22:00Z",
+      "text": "This is gold - someone reverse-engineered Karpathy's Claude Code config. The CLAUDE.md alone is worth studying.",
+      "likes": 4500,
+      "retweets": 1200,
+      "url": "https://twitter.com/swyx/status/example2"
+    },
+    {
+      "author": "@simonw",
+      "date": "2026-04-11T02:15:00Z",
+      "text": "Interesting pattern: people sharing their Claude Code configurations as open source repos. This Karpathy one has 9k stars in 24h.",
+      "likes": 1890,
+      "retweets": 456,
+      "url": "https://twitter.com/simonw/status/example3"
+    }
+  ],
+  "hackernews_posts": [
+    {
+      "title": "Andrej Karpathy's Claude Code Skills",
+      "url": "https://github.com/forrestchang/andrej-karpathy-skills",
+      "points": 623,
+      "comments": 187,
+      "date": "2026-04-10"
+    }
+  ],
+  "reddit_posts": [
+    {
+      "subreddit": "r/ClaudeAI",
+      "title": "Someone extracted Karpathy's Claude Code config - 9k stars in one day",
+      "upvotes": 1245,
+      "comments": 89,
+      "date": "2026-04-11"
+    },
+    {
+      "subreddit": "r/MachineLearning",
+      "title": "Karpathy's approach to AI-assisted coding via Claude Code",
+      "upvotes": 567,
+      "comments": 43,
+      "date": "2026-04-11"
+    }
+  ]
+}

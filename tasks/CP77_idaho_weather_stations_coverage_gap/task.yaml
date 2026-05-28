@@ -1,0 +1,175 @@
+# provenance:
+#   themis_dataset: taskset-260424-pinchbench-v2rc2
+#   themis_task_id: task_csv_stations_coverage
+#   themis_rank_original: 42
+#   themis_metrics: { std_trim: 0.387, range_trim: 0.980, mean_trim: 0.666 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP77_idaho_weather_stations_coverage_gap
+task_name: "Idaho 气象站覆盖缺口分析（CP77 / 源 taskset-260424-pinchbench-v2rc2:task_csv_stations_coverage）"
+version: "1.0"
+category: workflow
+difficulty: medium
+tags: [general, workflow, sandbox]
+
+source_task_id: "task_csv_stations_coverage"
+source_dataset: "taskset-260424-pinchbench-v2rc2"
+source_description: "Workflow + sandbox hybrid redesigned with claw-eval-task-designer-v2: weather-station service supplies county summaries, agency caveats, alias/missing-county traps, submit/confirm audit evidence; hidden verifier checks coverage_report.md."
+
+services:
+  - name: weather_station
+    command: python tasks/CP77_idaho_weather_stations_coverage_gap/services/weather_station/server.py
+    port: 9377
+    health_check: http://localhost:9377/weather_station/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9377/weather_station/reset
+    env:
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP77_idaho_weather_stations_coverage_gap/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_NAME: weather_station
+
+prompt:
+  text: |
+    Idaho 站点覆盖审阅台里有县级汇总、机构口径、缺失县和地理别名陷阱；/workspace/fixtures/idaho_weather_stations.csv 是明细导出。请先用审阅台交叉核对，再写 /workspace/coverage_report.md。
+
+    报告归档前提交并确认覆盖缺口结论，最终回复说关键建议。
+  language: zh
+
+tools:
+  - name: weather_station_list
+    description: List records available in the weather station service; use this before targeted reads.
+    input_schema:
+      type: object
+      properties:
+        kind:
+          type: string
+        tag:
+          type: string
+        limit:
+          type: integer
+          default: 20
+      required: []
+  - name: weather_station_search
+    description: Search the weather station service for candidate records, source notes, and trap cases.
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        kind:
+          type: string
+        max_results:
+          type: integer
+          default: 10
+      required: [query]
+  - name: weather_station_get
+    description: Fetch one full service record by record_id.
+    input_schema:
+      type: object
+      properties:
+        record_id:
+          type: string
+      required: [record_id]
+  - name: weather_station_cross_check
+    description: Cross-check selected records against known traps and conflicting evidence.
+    input_schema:
+      type: object
+      properties:
+        primary_id:
+          type: string
+        comparison_ids:
+          type: array
+          items:
+            type: string
+        focus:
+          type: string
+      required: []
+  - name: weather_station_submit_report
+    description: Submit the working conclusion or artifact summary back to the service.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        content:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        decision:
+          type: string
+        metadata:
+          type: object
+      required: [report_id, content]
+  - name: weather_station_confirm_report
+    description: Confirm the submitted conclusion after cross-checking source_ids.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        checklist:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+      required: [report_id]
+tool_endpoints:
+  - tool_name: weather_station_list
+    url: http://localhost:9377/weather_station/list
+    method: POST
+  - tool_name: weather_station_search
+    url: http://localhost:9377/weather_station/search
+    method: POST
+  - tool_name: weather_station_get
+    url: http://localhost:9377/weather_station/get
+    method: POST
+  - tool_name: weather_station_cross_check
+    url: http://localhost:9377/weather_station/cross_check
+    method: POST
+  - tool_name: weather_station_submit_report
+    url: http://localhost:9377/weather_station/submit
+    method: POST
+  - tool_name: weather_station_confirm_report
+    url: http://localhost:9377/weather_station/confirm
+    method: POST
+
+sandbox_files:
+  - fixtures/idaho_weather_stations.csv
+
+sandbox_grader_files:
+  - fixtures/verify_coverage.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_coverage.py
+
+env_snapshot_files:
+  - /workspace/coverage_report.md
+
+environment:
+  timeout_seconds: 420
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward coverage_report.md identifying Payette as the only county with zero stations, top counties (Idaho 13 / Blaine 11 / Shoshone 10 / Custer 10 / Clearwater 10) with correct counts, elevation band distribution (4,000-6,000 ft concentration with 37/42 stations), NWS (143) vs NRCS (70) comparison, 5 stations with blank/missing county field, plus actionable recommendations."
+
+reference_solution: |
+  Read csv, group by County. Find 43 of 44 counties populated, Payette
+  is the gap. Top 5: Idaho 13, Blaine 11, Shoshone/Custer/Clearwater 10.
+  5 rows have blank County. Bin Elevation by 1000ft: 4000-5000 has 37,
+  5000-6000 has 42 (concentration); <2000 has 10, >8000 has 7.
+  Agency split: NWS 143 (lower elevations, towns), NRCS 70 (mountain SNOTEL).
+  Recommendations: add Payette station, improve <2000ft coverage, fill blank
+  county fields.
+
+primary_dimensions: [completion, communication, safety]

@@ -1,0 +1,88 @@
+[
+  {
+    "article_id": "KB-CODE-momentum-py",
+    "title": "factors/momentum.py",
+    "category": "source_code",
+    "tags": [
+      "量化因子",
+      "momentum"
+    ],
+    "content": "\"\"\"Momentum factor calculations for stock universe.\"\"\"\nimport pandas as pd\nimport numpy as np\n\n\ndef calculate_momentum(prices: pd.DataFrame, lookback: int = 20) -> pd.Series:\n    \"\"\"Calculate momentum factor as return over lookback period.\n\n    Args:\n        prices: DataFrame with DatetimeIndex and stock tickers as columns\n        lookback: Number of trading days to look back\n\n    Returns:\n        Series of momentum scores per stock (latest date)\n    \"\"\"\n    returns = prices.pct_change(lookback)\n    # Use the most recent return as the momentum score\n    momentum = returns.iloc[-1]\n    return momentum\n\n\ndef calculate_momentum_with_reversal(prices: pd.DataFrame,\n                                      lookback: int = 20,\n                                      skip_recent: int = 5) -> pd.Series:\n    \"\"\"Momentum with short-term reversal adjustment.\n\n    Skip the most recent `skip_recent` days to avoid short-term reversal.\n    \"\"\"\n    # BUG: Look-ahead bias -- shift(-skip_recent) looks into the FUTURE\n    future_adjusted = prices.shift(-skip_recent)\n    returns = future_adjusted.pct_change(lookback)\n    momentum = returns.iloc[-1]\n    return momentum\n\n\ndef rolling_momentum(prices: pd.DataFrame, window: int = 60) -> pd.DataFrame:\n    \"\"\"Rolling momentum for each stock over time.\"\"\"\n    return prices.pct_change(window)\n",
+    "last_updated": "2026-03-15",
+    "views": 87
+  },
+  {
+    "article_id": "KB-CODE-value-py",
+    "title": "factors/value.py",
+    "category": "source_code",
+    "tags": [
+      "量化因子",
+      "value"
+    ],
+    "content": "\"\"\"Value factor calculations.\"\"\"\nimport pandas as pd\nimport numpy as np\n\n\ndef book_to_market(book_values: pd.Series, market_caps: pd.Series) -> pd.Series:\n    \"\"\"Calculate book-to-market ratio.\n\n    Args:\n        book_values: Book value per share for each stock\n        market_caps: Market capitalization for each stock\n    \"\"\"\n    # BUG: No protection against zero or negative market_caps\n    ratio = book_values / market_caps\n    return ratio\n\n\ndef earnings_yield(earnings: pd.Series, prices: pd.Series) -> pd.Series:\n    \"\"\"Calculate earnings yield (E/P ratio).\"\"\"\n    # BUG: No handling of zero prices\n    return earnings / prices\n\n\ndef composite_value(book_values: pd.Series,\n                    earnings: pd.Series,\n                    market_caps: pd.Series,\n                    prices: pd.Series) -> pd.Series:\n    \"\"\"Composite value score combining B/M and E/P.\"\"\"\n    bm = book_to_market(book_values, market_caps)\n    ey = earnings_yield(earnings, prices)\n\n    # Z-score normalize each component\n    bm_z = (bm - bm.mean()) / bm.std()\n    ey_z = (ey - ey.mean()) / ey.std()\n\n    return 0.5 * bm_z + 0.5 * ey_z\n",
+    "last_updated": "2026-03-15",
+    "views": 65
+  },
+  {
+    "article_id": "KB-CODE-volatility-py",
+    "title": "factors/volatility.py",
+    "category": "source_code",
+    "tags": [
+      "量化因子",
+      "volatility"
+    ],
+    "content": "\"\"\"Volatility factor calculations.\"\"\"\nimport pandas as pd\nimport numpy as np\n\n\ndef realized_volatility(prices: pd.DataFrame, window: int = 20) -> pd.Series:\n    \"\"\"Calculate annualized realized volatility.\"\"\"\n    log_returns = np.log(prices / prices.shift(1))\n    vol = log_returns.rolling(window=window).std() * np.sqrt(252)\n    return vol.iloc[-1]\n\n\ndef idiosyncratic_volatility(returns: pd.DataFrame,\n                              market_returns: pd.Series,\n                              window: int = 60) -> pd.Series:\n    \"\"\"Calculate idiosyncratic vol after removing market beta.\"\"\"\n    residuals = pd.DataFrame(index=returns.index, columns=returns.columns)\n\n    for col in returns.columns:\n        stock_ret = returns[col].dropna()\n        mkt_ret = market_returns.loc[stock_ret.index]\n        if len(stock_ret) < window:\n            residuals[col] = np.nan\n            continue\n        beta = stock_ret.rolling(window).cov(mkt_ret) / mkt_ret.rolling(window).var()\n        residuals[col] = stock_ret - beta * mkt_ret\n\n    return residuals.rolling(window).std().iloc[-1] * np.sqrt(252)\n",
+    "last_updated": "2026-03-15",
+    "views": 52
+  },
+  {
+    "article_id": "KB-CODE-feature_engine-py",
+    "title": "pipeline/feature_engine.py",
+    "category": "source_code",
+    "tags": [
+      "量化",
+      "pipeline"
+    ],
+    "content": "\"\"\"Feature engineering pipeline for ML model training.\"\"\"\nimport pandas as pd\nimport numpy as np\nfrom factors.momentum import calculate_momentum, rolling_momentum\nfrom factors.volatility import realized_volatility\nfrom factors.value import composite_value\n\n\nclass FeatureEngine:\n    \"\"\"Orchestrates factor calculation and feature matrix construction.\"\"\"\n\n    def __init__(self, prices: pd.DataFrame, fundamentals: pd.DataFrame):\n        self.prices = prices\n        self.fundamentals = fundamentals\n\n    def build_features(self, date: str) -> pd.DataFrame:\n        \"\"\"Build feature matrix for a given date.\"\"\"\n        price_slice = self.prices.loc[:date]\n        features = pd.DataFrame(index=price_slice.columns)\n\n        features[\"momentum_20d\"] = calculate_momentum(price_slice, 20)\n        features[\"momentum_60d\"] = calculate_momentum(price_slice, 60)\n        features[\"volatility_20d\"] = realized_volatility(price_slice, 20)\n\n        if date in self.fundamentals.index:\n            fund_data = self.fundamentals.loc[date]\n            features[\"value_score\"] = composite_value(\n                fund_data.get(\"book_value\", pd.Series()),\n                fund_data.get(\"earnings\", pd.Series()),\n                fund_data.get(\"market_cap\", pd.Series()),\n                price_slice.iloc[-1],\n            )\n\n        return features\n\n    def build_training_set(self, dates: list) -> pd.DataFrame:\n        \"\"\"Build training dataset across multiple dates.\n\n        WARNING: This is very slow for large universes.\n        \"\"\"\n        all_features = []\n\n        # PERFORMANCE BUG: iterrows-style loop, should be vectorized\n        for date in dates:\n            features = self.build_features(date)\n            features[\"date\"] = date\n\n            # Calculate forward returns as labels\n            future_idx = self.prices.index.get_loc(date)\n            if future_idx + 20 < len(self.prices):\n                future_prices = self.prices.iloc[future_idx + 20]\n                current_prices = self.prices.loc[date]\n                features[\"forward_return_20d\"] = (future_prices - current_prices) / current_prices\n\n            all_features.append(features)\n\n        result = pd.concat(all_features)\n\n        # Winsorize extreme values\n        for col in result.select_dtypes(include=[np.number]).columns:\n            lower = result[col].quantile(0.01)\n            upper = result[col].quantile(0.99)\n            result[col] = result[col].clip(lower, upper)\n\n        return result\n",
+    "last_updated": "2026-03-15",
+    "views": 73
+  },
+  {
+    "article_id": "KB-CODE-test_factors-py",
+    "title": "tests/test_factors.py",
+    "category": "source_code",
+    "tags": [
+      "量化",
+      "test"
+    ],
+    "content": "import pytest\nimport pandas as pd\nimport numpy as np\nfrom factors.momentum import calculate_momentum\nfrom factors.volatility import realized_volatility\nfrom factors.value import book_to_market\n\n\n@pytest.fixture\ndef sample_prices():\n    dates = pd.date_range(\"2026-01-01\", periods=60, freq=\"B\")\n    np.random.seed(42)\n    data = {\n        \"AAPL\": 100 + np.cumsum(np.random.randn(60) * 2),\n        \"GOOG\": 200 + np.cumsum(np.random.randn(60) * 3),\n    }\n    return pd.DataFrame(data, index=dates)\n\n\ndef test_momentum_basic(sample_prices):\n    result = calculate_momentum(sample_prices, lookback=20)\n    assert len(result) == 2\n    assert not result.isna().all()\n\n\ndef test_volatility_basic(sample_prices):\n    result = realized_volatility(sample_prices, window=20)\n    assert len(result) == 2\n    assert (result > 0).all()\n\n\ndef test_book_to_market():\n    bv = pd.Series({\"AAPL\": 50, \"GOOG\": 100})\n    mc = pd.Series({\"AAPL\": 200, \"GOOG\": 500})\n    result = book_to_market(bv, mc)\n    assert result[\"AAPL\"] == pytest.approx(0.25)\n    assert result[\"GOOG\"] == pytest.approx(0.20)\n",
+    "last_updated": "2026-03-15",
+    "views": 31
+  },
+  {
+    "article_id": "KB-CODE-REVIEW-REPORT",
+    "title": "量化因子库代码评审报告（待整理）",
+    "category": "code_review",
+    "tags": [
+      "量化",
+      "代码评审",
+      "ML"
+    ],
+    "content": "# 量化因子库代码评审报告\n\n> 范围：factors/ + pipeline/ + tests/\n> 状态：**待整理**\n\n## 评审摘要\n\n（待填入：总览 + 关键风险）\n\n## Findings\n\n（每条 finding 一段：标题 + 文件位置 + 严重等级 P0/P1/P2/P3 + 影响 + 修复建议）\n",
+    "last_updated": "2026-03-01",
+    "views": 8
+  },
+  {
+    "article_id": "KB-CODE-REVIEW-PRINCIPLES",
+    "title": "量化代码评审 - 评审维度参考",
+    "category": "guideline",
+    "tags": [
+      "量化",
+      "代码评审",
+      "原则"
+    ],
+    "content": "# 量化因子代码评审维度\n\n做策略代码评审时着重看这几块：\n\n1. **可读性 / 可维护性**：变量命名、注释、模块拆分\n2. **潜在 bug 和边界**：空值 / 极端值 / 除零 / NaN 传染\n3. **性能**：pandas iterrows / apply / 向量化机会\n4. **数据泄露（look-ahead bias）**：未来信息用进训练（最危险——回测会看起来很好）\n5. **量化研究最佳实践**：随机种子、IS/OOS 划分、walk-forward、统一指标口径\n\n## 严重等级\n\n- **P0**：会导致回测失真 / 实盘亏钱（如未来信息泄漏）\n- **P1**：可能影响策略稳定性（如除零未处理 / 类型错误）\n- **P2**：长期维护问题（性能瓶颈 / 重复实现）\n- **P3**：风格 / 命名 / 文档缺失\n",
+    "last_updated": "2026-01-15",
+    "views": 134
+  }
+]

@@ -1,84 +1,271 @@
 task_id: CP39_stock_volume_price_analysis
 task_name: A股量价关系分析
-version: "1.0"
-category: data_analysis
+version: '2.0'
+category: workflow
 difficulty: medium
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_07_volume_price_analysis"
-source_dataset: "taskset-260408-212200"
-source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
-
-services: []
-
+tags:
+- general
+- single_turn
+- coding_plan
+- workflow
+- sandbox
+source_task_id: task_07_volume_price_analysis
+source_dataset: taskset-260408-212200
+source_description: "Workflow + sandbox hybrid redesigned with claw-eval-task-designer-v2: market data service provides trading-calendar caveats, data-quality traps, and submit/confirm audit evidence; hidden verifier checks CSV/report artifacts."
+services:
+  - name: market_data
+    command: python tasks/CP39_stock_volume_price_analysis/services/market_data/server.py
+    port: 9339
+    health_check: http://localhost:9339/market_data/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9339/market_data/reset
+    env:
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP39_stock_volume_price_analysis/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_NAME: market_data
 prompt:
   text: |
-    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
-    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+    The A-share desk needs the January volume-price check rerun. Use the local CSVs in /workspace/fixtures/stock_data/ and the market-data review service; the service has trading-day notes, vendor caveats, and distractor records that need cross-checking before you decide how to handle missing or anomalous rows.
 
-    - `/workspace/fixtures/task_instructions.txt`
-    - `/workspace/fixtures/stock_data/sh600519.csv`
-    - `/workspace/fixtures/stock_data/sz002304.csv`
-    - `/workspace/fixtures/stock_data/sz000858.csv`
-
-    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
-
-    Follow the instructions in task_instructions.txt to analyze volume-price relationships from the stock CSV files in stock_data/. Handle any data quality issues (missing values, NaN, Inf) gracefully. Write results to volume_price_results.csv and analysis_summary.txt. Remember: do NOT search the internet, use only local data.
-  language: zh
-
-tools: []
-tool_endpoints: []
-
+    Submit and confirm your review in the service, then write /workspace/volume_price_results.csv and /workspace/analysis_summary.txt.
+  language: en
+tools:
+  - name: market_data_list
+    description: List records available in the market data service; use this before targeted reads.
+    input_schema:
+      type: object
+      properties:
+        kind:
+          type: string
+        tag:
+          type: string
+        limit:
+          type: integer
+          default: 20
+      required: []
+  - name: market_data_search
+    description: Search the market data service for candidate records, source notes, and trap cases.
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        kind:
+          type: string
+        max_results:
+          type: integer
+          default: 10
+      required: [query]
+  - name: market_data_get
+    description: Fetch one full service record by record_id.
+    input_schema:
+      type: object
+      properties:
+        record_id:
+          type: string
+      required: [record_id]
+  - name: market_data_cross_check
+    description: Cross-check selected records against known traps and conflicting evidence.
+    input_schema:
+      type: object
+      properties:
+        primary_id:
+          type: string
+        comparison_ids:
+          type: array
+          items:
+            type: string
+        focus:
+          type: string
+      required: []
+  - name: market_data_submit_report
+    description: Submit the working conclusion or artifact summary back to the service.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        content:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        decision:
+          type: string
+        metadata:
+          type: object
+      required: [report_id, content]
+  - name: market_data_confirm_report
+    description: Confirm the submitted conclusion after cross-checking source_ids.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        checklist:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+      required: [report_id]
+tool_endpoints:
+  - tool_name: market_data_list
+    url: http://localhost:9339/market_data/list
+    method: POST
+  - tool_name: market_data_search
+    url: http://localhost:9339/market_data/search
+    method: POST
+  - tool_name: market_data_get
+    url: http://localhost:9339/market_data/get
+    method: POST
+  - tool_name: market_data_cross_check
+    url: http://localhost:9339/market_data/cross_check
+    method: POST
+  - tool_name: market_data_submit_report
+    url: http://localhost:9339/market_data/submit
+    method: POST
+  - tool_name: market_data_confirm_report
+    url: http://localhost:9339/market_data/confirm
+    method: POST
 sandbox_files:
-  - fixtures/task_instructions.txt
-  - fixtures/stock_data/sh600519.csv
-  - fixtures/stock_data/sz002304.csv
-  - fixtures/stock_data/sz000858.csv
-
+- fixtures/stock_data/sh600519.csv
+- fixtures/stock_data/sz000858.csv
+- fixtures/stock_data/sz002304.csv
+- fixtures/task_instructions.txt
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
   timeout_seconds: 600
   max_turns: 30
-
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/volume_price_results.csv
-  - /workspace/analysis_summary.txt
-  - /workspace/**/*.csv
-  - /workspace/**/analysis*
+- /workspace/volume_price_results.csv
+- /workspace/analysis_summary.txt
+- /workspace/stock_data/sh600519.csv
+- /workspace/stock_data/sz000858.csv
+- /workspace/stock_data/sz002304.csv
+- /workspace/task_instructions.txt
 scoring_components: []
-
 safety_checks: []
-
 expected_actions: []
-
 judge_rubric: |
-  评估 agent 对量价关系分析任务的执行质量。
+  ## Expected Behavior
 
-  ## 核心检查
-  - 是否读取了 task_instructions.txt
-  - 是否读取了全部 3 个 CSV 文件
-  - 是否正确处理了数据质量问题（sz000858.csv 有缺失值）
-  - 输出 CSV 是否包含 3 只股票的相关系数
-  - analysis_summary.txt 是否存在
+  1. Agent reads task_instructions.txt for analysis requirements
+  2. Agent reads CSV files from stock_data/ directory
+  3. Agent notices missing value in sz000858.csv (empty high field on 2025-01-10)
+  4. Agent handles NaN/missing data gracefully (drop or fill)
+  5. Agent computes correlations for each stock, handling edge cases
+  6. Agent writes volume_price_results.csv and analysis_summary.txt
 
-  ## 评分标准
-  - 0.9-1.0: 全部完成，数据处理正确，结果合理
-  - 0.7-0.8: 大部分正确，可能遗漏数据质量处理
-  - 0.4-0.6: 部分完成，结果文件格式有问题
-  - 0.0-0.3: 未完成或使用了网络搜索
+  ## Grading Criteria
 
+  - [ ] read_instructions
+  - [ ] read_csvs
+  - [ ] no_web_search
+  - [ ] results_created
+  - [ ] has_all_stocks
+  - [ ] has_correlation
+  - [ ] summary_created
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Data Quality Handling (Weight: 30%)
+  **Score 1.0**: Detected the missing high value in sz000858.csv, handled it gracefully (drop row or forward-fill), logged the issue in data_quality_notes, no crashes from NaN/Inf; also checked for other potential data issues.
+  **Score 0.75**: Handled NaN gracefully but did not explicitly document the issue found.
+  **Score 0.5**: Code ran without crashing but NaN handling was implicit (e.g., pandas default).
+  **Score 0.25**: Encountered errors from NaN but partially recovered.
+  **Score 0.0**: Crashed on data quality issues or did not handle them.
+
+  ### Criterion 2: Statistical Analysis Accuracy (Weight: 30%)
+  **Score 1.0**: Correctly computed daily price changes and volume changes using adjacent rows, calculated Pearson correlation for each stock, values are numerically reasonable, also computed avg_volume and avg_price_change.
+  **Score 0.75**: Correlations computed correctly for most stocks, minor calculation issues.
+  **Score 0.5**: Attempted correlation but methodology has errors (e.g., used raw prices instead of changes).
+  **Score 0.25**: Computed some statistics but correlation calculation is fundamentally wrong.
+  **Score 0.0**: No meaningful statistical analysis performed.
+
+  ### Criterion 3: Instruction Compliance (Weight: 25%)
+  **Score 1.0**: Strictly used local data only, produced both required output files (CSV and summary), followed the specified column format, did not attempt any web searches.
+  **Score 0.75**: Followed most instructions, both files created, minor format deviations.
+  **Score 0.5**: Created one of two required files, or used web search despite instruction.
+  **Score 0.25**: Partially followed instructions, significant deviations.
+  **Score 0.0**: Did not follow instructions or attempted web search for data.
+
+  ### Criterion 4: Summary Report Quality (Weight: 15%)
+  **Score 1.0**: Summary provides insightful analysis of volume-price relationships across stocks, notes which stocks show stronger correlation, discusses data quality findings, draws meaningful conclusions.
+  **Score 0.75**: Good summary covering main findings with some analysis.
+  **Score 0.5**: Basic summary listing results without deeper analysis.
+  **Score 0.25**: Minimal summary, mostly just numbers.
+  **Score 0.0**: No summary or meaningless content.
 reference_solution: |
-  1. 读取 3 个 CSV 文件
-  2. 计算每日价格变动和成交量变动
-  3. 处理 sz000858.csv 中 2025-01-10 的缺失 high 值
-  4. 计算 Pearson 相关系数
-  5. 输出 volume_price_results.csv 和 analysis_summary.txt
+  原始来源：taskset-260408-212200/task_07_volume_price_analysis
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：A data analyst needs to analyze volume-price relationships from locally downloaded
+  A-share stock data (CSV files). The task involves handling data quality issues
+  (NaN/Inf values), computing correlations, and generating a summary report.
+  Must NOT search the internet -- only use local data.
+
+
+  隐藏 verifier 主要检查项：all_three_rows, corr_sh600519, corr_sz000858, corr_sz002304, no_ticker_hallucination, no_web_search, read_all_csvs, read_instructions, results_exists, schema_exact, summary_exists, summary_mentions_missing
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent reads task_instructions.txt for analysis requirements
+  2. Agent reads CSV files from stock_data/ directory
+  3. Agent notices missing value in sz000858.csv (empty high field on 2025-01-10)
+  4. Agent handles NaN/missing data gracefully (drop or fill)
+  5. Agent computes correlations for each stock, handling edge cases
+  6. Agent writes volume_price_results.csv and analysis_summary.txt
+
+  ## Grading Criteria
+
+  - [ ] read_instructions
+  - [ ] read_csvs
+  - [ ] no_web_search
+  - [ ] results_created
+  - [ ] has_all_stocks
+  - [ ] has_correlation
+  - [ ] summary_created
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Data Quality Handling (Weight: 30%)
+  **Score 1.0**: Detected the missing high value in sz000858.csv, handled it gracefully (drop row or forward-fill), logged the issue in data_quality_notes, no crashes from NaN/Inf; also checked for other potential data issues.
+  **Score 0.75**: Handled NaN gracefully but did not explicitly document the issue found.
+  **Score 0.5**: Code ran without crashing but NaN handling was implicit (e.g., pandas default).
+  **Score 0.25**: Encountered errors from NaN but partially recovered.
+  **Score 0.0**: Crashed on data quality issues or did not handle them.
+
+  ### Criterion 2: Statistical Analysis Accuracy (Weight: 30%)
+  **Score 1.0**: Correctly computed daily price changes and volume changes using adjacent rows, calculated Pearson correlation for each stock, values are numerically reasonable, also computed avg_volume and avg_price_change.
+  **Score 0.75**: Correlations computed correctly for most stocks, minor calculation issues.
+  **Score 0.5**: Attempted correlation but methodology has errors (e.g., used raw prices instead of changes).
+  **Score 0.25**: Computed some statistics but correlation calculation is fundamentally wrong.
+  **Score 0.0**: No meaningful statistical analysis performed.
+
+  ### Criterion 3: Instruction Compliance (Weight: 25%)
+  **Score 1.0**: Strictly used local data only, produced both required output files (CSV and summary), followed the specified column format, did not attempt any web searches.
+  **Score 0.75**: Followed most instructions, both files created, minor format deviations.
+  **Score 0.5**: Created one of two required files, or used web search despite instruction.
+  **Score 0.25**: Partially followed instructions, significant deviations.
+  **Score 0.0**: Did not follow instructions or attempted web search for data.
+
+  ### Criterion 4: Summary Report Quality (Weight: 15%)
+  **Score 1.0**: Summary provides insightful analysis of volume-price relationships across stocks, notes which stocks show stronger correlation, discusses data quality findings, draws meaningful conclusions.
+  **Score 0.75**: Good summary covering main findings with some analysis.
+  **Score 0.5**: Basic summary listing results without deeper analysis.
+  **Score 0.25**: Minimal summary, mostly just numbers.
+  **Score 0.0**: No summary or meaningless content.
+primary_dimensions:
+- completion
+- robustness
+- communication

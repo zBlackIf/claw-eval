@@ -45,7 +45,7 @@ class WeixinPlatform:
             return "Train ticket query is not yet implemented"
 
         # Reminder - hardcoded
-        if any(kw in message for kw in ['提醒', '闹钟', 'remind']):
+        if any(kw in message for kw in ['提醒', '��钟', 'remind']):
             return "Reminder feature is not yet implemented"
 
         # Default: chat via LLM

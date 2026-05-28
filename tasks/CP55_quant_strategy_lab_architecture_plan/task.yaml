@@ -1,0 +1,103 @@
+# provenance:
+#   themis_dataset: taskset-260427-121234
+#   themis_task_id: task_26_quant_strategy_plan
+#   themis_rank_original: 8
+#   themis_metrics: { std_trim: 0.441, range_trim: 1.000, mean_trim: 0.685 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP55_quant_strategy_lab_architecture_plan
+task_name: "量化策略实验室架构设计方案（CP55 / 源 taskset-260427-121234:task_26_quant_strategy_plan）"
+version: "1.1"
+category: design
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_26_quant_strategy_plan"
+source_dataset: "taskset-260427-121234"
+source_description: "PinchBench top100 rank 8（std_trim 0.441）。Claw-Eval sandbox + kb mock service 混合：sandbox 提供 strategy_base.py 源码，kb 提供团队历史 RFC 草稿 / 踩坑复盘 / 绩效指标共识。agent 查 kb + 读源码 + 写 PLAN.md + strategy_lab.py。verifier 检查文档结构 + 类骨架 + grader 检查 kb 调用覆盖度 + 踩坑回应度。"
+
+services:
+  - name: kb
+    command: python mock_services/kb/server.py
+    port: 9106
+    health_check: http://localhost:9106/kb/search
+    health_check_method: POST
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9106/kb/reset
+    env:
+      KB_FIXTURES: tasks/CP55_quant_strategy_lab_architecture_plan/fixtures/kb/articles.json
+
+prompt:
+  text: |
+    王老板上周拍板要做策略实验室——回测、参数调优、多周期信号组合、绩效评估
+    那几块。RFC 已经起了一版草稿在内部 KB 里，但没写完。先帮我把方案 +
+    骨架代码搭出来，下周一组里要讨论。
+
+    现有的策略基类在 /workspace/fixtures/code/strategy_base.py。
+  language: zh
+
+tools:
+  - name: kb_search
+    description: 在内部知识库搜索文章
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        category:
+          type: string
+        max_results:
+          type: integer
+          default: 5
+      required: [query]
+  - name: kb_get_article
+    description: 按 ID 获取知识库文章全文
+    input_schema:
+      type: object
+      properties:
+        article_id:
+          type: string
+      required: [article_id]
+
+tool_endpoints:
+  - tool_name: kb_search
+    url: http://localhost:9106/kb/search
+    method: POST
+  - tool_name: kb_get_article
+    url: http://localhost:9106/kb/articles/get
+    method: POST
+
+sandbox_files:
+  - fixtures/code/strategy_base.py
+
+sandbox_grader_files:
+  - fixtures/verify_quant_lab_plan.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_quant_lab_plan.py
+
+env_snapshot_files:
+  - /workspace/PLAN.md
+  - /workspace/strategy_lab.py
+
+environment:
+  timeout_seconds: 720
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a plan that builds on the existing RFC draft + retro lessons in KB: PLAN.md covers 现状/功能/架构/数据流/Phase x3/风险 grounded in strategy_base.py types AND the retro cases (look-ahead bias, cost modeling, walk-forward, seed fixing, metric consistency). strategy_lab.py defines Backtester / ParameterOptimizer / PerformanceMetrics with metric names matching KB-METRIC-DEFS (sharpe_ratio/max_drawdown/win_rate/profit_factor) and IS/OOS split implied. Penalize plans that ignore the KB context (signals: lab was discussed before, several retros exist) or reinvent metric definitions inconsistent with team consensus."
+
+reference_solution: |
+  kb_search('strategy lab') → find RFC draft, retro, metric defs. kb_get_article
+  on all three. Read strategy_base.py. Compose /workspace/PLAN.md building on
+  RFC v0.2 TODO list, addressing 5 retro cases (look-ahead / cost / overfit /
+  seed / metric drift). strategy_lab.py with Backtester (IS/OOS split, walk-
+  forward, cost params), ParameterOptimizer (grid/bayesian + walk-forward
+  splits), PerformanceMetrics (sharpe/max_dd/win_rate/profit_factor per
+  KB-METRIC-DEFS), all methods type-annotated + docstrings in Chinese.
+
+primary_dimensions: [completion, communication, safety]

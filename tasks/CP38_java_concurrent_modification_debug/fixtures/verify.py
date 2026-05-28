@@ -39,12 +39,28 @@ def automated_score(workspace: Path) -> dict[str, float]:
         has_thread_safe = any(k in content for k in THREAD_SAFE_PATTERNS)
         scores["thread_safety_applied"] = 1.0 if has_thread_safe else 0.0
 
-        suppresses = bool(re.search(r"catch\s*\(\s*ConcurrentModificationException", content))
+        snapshot_or_guard = any(k in content for k in [
+            "toArray(", "List.copyOf", "new ArrayList<>(", "CopyOnWriteArrayList",
+            "synchronized", "ReentrantReadWriteLock", "Collections.unmodifiableList",
+        ])
+        bare_iterator = bool(re.search(r"\bIterator\s*<|\.iterator\s*\(", content))
+        scores["iteration_race_removed"] = 1.0 if snapshot_or_guard and not bare_iterator else (0.5 if snapshot_or_guard else 0.0)
+
+        suppresses = bool(re.search(
+            r"catch\s*\(\s*ConcurrentModificationException|catch\s*\(\s*Exception\s+\w+\)\s*\{\s*(?:return|//|/\*)",
+            content,
+            re.DOTALL,
+        ))
         scores["no_exception_suppression"] = 0.0 if suppresses else 1.0
+
+        handles_null = bool(re.search(r"if\s*\([^)]*==\s*null|Objects\.isNull|CollectionUtils\.isEmpty", content))
+        scores["edge_cases_preserved"] = 1.0 if handles_null else 0.5
     else:
         scores["fix_file_present"] = 0.0
         scores["thread_safety_applied"] = 0.0
+        scores["iteration_race_removed"] = 0.0
         scores["no_exception_suppression"] = 1.0
+        scores["edge_cases_preserved"] = 0.0
 
     diag = workspace / "diagnosis.md"
     if diag.exists():
@@ -60,9 +76,12 @@ def automated_score(workspace: Path) -> dict[str, float]:
         scores["root_cause_identified"] = (
             sum([has_shared_state, has_concurrent, has_arraylist]) / 3.0
         )
+        stack_mentions = sum(1 for k in ["requestutil", "antisqlinjection", "line", "37", "125"] if k in dc)
+        scores["diagnosis_uses_stacktrace"] = min(stack_mentions / 3.0, 1.0)
     else:
         scores["diagnosis_exists"] = 0.0
         scores["root_cause_identified"] = 0.0
+        scores["diagnosis_uses_stacktrace"] = 0.0
 
     return scores
 

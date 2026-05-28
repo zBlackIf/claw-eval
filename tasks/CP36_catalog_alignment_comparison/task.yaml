@@ -1,83 +1,279 @@
 task_id: CP36_catalog_alignment_comparison
 task_name: 古籍版本目录对齐：循证比对
-version: "1.0"
-category: data_analysis
+version: '2.0'
+category: workflow
 difficulty: hard
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_12_catalog_alignment"
-source_dataset: "taskset-260408-163403"
-source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
-
-services: []
-
+tags:
+- general
+- single_turn
+- coding_plan
+- workflow
+- sandbox
+source_task_id: task_12_catalog_alignment
+source_dataset: taskset-260408-163403
+source_description: "Workflow + sandbox hybrid redesigned with claw-eval-task-designer-v2: catalog alignment service adds multi-call lookup, cross-check traps, submit/confirm evidence; hidden verifier still checks /workspace/alignment_output.json."
+services:
+  - name: catalog_alignment
+    command: python tasks/CP36_catalog_alignment_comparison/services/catalog_alignment/server.py
+    port: 9336
+    health_check: http://localhost:9336/catalog_alignment/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9336/catalog_alignment/reset
+    env:
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP36_catalog_alignment_comparison/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_NAME: catalog_alignment
 prompt:
   text: |
-    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
-    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+    古籍目录台里有《周易正义》当前记录、候选命中和历史误配样例；/workspace/fixtures/ 是这次导出的离线包。请先用目录台查阅并交叉复核版本、题名变体、责任者省略和残本关系，再把完整比对结果写到 /workspace/alignment_output.json。
 
-    - `/workspace/fixtures/current_record.json`
-    - `/workspace/fixtures/search_results.json`
-    - `/workspace/fixtures/alignment_rules.md`
-
-    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
-
-    请根据 alignment_rules.md 中的对齐规则，将 current_record.json 中的当前记录与 search_results.json 中的6条候选记录逐一比对。对每条候选记录执行四大核心字段比对（题名、责任者、版本、馆藏），判断对齐关系类型和置信度。将完整的比对结果写入 alignment_output.json。
+    归档前把比对结论提交到目录台并确认一次，最终回复只概述生成文件和关键判断。
   language: zh
-
-tools: []
-tool_endpoints: []
-
+tools:
+  - name: catalog_alignment_list
+    description: List records available in the catalog alignment service; use this before targeted reads.
+    input_schema:
+      type: object
+      properties:
+        kind:
+          type: string
+        tag:
+          type: string
+        limit:
+          type: integer
+          default: 20
+      required: []
+  - name: catalog_alignment_search
+    description: Search the catalog alignment service for candidate records, source notes, and trap cases.
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        kind:
+          type: string
+        max_results:
+          type: integer
+          default: 10
+      required: [query]
+  - name: catalog_alignment_get
+    description: Fetch one full service record by record_id.
+    input_schema:
+      type: object
+      properties:
+        record_id:
+          type: string
+      required: [record_id]
+  - name: catalog_alignment_cross_check
+    description: Cross-check selected records against known traps and conflicting evidence.
+    input_schema:
+      type: object
+      properties:
+        primary_id:
+          type: string
+        comparison_ids:
+          type: array
+          items:
+            type: string
+        focus:
+          type: string
+      required: []
+  - name: catalog_alignment_submit_report
+    description: Submit the working conclusion or artifact summary back to the service.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        content:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        decision:
+          type: string
+        metadata:
+          type: object
+      required: [report_id, content]
+  - name: catalog_alignment_confirm_report
+    description: Confirm the submitted conclusion after cross-checking source_ids.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        checklist:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+      required: [report_id]
+tool_endpoints:
+  - tool_name: catalog_alignment_list
+    url: http://localhost:9336/catalog_alignment/list
+    method: POST
+  - tool_name: catalog_alignment_search
+    url: http://localhost:9336/catalog_alignment/search
+    method: POST
+  - tool_name: catalog_alignment_get
+    url: http://localhost:9336/catalog_alignment/get
+    method: POST
+  - tool_name: catalog_alignment_cross_check
+    url: http://localhost:9336/catalog_alignment/cross_check
+    method: POST
+  - tool_name: catalog_alignment_submit_report
+    url: http://localhost:9336/catalog_alignment/submit
+    method: POST
+  - tool_name: catalog_alignment_confirm_report
+    url: http://localhost:9336/catalog_alignment/confirm
+    method: POST
 sandbox_files:
-  - fixtures/current_record.json
-  - fixtures/search_results.json
-  - fixtures/alignment_rules.md
-
+- fixtures/alignment_rules.md
+- fixtures/current_record.json
+- fixtures/search_results.json
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
   timeout_seconds: 600
   max_turns: 30
-
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/alignment_output.json
-  - /workspace/**/*.json
+- /workspace/alignment_output.json
+- /workspace/alignment_rules.md
+- /workspace/current_record.json
+- /workspace/search_results.json
 scoring_components: []
-
 safety_checks: []
-
 expected_actions: []
-
 judge_rubric: |
-  评估 agent 对古籍版本目录对齐任务的执行质量。
+  ## Expected Behavior
 
-  ## 核心维度
-  - 是否正确读取了三个输入文件
-  - 输出是否为合法 JSON 且包含 6 条候选的完整比对结果
-  - 版本判断是否正确：宋刻本 vs 明/清/元刻本属于不同版本系统
-  - CAT-NLC-10234 是否被识别为最佳匹配(same_edition)
-  - CAT-PKU-20891(明刻本)、CAT-TW-40123(清刻本)、CAT-JP-50789(元刻本)是否被正确判为 no_relation
-  - 每条比对是否包含 field_comparison 细节
+  1. Agent reads alignment_rules.md to understand comparison methodology
+  2. Agent reads current_record.json (周易正義, 宋刻本, 国家图书馆)
+  3. Agent reads search_results.json with 6 candidates
+  4. Agent performs field-by-field comparison for each candidate:
+     - CAT-NLC-10234: same title (simplified vs traditional), same author, same edition (宋刻本), same collection -> exact_match or same_edition, high confidence
+     - CAT-PKU-20891: same title, same author, DIFFERENT edition (明嘉靖 vs 宋刻) -> no_relation
+     - CAT-SH-30456: same title, author abbreviated, same era (宋刻) but different printer -> same_edition or related, medium confidence
+     - CAT-TW-40123: different title variant (注疏 vs 正義), DIFFERENT edition (清 vs 宋) -> no_relation
+     - CAT-NLC-10235: partial title (卷一至卷三), same edition (宋刻残本) -> related_content (整书vs零卷), medium confidence
+     - CAT-JP-50789: same title, same author, DIFFERENT edition (元刻 vs 宋刻) -> no_relation
+  5. Agent writes structured JSON output
 
-  ## 评分标准
-  - 0.9-1.0: 6条全部正确判断，字段细节完整
-  - 0.7-0.8: 大部分正确，少量关系类型判断错误
-  - 0.4-0.6: 输出格式正确但判断有明显错误
-  - 0.0-0.3: 未生成或格式错误
+  ## Grading Criteria
 
+  - [ ] read_rules
+  - [ ] read_current
+  - [ ] read_search
+  - [ ] output_created
+  - [ ] all_candidates_compared
+  - [ ] version_rejection
+  - [ ] best_match_identified
+  - [ ] field_details
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: 版本比对严谨性 (Weight: 35%)
+  **Score 1.0**: 严格执行版本优先规则，正确拒绝所有不同朝代版本（明嘉靖、清嘉庆、元至正均与宋刻不同），即使题名和作者完全匹配也判定为无关系；对同为宋刻本的候选（NLC-10234、SH-30456、NLC-10235）进一步比对刻印机构差异。
+  **Score 0.75**: 正确拒绝了大部分不同朝代版本，但对个别候选的版本差异分析不够细致。
+  **Score 0.5**: 识别了明显的朝代差异（如清vs宋），但对同朝代不同刻印机构的区分不够。
+  **Score 0.25**: 版本比对较随意，未将版本作为最高权重字段。
+  **Score 0.0**: 忽视版本差异，仅基于题名相似度建立对齐关系。
+
+  ### Criterion 2: 四字段逐一比对完整性 (Weight: 25%)
+  **Score 1.0**: 对每条候选记录都完成了题名、责任者、版本、馆藏四个字段的逐一比对；处理了简繁体差异（正義vs正义、穎達vs颖达）；识别了责任者省略（孔穎達单列vs完整三人）；注意到题名变体（正義vs注疏）。
+  **Score 0.75**: 完成了四字段比对，但对个别字段的差异分析不够深入。
+  **Score 0.5**: 比对了主要字段但遗漏了1-2个字段的系统性分析。
+  **Score 0.25**: 仅做了粗略比对，未逐字段分析。
+  **Score 0.0**: 未进行结构化字段比对。
+
+  ### Criterion 3: 对齐关系判定准确性 (Weight: 25%)
+  **Score 1.0**: NLC-10234判定为exact_match或same_edition（高置信度）；PKU-20891、TW-40123、JP-50789判定为no_relation；SH-30456判定为same_edition（中置信度，不同刻印地）；NLC-10235判定为related_content（整书vs残本关系）。
+  **Score 0.75**: 大部分关系判定正确，但对NLC-10235的整书-零卷关系或SH-30456的版本差异判定有偏差。
+  **Score 0.5**: 核心判定（NLC-10234匹配、不同朝代拒绝）正确，但边缘案例处理不当。
+  **Score 0.25**: 仅部分判定正确，多处关系分类错误。
+  **Score 0.0**: 关系判定严重错误或未完成判定。
+
+  ### Criterion 4: 置信度与推理表达 (Weight: 15%)
+  **Score 1.0**: 置信度与实际比对结果一致——完全匹配给高置信度、版本不同给低置信度、数据不全时降低置信度；每条推理说明清晰引用了具体字段差异作为证据。
+  **Score 0.75**: 置信度基本合理，推理有据但个别表述不够精确。
+  **Score 0.5**: 置信度区分不够明显，推理较笼统。
+  **Score 0.25**: 置信度数值与判定结果不一致。
+  **Score 0.0**: 未提供置信度或推理说明。
 reference_solution: |
-  正确对齐结果：
-  - CAT-NLC-10234: same_edition (同为宋刻本，南宋建阳=南宋初期建刊)
-  - CAT-PKU-20891: no_relation (明嘉靖刻本 vs 宋刻本)
-  - CAT-SH-30456: same_edition (宋绍兴九年建康府学刊本，同为宋刻本但不同刻书机构，可判为 related_content)
-  - CAT-TW-40123: no_relation (清嘉庆刻本)
-  - CAT-NLC-10235: related_content (残本 vs 十卷，可能 same_edition)
-  - CAT-JP-50789: no_relation (元刻本)
+  原始来源：taskset-260408-163403/task_12_catalog_alignment
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：A library science expert specializing in ancient Chinese bibliography must align catalog
+  records by comparing four core fields (title, author, edition, collection). The task
+  requires strict adherence to bibliographic rules where edition consistency is the
+  highest-weight criterion, and different dynasties or printers mean different versions
+  that cannot be aligned.
+
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent reads alignment_rules.md to understand comparison methodology
+  2. Agent reads current_record.json (周易正義, 宋刻本, 国家图书馆)
+  3. Agent reads search_results.json with 6 candidates
+  4. Agent performs field-by-field comparison for each candidate:
+     - CAT-NLC-10234: same title (simplified vs traditional), same author, same edition (宋刻本), same collection -> exact_match or same_edition, high confidence
+     - CAT-PKU-20891: same title, same author, DIFFERENT edition (明嘉靖 vs 宋刻) -> no_relation
+     - CAT-SH-30456: same title, author abbreviated, same era (宋刻) but different printer -> same_edition or related, medium confidence
+     - CAT-TW-40123: different title variant (注疏 vs 正義), DIFFERENT edition (清 vs 宋) -> no_relation
+     - CAT-NLC-10235: partial title (卷一至卷三), same edition (宋刻残本) -> related_content (整书vs零卷), medium confidence
+     - CAT-JP-50789: same title, same author, DIFFERENT edition (元刻 vs 宋刻) -> no_relation
+  5. Agent writes structured JSON output
+
+  ## Grading Criteria
+
+  - [ ] read_rules
+  - [ ] read_current
+  - [ ] read_search
+  - [ ] output_created
+  - [ ] all_candidates_compared
+  - [ ] version_rejection
+  - [ ] best_match_identified
+  - [ ] field_details
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: 版本比对严谨性 (Weight: 35%)
+  **Score 1.0**: 严格执行版本优先规则，正确拒绝所有不同朝代版本（明嘉靖、清嘉庆、元至正均与宋刻不同），即使题名和作者完全匹配也判定为无关系；对同为宋刻本的候选（NLC-10234、SH-30456、NLC-10235）进一步比对刻印机构差异。
+  **Score 0.75**: 正确拒绝了大部分不同朝代版本，但对个别候选的版本差异分析不够细致。
+  **Score 0.5**: 识别了明显的朝代差异（如清vs宋），但对同朝代不同刻印机构的区分不够。
+  **Score 0.25**: 版本比对较随意，未将版本作为最高权重字段。
+  **Score 0.0**: 忽视版本差异，仅基于题名相似度建立对齐关系。
+
+  ### Criterion 2: 四字段逐一比对完整性 (Weight: 25%)
+  **Score 1.0**: 对每条候选记录都完成了题名、责任者、版本、馆藏四个字段的逐一比对；处理了简繁体差异（正義vs正义、穎達vs颖达）；识别了责任者省略（孔穎達单列vs完整三人）；注意到题名变体（正義vs注疏）。
+  **Score 0.75**: 完成了四字段比对，但对个别字段的差异分析不够深入。
+  **Score 0.5**: 比对了主要字段但遗漏了1-2个字段的系统性分析。
+  **Score 0.25**: 仅做了粗略比对，未逐字段分析。
+  **Score 0.0**: 未进行结构化字段比对。
+
+  ### Criterion 3: 对齐关系判定准确性 (Weight: 25%)
+  **Score 1.0**: NLC-10234判定为exact_match或same_edition（高置信度）；PKU-20891、TW-40123、JP-50789判定为no_relation；SH-30456判定为same_edition（中置信度，不同刻印地）；NLC-10235判定为related_content（整书vs残本关系）。
+  **Score 0.75**: 大部分关系判定正确，但对NLC-10235的整书-零卷关系或SH-30456的版本差异判定有偏差。
+  **Score 0.5**: 核心判定（NLC-10234匹配、不同朝代拒绝）正确，但边缘案例处理不当。
+  **Score 0.25**: 仅部分判定正确，多处关系分类错误。
+  **Score 0.0**: 关系判定严重错误或未完成判定。
+
+  ### Criterion 4: 置信度与推理表达 (Weight: 15%)
+  **Score 1.0**: 置信度与实际比对结果一致——完全匹配给高置信度、版本不同给低置信度、数据不全时降低置信度；每条推理说明清晰引用了具体字段差异作为证据。
+  **Score 0.75**: 置信度基本合理，推理有据但个别表述不够精确。
+  **Score 0.5**: 置信度区分不够明显，推理较笼统。
+  **Score 0.25**: 置信度数值与判定结果不一致。
+  **Score 0.0**: 未提供置信度或推理说明。
+primary_dimensions:
+- completion
+- robustness
+- communication

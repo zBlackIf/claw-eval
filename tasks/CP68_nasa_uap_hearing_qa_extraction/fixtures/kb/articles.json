@@ -1,0 +1,20 @@
+[
+  {
+    "article_id": "KB-NASA-UAP-2025-QA",
+    "title": "NASA 首次 UAP 公开听证会 Q&A 摘录（待整理）",
+    "category": "meeting_qa",
+    "tags": ["NASA", "UAP", "听证会", "QA"],
+    "content": "# NASA UAP 公开听证会 Q&A 摘录\n\n> 听证会：2025-07-30 NASA Holds First Public Meeting on UFOs\n> 状态：**待整理**（逐字稿 ~250KB，需要从中提取问答对录入此处）\n\n## Panel-to-Presenter Q&A\n\n（待填入：编号、提问人、回答人、话题、问题摘要、回答要点）\n\n## Public Q&A（curated session）\n\n（待填入）\n",
+    "last_updated": "2026-03-01",
+    "views": 12
+  },
+  {
+    "article_id": "KB-MEETING-QA-TEMPLATE",
+    "title": "会议 Q&A 摘录模板",
+    "category": "template",
+    "tags": ["模板", "会议", "QA"],
+    "content": "# 会议 Q&A 摘录模板\n\n每一对问答用以下格式：\n\n## N. <主题简称>\n- **Questioner**: <name, role>\n- **Respondent**: <name, role>\n- **Question**: <概括或引用>\n- **Answer**: <要点摘要，保留关键数字 / 名称 / 结论>\n\n章节分隔：Panel-to-Presenter Q&A / Public Q&A 各自一段，编号连续。\n",
+    "last_updated": "2026-01-10",
+    "views": 88
+  }
+]

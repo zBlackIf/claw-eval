@@ -40,6 +40,11 @@ def automated_score(workspace: Path) -> dict[str, float]:
 
     content = output_file.read_text()
     scores["output_created"] = 1.0
+    try:
+        compile(content, str(output_file), "exec")
+        scores["syntax_valid"] = 1.0
+    except SyntaxError:
+        scores["syntax_valid"] = 0.0
 
     # Check rolling window is complete (not truncated)
     has_complete_rolling = bool(re.search(
@@ -89,6 +94,45 @@ def automated_score(workspace: Path) -> dict[str, float]:
         1 for p in indicators if re.search(p, content, re.IGNORECASE)
     )
     scores["indicators_present"] = min(found_indicators / 2.0, 1.0)
+
+    negative_shift = bool(re.search(r"\.shift\s*\(\s*-\d+", content))
+    future_terms = bool(re.search(r"future|未来|lookahead", content, re.IGNORECASE))
+    scores["no_future_function"] = 0.0 if negative_shift or future_terms else 1.0
+
+    try:
+        import numpy as np
+        import pandas as pd
+
+        dates = pd.date_range("2026-01-01", periods=80, freq="D")
+        base = np.linspace(100, 126, len(dates)) + np.sin(np.arange(len(dates)) / 2.5) * 2
+        price_df = pd.DataFrame(
+            {
+                "open": base - 0.5,
+                "high": base + 1.8,
+                "low": base - 1.7,
+                "close": base,
+                "volume": 1000 + (np.arange(len(dates)) % 11) * 80,
+            },
+            index=dates,
+        )
+        namespace = {"price_df": price_df.copy(), "pd": pd, "np": np, "__name__": "__strategy_verify__"}
+        exec(compile(content, str(output_file), "exec"), namespace)
+        entries = namespace.get("entries")
+        exits = namespace.get("exits")
+        entries_ok = isinstance(entries, pd.Series) and entries.dtype == bool and len(entries) == len(price_df)
+        exits_ok = isinstance(exits, pd.Series) and exits.dtype == bool and len(exits) == len(price_df)
+        scores["strategy_executes_on_sample"] = 1.0
+        scores["signals_are_bool_series"] = (float(entries_ok) + float(exits_ok)) / 2.0
+        if entries_ok and exits_ok:
+            nontrivial_entries = 0 < int(entries.fillna(False).sum()) < len(entries) * 0.8
+            nontrivial_exits = 0 < int(exits.fillna(False).sum()) < len(exits) * 0.8
+            scores["signals_nontrivial"] = (float(nontrivial_entries) + float(nontrivial_exits)) / 2.0
+        else:
+            scores["signals_nontrivial"] = 0.0
+    except Exception:
+        scores["strategy_executes_on_sample"] = 0.0
+        scores["signals_are_bool_series"] = 0.0
+        scores["signals_nontrivial"] = 0.0
 
     return scores
 

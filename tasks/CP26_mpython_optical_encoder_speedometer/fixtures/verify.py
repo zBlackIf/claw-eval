@@ -92,7 +92,7 @@ def automated_score(workspace: Path) -> dict[str, float]:
         r'(v_min|v_max|cal_min|cal_max|voltage_min|voltage_max|min_v|max_v)',
         content, re.IGNORECASE
     ))
-    percentage_calc = bool(re.search(r'(\*\s*0\.\d+|\d+\s*%|range)', content, re.IGNORECASE))
+    percentage_calc = bool(re.search(r'(\*\s*0\.\d+|\d+\s*%|range|high_threshold|low_threshold|hysteresis)', content, re.IGNORECASE))
     if dynamic_calc and percentage_calc:
         scores["dynamic_threshold"] = 1.0
     elif dynamic_calc:
@@ -100,11 +100,15 @@ def automated_score(workspace: Path) -> dict[str, float]:
     else:
         scores["dynamic_threshold"] = 0.0
 
-    # Per pulse speed
+    # Per pulse speed and edge detection. Reward state transitions, not just
+    # printing a speed formula.
     has_speed_calc = "DISTANCE_PER_SLIT" in content or "12.97" in content or "缝间距" in content
-    has_per_edge = bool(re.search(r'(edge|边沿|脉冲|pulse).*speed|speed.*per', content, re.IGNORECASE))
-    if has_per_edge and has_speed_calc:
+    has_per_edge = bool(re.search(r'(edge|边沿|脉冲|pulse|last_state|prev_state|rising|falling).*speed|speed.*per', content, re.IGNORECASE))
+    has_interval = bool(re.search(r'(ticks_diff|last_pulse|pulse_time|delta|dt)', content, re.IGNORECASE))
+    if has_per_edge and has_speed_calc and has_interval:
         scores["per_pulse_speed"] = 1.0
+    elif has_per_edge and has_speed_calc:
+        scores["per_pulse_speed"] = 0.75
     elif has_speed_calc:
         scores["per_pulse_speed"] = 0.5
     else:
@@ -123,6 +127,18 @@ def automated_score(workspace: Path) -> dict[str, float]:
         "button_a" in content,
     ]
     scores["correct_mpython_api"] = sum(api_checks) / len(api_checks)
+
+    wireless_patterns = [
+        r"radio\.",
+        r"wifi|espnow|无线",
+        r"send\(",
+        r"channel\s*=?\s*2|频道\s*2",
+    ]
+    wireless_hits = sum(1 for p in wireless_patterns if re.search(p, content, re.IGNORECASE))
+    slave_content = slave_file.read_text(encoding="utf-8", errors="ignore") if slave_file and slave_file.exists() else ""
+    if re.search(r"receive\(|recv|radio\.", slave_content, re.IGNORECASE):
+        wireless_hits += 1
+    scores["wireless_protocol"] = min(wireless_hits / 4.0, 1.0)
 
     return scores
 

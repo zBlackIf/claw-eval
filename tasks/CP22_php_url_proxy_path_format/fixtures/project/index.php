@@ -1,24 +1,32 @@
 <?php
 
-require __DIR__ . '/vendor/autoload.php';
+define('PROXY_START', microtime(true));
 
-use Proxy\Http\Request;
-use Proxy\Proxy;
+if (file_exists("vendor/autoload.php")) {
+    require("vendor/autoload.php");
+}
 
-$request = Request::createFromGlobals();
+if (!function_exists('curl_version')) {
+    die("cURL extension is not loaded!");
+}
 
-$url = isset($_GET['q']) ? $_GET['q'] : '';
-
-if (empty($url)) {
-    echo '<html><body><h1>PHP Proxy</h1><form method="get"><input name="q" placeholder="Enter URL..." style="width:400px"><button>Go</button></form></body></html>';
+if (empty($_GET['q'])) {
+    if (file_exists('templates/main.php')) {
+        require 'templates/main.php';
+        exit;
+    }
+    echo "<h1>PHP Proxy</h1><form><input name=q><button>Go</button></form>";
     exit;
 }
 
-$proxy = new Proxy();
+$target_url = $_GET['q'];
 
-try {
-    $response = $proxy->forward($request, $url);
-    $response->send();
-} catch (\Exception $e) {
-    echo 'Error: ' . $e->getMessage();
+// Normalize: if the user typed the URL without a scheme, default to http://
+if (!preg_match('#^https?://#i', $target_url)) {
+    $target_url = 'http://' . $target_url;
 }
+
+// Load the proxy config (in real deploy this sets up headers, plugins, etc.)
+// Config::load('./config.php');
+
+echo "Proxying to: " . htmlspecialchars($target_url) . "\n";

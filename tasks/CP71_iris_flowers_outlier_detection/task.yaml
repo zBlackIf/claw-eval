@@ -1,0 +1,175 @@
+# provenance:
+#   themis_dataset: taskset-260424-pinchbench-v2rc2
+#   themis_task_id: task_csv_iris_outliers
+#   themis_rank_original: 36
+#   themis_metrics: { std_trim: 0.394, range_trim: 0.960, mean_trim: 0.601 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP71_iris_flowers_outlier_detection
+task_name: "Iris 数据集异常点检测（CP71 / 源 taskset-260424-pinchbench-v2rc2:task_csv_iris_outliers）"
+version: "1.0"
+category: workflow
+difficulty: medium
+tags: [general, workflow, sandbox]
+
+source_task_id: "task_csv_iris_outliers"
+source_dataset: "taskset-260424-pinchbench-v2rc2"
+source_description: "Workflow + sandbox hybrid redesigned with claw-eval-task-designer-v2: dataset review service provides species slices, row-index caveats, outlier traps, submit/confirm audit evidence; hidden verifier checks iris_outliers.md."
+
+services:
+  - name: dataset_review
+    command: python tasks/CP71_iris_flowers_outlier_detection/services/dataset_review/server.py
+    port: 9371
+    health_check: http://localhost:9371/dataset_review/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9371/dataset_review/reset
+    env:
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP71_iris_flowers_outlier_detection/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_NAME: dataset_review
+
+prompt:
+  text: |
+    数据质量审阅台有 Iris 数据集的物种切片、行号口径和一些全局/分物种异常点陷阱；/workspace/fixtures/iris_flowers.csv 是明细导出。请先用审阅台复核口径，再写 /workspace/iris_outliers.md。
+
+    归档前提交并确认异常点判断，最终回复说方法和主要异常。
+  language: zh
+
+tools:
+  - name: dataset_review_list
+    description: List records available in the dataset review service; use this before targeted reads.
+    input_schema:
+      type: object
+      properties:
+        kind:
+          type: string
+        tag:
+          type: string
+        limit:
+          type: integer
+          default: 20
+      required: []
+  - name: dataset_review_search
+    description: Search the dataset review service for candidate records, source notes, and trap cases.
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        kind:
+          type: string
+        max_results:
+          type: integer
+          default: 10
+      required: [query]
+  - name: dataset_review_get
+    description: Fetch one full service record by record_id.
+    input_schema:
+      type: object
+      properties:
+        record_id:
+          type: string
+      required: [record_id]
+  - name: dataset_review_cross_check
+    description: Cross-check selected records against known traps and conflicting evidence.
+    input_schema:
+      type: object
+      properties:
+        primary_id:
+          type: string
+        comparison_ids:
+          type: array
+          items:
+            type: string
+        focus:
+          type: string
+      required: []
+  - name: dataset_review_submit_report
+    description: Submit the working conclusion or artifact summary back to the service.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        content:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        decision:
+          type: string
+        metadata:
+          type: object
+      required: [report_id, content]
+  - name: dataset_review_confirm_report
+    description: Confirm the submitted conclusion after cross-checking source_ids.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        checklist:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+      required: [report_id]
+tool_endpoints:
+  - tool_name: dataset_review_list
+    url: http://localhost:9371/dataset_review/list
+    method: POST
+  - tool_name: dataset_review_search
+    url: http://localhost:9371/dataset_review/search
+    method: POST
+  - tool_name: dataset_review_get
+    url: http://localhost:9371/dataset_review/get
+    method: POST
+  - tool_name: dataset_review_cross_check
+    url: http://localhost:9371/dataset_review/cross_check
+    method: POST
+  - tool_name: dataset_review_submit_report
+    url: http://localhost:9371/dataset_review/submit
+    method: POST
+  - tool_name: dataset_review_confirm_report
+    url: http://localhost:9371/dataset_review/confirm
+    method: POST
+
+sandbox_files:
+  - fixtures/iris_flowers.csv
+
+sandbox_grader_files:
+  - fixtures/verify_iris_outliers.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_iris_outliers.py
+
+env_snapshot_files:
+  - /workspace/iris_outliers.md
+
+environment:
+  timeout_seconds: 420
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward an iris_outliers.md that explains a reproducible anomaly-detection method (IQR/z-score/robust z-score/species-level or multivariate analysis), identifies defensible outlier samples with values and row/index references using a clear row-number convention, compares global and within-species behavior where useful, discusses unusual multi-feature or possible mislabeling cases, and closes with a concise summary."
+
+reference_solution: |
+  Compute Q1/Q3/IQR for each numeric column. SepalWidth Q1=2.8 Q3=3.3 IQR=0.5
+  fences [2.05, 4.05] → 4 outliers (rows 16/33/34 high setosa, row 61 low
+  versicolor). Other columns no IQR outliers overall. Within-species: split by
+  Name, recompute IQR per group — setosa row 42 (SepalWidth=2.3) extreme,
+  virginica row 107 (SepalLength=4.9) extreme. Multi-feature: combine 2+
+  features to spot atypicals. Discuss potential mislabeling. Write
+  /workspace/iris_outliers.md with sections.
+
+primary_dimensions: [completion, communication, safety]

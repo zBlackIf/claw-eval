@@ -1,0 +1,61 @@
+# provenance:
+#   themis_dataset: taskset-260424-pinchbench-v2rc2
+#   themis_task_id: task_log_apache_timeline
+#   themis_rank_original: 45
+#   themis_metrics: { std_trim: 0.383, range_trim: 0.960, mean_trim: 0.610 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP78_apache_error_log_timeline
+task_name: "Apache 错误日志时间线（CP78 / 源 taskset-260424-pinchbench-v2rc2:task_log_apache_timeline）"
+version: "1.0"
+category: data_analysis
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_log_apache_timeline"
+source_dataset: "taskset-260424-pinchbench-v2rc2"
+source_description: "PinchBench top100 rank 45（std_trim 0.383）。Workspace WS2 日志分析任务：100KB Apache error log，agent 输出结构化 JSON timeline。verifier 6 个隐藏锚点（valid JSON / 每日 ≥5 天 / Jun 11 为高峰 / 202.133.98.6+awstats+03:03 burst / 服务器重启事件）。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/apache_error.log 这份 Apache 错误日志（覆盖 2005-06-09
+    到 06-16）帮我做一个时间线分析，写成 /workspace/error_timeline.json，
+    重点是找出哪天异常最集中、那个最猛的 burst 是怎么回事。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/apache_error.log
+
+sandbox_grader_files:
+  - fixtures/verify_apache_timeline.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_apache_timeline.py
+
+env_snapshot_files:
+  - /workspace/error_timeline.json
+
+environment:
+  timeout_seconds: 480
+  max_turns: 14
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward valid JSON error_timeline.json with daily_summary covering ≥5 of 8 days with error_count, peak_day correctly identified as June 11 (Saturday), peak_burst attributed to 202.133.98.6 / awstats around 03:03, and server restart/startup events captured in notable_events."
+
+reference_solution: |
+  Parse log timestamps with regex (e.g., [Thu Jun 09 ...]). Group by date,
+  count entries per day. Find Jun 11 has ~350 entries (peak), driven by
+  awstats scan from 202.133.98.6 starting 03:03:03. Detect 'Configured --
+  resuming normal operations' as startup. Emit JSON with daily_summary +
+  peak_burst object (IP, timing, root cause).
+
+primary_dimensions: [completion, communication, safety]

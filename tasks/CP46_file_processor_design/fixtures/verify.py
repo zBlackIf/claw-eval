@@ -7,6 +7,7 @@ overall_score = mean(components).
 """
 from __future__ import annotations
 
+import ast
 import json
 import re
 import sys
@@ -50,6 +51,11 @@ def automated_score(workspace: Path) -> dict[str, float]:
     base_file = workspace / "file_processor" / "base.py"
     if base_file.exists():
         content = base_file.read_text()
+        try:
+            ast.parse(content)
+            scores["base_syntax_valid"] = 1.0
+        except SyntaxError:
+            scores["base_syntax_valid"] = 0.0
         has_abc = "ABC" in content or "abstractmethod" in content or "NotImplementedError" in content
         has_process = "process" in content or "chunk" in content
         scores["base_class_design"] = (
@@ -58,6 +64,7 @@ def automated_score(workspace: Path) -> dict[str, float]:
         )
     else:
         scores["base_class_design"] = 0.0
+        scores["base_syntax_valid"] = 0.0
 
     # Check txt_processor has character chunking
     txt_file = workspace / "file_processor" / "txt_processor.py"
@@ -105,6 +112,34 @@ def automated_score(workspace: Path) -> dict[str, float]:
         "get_image_context" in all_content or "image_context" in all_content.lower(),
     ]
     scores["code_reuse"] = sum(reuse_indicators) / len(reuse_indicators)
+
+    image_support = [
+        "extract_images_from_markdown" in all_content or "extract_image" in all_content.lower(),
+        "get_image_context" in all_content or "image_context" in all_content.lower(),
+        "call_mineru_api" in all_content or "mineru" in all_content.lower() or "ocr" in all_content.lower(),
+        bool(re.search(r"!\[.*?\]\(|image_refs|images", all_content, re.IGNORECASE)),
+    ]
+    scores["image_context_support"] = sum(image_support) / len(image_support)
+
+    processor_files = [
+        workspace / "file_processor" / "txt_processor.py",
+        workspace / "file_processor" / "markdown_processor.py",
+        workspace / "file_processor" / "docx_processor.py",
+    ]
+    valid_modules = 0
+    for path in processor_files:
+        if path.exists():
+            try:
+                ast.parse(path.read_text(encoding="utf-8", errors="ignore"))
+                valid_modules += 1
+            except SyntaxError:
+                pass
+    scores["processor_syntax_valid"] = valid_modules / len(processor_files)
+
+    skeleton_markers = ["pass", "TODO", "NotImplementedError", "return []"]
+    marker_hits = sum(all_content.count(marker) for marker in skeleton_markers)
+    substantive = len(all_content) >= 1800 and marker_hits <= 3
+    scores["not_empty_skeleton"] = 1.0 if substantive else (0.4 if len(all_content) >= 900 else 0.0)
 
     return scores
 

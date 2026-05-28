@@ -13,6 +13,7 @@ from pathlib import Path
 WORKSPACE = Path("/workspace")
 
 REQUIRED_CARD_TYPES = {"hero", "equipment", "strategy", "skill", "monster"}
+ALLOWED_CARD_TYPES = REQUIRED_CARD_TYPES
 PHASE_ALIASES = {
     "draw": ["draw", "抽牌"],
     "revive": ["revive", "复归", "revive_phase"],
@@ -64,18 +65,34 @@ def evaluate() -> dict:
     scores["card_files_count"] = min(len(card_files) / 6.0, 1.0)
 
     valid_cards = 0
+    typed_cards = 0
+    card_types_seen: set[str] = set()
+    invalid_extra_fields = 0
     for cf in card_files:
         try:
             card = json.loads(cf.read_text(encoding="utf-8"))
             if isinstance(card, dict):
                 card_keys = {str(k).lower() for k in card.keys()}
-                if HERO_FIELDS.issubset(card_keys) or "name" in card_keys:
+                card_type = str(card.get("type", card.get("card_type", ""))).lower()
+                if card_type in ALLOWED_CARD_TYPES:
+                    typed_cards += 1
+                    card_types_seen.add(card_type)
+                if card_type == "hero" and HERO_FIELDS.issubset(card_keys):
                     valid_cards += 1
+                elif card_type in {"equipment", "strategy", "skill", "monster"} and {"name", "type"}.issubset(card_keys):
+                    valid_cards += 1
+                elif "name" in card_keys:
+                    valid_cards += 0.25
+                if any(k in card_keys for k in ["mana", "land", "planeswalker", "pokemon_type", "energy"]):
+                    invalid_extra_fields += 1
         except (json.JSONDecodeError, UnicodeDecodeError):
             pass
     scores["card_schema_valid"] = (
         min(valid_cards / 6.0, 1.0) if card_files else 0.0
     )
+    scores["card_types_in_cards"] = len(card_types_seen.intersection(REQUIRED_CARD_TYPES)) / len(REQUIRED_CARD_TYPES)
+    scores["typed_card_ratio"] = min(typed_cards / 6.0, 1.0) if card_files else 0.0
+    scores["no_foreign_tcg_fields"] = 0.0 if invalid_extra_fields else 1.0
 
     sop_file = WORKSPACE / "skills" / "arena_tcg_card_import.md"
     scores["sop_document_present"] = 1.0 if sop_file.exists() else 0.0

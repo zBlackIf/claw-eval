@@ -44,11 +44,11 @@ def automated_score(workspace: Path) -> dict[str, float]:
             1.0 if all([phase0_ok, phase1_ok, phase2_ok]) else 0.0
         )
 
-        # Check that Phase 4+ are NOT yet marked (no skipping)
-        phase4_incomplete = bool(re.search(
-            r'\[\s*\]\s*Phase\s*4', content, re.IGNORECASE
-        ))
-        scores["no_phase_skipping"] = 1.0 if phase4_incomplete else 0.5
+        # Phase 4+ may be completed after Phase 3. Penalize only impossible skips:
+        # a later phase marked done while Phase 3 is still incomplete.
+        later_done = bool(re.search(r'\[x\]\s*Phase\s*[4-7]', content, re.IGNORECASE))
+        impossible_skip = later_done and not phase3_complete
+        scores["no_phase_skipping"] = 0.0 if impossible_skip else 1.0
     else:
         scores["phase3_executed"] = 0.0
         scores["previous_phases_preserved"] = 0.0

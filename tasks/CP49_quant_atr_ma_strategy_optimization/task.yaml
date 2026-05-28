@@ -1,76 +1,267 @@
 task_id: CP49_quant_atr_ma_strategy_optimization
 task_name: 量化策略优化：ATR+MA信号修复
-version: "1.0"
+version: '2.0'
 category: debugging
 difficulty: medium
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_14_quant_atr_ma_strategy"
-source_dataset: "taskset-260408-163403"
-source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
-
-services: []
-
+tags:
+- general
+- single_turn
+- coding_plan
+- service_assisted
+- sandbox
+source_task_id: task_14_quant_atr_ma_strategy
+source_dataset: taskset-260408-163403
+source_description: "Workspace-primary task with auxiliary strategy_review service added per claw-eval-task-designer-v2: service supplies backtest caveats, constraint traps, and submit/confirm audit evidence while hidden verifier remains the main code artifact check."
+services:
+  - name: strategy_review
+    command: python tasks/CP49_quant_atr_ma_strategy_optimization/services/strategy_review/server.py
+    port: 9349
+    health_check: http://localhost:9349/strategy_review/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9349/strategy_review/reset
+    env:
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP49_quant_atr_ma_strategy_optimization/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_NAME: strategy_review
 prompt:
   text: |
-    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
-    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+    量化策略还是以修 /workspace/strategy_optimized.py 为主，不过策略评审台里有回测摘要、约束清单和几个容易误用的指标口径。先查评审台并复核规则，再根据 /workspace/fixtures/ 的脚本和结果修复 ATR+MA 策略。
 
-    - `/workspace/fixtures/strategy_broken.py`
-    - `/workspace/fixtures/optimization_rules.md`
-    - `/workspace/fixtures/backtest_results.csv`
-
-    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
-
-    请修复并优化 strategy_broken.py 中的量化策略代码。当前代码存在以下问题：
-    1. ATR计算的rolling窗口参数被截断（`rolling(windo` 不完整）
-    2. entries和exits使用了位运算符 &/|，违反了语法规范要求使用 and/or/not
-    3. 回测指标显示策略表现很差（负收益、高回撤、低胜率）
-
-    请严格遵守 optimization_rules.md 中的约束，参考 backtest_results.csv 分析当前策略弱点，生成优化后的 strategy_optimized.py。所有代码必须在全局作用域，不使用自定义函数定义。
+    交付前把策略修复说明提交并确认到评审台，最终回复概述生成的代码文件。
   language: zh
-
-tools: []
-tool_endpoints: []
-
+tools:
+  - name: strategy_review_list
+    description: List records available in the strategy review service; use this before targeted reads.
+    input_schema:
+      type: object
+      properties:
+        kind:
+          type: string
+        tag:
+          type: string
+        limit:
+          type: integer
+          default: 20
+      required: []
+  - name: strategy_review_search
+    description: Search the strategy review service for candidate records, source notes, and trap cases.
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        kind:
+          type: string
+        max_results:
+          type: integer
+          default: 10
+      required: [query]
+  - name: strategy_review_get
+    description: Fetch one full service record by record_id.
+    input_schema:
+      type: object
+      properties:
+        record_id:
+          type: string
+      required: [record_id]
+  - name: strategy_review_cross_check
+    description: Cross-check selected records against known traps and conflicting evidence.
+    input_schema:
+      type: object
+      properties:
+        primary_id:
+          type: string
+        comparison_ids:
+          type: array
+          items:
+            type: string
+        focus:
+          type: string
+      required: []
+  - name: strategy_review_submit_report
+    description: Submit the working conclusion or artifact summary back to the service.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        content:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        decision:
+          type: string
+        metadata:
+          type: object
+      required: [report_id, content]
+  - name: strategy_review_confirm_report
+    description: Confirm the submitted conclusion after cross-checking source_ids.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        checklist:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+      required: [report_id]
+tool_endpoints:
+  - tool_name: strategy_review_list
+    url: http://localhost:9349/strategy_review/list
+    method: POST
+  - tool_name: strategy_review_search
+    url: http://localhost:9349/strategy_review/search
+    method: POST
+  - tool_name: strategy_review_get
+    url: http://localhost:9349/strategy_review/get
+    method: POST
+  - tool_name: strategy_review_cross_check
+    url: http://localhost:9349/strategy_review/cross_check
+    method: POST
+  - tool_name: strategy_review_submit_report
+    url: http://localhost:9349/strategy_review/submit
+    method: POST
+  - tool_name: strategy_review_confirm_report
+    url: http://localhost:9349/strategy_review/confirm
+    method: POST
 sandbox_files:
-  - fixtures/strategy_broken.py
-  - fixtures/optimization_rules.md
-  - fixtures/backtest_results.csv
-
+- fixtures/strategy_broken.py
+- fixtures/backtest_results.csv
+- fixtures/optimization_rules.md
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
   timeout_seconds: 600
   max_turns: 30
-
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/strategy_optimized.py
+- /workspace/strategy_optimized.py
+- /workspace/strategy_broken.py
+- /workspace/backtest_results.csv
+- /workspace/optimization_rules.md
 scoring_components: []
-
 safety_checks: []
-
 expected_actions: []
-
 judge_rubric: |
-  评估 agent 是否正确修复语法错误并优化策略。
-  - 语法修复：rolling(window=14)补全、&/|替换为and/or
-  - 策略优化：增加有效过滤条件、改善信号质量
-  - 约束遵守：全局作用域、无自定义函数、无未来函数
-  - 代码质量：变量命名规范、逻辑清晰
+  ## Expected Behavior
 
+  1. Agent读取 strategy_broken.py 发现语法错误（截断的rolling参数、位运算符）
+  2. Agent读取 optimization_rules.md 理解硬性约束
+  3. Agent读取 backtest_results.csv 分析策略弱点
+  4. Agent修复语法错误：补全rolling(window=14)、替换&/|为and/or
+  5. Agent优化策略逻辑：改善ATR过滤条件、增加趋势确认信号、调整参数
+  6. Agent输出 strategy_optimized.py，代码可直接运行
+
+  ## Grading Criteria
+
+  - [ ] read_inputs
+  - [ ] output_created
+  - [ ] rolling_fixed
+  - [ ] no_bitwise
+  - [ ] signals_defined
+  - [ ] no_custom_func
+  - [ ] indicators_present
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: 语法错误修复 (Weight: 25%)
+  **Score 1.0**: 准确识别并修复所有语法问题——补全rolling(window=14)截断参数、将entries/exits中的&/|替换为and/or；修复后代码语法完整，无缺失括号或运算符。
+  **Score 0.75**: 修复了主要语法错误，个别细节（如参数值选择）有小偏差。
+  **Score 0.5**: 修复了部分语法错误但遗漏了其中一类。
+  **Score 0.25**: 尝试修复但引入新的语法问题。
+  **Score 0.0**: 未能识别或修复语法错误。
+
+  ### Criterion 2: 策略优化质量 (Weight: 30%)
+  **Score 1.0**: 基于回测指标深入分析策略弱点（低胜率38%说明信号过于频繁、负收益说明趋势判断不准），优化后增加了有效的过滤条件（如成交量确认、趋势强度过滤、动态止损）；优化逻辑合理，没有使用未来函数。
+  **Score 0.75**: 优化方向正确，增加了合理的过滤条件，但改进幅度有限。
+  **Score 0.5**: 做了一些调整但优化思路不够系统。
+  **Score 0.25**: 仅微调参数，未做实质性策略改进。
+  **Score 0.0**: 未进行策略优化或优化方向明显错误。
+
+  ### Criterion 3: 约束规则遵守 (Weight: 25%)
+  **Score 1.0**: 严格遵守所有约束——全局作用域编写、无自定义函数、使用and/or/not、无未来函数（所有shift为正数或0）、entries/exits为布尔Series、使用price_df/pd/np标准变量。
+  **Score 0.75**: 遵守大部分约束，有1处轻微违规。
+  **Score 0.5**: 遵守核心约束但有2-3处违规。
+  **Score 0.25**: 多处违反约束规则。
+  **Score 0.0**: 完全忽略约束要求。
+
+  ### Criterion 4: 代码可读性与工程质量 (Weight: 20%)
+  **Score 1.0**: 代码结构清晰，有合理的注释说明指标含义和参数选择理由；变量命名规范；信号逻辑分步骤构建，便于理解和调试。
+  **Score 0.75**: 代码质量好但注释不够详细。
+  **Score 0.5**: 代码能工作但可读性一般。
+  **Score 0.25**: 代码混乱难以理解。
+  **Score 0.0**: 代码质量极差。
 reference_solution: |
-  1. 修复 rolling(windo → rolling(window=14)
-  2. 替换 & → and, | → or (vectorbt语法)
-  3. 增加趋势确认：MA交叉+成交量确认
-  4. 增加ATR动态止损
-  5. 优化参数：扩大MA窗口减少噪声信号
-  6. 全局作用域，使用price_df/pd/np
+  原始来源：taskset-260408-163403/task_14_quant_atr_ma_strategy
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：用户在vectorbt量化回测平台上有一个ATR+MA策略代码，但代码存在语法错误（rolling窗口参数截断、
+  布尔运算符使用错误等）。用户要求修复语法并优化策略逻辑，严格遵守禁止未来函数、禁止过拟合等
+  量化策略优化原则。Agent需要在全局作用域产出entries/exits布尔Series，不能定义自定义函数。
+
+
+  隐藏 verifier 主要检查项：indicators_present, no_bitwise, no_custom_func, output_created, read_inputs, rolling_fixed, signals_defined
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent读取 strategy_broken.py 发现语法错误（截断的rolling参数、位运算符）
+  2. Agent读取 optimization_rules.md 理解硬性约束
+  3. Agent读取 backtest_results.csv 分析策略弱点
+  4. Agent修复语法错误：补全rolling(window=14)、替换&/|为and/or
+  5. Agent优化策略逻辑：改善ATR过滤条件、增加趋势确认信号、调整参数
+  6. Agent输出 strategy_optimized.py，代码可直接运行
+
+  ## Grading Criteria
+
+  - [ ] read_inputs
+  - [ ] output_created
+  - [ ] rolling_fixed
+  - [ ] no_bitwise
+  - [ ] signals_defined
+  - [ ] no_custom_func
+  - [ ] indicators_present
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: 语法错误修复 (Weight: 25%)
+  **Score 1.0**: 准确识别并修复所有语法问题——补全rolling(window=14)截断参数、将entries/exits中的&/|替换为and/or；修复后代码语法完整，无缺失括号或运算符。
+  **Score 0.75**: 修复了主要语法错误，个别细节（如参数值选择）有小偏差。
+  **Score 0.5**: 修复了部分语法错误但遗漏了其中一类。
+  **Score 0.25**: 尝试修复但引入新的语法问题。
+  **Score 0.0**: 未能识别或修复语法错误。
+
+  ### Criterion 2: 策略优化质量 (Weight: 30%)
+  **Score 1.0**: 基于回测指标深入分析策略弱点（低胜率38%说明信号过于频繁、负收益说明趋势判断不准），优化后增加了有效的过滤条件（如成交量确认、趋势强度过滤、动态止损）；优化逻辑合理，没有使用未来函数。
+  **Score 0.75**: 优化方向正确，增加了合理的过滤条件，但改进幅度有限。
+  **Score 0.5**: 做了一些调整但优化思路不够系统。
+  **Score 0.25**: 仅微调参数，未做实质性策略改进。
+  **Score 0.0**: 未进行策略优化或优化方向明显错误。
+
+  ### Criterion 3: 约束规则遵守 (Weight: 25%)
+  **Score 1.0**: 严格遵守所有约束——全局作用域编写、无自定义函数、使用and/or/not、无未来函数（所有shift为正数或0）、entries/exits为布尔Series、使用price_df/pd/np标准变量。
+  **Score 0.75**: 遵守大部分约束，有1处轻微违规。
+  **Score 0.5**: 遵守核心约束但有2-3处违规。
+  **Score 0.25**: 多处违反约束规则。
+  **Score 0.0**: 完全忽略约束要求。
+
+  ### Criterion 4: 代码可读性与工程质量 (Weight: 20%)
+  **Score 1.0**: 代码结构清晰，有合理的注释说明指标含义和参数选择理由；变量命名规范；信号逻辑分步骤构建，便于理解和调试。
+  **Score 0.75**: 代码质量好但注释不够详细。
+  **Score 0.5**: 代码能工作但可读性一般。
+  **Score 0.25**: 代码混乱难以理解。
+  **Score 0.0**: 代码质量极差。
+primary_dimensions:
+- completion
+- robustness
+- communication

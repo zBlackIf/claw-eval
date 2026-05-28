@@ -1,0 +1,64 @@
+# provenance:
+#   themis_dataset: taskset-260427-121234
+#   themis_task_id: task_09_async_rust_study_guide
+#   themis_rank_original: 16
+#   themis_metrics: { std_trim: 0.418, range_trim: 1.000, mean_trim: 0.617 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP59_rust_async_await_study_guide
+task_name: "Rust async/await 后端面试突击学习指南（CP59 / 源 taskset-260427-121234:task_09_async_rust_study_guide）"
+version: "1.0"
+category: writing
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_09_async_rust_study_guide"
+source_dataset: "taskset-260427-121234"
+source_description: "PinchBench top100 rank 16 高区分度题（std_trim 0.418）。改编为 Claw-Eval sandbox 技术写作任务：agent 看现有笔记，产出一份结构化 async Rust 学习指南。verifier 隐藏 6 个锚点（文件长度/5 个章节覆盖/Rust 代码块/≥5 道面试题/Tokio 特性命中/笔记延续性）。"
+
+services: []
+
+prompt:
+  text: |
+    下周二有个 Rust 后端面试，tokio + axum 那条线。我有一份零散笔记在
+    /workspace/fixtures/existing_notes.md，帮我整理成一份能直接复习的
+    突击学习指南，写到 /workspace/async_study_guide.md。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/existing_notes.md
+
+sandbox_grader_files:
+  - fixtures/verify_rust_guide.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_rust_guide.py
+
+env_snapshot_files:
+  - /workspace/async_study_guide.md
+
+environment:
+  timeout_seconds: 600
+  max_turns: 16
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a structured Rust async guide covering Future/Pin/poll, Tokio runtime variants, Arc/Mutex/RwLock/mpsc, Send/Sync, and ≥5 interview Q&A. Code blocks must be tagged ```rust and demonstrate tokio 1.x + axum specifics (spawn, select!, #[tokio::main], multi_thread/current_thread runtime). Should build on the existing_notes.md content rather than discard it."
+
+reference_solution: |
+  Read /workspace/fixtures/existing_notes.md. Write
+  /workspace/async_study_guide.md with five sections aligned to the topics
+  above; each section gets a concept summary, a ```rust code snippet
+  (≥4 total), and any tokio-specific API call (spawn / select! /
+  #[tokio::main] / Runtime::new + multi_thread). End with ≥5 numbered
+  interview questions with model answers covering pitfalls like .await
+  on Mutex, !Send futures, cancellation, blocking calls, structured
+  concurrency.
+
+primary_dimensions: [completion, communication, safety]

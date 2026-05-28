@@ -1,94 +1,256 @@
 task_id: CP42_pricing_formula_verification
 task_name: Multi-Tier Pricing Formula Verification
-version: "1.0"
-category: data_analysis
+version: '2.0'
+category: workflow
 difficulty: medium
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_104_pricing_formula_verification"
-source_dataset: "taskset-260427-121234"
-source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
-
-services: []
-
+tags:
+- general
+- single_turn
+- coding_plan
+- workflow
+- sandbox
+source_task_id: task_104_pricing_formula_verification
+source_dataset: taskset-260427-121234
+source_description: "Workflow + sandbox hybrid redesigned with claw-eval-task-designer-v2: pricing workflow service adds tier ledger, scenario caveats, boundary/trap records, submit/confirm audit evidence; hidden verifier checks pricing artifacts."
+services:
+  - name: pricing_workflow
+    command: python tasks/CP42_pricing_formula_verification/services/pricing_workflow/server.py
+    port: 9342
+    health_check: http://localhost:9342/pricing_workflow/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9342/pricing_workflow/reset
+    env:
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP42_pricing_formula_verification/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_NAME: pricing_workflow
 prompt:
   text: |
-    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
-    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+    充值定价方案要上会前复核。/workspace/fixtures/ 有公式和输入，定价评审台里还有活动口径、边界档位和容易误读的历史案例；先查台账、交叉复核场景，再完成计算和合规判断。
 
-    - `/workspace/fixtures/skills/pricing_skill.md`
-    - `/workspace/fixtures/pricing_input.json`
-
-    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
-
-    我们的充值定价方案需要验证。参考 `skills/pricing_skill.md` 中的公式和规则，以及 `pricing_input.json` 中的参数，完成以下任务：
-
-    1. **公式验证**：对6个档位（199/2999/6999/14999/49999/99999），在"无奖金"场景下逐一计算充增比（recharge-to-bonus ratio），要求：
-       - 展示每个档位的完整代入过程（中间步骤）
-       - 注意：毛利率目标需要以小数形式代入（40% = 0.40），不能直接用百分比数值
-
-    2. **单调性校验**：验证计算结果是否满足"档位越高，赠送越多"的约束，如果不满足，指出违规档位并分析原因
-
-    3. **三场景输出**：分别计算三个场景（no_bonus / kol_5pct / producer_10pct）下所有6个档位的充增比，输出为结构化的 `pricing_result.json`
-
-    4. **合规报告**：生成 `compliance_report.md`，包含：
-       - 各约束项（margin range, cost ratio, monotonicity）的逐项检查结果（PASS/FAIL）
-       - 如有违规项，给出具体修正建议
-
-    5. **修正方案**（如需）：如果计算结果中存在任何违规项，输出修正后的参数和计算结果到 `pricing_result_fixed.json`
+    把复核结论提交并确认到评审台，同时产出 /workspace/pricing_result.json、/workspace/compliance_report.md，如需修正再写 /workspace/pricing_result_fixed.json。
   language: zh
-
-tools: []
-tool_endpoints: []
-
+tools:
+  - name: pricing_workflow_list
+    description: List records available in the pricing workflow service; use this before targeted reads.
+    input_schema:
+      type: object
+      properties:
+        kind:
+          type: string
+        tag:
+          type: string
+        limit:
+          type: integer
+          default: 20
+      required: []
+  - name: pricing_workflow_search
+    description: Search the pricing workflow service for candidate records, source notes, and trap cases.
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        kind:
+          type: string
+        max_results:
+          type: integer
+          default: 10
+      required: [query]
+  - name: pricing_workflow_get
+    description: Fetch one full service record by record_id.
+    input_schema:
+      type: object
+      properties:
+        record_id:
+          type: string
+      required: [record_id]
+  - name: pricing_workflow_cross_check
+    description: Cross-check selected records against known traps and conflicting evidence.
+    input_schema:
+      type: object
+      properties:
+        primary_id:
+          type: string
+        comparison_ids:
+          type: array
+          items:
+            type: string
+        focus:
+          type: string
+      required: []
+  - name: pricing_workflow_submit_report
+    description: Submit the working conclusion or artifact summary back to the service.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        content:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        decision:
+          type: string
+        metadata:
+          type: object
+      required: [report_id, content]
+  - name: pricing_workflow_confirm_report
+    description: Confirm the submitted conclusion after cross-checking source_ids.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        checklist:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+      required: [report_id]
+tool_endpoints:
+  - tool_name: pricing_workflow_list
+    url: http://localhost:9342/pricing_workflow/list
+    method: POST
+  - tool_name: pricing_workflow_search
+    url: http://localhost:9342/pricing_workflow/search
+    method: POST
+  - tool_name: pricing_workflow_get
+    url: http://localhost:9342/pricing_workflow/get
+    method: POST
+  - tool_name: pricing_workflow_cross_check
+    url: http://localhost:9342/pricing_workflow/cross_check
+    method: POST
+  - tool_name: pricing_workflow_submit_report
+    url: http://localhost:9342/pricing_workflow/submit
+    method: POST
+  - tool_name: pricing_workflow_confirm_report
+    url: http://localhost:9342/pricing_workflow/confirm
+    method: POST
 sandbox_files:
-  - fixtures/skills/pricing_skill.md
-  - fixtures/pricing_input.json
-
+- fixtures/skills/pricing_skill.md
+- fixtures/pricing_input.json
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
   timeout_seconds: 600
   max_turns: 30
-
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/pricing_result.json
-  - /workspace/compliance_report.md
-  - /workspace/**/*
+- /workspace/pricing_result.json
+- /workspace/compliance_report.md
+- /workspace/**/*
+- /workspace/skills/pricing_skill.md
+- /workspace/pricing_input.json
 scoring_components: []
-
 safety_checks: []
-
 expected_actions: []
-
 judge_rubric: |
-  评估 agent 对定价公式验证任务的执行质量。
+  ## Expected Behavior
 
-  ## 红线检查
-  - 毛利率是否以小数形式代入（0.40而非40）
+  1. All calculations correct with proper units, formulas applied correctly, intermediate steps shown
+  2. All required analyses performed with thorough cross-validation and edge case checks
+  3. All outputs match required format exactly with proper structure and naming
+  4. Identifies meaningful patterns, anomalies, or implications beyond raw calculations
 
-  ## 核心检查
-  - 是否计算了全部 6 个档位
-  - 是否检查了单调性约束
-  - pricing_result.json 是否包含 3 个场景 x 6 档位
-  - compliance_report.md 是否包含 PASS/FAIL 判定
+  ## Grading Criteria
 
-  ## 评分标准
-  - 0.9-1.0: 全部正确，公式代入用小数，三场景完整
-  - 0.7-0.8: 大部分正确，可能遗漏修正方案
-  - 0.4-0.6: 部分计算但公式有错误
-  - 0.0-0.3: 未完成或百分比代入错误
+  - [ ] c1_formula_decimal_conversion
+  - [ ] c2_calculation_completeness
+  - [ ] c3_monotonicity_check
+  - [ ] c4_three_scenario_output
+  - [ ] c5_compliance_report_structured
 
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Calculation Accuracy (Weight: 35%)
+    - 1.0: All calculations correct with proper units, formulas applied correctly, intermediate steps shown
+    - 0.75: Minor rounding or unit issues but approach is correct
+    - 0.5: Some calculations correct but systematic errors in others
+    - 0.25: Fundamental calculation errors
+    - 0.0: Calculations absent or entirely wrong
+
+  ### Criterion 2: Analytical Completeness (Weight: 30%)
+    - 1.0: All required analyses performed with thorough cross-validation and edge case checks
+    - 0.75: Most analyses complete with minor gaps
+    - 0.5: Core analysis present but missing secondary validations
+    - 0.25: Only partial analysis performed
+    - 0.0: Analysis missing or superficial
+
+  ### Criterion 3: Output Format Compliance (Weight: 20%)
+    - 1.0: All outputs match required format exactly with proper structure and naming
+    - 0.75: Outputs mostly compliant with minor formatting deviations
+    - 0.5: Core outputs present but format partially incorrect
+    - 0.25: Significant format violations
+    - 0.0: Outputs missing or completely wrong format
+
+  ### Criterion 4: Insight Quality (Weight: 15%)
+    - 1.0: Identifies meaningful patterns, anomalies, or implications beyond raw calculations
+    - 0.75: Some useful insights provided
+    - 0.5: Basic observations without deeper analysis
+    - 0.25: Superficial or obvious statements only
+    - 0.0: No insights or analysis beyond raw numbers
 reference_solution: |
-  用 ratio 公式对 6 档位分别代入：
-  - margin 用 0.40/0.37/0.34/0.29/0.24/0.20（小数）
-  - bonus_cost / tier_price 比值检查是否在 5%-10% 范围
-  - 检查结果递增性（单调）
+  原始来源：taskset-260427-121234/task_104_pricing_formula_verification
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：enterprise_pricing_validation
+
+  隐藏 verifier 主要检查项：c1_formula_decimal_conversion, c2_calculation_completeness, c3_monotonicity_check, c4_three_scenario_output, c5_compliance_report_structured
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. All calculations correct with proper units, formulas applied correctly, intermediate steps shown
+  2. All required analyses performed with thorough cross-validation and edge case checks
+  3. All outputs match required format exactly with proper structure and naming
+  4. Identifies meaningful patterns, anomalies, or implications beyond raw calculations
+
+  ## Grading Criteria
+
+  - [ ] c1_formula_decimal_conversion
+  - [ ] c2_calculation_completeness
+  - [ ] c3_monotonicity_check
+  - [ ] c4_three_scenario_output
+  - [ ] c5_compliance_report_structured
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Calculation Accuracy (Weight: 35%)
+    - 1.0: All calculations correct with proper units, formulas applied correctly, intermediate steps shown
+    - 0.75: Minor rounding or unit issues but approach is correct
+    - 0.5: Some calculations correct but systematic errors in others
+    - 0.25: Fundamental calculation errors
+    - 0.0: Calculations absent or entirely wrong
+
+  ### Criterion 2: Analytical Completeness (Weight: 30%)
+    - 1.0: All required analyses performed with thorough cross-validation and edge case checks
+    - 0.75: Most analyses complete with minor gaps
+    - 0.5: Core analysis present but missing secondary validations
+    - 0.25: Only partial analysis performed
+    - 0.0: Analysis missing or superficial
+
+  ### Criterion 3: Output Format Compliance (Weight: 20%)
+    - 1.0: All outputs match required format exactly with proper structure and naming
+    - 0.75: Outputs mostly compliant with minor formatting deviations
+    - 0.5: Core outputs present but format partially incorrect
+    - 0.25: Significant format violations
+    - 0.0: Outputs missing or completely wrong format
+
+  ### Criterion 4: Insight Quality (Weight: 15%)
+    - 1.0: Identifies meaningful patterns, anomalies, or implications beyond raw calculations
+    - 0.75: Some useful insights provided
+    - 0.5: Basic observations without deeper analysis
+    - 0.25: Superficial or obvious statements only
+    - 0.0: No insights or analysis beyond raw numbers
+primary_dimensions:
+- completion
+- robustness
+- communication

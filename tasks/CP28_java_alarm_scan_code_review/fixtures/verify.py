@@ -51,6 +51,26 @@ def automated_score(workspace: Path) -> dict[str, float]:
             issues_found += 1
 
         scores["issues_identified"] = min(issues_found / 6.0, 1.0)
+        expected_findings = {
+            "scanner_interface": ["alarmscanner", "interface"],
+            "public_rules": ["public", "rules"],
+            "swallowed_exception": ["catch", "exception"],
+            "hardcoded_smtp": ["smtp", "hardcod"],
+            "missing_repository": ["repository", "missing"],
+            "missing_dispatcher": ["notificationdispatcher", "dispatcher"],
+        }
+        finding_hits = 0
+        for terms in expected_findings.values():
+            if all(t in content for t in terms):
+                finding_hits += 1
+        scores["expected_finding_ids"] = finding_hits / len(expected_findings)
+        path_refs = sum(
+            1
+            for p in ["AlarmScanner.java", "RuleEngine.java", "EmailNotifier.java", "design_spec.md"]
+            if p.lower() in content
+        )
+        scores["source_references"] = min(path_refs / 3.0, 1.0)
+        scores["line_or_method_refs"] = 1.0 if re.search(r"line\s*\d+|:\d+|method|class|字段|方法", content, re.I) else 0.0
 
         # Has severity classification
         has_severity = bool(re.search(r"(critical|high|medium|low)", content))
@@ -68,6 +88,9 @@ def automated_score(workspace: Path) -> dict[str, float]:
     else:
         scores["report_created"] = 0.0
         scores["issues_identified"] = 0.0
+        scores["expected_finding_ids"] = 0.0
+        scores["source_references"] = 0.0
+        scores["line_or_method_refs"] = 0.0
         scores["has_severity"] = 0.0
         scores["has_suggestions"] = 0.0
         scores["report_substance"] = 0.0

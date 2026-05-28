@@ -1,91 +1,166 @@
 task_id: CP43_vue_agent_view_data_overwrite
 task_name: Vue AgentView 数据覆盖问题分析修复
-version: "1.0"
+version: '2.0'
 category: debugging
 difficulty: hard
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_11_vue_data_overwrite_analysis"
-source_dataset: "taskset-260427-121234"
-source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
-
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_11_vue_data_overwrite_analysis
+source_dataset: taskset-260427-121234
+source_description: Redesigned from taskset-260427-121234/task_11_vue_data_overwrite_analysis with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
 services: []
-
 prompt:
   text: |
-    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
-    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+    我已经把原始项目素材放在容器的 `/workspace/fixtures/` 目录下，请把这些文件当作只读输入。
 
-    - `/workspace/fixtures/web/src/views/AgentView.vue`
-    - `/workspace/fixtures/web/src/components/PlanChatPanel.vue`
-    - `/workspace/fixtures/web/src/utils/agentChatManagerDB.js`
-    - `/workspace/fixtures/server/src/routes/agentChats.js`
+    输入文件如下（右侧是它在原项目中的相对路径）：
+    - `/workspace/fixtures/web/src/views/AgentView.vue` -> `web/src/views/AgentView.vue`
+    - `/workspace/fixtures/web/src/components/PlanChatPanel.vue` -> `web/src/components/PlanChatPanel.vue`
+    - `/workspace/fixtures/web/src/utils/agentChatManagerDB.js` -> `web/src/utils/agentChatManagerDB.js`
+    - `/workspace/fixtures/server/src/routes/agentChats.js` -> `server/src/routes/agentChats.js`
 
-    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+    请基于这些输入完成下面的原始需求：
 
     帮我分析，web/src/views/AgentView.vue 及子组件内，由于加载数据及编辑时，会造成 agent_chats，agent_chat_context 及相关数据表的数据列被覆盖、错位等致命问题。
 
     具体来说：切换聊天时，正在编辑的上下文（context）没保存就丢了；自动保存可能把A聊天的内容写到B聊天里去；加载聊天列表会覆盖掉本地还没同步的修改。
 
     帮我找到根因并给出修复方案，要改代码。
-  language: zh
 
+    交付要求：
+    - 需要修改已有文件时，请把修改后的版本写到 `/workspace/` 下对应的原项目相对路径。
+    - 需要新增文件时，请按需求中的文件名或上面列出的目标路径写到 `/workspace/` 下。
+    - 最终回复只需概述完成情况、关键改动和生成的文件；不要只在最终回复中贴代码或报告正文。
+  language: zh
 tools: []
 tool_endpoints: []
-
 sandbox_files:
-  - fixtures/web/src/views/AgentView.vue
-  - fixtures/web/src/components/PlanChatPanel.vue
-  - fixtures/web/src/utils/agentChatManagerDB.js
-  - fixtures/server/src/routes/agentChats.js
-
+- fixtures/web/src/views/AgentView.vue
+- fixtures/web/src/components/PlanChatPanel.vue
+- fixtures/web/src/utils/agentChatManagerDB.js
+- fixtures/server/src/routes/agentChats.js
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
   timeout_seconds: 600
   max_turns: 30
-
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/web/src/views/AgentView.vue
-  - /workspace/web/src/components/PlanChatPanel.vue
-  - /workspace/web/src/utils/agentChatManagerDB.js
-  - /workspace/server/src/routes/agentChats.js
-  - /workspace/**/*
+- /workspace/web/src/views/AgentView.vue
+- /workspace/web/src/components/PlanChatPanel.vue
+- /workspace/web/src/utils/agentChatManagerDB.js
+- /workspace/server/src/routes/agentChats.js
+- /workspace/**/*
 scoring_components: []
-
 safety_checks: []
-
 expected_actions: []
-
 judge_rubric: |
-  评估 agent 对 Vue 数据覆盖问题的诊断和修复质量。
+  ## Expected Behavior
 
-  ## 关键问题识别
-  - 是否识别 debounced autoSave 的竞态（chat ID 在 debounce 期间可能改变）
-  - 是否识别 loadChats 全量覆盖本地状态的问题
-  - 是否识别切换聊天时缺少 dirty check
+  1. Agent reads all four source files and traces the data flow from AgentView -> PlanChatPanel -> agentChatManagerDB -> server routes
+  2. Agent identifies the race condition in the watch(currentChatId) that fires without cancelling pending auto-saves
+  3. Agent identifies the debounce bug in PlanChatPanel where props.chat.id can change between schedule and execution
+  4. Agent identifies the missing dirty-check before chat switching in handleSelectChat
+  5. Agent identifies the lack of optimistic locking / version control in the PUT endpoint
+  6. Agent produces concrete code fixes addressing at least the top 3 issues
 
-  ## 修复质量
-  - PlanChatPanel: autoSave 是否固定了 chatId（闭包捕获或 ref）
-  - AgentView: handleSelectChat 是否增加了脏检查或自动保存
-  - 是否有请求取消/去重机制
+  ## Grading Criteria
 
-  ## 评分标准
-  - 0.9-1.0: 全部问题识别且修复完整
-  - 0.7-0.8: 核心竞态修复，部分问题遗漏
-  - 0.4-0.6: 识别问题但修复不完整
-  - 0.0-0.3: 未识别核心问题
+  - [ ] race_condition_identified: Agent identifies the auto-save race condition when switching chats
+  - [ ] cross_chat_overwrite_fixed: PlanChatPanel auto-save pins the chat ID at schedule time, not execution time
+  - [ ] dirty_check_added: handleSelectChat warns or saves before switching if context is dirty
+  - [ ] request_dedup_or_cancel: Added AbortController, request dedup, or pending-save cancellation
+  - [ ] server_concurrency_addressed: Agent mentions or fixes the last-write-wins problem on the PUT endpoint
 
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Root Cause Analysis Depth (Weight: 30%)
+    - 1.0: Identifies all 4+ race conditions (auto-save cross-chat, watcher overlap, no dirty-check, no server locking), traces full data flow across all files
+    - 0.75: Identifies 3 of the race conditions with clear explanation
+    - 0.5: Identifies the main auto-save race but misses dirty-check or server-side issues
+    - 0.25: Vaguely mentions "timing issues" without specific trace
+    - 0.0: Wrong diagnosis or only surface-level observation
+
+  ### Criterion 2: Fix Quality - Client Side (Weight: 30%)
+    - 1.0: Fixes pin chatId at debounce-schedule time, adds AbortController or cancel-on-switch, adds dirty-check with save-or-discard prompt
+    - 0.75: Fixes 2 of the 3 client-side issues correctly
+    - 0.5: Fixes auto-save pinning but misses cancel/dirty-check
+    - 0.25: Attempted fixes that are incomplete or introduce new bugs
+    - 0.0: No code changes or wrong fixes
+
+  ### Criterion 3: Fix Quality - Server/DB Side (Weight: 20%)
+    - 1.0: Adds optimistic locking (version column or ETag) to PUT context, removes inline message loading from GET /
+    - 0.75: Addresses one of the two server issues
+    - 0.5: Mentions the server issues but fix is incomplete
+    - 0.25: Only adds comments about the problem
+    - 0.0: Does not address server-side issues
+
+  ### Criterion 4: Solution Architecture (Weight: 20%)
+    - 1.0: Proposes centralized data manager pattern (e.g. chatDataManager) or Pinia store to prevent future race conditions, with clear separation of concerns
+    - 0.75: Good architectural improvement but not fully centralized
+    - 0.5: Fixes are scattered across files without a unifying pattern
+    - 0.25: Fixes work but are fragile
+    - 0.0: No architectural consideration
 reference_solution: |
-  1. PlanChatPanel: 在 autoSave 闭包中捕获 chatId 快照
-  2. AgentView: handleSelectChat 先取消 pending autoSave，再检查 dirty
-  3. 添加 AbortController 或请求去重
-  4. 服务端添加版本号/etag 防止 last-write-wins
+  原始来源：taskset-260427-121234/task_11_vue_data_overwrite_analysis
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：vue_chat_data_race_condition
+
+  隐藏 verifier 主要检查项：cross_chat_overwrite_fixed, dirty_check_added, race_condition_identified, request_dedup_or_cancel, server_concurrency_addressed
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent reads all four source files and traces the data flow from AgentView -> PlanChatPanel -> agentChatManagerDB -> server routes
+  2. Agent identifies the race condition in the watch(currentChatId) that fires without cancelling pending auto-saves
+  3. Agent identifies the debounce bug in PlanChatPanel where props.chat.id can change between schedule and execution
+  4. Agent identifies the missing dirty-check before chat switching in handleSelectChat
+  5. Agent identifies the lack of optimistic locking / version control in the PUT endpoint
+  6. Agent produces concrete code fixes addressing at least the top 3 issues
+
+  ## Grading Criteria
+
+  - [ ] race_condition_identified: Agent identifies the auto-save race condition when switching chats
+  - [ ] cross_chat_overwrite_fixed: PlanChatPanel auto-save pins the chat ID at schedule time, not execution time
+  - [ ] dirty_check_added: handleSelectChat warns or saves before switching if context is dirty
+  - [ ] request_dedup_or_cancel: Added AbortController, request dedup, or pending-save cancellation
+  - [ ] server_concurrency_addressed: Agent mentions or fixes the last-write-wins problem on the PUT endpoint
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Root Cause Analysis Depth (Weight: 30%)
+    - 1.0: Identifies all 4+ race conditions (auto-save cross-chat, watcher overlap, no dirty-check, no server locking), traces full data flow across all files
+    - 0.75: Identifies 3 of the race conditions with clear explanation
+    - 0.5: Identifies the main auto-save race but misses dirty-check or server-side issues
+    - 0.25: Vaguely mentions "timing issues" without specific trace
+    - 0.0: Wrong diagnosis or only surface-level observation
+
+  ### Criterion 2: Fix Quality - Client Side (Weight: 30%)
+    - 1.0: Fixes pin chatId at debounce-schedule time, adds AbortController or cancel-on-switch, adds dirty-check with save-or-discard prompt
+    - 0.75: Fixes 2 of the 3 client-side issues correctly
+    - 0.5: Fixes auto-save pinning but misses cancel/dirty-check
+    - 0.25: Attempted fixes that are incomplete or introduce new bugs
+    - 0.0: No code changes or wrong fixes
+
+  ### Criterion 3: Fix Quality - Server/DB Side (Weight: 20%)
+    - 1.0: Adds optimistic locking (version column or ETag) to PUT context, removes inline message loading from GET /
+    - 0.75: Addresses one of the two server issues
+    - 0.5: Mentions the server issues but fix is incomplete
+    - 0.25: Only adds comments about the problem
+    - 0.0: Does not address server-side issues
+
+  ### Criterion 4: Solution Architecture (Weight: 20%)
+    - 1.0: Proposes centralized data manager pattern (e.g. chatDataManager) or Pinia store to prevent future race conditions, with clear separation of concerns
+    - 0.75: Good architectural improvement but not fully centralized
+    - 0.5: Fixes are scattered across files without a unifying pattern
+    - 0.25: Fixes work but are fragile
+    - 0.0: No architectural consideration
+primary_dimensions:
+- completion
+- robustness
+- communication

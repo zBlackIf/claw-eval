@@ -1,28 +1,14 @@
-"""Function exclusion check API endpoint."""
-from flask import Blueprint, request, jsonify
-from .function_exclusion_check_svc import FunctionExclusionService
+"""Controller layer — POST /ac-common-service/function/exclusion/check."""
+from fastapi import APIRouter, HTTPException
+from .function_exclusion_check_svc import (
+    ExclusionCheckRequest, ExclusionCheckResponse, check_exclusion,
+)
 
-bp = Blueprint('function_exclusion', __name__, url_prefix='/api/v1/function-exclusion')
+router = APIRouter(prefix="/ac-common-service")
 
 
-@bp.route('/check', methods=['POST'])
-def check_exclusion():
-    """Check if given function codes have mutual exclusion conflicts.
-
-    Request body:
-        {"function_codes": ["CODE1", "CODE2", ...]}
-
-    Returns:
-        200: {"result": "pass", "conflicts": []}
-        200: {"result": "conflict", "conflicts": [{"group": [...], "matched": [...]}]}
-        400: {"error": "function_codes is required and must be non-empty list"}
-    """
-    data = request.get_json(force=True)
-    function_codes = data.get('function_codes')
-
-    if not function_codes or not isinstance(function_codes, list) or len(function_codes) == 0:
-        return jsonify({"error": "function_codes is required and must be non-empty list"}), 400
-
-    svc = FunctionExclusionService()
-    result = svc.check(function_codes)
-    return jsonify(result), 200
+@router.post("/function/exclusion/check", response_model=ExclusionCheckResponse)
+def check(req: ExclusionCheckRequest):
+    if not req.function_codes:
+        raise HTTPException(status_code=400, detail="function_codes must not be empty")
+    return check_exclusion(req)

@@ -1,27 +1,28 @@
 task_id: CP22_php_url_proxy_path_format
 task_name: 扩展PHP代理支持路径格式URL转发
-version: "1.0"
+version: '2.0'
 category: web_development
 difficulty: hard
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_14_php_url_proxy_setup"
-source_dataset: "taskset-260411-144323"
-source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
-
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_14_php_url_proxy_setup
+source_dataset: taskset-260411-144323
+source_description: Redesigned from taskset-260411-144323/task_14_php_url_proxy_setup with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
 services: []
-
 prompt:
   text: |
-    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
-    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+    我已经把原始项目素材放在容器的 `/workspace/fixtures/` 目录下，请把这些文件当作只读输入。
 
-    - `/workspace/fixtures/project/index.php`
-    - `/workspace/fixtures/project/.htaccess`
-    - `/workspace/fixtures/project/composer.json`
-    - `/workspace/fixtures/apache2/sites-available/url-proxy.conf`
+    输入文件如下（右侧是它在原项目中的相对路径）：
+    - `/workspace/fixtures/project/composer.json` -> `project/composer.json`
+    - `/workspace/fixtures/project/.htaccess` -> `project/.htaccess`
+    - `/workspace/fixtures/project/index.php` -> `project/index.php`
+    - `/workspace/fixtures/apache2/sites-available/url-proxy.conf` -> `apache2/sites-available/url-proxy.conf`
 
-    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+    请基于这些输入完成下面的原始需求：
 
     我在服务器上跑着一个基于 `athlon1600/php-proxy-app` 的 URL 代理，部署在 `project/`
     （对应真实路径 `/var/www/html/proxy/`）。现在用法是这样：
@@ -30,23 +31,30 @@ prompt:
     https://lanmei.ccwu.cc/proxy/?q=https://github.com
     ```
 
-    我想要新增一种更自然的路径格式：
+    我想要新增一种**更自然的路径格式**：
 
     ```
     https://lanmei.ccwu.cc/proxy/https://github.com
     https://lanmei.ccwu.cc/proxy/http://news.ycombinator.com/item?id=1
     ```
 
-    你要做的事（改动限制在 `project/` 下面和 `apache2/sites-available/`，别碰其他地方）：
+    这样转发出去的链接看起来更干净、手打也更顺，不用带 `?q=`。
+
+    **你要做的事**（改动限制在 `project/` 下面和 `apache2/sites-available/`，别碰其他地方）：
 
     1. 修改 `project/index.php`：在调用 proxy 核心逻辑之前，加一段代码从 `$_SERVER['PATH_INFO']`
-       或 `$_SERVER['REQUEST_URI']` 里提取 `http://` / `https://` 开头的目标 URL，
+       或 `$_SERVER['REQUEST_URI']` 里**提取** `http://` / `https://` 开头的目标 URL，
        重建完整 URL 后塞到 `$_GET['q']`。如果不是 `/http/` 或 `/https/` 开头就保持现有行为
-    2. 修改 `project/.htaccess`：启用 `AcceptPathInfo On`，同时调整 mod_rewrite 规则让所有非文件路径都转发到 `index.php`
-    3. 修改 `apache2/sites-available/url-proxy.conf`：增加对 `.htaccess` 里的 `AcceptPathInfo` 生效的配置
-    4. 写一份 `project/CHANGES.md` 说明：新增的用法、为什么需要 AcceptPathInfo On、原来 `?q=xxx` 是否仍然兼容
+    2. 修改 `project/.htaccess`：**启用 `AcceptPathInfo On`**（默认关闭，不开 PHP 看不到
+       PATH_INFO），同时调整 mod_rewrite 规则让所有非文件路径都转发到 `index.php`
+    3. 修改 `apache2/sites-available/url-proxy.conf`：增加对 `.htaccess` 里的
+       `AcceptPathInfo` 生效的配置（已经有 `AllowOverride All`，但需要确认）
+    4. 写一份 `project/CHANGES.md` 说明：
+       - 新增的用法
+       - 为什么 `.htaccess` 里需要 `AcceptPathInfo On`
+       - 原来 `?q=xxx` 的用法**是否仍然兼容**（应该保留兼容）
 
-    硬约束：
+    **硬约束**：
     - 不要删除或破坏 `?q=` 这种原始用法
     - 不要引入任何 PHP 依赖（不要改 composer.json）
     - PHP 代码里不要用 `eval()` / `system()` / 任何 exec
@@ -54,71 +62,144 @@ prompt:
       - `/proxy/https://github.com` → target = `https://github.com`
       - `/proxy/http://example.com/path?query=1` → target = `http://example.com/path?query=1`
       - `/proxy/?q=https://github.com` → 保持原行为
-  language: zh
 
+    交付要求：
+    - 需要修改已有文件时，请把修改后的版本写到 `/workspace/` 下对应的原项目相对路径。
+    - 需要新增文件时，请按需求中的文件名或上面列出的目标路径写到 `/workspace/` 下。
+    - 最终回复只需概述完成情况、关键改动和生成的文件；不要只在最终回复中贴代码或报告正文。
+  language: zh
 tools: []
 tool_endpoints: []
-
 sandbox_files:
-  - fixtures/project/index.php
-  - fixtures/project/.htaccess
-  - fixtures/project/composer.json
-  - fixtures/apache2/sites-available/url-proxy.conf
-
+- fixtures/project/composer.json
+- fixtures/project/.htaccess
+- fixtures/project/index.php
+- fixtures/apache2/sites-available/url-proxy.conf
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
   timeout_seconds: 600
   max_turns: 30
-
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/project/index.php
-  - /workspace/project/.htaccess
-  - /workspace/apache2/sites-available/url-proxy.conf
-  - /workspace/project/CHANGES.md
+- /workspace/project/index.php
+- /workspace/project/.htaccess
+- /workspace/apache2/sites-available/url-proxy.conf
+- /workspace/project/CHANGES.md
+- /workspace/project/composer.json
 scoring_components: []
-
 safety_checks: []
 expected_actions: []
-
 judge_rubric: |
-  评估 agent 对 PHP URL 代理的路径格式扩展实现质量。
+  ## Expected Behavior
 
-  ## index.php URL 解析逻辑
-  - 是否正确从 PATH_INFO 或 REQUEST_URI 中提取 http/https 开头的 URL
-  - 是否正确处理带查询参数的 URL（如 ?id=1 不被截断）
-  - 是否保持了 ?q= 原始用法的兼容性
-  - 是否避免了 eval/system/exec 等危险函数
+  1. Agent 读 `project/index.php` 看现有提取逻辑
+  2. Agent 读 `.htaccess` 看现有 rewrite 规则
+  3. Agent 读 `url-proxy.conf` 确认 AllowOverride 设置
+  4. Agent 修改 `index.php` 加 PATH_INFO / REQUEST_URI 解析
+  5. Agent 修改 `.htaccess` 加 `AcceptPathInfo On`
+  6. Agent 可能需要调整 rewrite 规则
+  7. Agent 写 `CHANGES.md` 说明
 
-  ## .htaccess 配置
-  - 是否添加了 AcceptPathInfo On
-  - mod_rewrite 规则是否正确将路径转发到 index.php
-  - 是否不影响静态文件访问
+  ## Grading Criteria
 
-  ## Apache VHost 配置
-  - url-proxy.conf 是否正确配置支持 AcceptPathInfo
+  - [ ] index_php_handles_path_info: `project/index.php` 包含读取 `$_SERVER['PATH_INFO']` 或 `$_SERVER['REQUEST_URI']` 的逻辑
+  - [ ] index_php_extracts_scheme: 代码能判断 path 开头是 `http` 或 `https` 并重建目标 URL
+  - [ ] backward_compat_preserved: `?q=xxx` 原始用法的逻辑仍然存在（不被覆盖）
+  - [ ] htaccess_accept_path_info: `.htaccess` 含 `AcceptPathInfo On`
+  - [ ] composer_untouched: `composer.json` 依赖列表没有被增加新项
+  - [ ] no_dangerous_php: `index.php` 里没有 `eval(` / `system(` / `exec(` / `shell_exec(`
+  - [ ] changes_doc_explains_why: `CHANGES.md` 存在且解释了新用法 + AcceptPathInfo 的必要性
 
-  ## CHANGES.md 文档
-  - 是否说明了新用法
-  - 是否解释了 AcceptPathInfo On 的必要性
-  - 是否确认了向后兼容性
+  ## LLM Judge Rubric
 
-  ## 评分标准
-  - 0.9-1.0: 完美实现，三种 URL 格式全部正确处理，配置完整，文档清晰
-  - 0.7-0.8: 核心逻辑正确但有小问题（如边界情况处理不完善）
-  - 0.4-0.6: 实现不完整或有明显错误
-  - 0.0-0.3: 未完成或破坏了原有功能
+  ### Criterion 1: URL Parsing Correctness (Weight: 35%)
+    - 1.0: 新代码正确处理 3 种输入（/https/... / /http/... / /?q=...），包括 query string 透传；变量命名清晰；有注释说明为什么先查 PATH_INFO 再退到 REQUEST_URI
+    - 0.75: 三种输入都能处理但有一处小瑕疵（比如 query string 没透传）
+    - 0.5: 只处理 https 不处理 http，或 query string 丢失
+    - 0.25: 只能处理简单的 /https/example.com
+    - 0.0: 没实现或逻辑完全错
 
+  ### Criterion 2: Backward Compatibility (Weight: 25%)
+    - 1.0: `?q=` 用法完全保留，新代码只在 PATH_INFO/REQUEST_URI 有内容时才介入，没副作用
+    - 0.75: 兼容但有轻微副作用（比如 warning）
+    - 0.5: 兼容但逻辑路径改变
+    - 0.25: 破坏了 `?q=` 的默认流程
+    - 0.0: 完全覆盖了旧用法
+
+  ### Criterion 3: Apache Config Understanding (Weight: 20%)
+    - 1.0: 解释了 `AcceptPathInfo On` 的必要性（默认关闭、PATH_INFO 不会被填充），并且 `.htaccess` 里正确添加
+    - 0.75: 配置改对了但解释一般
+    - 0.5: 配置对但没解释或解释不准
+    - 0.25: 配置缺失但代码写了（运行时 PATH_INFO 会是空）
+    - 0.0: 完全不理解这个配置
+
+  ### Criterion 4: Change Documentation (Weight: 20%)
+    - 1.0: CHANGES.md 清晰说明：新用法示例、兼容性保证、Apache 配置改动、可能的 edge case（如 URL 里含有 `#` fragment）
+    - 0.75: 三项齐全但一项简单
+    - 0.5: 粗略记录
+    - 0.25: 敷衍
+    - 0.0: 没 CHANGES.md
 reference_solution: |
-  1. index.php: 在 require vendor/autoload.php 之前加入 PATH_INFO 解析
-  2. .htaccess: 添加 AcceptPathInfo On + RewriteRule
-  3. url-proxy.conf: 确认 AllowOverride All 和 AcceptPathInfo 支持
-  4. CHANGES.md: 文档新用法和兼容性说明
+  原始来源：taskset-260411-144323/task_14_php_url_proxy_setup
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：php_proxy_path_info_url_rewrite
+
+  隐藏 verifier 主要检查项：backward_compat_preserved, changes_doc_explains_why, composer_untouched, htaccess_accept_path_info, index_php_extracts_scheme, index_php_handles_path_info, no_dangerous_php
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent 读 `project/index.php` 看现有提取逻辑
+  2. Agent 读 `.htaccess` 看现有 rewrite 规则
+  3. Agent 读 `url-proxy.conf` 确认 AllowOverride 设置
+  4. Agent 修改 `index.php` 加 PATH_INFO / REQUEST_URI 解析
+  5. Agent 修改 `.htaccess` 加 `AcceptPathInfo On`
+  6. Agent 可能需要调整 rewrite 规则
+  7. Agent 写 `CHANGES.md` 说明
+
+  ## Grading Criteria
+
+  - [ ] index_php_handles_path_info: `project/index.php` 包含读取 `$_SERVER['PATH_INFO']` 或 `$_SERVER['REQUEST_URI']` 的逻辑
+  - [ ] index_php_extracts_scheme: 代码能判断 path 开头是 `http` 或 `https` 并重建目标 URL
+  - [ ] backward_compat_preserved: `?q=xxx` 原始用法的逻辑仍然存在（不被覆盖）
+  - [ ] htaccess_accept_path_info: `.htaccess` 含 `AcceptPathInfo On`
+  - [ ] composer_untouched: `composer.json` 依赖列表没有被增加新项
+  - [ ] no_dangerous_php: `index.php` 里没有 `eval(` / `system(` / `exec(` / `shell_exec(`
+  - [ ] changes_doc_explains_why: `CHANGES.md` 存在且解释了新用法 + AcceptPathInfo 的必要性
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: URL Parsing Correctness (Weight: 35%)
+    - 1.0: 新代码正确处理 3 种输入（/https/... / /http/... / /?q=...），包括 query string 透传；变量命名清晰；有注释说明为什么先查 PATH_INFO 再退到 REQUEST_URI
+    - 0.75: 三种输入都能处理但有一处小瑕疵（比如 query string 没透传）
+    - 0.5: 只处理 https 不处理 http，或 query string 丢失
+    - 0.25: 只能处理简单的 /https/example.com
+    - 0.0: 没实现或逻辑完全错
+
+  ### Criterion 2: Backward Compatibility (Weight: 25%)
+    - 1.0: `?q=` 用法完全保留，新代码只在 PATH_INFO/REQUEST_URI 有内容时才介入，没副作用
+    - 0.75: 兼容但有轻微副作用（比如 warning）
+    - 0.5: 兼容但逻辑路径改变
+    - 0.25: 破坏了 `?q=` 的默认流程
+    - 0.0: 完全覆盖了旧用法
+
+  ### Criterion 3: Apache Config Understanding (Weight: 20%)
+    - 1.0: 解释了 `AcceptPathInfo On` 的必要性（默认关闭、PATH_INFO 不会被填充），并且 `.htaccess` 里正确添加
+    - 0.75: 配置改对了但解释一般
+    - 0.5: 配置对但没解释或解释不准
+    - 0.25: 配置缺失但代码写了（运行时 PATH_INFO 会是空）
+    - 0.0: 完全不理解这个配置
+
+  ### Criterion 4: Change Documentation (Weight: 20%)
+    - 1.0: CHANGES.md 清晰说明：新用法示例、兼容性保证、Apache 配置改动、可能的 edge case（如 URL 里含有 `#` fragment）
+    - 0.75: 三项齐全但一项简单
+    - 0.5: 粗略记录
+    - 0.25: 敷衍
+    - 0.0: 没 CHANGES.md
+primary_dimensions:
+- completion
+- robustness
+- communication

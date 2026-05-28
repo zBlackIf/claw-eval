@@ -1,0 +1,93 @@
+# provenance:
+#   themis_dataset: taskset-260424-pinchbench-v2rc2
+#   themis_task_id: task_stock
+#   themis_rank_original: 18
+#   themis_metrics: { std_trim: 0.417, range_trim: 1.000, mean_trim: 0.756 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP61_stock_price_research
+task_name: "Apple 股价研究简报（CP61 / 源 taskset-260424-pinchbench-v2rc2:task_stock）"
+version: "1.0"
+category: research
+difficulty: easy
+tags: [general]
+
+source_task_id: "task_stock"
+source_dataset: "taskset-260424-pinchbench-v2rc2"
+source_description: "PinchBench top100 rank 18 高区分度题（std_trim 0.417）。改编为 Pattern A + sandbox 文件混合：agent 用 web_real 查 AAPL 当前股价，输出 /workspace/stock_report.txt。verifier 6 个锚点（文件/ticker/价格/日期/摘要/格式）+ grader 检查 web 搜索行为。"
+
+services:
+  - name: web_real
+    command: python mock_services/web_real/server.py
+    port: 9114
+    health_check: http://localhost:9114/web/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9114/web/reset
+
+prompt:
+  text: |
+    帮我查下 Apple（AAPL）今天的股价，写个简单的市场简报到
+    /workspace/stock_report.txt。
+  language: zh
+
+tools:
+  - name: web_search
+    description: 搜索互联网
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        max_results:
+          type: integer
+          default: 10
+      required: [query]
+  - name: web_fetch
+    description: 获取指定 URL 内容
+    input_schema:
+      type: object
+      properties:
+        url:
+          type: string
+        timeout_seconds:
+          type: integer
+          default: 30
+      required: [url]
+
+tool_endpoints:
+  - tool_name: web_search
+    url: http://localhost:9114/web/search
+    method: POST
+  - tool_name: web_fetch
+    url: http://localhost:9114/web/fetch
+    method: POST
+
+sandbox_grader_files:
+  - fixtures/verify_stock_report.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_stock_report.py
+
+env_snapshot_files:
+  - /workspace/stock_report.txt
+
+environment:
+  timeout_seconds: 480
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a stock_report.txt that names AAPL, gives a concrete numeric price (e.g. $182.34) drawn from web search results, an explicit date, and ≥100 字 of market context — well-formatted with line breaks and structure. Penalize fabricated/round numbers without web search evidence."
+
+reference_solution: |
+  web_search('AAPL stock price today Yahoo Finance') and/or web_fetch a
+  finance page. Extract ticker, current price (e.g. $182.34), trading
+  date (today's date). Compose /workspace/stock_report.txt with sections:
+  Ticker / Price / Date / Market Summary (≥100 chars covering recent
+  earnings, sector dynamics, key drivers).
+
+primary_dimensions: [completion, robustness, communication]

@@ -1,0 +1,6 @@
+LAMMPS (29 Aug 2024)
+Reading data file ...
+  orthogonal box = (0 0 0) to (12.03 12.03 12.03)
+  1 by 1 by 1 MPI processor grid
+ERROR: Atoms 47 56 128 not in simulation box (src/atom.cpp:1324)
+Last command: read_data input.data

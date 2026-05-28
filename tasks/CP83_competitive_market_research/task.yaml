@@ -1,0 +1,89 @@
+# provenance:
+#   themis_dataset: taskset-260424-pinchbench-v2rc2
+#   themis_task_id: task_market_research
+#   themis_rank_original: 51
+#   themis_metrics: { std_trim: 0.374, range_trim: 0.955, mean_trim: 0.666 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP83_competitive_market_research
+task_name: "企业可观测性/APM 市场竞争分析（CP83 / 源 taskset-260424-pinchbench-v2rc2:task_market_research）"
+version: "1.0"
+category: research
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_market_research"
+source_dataset: "taskset-260424-pinchbench-v2rc2"
+source_description: "PinchBench top100 rank 51（std_trim 0.374）。Workflow W1 web_real research + sandbox 文件输出。verifier 7 个隐藏锚点（≥5 竞品 / 对比表格 / 定价信息 / 市场趋势 / 结构 / executive summary）+ search 行为评分。"
+
+services:
+  - name: web_real
+    command: python mock_services/web_real/server.py
+    port: 9114
+    health_check: http://localhost:9114/web/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9114/web/reset
+
+prompt:
+  text: |
+    帮我做一份企业可观测性 / APM 市场的竞争态势分析，写到
+    /workspace/market_research.md，给老板下周战略会议用。
+  language: zh
+
+tools:
+  - name: web_search
+    description: 搜索互联网
+    input_schema:
+      type: object
+      properties:
+        query: {type: string}
+        max_results: {type: integer, default: 10}
+      required: [query]
+  - name: web_fetch
+    description: 获取指定 URL
+    input_schema:
+      type: object
+      properties:
+        url: {type: string}
+        timeout_seconds: {type: integer, default: 30}
+      required: [url]
+
+tool_endpoints:
+  - tool_name: web_search
+    url: http://localhost:9114/web/search
+    method: POST
+  - tool_name: web_fetch
+    url: http://localhost:9114/web/fetch
+    method: POST
+
+sandbox_grader_files:
+  - fixtures/verify_market_research.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_market_research.py
+
+env_snapshot_files:
+  - /workspace/market_research.md
+
+environment:
+  timeout_seconds: 900
+  max_turns: 30
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward market_research.md covering ≥5 known APM/observability players (Datadog/New Relic/Dynatrace/Splunk/Grafana/Elastic/AppDynamics/Honeycomb/Chronosphere/etc.) with company profile + differentiators + pricing model (per-host/per-GB/free tier), markdown comparison table, market trends (OpenTelemetry/AI-driven/cloud-native/consolidation), executive summary, ≥6 headings."
+
+reference_solution: |
+  web_search('enterprise observability APM market 2026 Datadog
+  Dynatrace New Relic') and follow-ups for each major player.
+  web_fetch G2 / Gartner MQ summaries. Write /workspace/market_research.md
+  with: # Executive Summary, ## <each competitor> (overview, key features,
+  pricing model, strengths/weaknesses), ## Comparison Table (| Vendor |
+  Pricing | OTel | AI/ML | Best For |), ## Market Trends (OpenTelemetry,
+  AI-driven observability, cloud-native, consolidation, consumption pricing).
+
+primary_dimensions: [completion, robustness, communication]

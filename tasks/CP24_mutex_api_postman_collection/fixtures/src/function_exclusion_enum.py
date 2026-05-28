@@ -1,19 +1,17 @@
-"""Function code enums and mutex group definitions."""
+"""Function code enum + mutual-exclusion map."""
 from enum import Enum
 
 
 class FunctionCode(str, Enum):
-    PAY_NO_PASSWORD = "PAY_NO_PASSWORD"
-    DAILY_LIMIT = "DAILY_LIMIT"
-    LIMIT_PER_TXN_5K = "LIMIT_PER_TXN_5K"
-    AUTO_DEBIT = "AUTO_DEBIT"
-    QUICK_PAY = "QUICK_PAY"
-    BATCH_TRANSFER = "BATCH_TRANSFER"
+    PAY_NO_PASSWORD = "PAY_NO_PASSWORD"          # 免密支付
+    DAILY_LIMIT = "DAILY_LIMIT"                  # 每日限额
+    LIMIT_PER_TXN_5K = "LIMIT_PER_TXN_5K"        # 单笔限额 5000
+    FACE_RECOGNITION = "FACE_RECOGNITION"        # 人脸识别
+    SMS_2FA = "SMS_2FA"                          # 短信双因子
 
 
-# Mutual exclusion groups: codes within the same group cannot coexist
+# Sets of function codes that cannot co-exist.
 MUTEX_GROUPS = [
-    [FunctionCode.PAY_NO_PASSWORD, FunctionCode.LIMIT_PER_TXN_5K],
-    [FunctionCode.AUTO_DEBIT, FunctionCode.BATCH_TRANSFER],
-    [FunctionCode.QUICK_PAY, FunctionCode.LIMIT_PER_TXN_5K, FunctionCode.BATCH_TRANSFER],
+    {"PAY_NO_PASSWORD", "LIMIT_PER_TXN_5K"},
+    {"FACE_RECOGNITION", "SMS_2FA"},
 ]

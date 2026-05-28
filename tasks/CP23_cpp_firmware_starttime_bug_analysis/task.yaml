@@ -1,113 +1,194 @@
 task_id: CP23_cpp_firmware_starttime_bug_analysis
 task_name: C++ FirmwareItem startTime设置失败Bug分析修复
-version: "1.0"
+version: '2.0'
 category: debugging
 difficulty: hard
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_31_cpp_firmware_starttime_bug"
-source_dataset: "taskset-260427-121234"
-source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
-
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_31_cpp_firmware_starttime_bug
+source_dataset: taskset-260427-121234
+source_description: Redesigned from taskset-260427-121234/task_31_cpp_firmware_starttime_bug with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
 services: []
-
 prompt:
   text: |
-    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
-    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+    我已经把原始项目素材放在容器的 `/workspace/fixtures/` 目录下，请把这些文件当作只读输入。
 
-    - `/workspace/fixtures/src/item/firmware_item.cpp`
-    - `/workspace/fixtures/src/item/firmware_item.h`
-    - `/workspace/fixtures/src/item/iclone_item.cpp`
-    - `/workspace/fixtures/src/item/iclone_item.h`
-    - `/workspace/fixtures/src/core/upg_upgrade_interface.h`
-    - `/workspace/fixtures/src/helper/identifier_helper.h`
+    输入文件如下（右侧是它在原项目中的相对路径）：
+    - `/workspace/fixtures/src/item/firmware_item.cpp` -> `src/item/firmware_item.cpp`
+    - `/workspace/fixtures/src/item/firmware_item.h` -> `src/item/firmware_item.h`
+    - `/workspace/fixtures/src/item/iclone_item.h` -> `src/item/iclone_item.h`
+    - `/workspace/fixtures/src/item/iclone_item.cpp` -> `src/item/iclone_item.cpp`
+    - `/workspace/fixtures/src/core/upg_upgrade_interface.h` -> `src/core/upg_upgrade_interface.h`
+    - `/workspace/fixtures/src/core/upg_upgrade_interface.cpp` -> `src/core/upg_upgrade_interface.cpp`
+    - `/workspace/fixtures/src/utils/file_utils.cpp` -> `src/utils/file_utils.cpp`
+    - `/workspace/fixtures/src/utils/logger.h` -> `src/utils/logger.h`
+    - `/workspace/fixtures/src/helper/identifier_helper.h` -> `src/helper/identifier_helper.h`
 
-    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+    请基于这些输入完成下面的原始需求：
 
-    `src/item/firmware_item.cpp` 中：
-
-    ```cpp
-    m_startTime = IdentifierHelper::getDateTimeString();
-    ```
-
-    FirmwareItem 设置 startTime 失败，请分析并修复。
+    固件升级流程里 `FirmwareItem` 生成的执行记录缺少正确的 `startTime`，导致升级审计链路无法还原开始时间。请分析并修复。
 
     要求：
-    1. 阅读 `firmware_item.cpp`、`firmware_item.h`、基类 `iclone_item.h` / `iclone_item.cpp` 以及相关的 `upg_upgrade_interface.h`
-    2. 分析 `FirmwareItem::preExecuteItem` 与基类 `ICloneItem::preExecuteItem` 的关系，找出 startTime 未被正确设置的根因
+    1. 阅读 `firmware_item.cpp`、`firmware_item.h`、基类 `iclone_item.h` / `iclone_item.cpp` 以及相关的 `upg_upgrade_interface.h/.cpp`
+    2. 分析 `FirmwareItem` 执行前处理与公共生命周期逻辑之间的关系，找出 startTime 未被正确设置的根因
     3. 将修复方案写入 `BUGFIX_REPORT.md`，包含：根因分析、修复方案（diff 或完整修改后代码片段）、影响面评估
     4. 将修复后的 `firmware_item.cpp` 写入 `src/item/firmware_item.cpp`
     5. 如果发现其他潜在问题（如 endTime 一致性、error path 中 startTime 未清空等），也在报告中说明
 
     注意：不要修改基类 `ICloneItem` 的公共接口。
-  language: zh
 
+    交付要求：
+    - 需要修改已有文件时，请把修改后的版本写到 `/workspace/` 下对应的原项目相对路径。
+    - 需要新增文件时，请按需求中的文件名或上面列出的目标路径写到 `/workspace/` 下。
+    - 最终回复只需概述完成情况、关键改动和生成的文件；不要只在最终回复中贴代码或报告正文。
+  language: zh
 tools: []
 tool_endpoints: []
-
 sandbox_files:
-  - fixtures/src/item/firmware_item.cpp
-  - fixtures/src/item/firmware_item.h
-  - fixtures/src/item/iclone_item.cpp
-  - fixtures/src/item/iclone_item.h
-  - fixtures/src/core/upg_upgrade_interface.h
-  - fixtures/src/helper/identifier_helper.h
-
+- fixtures/src/item/firmware_item.cpp
+- fixtures/src/item/firmware_item.h
+- fixtures/src/item/iclone_item.h
+- fixtures/src/item/iclone_item.cpp
+- fixtures/src/core/upg_upgrade_interface.h
+- fixtures/src/core/upg_upgrade_interface.cpp
+- fixtures/src/utils/file_utils.cpp
+- fixtures/src/utils/logger.h
+- fixtures/src/helper/identifier_helper.h
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
   timeout_seconds: 600
   max_turns: 30
-
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/BUGFIX_REPORT.md
-  - /workspace/src/item/firmware_item.cpp
-  - /workspace/src/item/iclone_item.h
+- /workspace/src/item/firmware_item.cpp
+- /workspace/src/item/firmware_item.h
+- /workspace/src/item/iclone_item.h
+- /workspace/BUGFIX_REPORT.md
+- /workspace/src/core/upg_upgrade_interface.cpp
+- /workspace/src/utils/file_utils.cpp
+- /workspace/src/utils/logger.h
+- /workspace/src/item/iclone_item.cpp
+- /workspace/src/core/upg_upgrade_interface.h
+- /workspace/src/helper/identifier_helper.h
 scoring_components: []
-
 safety_checks: []
 expected_actions: []
-
 judge_rubric: |
-  评估 agent 对 C++ FirmwareItem startTime bug 的分析和修复质量。
+  ## Expected Behavior
 
-  ## 根因分析
-  - 是否正确识别了 startTime 未被设置的根本原因
-  - 根因应该是：FirmwareItem::preExecuteItem 覆写了基类但没有调用 base::preExecuteItem()，导致基类中设置 startTime 的逻辑被跳过
-  - 或者：startTime 在基类 preExecuteItem 中设置，但子类重写后未调用 super
+  1. Agent reads firmware_item.cpp, firmware_item.h, iclone_item.h, iclone_item.cpp
+  2. Agent identifies: FirmwareItem::preExecuteItem overrides the base class but does NOT call the base class version (ICloneItem::preExecuteItem), which is where m_startTime and m_endTime lifecycle management normally happens
+  3. Agent identifies the root cause: the derived class sets m_startTime inside an if-branch only, and does not follow the base class pattern of resetting times and managing the state machine
+  4. Agent produces a fix that either calls the base class preExecuteItem or correctly replicates the time management logic
+  5. Agent writes BUGFIX_REPORT.md with root cause, fix, and impact analysis
 
-  ## 修复方案
-  - 是否在 FirmwareItem::preExecuteItem 中正确调用了基类方法
-  - 或者是否在子类中显式添加了 startTime 设置
-  - 修复后的代码是否保持了原有功能完整性
+  **Hard red lines**:
+  - Failing to identify that the base class preExecuteItem is not called -> root_cause_identified = 0
+  - Not producing any modified firmware_item.cpp -> fix_applied = 0
+  - Modifying the ICloneItem public interface -> interface_preserved = 0
 
-  ## BUGFIX_REPORT.md 质量
-  - 是否包含根因分析
-  - 是否包含修复方案（带代码片段或 diff）
-  - 是否评估了影响面
-  - 是否提及了其他潜在问题
+  ## Grading Criteria
 
-  ## 代码修改正确性
-  - firmware_item.cpp 的修改是否正确
-  - 是否没有破坏其他功能
-  - 是否没有修改基类公共接口
+  - [ ] root_cause_identified: correctly identifies that FirmwareItem::preExecuteItem does not call base class
+  - [ ] fix_applied: modified firmware_item.cpp exists with the fix
+  - [ ] bugfix_report_present: BUGFIX_REPORT.md exists with root cause section
+  - [ ] interface_preserved: iclone_item.h is not modified or public interface unchanged
+  - [ ] impact_analysis_present: report discusses impact / side effects of the fix
 
-  ## 评分标准
-  - 0.9-1.0: 正确识别根因，修复方案完整且安全，报告详尽
-  - 0.7-0.8: 根因正确但修复方案有小瑕疵或报告不够详细
-  - 0.4-0.6: 部分正确但遗漏了关键分析
-  - 0.0-0.3: 未识别根因或修复错误
+  ## LLM Judge Rubric
 
+  ### Criterion 1: Content Accuracy (Weight: 30%)
+    - 1.0: All findings are factually correct, properly sourced from input data, no fabrications
+    - 0.75: Mostly accurate with minor imprecisions
+    - 0.5: Core findings correct but some inaccuracies
+    - 0.25: Significant factual errors or unsupported claims
+    - 0.0: Largely inaccurate or fabricated
+
+  ### Criterion 2: Analytical Depth (Weight: 30%)
+    - 1.0: Thorough analysis with meaningful insights, cross-references, and actionable conclusions
+    - 0.75: Good analysis with some insights
+    - 0.5: Basic analysis without deeper examination
+    - 0.25: Superficial treatment of the topic
+    - 0.0: No meaningful analysis
+
+  ### Criterion 3: Structure and Formatting (Weight: 25%)
+    - 1.0: Professional report structure, proper sections, tables, and visual organization
+    - 0.75: Well-structured with minor formatting issues
+    - 0.5: Readable but poorly organized
+    - 0.25: Disorganized or hard to follow
+    - 0.0: No coherent structure
+
+  ### Criterion 4: Actionability (Weight: 15%)
+    - 1.0: Clear recommendations with prioritization and implementation guidance
+    - 0.75: Useful recommendations with minor gaps
+    - 0.5: Some recommendations but lacking specificity
+    - 0.25: Vague or impractical suggestions
+    - 0.0: No actionable recommendations
 reference_solution: |
-  根因：FirmwareItem::preExecuteItem() 重写了基类 ICloneItem::preExecuteItem() 但没有调用 base，
-  基类中 m_startTime = IdentifierHelper::getDateTimeString() 从未执行。
-  修复：在 FirmwareItem::preExecuteItem() 开头添加 ICloneItem::preExecuteItem() 调用。
+  原始来源：taskset-260427-121234/task_31_cpp_firmware_starttime_bug
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：cpp_bug_analysis_and_fix
+
+  隐藏 verifier 主要检查项：bugfix_report_present, fix_applied, impact_analysis_present, interface_preserved, root_cause_identified
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent reads firmware_item.cpp, firmware_item.h, iclone_item.h, iclone_item.cpp
+  2. Agent identifies: FirmwareItem::preExecuteItem overrides the base class but does NOT call the base class version (ICloneItem::preExecuteItem), which is where m_startTime and m_endTime lifecycle management normally happens
+  3. Agent identifies the root cause: the derived class sets m_startTime inside an if-branch only, and does not follow the base class pattern of resetting times and managing the state machine
+  4. Agent produces a fix that either calls the base class preExecuteItem or correctly replicates the time management logic
+  5. Agent writes BUGFIX_REPORT.md with root cause, fix, and impact analysis
+
+  **Hard red lines**:
+  - Failing to identify that the base class preExecuteItem is not called -> root_cause_identified = 0
+  - Not producing any modified firmware_item.cpp -> fix_applied = 0
+  - Modifying the ICloneItem public interface -> interface_preserved = 0
+
+  ## Grading Criteria
+
+  - [ ] root_cause_identified: correctly identifies that FirmwareItem::preExecuteItem does not call base class
+  - [ ] fix_applied: modified firmware_item.cpp exists with the fix
+  - [ ] bugfix_report_present: BUGFIX_REPORT.md exists with root cause section
+  - [ ] interface_preserved: iclone_item.h is not modified or public interface unchanged
+  - [ ] impact_analysis_present: report discusses impact / side effects of the fix
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Content Accuracy (Weight: 30%)
+    - 1.0: All findings are factually correct, properly sourced from input data, no fabrications
+    - 0.75: Mostly accurate with minor imprecisions
+    - 0.5: Core findings correct but some inaccuracies
+    - 0.25: Significant factual errors or unsupported claims
+    - 0.0: Largely inaccurate or fabricated
+
+  ### Criterion 2: Analytical Depth (Weight: 30%)
+    - 1.0: Thorough analysis with meaningful insights, cross-references, and actionable conclusions
+    - 0.75: Good analysis with some insights
+    - 0.5: Basic analysis without deeper examination
+    - 0.25: Superficial treatment of the topic
+    - 0.0: No meaningful analysis
+
+  ### Criterion 3: Structure and Formatting (Weight: 25%)
+    - 1.0: Professional report structure, proper sections, tables, and visual organization
+    - 0.75: Well-structured with minor formatting issues
+    - 0.5: Readable but poorly organized
+    - 0.25: Disorganized or hard to follow
+    - 0.0: No coherent structure
+
+  ### Criterion 4: Actionability (Weight: 15%)
+    - 1.0: Clear recommendations with prioritization and implementation guidance
+    - 0.75: Useful recommendations with minor gaps
+    - 0.5: Some recommendations but lacking specificity
+    - 0.25: Vague or impractical suggestions
+    - 0.0: No actionable recommendations
+primary_dimensions:
+- completion
+- robustness
+- communication

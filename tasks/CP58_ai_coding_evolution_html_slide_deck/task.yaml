@@ -1,0 +1,66 @@
+# provenance:
+#   themis_dataset: taskset-260427-121234
+#   themis_task_id: task_83_ai_coding_slides
+#   themis_rank_original: 13
+#   themis_metrics: { std_trim: 0.419, range_trim: 1.000, mean_trim: 0.735 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP58_ai_coding_evolution_html_slide_deck
+task_name: "AI Coding 演进 18 页 HTML 演示文稿（CP58 / 源 taskset-260427-121234:task_83_ai_coding_slides）"
+version: "1.0"
+category: coding
+difficulty: hard
+tags: [general]
+
+source_task_id: "task_83_ai_coding_slides"
+source_dataset: "taskset-260427-121234"
+source_description: "PinchBench top100 rank 13 高区分度题（std_trim 0.419）。改编为 Claw-Eval sandbox HTML 工程任务：根据 slide_content.json 生成 18 页技术演示文稿，verifier 隐藏 9 个锚点（文件大小/自包含/页数/封面关键词/SDD 四支柱/键盘导航/进度指示/Q&A 页/动画）。"
+
+services: []
+
+prompt:
+  text: |
+    下周 R&D 内部分享要用——AI Coding 演进过去现在未来那块。大纲在
+    /workspace/fixtures/slide_content.json，帮我做成一份能直接打开演讲的
+    HTML 幻灯片，/workspace/presentation.html。视觉走 Neon Cyber 风格，要
+    像样、有点未来感，别太朴素。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/slide_content.json
+
+sandbox_grader_files:
+  - fixtures/verify_html_slides.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_html_slides.py
+
+env_snapshot_files:
+  - /workspace/presentation.html
+
+environment:
+  timeout_seconds: 900
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a self-contained presentation.html (≥5KB, no external .css/.js other than CDN fonts/icons) with ≥16 slide sections, cover including 'AI Coding', all four SDD pillars (Spec/Skill/Rule/TDD), arrow-key navigation, a progress/pagination indicator, transition animations, and a final 谢谢/Q&A page."
+
+reference_solution: |
+  Read /workspace/fixtures/slide_content.json. Generate a single
+  /workspace/presentation.html with inline <style> and <script>: 18
+  <section class="slide"> elements following the json structure (cover →
+  TOC → 3 parts × ~5 slides → Q&A). Bind keydown ArrowLeft/Right to
+  switch active slide via .active class. Add a .progress div showing
+  current/total. Use @keyframes + transition for slide transitions.
+  Include syntax-highlighted code blocks (highlight.js CDN OK).
+  Cover slide title: "AI Coding 范式革命". Section 2 must spell out
+  Spec / Skill / Rule / TDD as the four SDD pillars.
+
+primary_dimensions: [completion, communication, safety]

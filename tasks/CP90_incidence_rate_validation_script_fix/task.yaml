@@ -1,0 +1,72 @@
+# provenance:
+#   themis_dataset: taskset-260421-225115-strict-v2
+#   themis_task_id: task_28_incidence_rate_validation
+#   themis_rank_original: 60
+#   themis_metrics: { std_trim: 0.363, range_trim: 0.855, mean_trim: 0.690 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP90_incidence_rate_validation_script_fix
+task_name: "心血管疾病发病率验证脚本修复（CP90 / 源 taskset-260421-225115-strict-v2:task_28_incidence_rate_validation）"
+version: "1.0"
+category: coding
+difficulty: hard
+tags: [general]
+
+source_task_id: "task_28_incidence_rate_validation"
+source_dataset: "taskset-260421-225115-strict-v2"
+source_description: "PinchBench top100 rank 60（std_trim 0.363，strict-v2）。Workspace WS2 生物医学代码修复：PAD 发病率与论文不一致，需要对照 analysis_plan.md 中的 ICD 编码补漏，重新跑生成 csv + 写分析笔记。verifier 接受根目录或 fixtures 中的修复脚本，按 PAD I73 补全、其他病种编码完整、csv 生成、CVDeath 处理和分析笔记评分。"
+
+services: []
+
+prompt:
+  text: |
+    我在用 CardiOmicScore 论文方法验证心血管疾病发病率，但 PAD（外周动脉
+    疾病）的发病率比论文低很多。检查一下 /workspace/fixtures/ 里的脚本和
+    论文 ICD 编码清单（analysis_plan.md），修了之后跑出 csv 对比文件，
+    再写一份分析笔记。所有产物放到 /workspace/。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/validate_incidence_rate.py
+  - fixtures/analysis_plan.md
+  - fixtures/disease_labels_15year.csv
+  - fixtures/cohort_eids.csv
+  - fixtures/baseline_disease_status.csv
+
+sandbox_grader_files:
+  - fixtures/verify_incidence_fix.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_incidence_fix.py
+
+env_snapshot_files:
+  - /workspace/validate_incidence_rate.py
+  - /workspace/incidence_rate_comparison.csv
+  - /workspace/analysis_notes.md
+
+environment:
+  timeout_seconds: 720
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward fixing the validation script wherever the agent reasonably edits it (root copy or fixtures source) so PAD includes both I70 and I73 per the paper, keeping all other disease codes intact (CAD I20-I25, Stroke I60-I63, AF I48, VTE I26 I80-I82), generating /workspace/incidence_rate_comparison.csv with ≥5 rows, addressing CVDeath endpoint (compute or document why skipped), and analysis_notes.md (≥300 chars) explaining missing codes + impact + remaining discrepancies."
+
+reference_solution: |
+  Diff PAPER_RESULTS PAD codes vs analysis_plan.md ICD list: paper uses
+  I70 + I73 but script only has I70 (missing I73 = peripheral
+  atherosclerosis). Add I73. Re-run compute_incidence to produce
+  /workspace/incidence_rate_comparison.csv with row per endpoint
+  (CAD/Stroke/AF/VTE/PAD/Heart Failure/MI/CVDeath) and our rate vs paper
+  rate vs delta. For CVDeath: compute from baseline_disease_status if
+  death date present, else document missing data. Write
+  /workspace/analysis_notes.md explaining I73 addition impact + remaining
+  cohort/follow-up discrepancies + systematic explanations.
+
+primary_dimensions: [completion, communication, safety]

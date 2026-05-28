@@ -1,107 +1,255 @@
 task_id: CP27_metro_station_population_profile
-task_name: 18个地铁站点人口画像分析
-version: "1.0"
-category: data_analysis
+task_name: 17个地铁站点人口画像分析
+version: '2.0'
+category: workflow
 difficulty: medium
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_44_metro_population_analysis"
-source_dataset: "taskset-260421-225115"
-source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
-
-services: []
-
+tags:
+- general
+- single_turn
+- coding_plan
+- workflow
+- sandbox
+source_task_id: task_44_metro_population_analysis
+source_dataset: taskset-260421-225115
+source_description: "Workflow + sandbox hybrid redesigned with claw-eval-task-designer-v2: a per-task metro profile service provides station records, aliases, duplicate/trap cases, submit/confirm audit evidence; /workspace existing_stations_v4.txt remains the downstream artifact verified by hidden checker."
+services:
+  - name: metro_profile
+    command: python tasks/CP27_metro_station_population_profile/services/metro_profile/server.py
+    port: 9327
+    health_check: http://localhost:9327/metro_profile/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9327/metro_profile/reset
+    env:
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP27_metro_station_population_profile/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_NAME: metro_profile
 prompt:
   text: |
-    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
-    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+    广州线网 v4 的人口画像需要补最后一批站点。站点口径、已有稿和后台画像库都已开好，后台里有旧别名、重复站名和异常口径，先用画像库查清并复核，再把补充内容续到 /workspace/existing_stations_v4.txt。
 
-    - `/workspace/fixtures/existing_stations_v4.txt`
-
-    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
-
-    请完成所有剩余18个地铁站点的人口画像分析，添加到v4版本文件中。
-
-    ### 已完成站点（4个，见 existing_stations_v4.txt）
-    1. 岭南广场站 2. 赤岗站 3. 南浦西站 4. 石牌南站
-
-    ### 需要完成的18个站点数据：
-
-    5. **纪念堂**: 1.59万人, 密度2.02, 25-44岁52.7%, 中老年占比偏高, 家有小学生40.99%, 岗位>人口
-    6. **西场**: 2.55万人, 密度3.25, 25-34岁39.98%, 45岁以下73%, 家有小学生40.38%
-    7. **松溪**: 0.98万人, 密度1.25, 25-34岁46.44%, 家有小学生43.43%(最高)
-    8. **南漖**: 1.43万人, 密度1.82, 25-34岁42.15%, 家有1-3岁10.7%, 中高收入38%
-    9. **广州东站**: 1.43万人, 密度1.82, 25-34岁49.10%(最高), 大学生33.44%, 45岁以下76%, 交通枢纽
-    10. **白云城市中心**: 0.66万人, 密度0.84, 25-34岁56.13%(最高), 45岁以下80%+
-    11. **秀全公园**: 1.18万人, 密度1.50, 25-34岁45.71%, 家有小学生44.59%(第二高), 初中生22.81%
-    12. **江高**: 0.69万人, 密度0.88, 18-24岁69.08%(极高), 大学生62%+(最高)
-    13. **梓元岗**: 2.17万人, 密度2.76, 25-34岁45.78%, 大学生32.13%, 家有小学生42.03%
-    14. **凤浦公园**: 0.54万人, 密度0.69, 25-34岁48.42%, 大学生39.03%, 通勤63%(最高)
-    15. **远景**: 3.52万人, 密度4.48(第二高), 25-34岁45.64%, 家有小学生40.13%, 通勤55%
-    16. **槎头**: 1.69万人, 密度2.15, 25-34岁44.01%, 家有小学生42.37%
-    17. **梅东路**: 2.66万人, 密度3.39, 25-34岁34.45%(偏低), 中高收入32%+, 岗位>人口
-    18. **仓边路**: 2.30万人, 密度2.93, 25-44岁52.04%, 家有小学生39.69%, 岗位密度4.21>人口
-    19. **烈士陵园**: 3.19万人, 密度4.06, 25-44岁54.75%, 家有小学生38.15%
-    20. **京溪路**: 1.94万人, 密度2.47, 25-34岁46.29%, 18-24岁9.82%, 大学生34.18%
-    21. **棠景**: 3.58万人, 密度4.56(最高), 25-34岁46.62%, 家有小学生42.01%(最高)
-
-    ### 输出格式要求
-
-    将结果追加到 existing_stations_v4.txt 文件末尾。
-
-    每个站点格式：
-    1. 精炼描述（1句话突出最核心特征）
-    2. 人群构成（横向对比+绝对规模，3-4句话）
-    3. 出行特征（3个量化要点）
-    4. 设施需求（3个要点）
-    5. 建议（3条建议，引用前文数据）
+    交付前在画像库提交一版核对说明并确认归档，最终回复简单说完成情况。
   language: zh
-
-tools: []
-tool_endpoints: []
-
+tools:
+  - name: metro_profile_list
+    description: List records available in the metro profile service; use this before targeted reads.
+    input_schema:
+      type: object
+      properties:
+        kind:
+          type: string
+        tag:
+          type: string
+        limit:
+          type: integer
+          default: 20
+      required: []
+  - name: metro_profile_search
+    description: Search the metro profile service for candidate records, source notes, and trap cases.
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        kind:
+          type: string
+        max_results:
+          type: integer
+          default: 10
+      required: [query]
+  - name: metro_profile_get
+    description: Fetch one full service record by record_id.
+    input_schema:
+      type: object
+      properties:
+        record_id:
+          type: string
+      required: [record_id]
+  - name: metro_profile_cross_check
+    description: Cross-check selected records against known traps and conflicting evidence.
+    input_schema:
+      type: object
+      properties:
+        primary_id:
+          type: string
+        comparison_ids:
+          type: array
+          items:
+            type: string
+        focus:
+          type: string
+      required: []
+  - name: metro_profile_submit_report
+    description: Submit the working conclusion or artifact summary back to the service.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        content:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        decision:
+          type: string
+        metadata:
+          type: object
+      required: [report_id, content]
+  - name: metro_profile_confirm_report
+    description: Confirm the submitted conclusion after cross-checking source_ids.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        checklist:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+      required: [report_id]
+tool_endpoints:
+  - tool_name: metro_profile_list
+    url: http://localhost:9327/metro_profile/list
+    method: POST
+  - tool_name: metro_profile_search
+    url: http://localhost:9327/metro_profile/search
+    method: POST
+  - tool_name: metro_profile_get
+    url: http://localhost:9327/metro_profile/get
+    method: POST
+  - tool_name: metro_profile_cross_check
+    url: http://localhost:9327/metro_profile/cross_check
+    method: POST
+  - tool_name: metro_profile_submit_report
+    url: http://localhost:9327/metro_profile/submit
+    method: POST
+  - tool_name: metro_profile_confirm_report
+    url: http://localhost:9327/metro_profile/confirm
+    method: POST
 sandbox_files:
-  - fixtures/existing_stations_v4.txt
-
+- fixtures/existing_stations_v4.txt
+- fixtures/station_requirements.md
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
   timeout_seconds: 600
   max_turns: 30
-
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/existing_stations_v4.txt
+- /workspace/existing_stations_v4.txt
+- /workspace/station_requirements.md
 scoring_components: []
-
 safety_checks: []
-
 expected_actions: []
-
 judge_rubric: |
-  评估 agent 是否完成了全部17个站点的人口画像分析。
+  ## Expected Behavior
 
-  ## 完整性
-  - 是否完成了全部17个站点
-  - 每个站点是否包含5个部分（精炼描述、人群构成、出行特征、设施需求、建议）
-  - 原有4个站点数据是否保留
+  1. Agent reads existing_stations_v4.txt to understand the established format.
+  2. Agent processes all 18 stations with consistent 5-section format per station.
+  3. Agent incorporates all provided numerical data accurately.
+  4. Agent provides comparative context (e.g., "highest among all stations").
+  5. Agent writes results appended to existing_stations_v4.txt.
 
-  ## 数据准确性
-  - 关键数据点是否正确引用（如棠景密度4.56、江高大学生69.08%）
-  - 是否存在跨站点横向比较
+  ## Grading Criteria
 
-  ## 评分标准
-  - 0.9-1.0: 全部17站完成，格式一致，数据准确
-  - 0.7-0.8: 大部分完成但有遗漏或格式不一致
-  - 0.4-0.6: 完成不到一半或格式混乱
-  - 0.0-0.3: 未完成
+  - [ ] station_count: All 18 stations are present in the output
+  - [ ] format_consistency: Each station follows the 5-section format
+  - [ ] data_accuracy: Numerical values match the provided data
+  - [ ] existing_preserved: Original 4 stations content is preserved
+  - [ ] comparative_context: Cross-station comparisons are included
 
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Completeness (Weight: 30%)
+    - 1.0: All 18 stations analyzed with all 5 sections per station
+    - 0.75: 15-17 stations complete, or some stations missing 1 section
+    - 0.5: 10-14 stations complete
+    - 0.25: Fewer than 10 stations
+    - 0.0: Fewer than 5 stations or task abandoned
+
+  ### Criterion 2: Data Fidelity (Weight: 25%)
+    - 1.0: All numerical values (population, density, age percentages) accurately reflected in the analysis
+    - 0.75: 90%+ data points correct, minor transcription errors
+    - 0.5: 70-90% data correct, some values altered or misattributed
+    - 0.25: Fewer than 70% data points correct
+    - 0.0: Data largely fabricated or wrong
+
+  ### Criterion 3: Analytical Quality (Weight: 25%)
+    - 1.0: Each station analysis is insightful with unique observations, cross-station comparisons, and data-backed recommendations
+    - 0.75: Good analysis but some stations feel formulaic or lack unique insights
+    - 0.5: Basic template-filling without meaningful analysis
+    - 0.25: Generic descriptions that could apply to any station
+    - 0.0: No meaningful analysis
+
+  ### Criterion 4: Format Consistency (Weight: 20%)
+    - 1.0: All 18 stations follow the exact same 5-section format as the existing 4 stations
+    - 0.75: Format mostly consistent, minor deviations in 1-2 stations
+    - 0.5: Format varies across stations, some sections merged or split
+    - 0.25: Inconsistent formatting throughout
+    - 0.0: No consistent format
 reference_solution: |
-  追加17个站点的人口画像，每站包含精炼描述+人群构成+出行特征+设施需求+建议5部分。
+  原始来源：taskset-260421-225115/task_44_metro_population_analysis
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：metro_station_population_profile
+
+  隐藏 verifier 主要检查项：comparative_context, data_accuracy, existing_preserved, format_consistency, station_count
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent reads existing_stations_v4.txt to understand the established format.
+  2. Agent processes all 18 stations with consistent 5-section format per station.
+  3. Agent incorporates all provided numerical data accurately.
+  4. Agent provides comparative context (e.g., "highest among all stations").
+  5. Agent writes results appended to existing_stations_v4.txt.
+
+  ## Grading Criteria
+
+  - [ ] station_count: All 18 stations are present in the output
+  - [ ] format_consistency: Each station follows the 5-section format
+  - [ ] data_accuracy: Numerical values match the provided data
+  - [ ] existing_preserved: Original 4 stations content is preserved
+  - [ ] comparative_context: Cross-station comparisons are included
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Completeness (Weight: 30%)
+    - 1.0: All 18 stations analyzed with all 5 sections per station
+    - 0.75: 15-17 stations complete, or some stations missing 1 section
+    - 0.5: 10-14 stations complete
+    - 0.25: Fewer than 10 stations
+    - 0.0: Fewer than 5 stations or task abandoned
+
+  ### Criterion 2: Data Fidelity (Weight: 25%)
+    - 1.0: All numerical values (population, density, age percentages) accurately reflected in the analysis
+    - 0.75: 90%+ data points correct, minor transcription errors
+    - 0.5: 70-90% data correct, some values altered or misattributed
+    - 0.25: Fewer than 70% data points correct
+    - 0.0: Data largely fabricated or wrong
+
+  ### Criterion 3: Analytical Quality (Weight: 25%)
+    - 1.0: Each station analysis is insightful with unique observations, cross-station comparisons, and data-backed recommendations
+    - 0.75: Good analysis but some stations feel formulaic or lack unique insights
+    - 0.5: Basic template-filling without meaningful analysis
+    - 0.25: Generic descriptions that could apply to any station
+    - 0.0: No meaningful analysis
+
+  ### Criterion 4: Format Consistency (Weight: 20%)
+    - 1.0: All 18 stations follow the exact same 5-section format as the existing 4 stations
+    - 0.75: Format mostly consistent, minor deviations in 1-2 stations
+    - 0.5: Format varies across stations, some sections merged or split
+    - 0.25: Inconsistent formatting throughout
+    - 0.0: No consistent format
+primary_dimensions:
+- completion
+- robustness
+- communication

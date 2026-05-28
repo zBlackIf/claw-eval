@@ -1,0 +1,88 @@
+# provenance:
+#   themis_dataset: taskset-260424-pinchbench-v2rc2
+#   themis_task_id: task_earnings_analysis
+#   themis_rank_original: 40
+#   themis_metrics: { std_trim: 0.390, range_trim: 1.000, mean_trim: 0.400 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP75_earnings_analysis
+task_name: "GitLab Q3 利润率指引达成度（CP75 / 源 taskset-260424-pinchbench-v2rc2:task_earnings_analysis）"
+version: "1.0"
+category: finance
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_earnings_analysis"
+source_dataset: "taskset-260424-pinchbench-v2rc2"
+source_description: "PinchBench top100 rank 40（std_trim 0.390，mean_trim 0.400——弱模型普遍打不到通过线）。Workflow W1 web research + sandbox 文件输出。真值锚点：GitLab Q3 FY2026 non-GAAP operating margin ~17.9%，比指引高 ~5 个百分点（500 bps）。verifier 6 个隐藏锚点（指标识别 / actual / guidance / bps 结论 / 可读性）。"
+
+services:
+  - name: web_real
+    command: python mock_services/web_real/server.py
+    port: 9114
+    health_check: http://localhost:9114/web/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9114/web/reset
+
+prompt:
+  text: |
+    GitLab 最新一季的利润率指引达成情况帮我查一下——他们 beat 还是 miss 了
+    指引？多少 basis point？写到 /workspace/gitlab_margin_guidance.txt。
+  language: zh
+
+tools:
+  - name: web_search
+    description: 搜索互联网
+    input_schema:
+      type: object
+      properties:
+        query: {type: string}
+        max_results: {type: integer, default: 10}
+      required: [query]
+  - name: web_fetch
+    description: 获取指定 URL 内容
+    input_schema:
+      type: object
+      properties:
+        url: {type: string}
+        timeout_seconds: {type: integer, default: 30}
+      required: [url]
+
+tool_endpoints:
+  - tool_name: web_search
+    url: http://localhost:9114/web/search
+    method: POST
+  - tool_name: web_fetch
+    url: http://localhost:9114/web/fetch
+    method: POST
+
+sandbox_grader_files:
+  - fixtures/verify_earnings.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_earnings.py
+
+env_snapshot_files:
+  - /workspace/gitlab_margin_guidance.txt
+
+environment:
+  timeout_seconds: 480
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward gitlab_margin_guidance.txt that names GitLab + non-GAAP operating margin, cites both actual (~17.9% / 18%) and guidance (~13% / 5-points-above), and concludes beat by ~500 basis points (470-500 bps acceptable). Penalize stale FY answers or fabrication without web search."
+
+reference_solution: |
+  web_search('GitLab Q3 FY2026 non-GAAP operating margin guidance beat') →
+  web_fetch IR release / earnings transcript. Extract: actual non-GAAP
+  operating margin 17.9%, prior guidance ~13%, ~5 points = 500 bps beat.
+  Write /workspace/gitlab_margin_guidance.txt: "GitLab Q3 FY2026 non-GAAP
+  operating margin actual 17.9% vs guidance ~13%, beat by ~500 basis points.
+  Source: GitLab IR Q3 FY2026 release."
+
+primary_dimensions: [completion, robustness, communication]

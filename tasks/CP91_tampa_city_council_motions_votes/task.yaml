@@ -1,0 +1,87 @@
+# provenance:
+#   themis_dataset: taskset-260424-pinchbench-v2rc2
+#   themis_task_id: task_meeting_council_votes
+#   themis_rank_original: 61
+#   themis_metrics: { std_trim: 0.362, range_trim: 0.912, mean_trim: 0.481 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP91_tampa_city_council_motions_votes
+task_name: "Tampa 市议会议案投票（CP91 / 源 taskset-260424-pinchbench-v2rc2:task_meeting_council_votes）"
+version: "1.1"
+category: data_analysis
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_meeting_council_votes"
+source_dataset: "taskset-260424-pinchbench-v2rc2"
+source_description: "PinchBench top100 rank 61（std_trim 0.362）。Workflow + workspace 混合：notes 提供 Tampa 市议会逐字稿，agent notes_list/notes_get 拿 + 写 sandbox votes_report.md。grader 评 sandbox content + notes tool gate。"
+
+services:
+  - name: notes
+    command: python mock_services/notes/server.py
+    port: 9105
+    health_check: http://localhost:9105/notes/list
+    health_check_method: POST
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9105/notes/reset
+    env:
+      NOTES_FIXTURES: tasks/CP91_tampa_city_council_motions_votes/fixtures/notes/meetings.json
+
+prompt:
+  text: |
+    Tampa 市议会昨天那场会议的速记稿在会议系统里。帮我把所有 motion 和投票
+    结果整理一份 /workspace/votes_report.md，按时间顺序，标清楚谁动议、
+    谁附议、结果、有没有反对/弃权/回避。
+  language: zh
+
+tools:
+  - name: notes_list
+    description: 列出最近的会议纪要
+    input_schema:
+      type: object
+      properties:
+        max_results: {type: integer, default: 10}
+        tag: {type: string}
+        days_back: {type: integer}
+      required: []
+  - name: notes_get
+    description: 按 note_id 取会议纪要全文
+    input_schema:
+      type: object
+      properties:
+        note_id: {type: string}
+      required: [note_id]
+
+tool_endpoints:
+  - tool_name: notes_list
+    url: http://localhost:9105/notes/list
+    method: POST
+  - tool_name: notes_get
+    url: http://localhost:9105/notes/get
+    method: POST
+
+sandbox_grader_files:
+  - fixtures/verify_council_votes.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_council_votes.py
+
+env_snapshot_files:
+  - /workspace/votes_report.md
+
+environment:
+  timeout_seconds: 900
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward agent that uses notes_list → notes_get for the Tampa transcript, writes votes_report.md capturing minutes adoption (Miranda), item 12 Carlson abstain, items 14/15 Rome Yard 5-2, item 19 unanimous, item 22 continued to 4/16, item 23 first reading, item 25 6-1 Carlson no, items 26-28 reconsidered, total count summary."
+
+reference_solution: |
+  notes_list() → find note_tampa_council_2026_04_02. notes_get(that id).
+  Skim by item/motion. Compose /workspace/votes_report.md.
+
+primary_dimensions: [completion, robustness, communication]

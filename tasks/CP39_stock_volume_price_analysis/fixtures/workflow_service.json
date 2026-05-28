@@ -1,0 +1,251 @@
+[
+  {
+    "record_id": "brief:task-context",
+    "kind": "brief",
+    "title": "A-share volume-price analysis with trading-day, missing-value, volume-spike, and vendor-caveat traps.",
+    "content": "Task CP39_stock_volume_price_analysis: A-share volume-price analysis with trading-day, missing-value, volume-spike, and vendor-caveat traps. Use list/search/get/cross_check before submit/confirm; workspace artifact remains required.",
+    "tags": [
+      "brief",
+      "workflow"
+    ],
+    "metadata": {
+      "task_id": "CP39_stock_volume_price_analysis",
+      "service": "market_data",
+      "mode": "workflow"
+    }
+  },
+  {
+    "record_id": "source:stock_data/sh600519.csv",
+    "kind": "source",
+    "title": "Workspace fixture export: stock_data/sh600519.csv",
+    "content": "date,code,open,high,low,close,volume,amount\n2025-01-02,sh.600519,1680.00,1695.50,1675.00,1690.00,25680,4340160000\n2025-01-03,sh.600519,1692.00,1710.00,1688.00,1705.50,31200,5324400000\n2025-01-06,sh.600519,1708.00,1712.00,1695.00,1698.00,22100,3766260000\n2025-01-07,sh.600519,1695.00,1700.00,1680.00,1685.00,28900,4884310000\n2025-01-08,sh.600519,1688.00,1720.00,1685.00,1718.50,35600,6089680000\n2025-01-09,sh.600519,1720.00,1725.00,1710.00,1722.00,29800,5129160000\n2025-01-10,sh.600519,1715.00,1718.00,1700.00,1702.00,24500,4182940000\n2025-01-13,sh.600519,1700.00,1705.00,1690.00,1695.00,21300,3614910000\n2025-01-14,sh.600519,1698.00,1730.00,1695.00,1728.00,38200,6571960000\n2025-01-15,sh.600519,1730.00,1745.00,1728.00,1742.00,42100,7326220000\n",
+    "tags": [
+      "source",
+      "csv",
+      "sh600519"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/stock_data/sh600519.csv",
+      "bytes": 744
+    }
+  },
+  {
+    "record_id": "source:stock_data/sz000858.csv",
+    "kind": "source",
+    "title": "Workspace fixture export: stock_data/sz000858.csv",
+    "content": "date,code,open,high,low,close,volume,amount\n2025-01-02,sz.000858,152.50,154.80,151.00,153.60,185600,28479360\n2025-01-03,sz.000858,154.00,156.20,153.50,155.80,198300,30878940\n2025-01-06,sz.000858,156.00,156.50,154.00,154.50,172400,26901000\n2025-01-07,sz.000858,154.00,155.00,152.00,152.80,168900,25963920\n2025-01-08,sz.000858,153.00,157.50,152.50,157.00,215600,33603200\n2025-01-09,sz.000858,157.50,158.00,156.00,156.50,189200,29834600\n2025-01-10,sz.000858,156.00,,155.00,155.50,175300,27271650\n2025-01-13,sz.000858,155.00,156.00,154.00,155.00,162800,25310400\n2025-01-14,sz.000858,155.50,159.00,155.00,158.50,225400,35617100\n2025-01-15,sz.000858,159.00,161.00,158.50,160.50,238500,38238750\n",
+    "tags": [
+      "source",
+      "csv",
+      "sz000858"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/stock_data/sz000858.csv",
+      "bytes": 688
+    }
+  },
+  {
+    "record_id": "source:stock_data/sz002304.csv",
+    "kind": "source",
+    "title": "Workspace fixture export: stock_data/sz002304.csv",
+    "content": "date,code,open,high,low,close,volume,amount\n2025-01-02,sz.002304,38.50,39.20,38.00,38.80,856000,33276800\n2025-01-03,sz.002304,39.00,39.80,38.80,39.50,912000,36144000\n2025-01-06,sz.002304,39.60,40.10,39.20,39.80,789000,31522200\n2025-01-07,sz.002304,39.50,39.80,38.50,38.60,945000,37161000\n2025-01-08,sz.002304,38.80,40.50,38.50,40.20,1125000,44887500\n2025-01-09,sz.002304,40.30,40.80,40.00,40.50,986000,40081800\n2025-01-10,sz.002304,40.20,40.50,39.50,39.80,856000,34251200\n2025-01-13,sz.002304,39.50,40.00,39.00,39.50,782000,31084100\n2025-01-14,sz.002304,39.80,41.20,39.50,41.00,1230000,50307000\n2025-01-15,sz.002304,41.20,42.00,41.00,41.80,1350000,56430000\n",
+    "tags": [
+      "source",
+      "csv",
+      "sz002304"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/stock_data/sz002304.csv",
+      "bytes": 657
+    }
+  },
+  {
+    "record_id": "source:task_instructions.txt",
+    "kind": "source",
+    "title": "Workspace fixture export: task_instructions.txt",
+    "content": "# Volume-Price Analysis Task\n\n## Constraint\nDo NOT search the internet. Use ONLY the local CSV data in stock_data/ directory.\n\n## Steps\n1. Read all CSV files from stock_data/ directory\n2. For each stock, compute:\n   - Daily price change (close - previous close)\n   - Volume change (volume - previous volume)\n   - Pearson correlation between price change and volume change\n3. Handle data quality issues:\n   - Missing values (NaN) should be dropped or filled\n   - Infinite values should be filtered out\n   - Log any data quality issues found\n4. Generate summary report\n\n## Output\nWrite results to volume_price_results.csv with columns:\ncode, correlation, avg_volume, avg_price_change, data_quality_notes\n\nWrite a text summary to analysis_summary.txt\n",
+    "tags": [
+      "source",
+      "txt",
+      "task_instructions"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/task_instructions.txt",
+      "bytes": 748
+    }
+  },
+  {
+    "record_id": "trap:sz000858-missing-high",
+    "kind": "trap",
+    "title": "sz000858 2025-01-10 high 缺失",
+    "content": "该行 high 为空，相关性计算前必须显式处理 NaN；不能把空值当0。",
+    "tags": [
+      "trap",
+      "missing_value",
+      "csv"
+    ],
+    "metadata": {
+      "code": "sz.000858",
+      "date": "2025-01-10"
+    }
+  },
+  {
+    "record_id": "trap:calendar-weekend",
+    "kind": "trap",
+    "title": "交易日不是连续自然日",
+    "content": "2025-01-04/05 是周末，移动窗口和变化率不能按自然日补空交易行。",
+    "tags": [
+      "trap",
+      "calendar"
+    ],
+    "metadata": {
+      "market": "A-share"
+    }
+  },
+  {
+    "record_id": "trap:volume-amount-scale",
+    "kind": "trap",
+    "title": "成交量与成交额量纲不同",
+    "content": "volume 是股数/手口径导出，amount 是金额；量价关系不要把 amount 当 volume 重复计算。",
+    "tags": [
+      "trap",
+      "unit"
+    ],
+    "metadata": {
+      "risk": "unit_confusion"
+    }
+  },
+  {
+    "record_id": "market:sh.600519",
+    "kind": "market_summary",
+    "title": "sh.600519 January data-quality summary",
+    "content": "{\n  \"rows\": 10,\n  \"date_range\": [\n    \"2025-01-02\",\n    \"2025-01-15\"\n  ],\n  \"missing_rows\": [],\n  \"close_min\": 1685.0,\n  \"close_max\": 1742.0,\n  \"volume_min\": 21300.0,\n  \"volume_max\": 42100.0,\n  \"volume_mean\": 29938.0\n}",
+    "tags": [
+      "market",
+      "summary",
+      "csv"
+    ],
+    "metadata": {
+      "code": "sh.600519",
+      "source_file": "stock_data/sh600519.csv"
+    }
+  },
+  {
+    "record_id": "market:sz.000858",
+    "kind": "market_summary",
+    "title": "sz.000858 January data-quality summary",
+    "content": "{\n  \"rows\": 10,\n  \"date_range\": [\n    \"2025-01-02\",\n    \"2025-01-15\"\n  ],\n  \"missing_rows\": [\n    {\n      \"date\": \"2025-01-10\",\n      \"code\": \"sz.000858\",\n      \"open\": \"156.00\",\n      \"high\": \"\",\n      \"low\": \"155.00\",\n      \"close\": \"155.50\",\n      \"volume\": \"175300\",\n      \"amount\": \"27271650\"\n    }\n  ],\n  \"close_min\": 152.8,\n  \"close_max\": 160.5,\n  \"volume_min\": 162800.0,\n  \"volume_max\": 238500.0,\n  \"volume_mean\": 193200.0\n}",
+    "tags": [
+      "market",
+      "summary",
+      "csv"
+    ],
+    "metadata": {
+      "code": "sz.000858",
+      "source_file": "stock_data/sz000858.csv"
+    }
+  },
+  {
+    "record_id": "market:sz.002304",
+    "kind": "market_summary",
+    "title": "sz.002304 January data-quality summary",
+    "content": "{\n  \"rows\": 10,\n  \"date_range\": [\n    \"2025-01-02\",\n    \"2025-01-15\"\n  ],\n  \"missing_rows\": [],\n  \"close_min\": 38.6,\n  \"close_max\": 41.8,\n  \"volume_min\": 782000.0,\n  \"volume_max\": 1350000.0,\n  \"volume_mean\": 983100.0\n}",
+    "tags": [
+      "market",
+      "summary",
+      "csv"
+    ],
+    "metadata": {
+      "code": "sz.002304",
+      "source_file": "stock_data/sz002304.csv"
+    }
+  },
+  {
+    "record_id": "workflow:required-sequence",
+    "kind": "workflow_contract",
+    "title": "Required service workflow sequence",
+    "content": "Use list/search, fetch targeted records, cross-check traps, submit a report, then confirm it.",
+    "tags": [
+      "workflow",
+      "contract"
+    ],
+    "metadata": {
+      "required_sequence": [
+        "list",
+        "search",
+        "get",
+        "cross_check",
+        "submit",
+        "confirm"
+      ]
+    }
+  },
+  {
+    "record_id": "cross_check:check:source-vs-trap",
+    "kind": "cross_check",
+    "title": "Cross-check source facts against known traps before final decision",
+    "content": "Use service traps as cautionary evidence, then verify final artifact against workspace fixtures.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "check:source-vs-trap",
+        "title": "Cross-check source facts against known traps before final decision",
+        "primary_ids": [
+          "source:stock_data/sh600519.csv",
+          "source:stock_data/sz000858.csv",
+          "source:stock_data/sz002304.csv",
+          "source:task_instructions.txt"
+        ],
+        "comparison_ids": [
+          "market:sh.600519",
+          "market:sz.000858",
+          "market:sz.002304"
+        ],
+        "trap_ids": [
+          "trap:sz000858-missing-high",
+          "trap:calendar-weekend",
+          "trap:volume-amount-scale"
+        ],
+        "expected_resolution": "Use service traps as cautionary evidence, then verify final artifact against workspace fixtures."
+      }
+    }
+  },
+  {
+    "record_id": "cross_check:check:submit-readiness",
+    "kind": "cross_check",
+    "title": "Submission readiness checklist",
+    "content": "Final answer should cite concrete source_ids and confirm the service submission after workspace artifact is written.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "check:submit-readiness",
+        "title": "Submission readiness checklist",
+        "primary_ids": [
+          "source:stock_data/sh600519.csv",
+          "source:stock_data/sz000858.csv",
+          "source:stock_data/sz002304.csv",
+          "source:task_instructions.txt",
+          "market:sh.600519",
+          "market:sz.000858"
+        ],
+        "comparison_ids": [
+          "trap:sz000858-missing-high",
+          "trap:calendar-weekend",
+          "trap:volume-amount-scale"
+        ],
+        "trap_ids": [
+          "trap:sz000858-missing-high",
+          "trap:calendar-weekend",
+          "trap:volume-amount-scale"
+        ],
+        "expected_resolution": "Final answer should cite concrete source_ids and confirm the service submission after workspace artifact is written."
+      }
+    }
+  }
+]

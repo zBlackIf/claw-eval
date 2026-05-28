@@ -31,9 +31,13 @@ def automated_score(workspace: Path) -> dict[str, float]:
         has_generic = "<T>" in content or "T extends" in content
         has_crud = all(m in content.lower() for m in ["list", "create", "update", "delete"])
         scores["crud_api_quality"] = 1.0 if (has_generic and has_crud) else (0.5 if has_crud else 0.0)
+        supports_extensions = any(k in content for k in ["export", "stats", "permissions", "custom", "extra", "actions"])
+        uses_request = "request" in content and re.search(r"method\s*:", content)
+        scores["crud_api_extensible"] = 1.0 if supports_extensions and uses_request else (0.5 if supports_extensions else 0.0)
     else:
         scores["crud_api_created"] = 0.0
         scores["crud_api_quality"] = 0.0
+        scores["crud_api_extensible"] = 0.0
 
     # Check useListPage composable
     composable = workspace / "src" / "composables" / "useListPage.ts"
@@ -49,9 +53,13 @@ def automated_score(workspace: Path) -> dict[str, float]:
         has_pagination = "page" in content.lower() or "pagination" in content.lower()
         has_error = "error" in content
         scores["composable_quality"] = sum([has_loading, has_pagination, has_error]) / 3.0
+        uses_vue_composition = any(k in content for k in ["ref(", "reactive(", "computed(", "onMounted"])
+        accepts_loader = bool(re.search(r"useListPage\s*\([^)]*(api|fetch|loader|service|list)", content, re.IGNORECASE | re.DOTALL))
+        scores["composable_reusable"] = (float(uses_vue_composition) + float(accepts_loader)) / 2.0
     else:
         scores["composable_created"] = 0.0
         scores["composable_quality"] = 0.0
+        scores["composable_reusable"] = 0.0
 
     # Check type definitions
     types_file = workspace / "src" / "types" / "index.ts"
@@ -66,9 +74,12 @@ def automated_score(workspace: Path) -> dict[str, float]:
         scores["types_created"] = 1.0
         has_interface = "interface" in content or "type" in content
         scores["types_quality"] = 1.0 if has_interface else 0.0
+        domain_hits = sum(1 for k in ["Bill", "Member", "Budget", "Pagination", "ApiResponse", "List"] if k in content)
+        scores["domain_types_coverage"] = min(domain_hits / 4.0, 1.0)
     else:
         scores["types_created"] = 0.0
         scores["types_quality"] = 0.0
+        scores["domain_types_coverage"] = 0.0
 
     # Check REFACTOR_PLAN.md
     plan_file = workspace / "REFACTOR_PLAN.md"
@@ -87,9 +98,12 @@ def automated_score(workspace: Path) -> dict[str, float]:
         has_priority = bool(re.search(r"(优先|priority|步骤|step|phase)", content, re.IGNORECASE))
         has_risk = bool(re.search(r"(风险|risk|兼容|compat)", content, re.IGNORECASE))
         scores["plan_quality"] = (1.0 if has_priority else 0.0) * 0.5 + (1.0 if has_risk else 0.0) * 0.5
+        existing_code_refs = sum(1 for k in ["request.js", "401", "exportBills", "permissions", "Options API", "Composition API"] if k in content)
+        scores["plan_uses_project_evidence"] = min(existing_code_refs / 4.0, 1.0)
     else:
         scores["plan_created"] = 0.0
         scores["plan_quality"] = 0.0
+        scores["plan_uses_project_evidence"] = 0.0
 
     return scores
 

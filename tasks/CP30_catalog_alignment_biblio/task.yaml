@@ -1,85 +1,275 @@
 task_id: CP30_catalog_alignment_biblio
 task_name: 古籍版本目录对齐：诗经版本循证比对
-version: "1.0"
-category: data_analysis
+version: '2.0'
+category: workflow
 difficulty: hard
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_03_catalog_alignment_biblio"
-source_dataset: "taskset-260408-212200"
-source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
-
-services: []
-
+tags:
+- general
+- single_turn
+- coding_plan
+- workflow
+- sandbox
+source_task_id: task_03_catalog_alignment_biblio
+source_dataset: taskset-260408-212200
+source_description: "Workflow + sandbox hybrid redesigned with claw-eval-task-designer-v2: catalog alignment service supplies target/candidates/rules/traps and submit/confirm audit evidence; hidden verifier still checks /workspace/alignment_result.json."
+services:
+  - name: catalog_alignment
+    command: python tasks/CP30_catalog_alignment_biblio/services/catalog_alignment/server.py
+    port: 9330
+    health_check: http://localhost:9330/catalog_alignment/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9330/catalog_alignment/reset
+    env:
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP30_catalog_alignment_biblio/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_NAME: catalog_alignment
 prompt:
   text: |
-    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
-    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+    古籍目录台里有《毛诗正义》目标记录、候选记录和几条历史误配案例；/workspace/fixtures/ 里也有导出的规则和候选文件。请先在目录台查目标和候选，逐条复核版本、责任者、馆藏和残卷陷阱，再把完整结果写到 /workspace/alignment_result.json。
 
-    - `/workspace/fixtures/comparison_rules.md`
-    - `/workspace/fixtures/target_record.json`
-    - `/workspace/fixtures/candidates.json`
-
-    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
-
-    请根据 comparison_rules.md 中的对齐规则，将 target_record.json 中的当前记录（毛詩正義，宋刻本）与 candidates.json 中的5条候选记录逐一比对。对每条候选执行四大核心字段比对（题名、责任者、版本、馆藏），判断对齐关系类型和置信度。将完整的比对结果写入 alignment_result.json。
+    归档前把比对结论提交到目录台并确认一次，最终回复只概述生成文件和关键判断。
   language: zh
-
-tools: []
-tool_endpoints: []
-
+tools:
+  - name: catalog_alignment_list
+    description: List records available in the catalog alignment service; use this before targeted reads.
+    input_schema:
+      type: object
+      properties:
+        kind:
+          type: string
+        tag:
+          type: string
+        limit:
+          type: integer
+          default: 20
+      required: []
+  - name: catalog_alignment_search
+    description: Search the catalog alignment service for candidate records, source notes, and trap cases.
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        kind:
+          type: string
+        max_results:
+          type: integer
+          default: 10
+      required: [query]
+  - name: catalog_alignment_get
+    description: Fetch one full service record by record_id.
+    input_schema:
+      type: object
+      properties:
+        record_id:
+          type: string
+      required: [record_id]
+  - name: catalog_alignment_cross_check
+    description: Cross-check selected records against known traps and conflicting evidence.
+    input_schema:
+      type: object
+      properties:
+        primary_id:
+          type: string
+        comparison_ids:
+          type: array
+          items:
+            type: string
+        focus:
+          type: string
+      required: []
+  - name: catalog_alignment_submit_report
+    description: Submit the working conclusion or artifact summary back to the service.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        content:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        decision:
+          type: string
+        metadata:
+          type: object
+      required: [report_id, content]
+  - name: catalog_alignment_confirm_report
+    description: Confirm the submitted conclusion after cross-checking source_ids.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        checklist:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+      required: [report_id]
+tool_endpoints:
+  - tool_name: catalog_alignment_list
+    url: http://localhost:9330/catalog_alignment/list
+    method: POST
+  - tool_name: catalog_alignment_search
+    url: http://localhost:9330/catalog_alignment/search
+    method: POST
+  - tool_name: catalog_alignment_get
+    url: http://localhost:9330/catalog_alignment/get
+    method: POST
+  - tool_name: catalog_alignment_cross_check
+    url: http://localhost:9330/catalog_alignment/cross_check
+    method: POST
+  - tool_name: catalog_alignment_submit_report
+    url: http://localhost:9330/catalog_alignment/submit
+    method: POST
+  - tool_name: catalog_alignment_confirm_report
+    url: http://localhost:9330/catalog_alignment/confirm
+    method: POST
 sandbox_files:
-  - fixtures/comparison_rules.md
-  - fixtures/target_record.json
-  - fixtures/candidates.json
-
+- fixtures/comparison_rules.md
+- fixtures/target_record.json
+- fixtures/candidates.json
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
   timeout_seconds: 600
   max_turns: 30
-
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/alignment_result.json
-  - /workspace/**/*.json
+- /workspace/alignment_result.json
+- /workspace/comparison_rules.md
+- /workspace/target_record.json
+- /workspace/candidates.json
 scoring_components: []
-
 safety_checks: []
-
 expected_actions: []
-
 judge_rubric: |
-  评估 agent 是否正确完成了古籍版本目录对齐任务。
+  ## Expected Behavior
 
-  ## 对齐正确性
-  - CAT-NLC-50001 应为 exact_match 或 same_edition（同一宋刻本国图藏品）
-  - CAT-BJ-60234 应为 related_content 或 no_relation（明刻本≠宋刻本）
-  - CAT-SH-70345 应为 same_edition 或 related_content（同为宋刻本但不同刻印者）
-  - CAT-NLC-50002 应为 same_edition（宋刻残本）
-  - CAT-JP-80456 应为 no_relation（清嘉庆刻本≠宋刻本）
+  1. Agent reads comparison_rules.md for methodology
+  2. Agent reads target_record.json (毛詩正義, 宋刻本, 国家图书馆)
+  3. Agent reads candidates.json with 5 candidates
+  4. Agent performs field-by-field comparison:
+     - CAT-NLC-50001: same title (simplified vs traditional), same author, same edition (宋刻本/国子监), same collection -> exact_match, confidence 90+
+     - CAT-BJ-60234: same title/author, DIFFERENT edition (明萬曆 vs 宋) -> no_relation
+     - CAT-SH-70345: same title, author abbreviated, same era (宋刻) but different printer (建陽坊刻 vs 國子監) -> same_edition or related_content, medium confidence
+     - CAT-NLC-50002: partial title (卷一至卷十=残本), same edition (宋刻) -> related_content (整书vs残本)
+     - CAT-JP-80456: title variant (注疏 vs 正義), DIFFERENT edition (清嘉慶 vs 宋) -> no_relation
+  5. Agent writes structured JSON output
 
-  ## 方法论
-  - 是否遵循版本一致是前提条件的核心约束
-  - 是否对四大字段逐一比对
-  - 置信度是否合理
+  ## Grading Criteria
 
-  ## 评分标准
-  - 0.9-1.0: 5条候选全部正确判断，字段比对完整
-  - 0.7-0.8: 大部分正确，1-2条有偏差但可接受
-  - 0.4-0.6: 3条以上错误或方法论有问题
-  - 0.0-0.3: 未完成或严重错误
+  - [ ] read_inputs
+  - [ ] output_created
+  - [ ] all_compared
+  - [ ] edition_rejection
+  - [ ] best_match
+  - [ ] field_details
 
+  ## LLM Judge Rubric
+
+  ### Criterion 1: 版本比对严谨性 (Weight: 35%)
+  **Score 1.0**: 严格执行版本优先规则，正确拒绝明萬曆（BJ-60234）和清嘉慶（JP-80456）版本；对同为宋刻本的候选（NLC-50001、SH-70345、NLC-50002）进一步比对刻印机构差异（國子監刊 vs 建陽坊刻）；明确指出不同朝代=不同版本系统。
+  **Score 0.75**: 正确拒绝了不同朝代版本，但对同朝代不同刻印机构的区分不够精确。
+  **Score 0.5**: 识别了明显朝代差异但对刻印机构差异关注不够。
+  **Score 0.25**: 版本比对较随意，未作为最高权重字段。
+  **Score 0.0**: 忽视版本差异。
+
+  ### Criterion 2: 四字段逐一比对完整性 (Weight: 25%)
+  **Score 1.0**: 对每条候选完成题名（處理簡繁體：詩vs诗、義vs义）、责任者（識別省略：完整三人vs僅列孔穎達）、版本（年代+刻印機構）、館藏四字段逐一比对；注意到题名变体（正義vs注疏）的区别。
+  **Score 0.75**: 完成四字段比对但个别差异分析不够深入。
+  **Score 0.5**: 比对了主要字段但遗漏了1-2个字段的系统分析。
+  **Score 0.25**: 仅做粗略比对。
+  **Score 0.0**: 未进行结构化字段比对。
+
+  ### Criterion 3: 对齐关系判定准确性 (Weight: 25%)
+  **Score 1.0**: NLC-50001判定为exact_match（高置信度）；BJ-60234和JP-80456判定为no_relation；SH-70345判定为same_edition或related_content（不同刻印地，中等置信度）；NLC-50002判定为related_content（整书vs残本关系）。
+  **Score 0.75**: 大部分判定正确，但对残本或不同刻印地的处理有偏差。
+  **Score 0.5**: 核心判定正确，边缘案例处理不当。
+  **Score 0.25**: 仅部分判定正确。
+  **Score 0.0**: 判定严重错误。
+
+  ### Criterion 4: 置信度与推理质量 (Weight: 15%)
+  **Score 1.0**: 置信度与比对结果一致——完全匹配90+、同版本不同馆60-80、不同版本10-20；推理引用了具体字段差异作为证据，使用了专业版本学术语。
+  **Score 0.75**: 置信度基本合理，推理有据但不够精确。
+  **Score 0.5**: 置信度区分不够明显。
+  **Score 0.25**: 置信度与判定不一致。
+  **Score 0.0**: 未提供有效置信度或推理。
 reference_solution: |
-  1. CAT-NLC-50001: exact_match (confidence 95+) — 简繁体差异,同一宋刻国子监本
-  2. CAT-BJ-60234: no_relation (confidence 90+) — 明万历刻本,不同版本系统
-  3. CAT-SH-70345: same_edition (confidence 60-75) — 宋刻本但刻印者不同(建阳坊刻vs国子监)
-  4. CAT-NLC-50002: same_edition (confidence 70-80) — 南宋初刊残本,可能同版不同册
-  5. CAT-JP-80456: no_relation (confidence 95+) — 清嘉庆刻本,不同版本系统
+  原始来源：taskset-260408-212200/task_03_catalog_alignment_biblio
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：A library science expert specializing in ancient Chinese bibliography must align
+  catalog records for different editions of the Classic of Poetry (Shi Jing). The task
+  requires strict adherence to bibliographic comparison rules where edition consistency
+  is the highest-weight criterion, and different dynasties or printers mean different
+  versions that cannot be aligned.
+
+
+  隐藏 verifier 主要检查项：candidate_coverage, confidence_calibrated, decision_50001, decision_50002, decision_60234, decision_70345, decision_80456, field_details_rigor, output_exists, reasoning_depth, reject_discipline, relation_enum_exact
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent reads comparison_rules.md for methodology
+  2. Agent reads target_record.json (毛詩正義, 宋刻本, 国家图书馆)
+  3. Agent reads candidates.json with 5 candidates
+  4. Agent performs field-by-field comparison:
+     - CAT-NLC-50001: same title (simplified vs traditional), same author, same edition (宋刻本/国子监), same collection -> exact_match, confidence 90+
+     - CAT-BJ-60234: same title/author, DIFFERENT edition (明萬曆 vs 宋) -> no_relation
+     - CAT-SH-70345: same title, author abbreviated, same era (宋刻) but different printer (建陽坊刻 vs 國子監) -> same_edition or related_content, medium confidence
+     - CAT-NLC-50002: partial title (卷一至卷十=残本), same edition (宋刻) -> related_content (整书vs残本)
+     - CAT-JP-80456: title variant (注疏 vs 正義), DIFFERENT edition (清嘉慶 vs 宋) -> no_relation
+  5. Agent writes structured JSON output
+
+  ## Grading Criteria
+
+  - [ ] read_inputs
+  - [ ] output_created
+  - [ ] all_compared
+  - [ ] edition_rejection
+  - [ ] best_match
+  - [ ] field_details
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: 版本比对严谨性 (Weight: 35%)
+  **Score 1.0**: 严格执行版本优先规则，正确拒绝明萬曆（BJ-60234）和清嘉慶（JP-80456）版本；对同为宋刻本的候选（NLC-50001、SH-70345、NLC-50002）进一步比对刻印机构差异（國子監刊 vs 建陽坊刻）；明确指出不同朝代=不同版本系统。
+  **Score 0.75**: 正确拒绝了不同朝代版本，但对同朝代不同刻印机构的区分不够精确。
+  **Score 0.5**: 识别了明显朝代差异但对刻印机构差异关注不够。
+  **Score 0.25**: 版本比对较随意，未作为最高权重字段。
+  **Score 0.0**: 忽视版本差异。
+
+  ### Criterion 2: 四字段逐一比对完整性 (Weight: 25%)
+  **Score 1.0**: 对每条候选完成题名（處理簡繁體：詩vs诗、義vs义）、责任者（識別省略：完整三人vs僅列孔穎達）、版本（年代+刻印機構）、館藏四字段逐一比对；注意到题名变体（正義vs注疏）的区别。
+  **Score 0.75**: 完成四字段比对但个别差异分析不够深入。
+  **Score 0.5**: 比对了主要字段但遗漏了1-2个字段的系统分析。
+  **Score 0.25**: 仅做粗略比对。
+  **Score 0.0**: 未进行结构化字段比对。
+
+  ### Criterion 3: 对齐关系判定准确性 (Weight: 25%)
+  **Score 1.0**: NLC-50001判定为exact_match（高置信度）；BJ-60234和JP-80456判定为no_relation；SH-70345判定为same_edition或related_content（不同刻印地，中等置信度）；NLC-50002判定为related_content（整书vs残本关系）。
+  **Score 0.75**: 大部分判定正确，但对残本或不同刻印地的处理有偏差。
+  **Score 0.5**: 核心判定正确，边缘案例处理不当。
+  **Score 0.25**: 仅部分判定正确。
+  **Score 0.0**: 判定严重错误。
+
+  ### Criterion 4: 置信度与推理质量 (Weight: 15%)
+  **Score 1.0**: 置信度与比对结果一致——完全匹配90+、同版本不同馆60-80、不同版本10-20；推理引用了具体字段差异作为证据，使用了专业版本学术语。
+  **Score 0.75**: 置信度基本合理，推理有据但不够精确。
+  **Score 0.5**: 置信度区分不够明显。
+  **Score 0.25**: 置信度与判定不一致。
+  **Score 0.0**: 未提供有效置信度或推理。
+primary_dimensions:
+- completion
+- robustness
+- communication

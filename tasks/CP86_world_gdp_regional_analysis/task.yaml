@@ -1,0 +1,62 @@
+# provenance:
+#   themis_dataset: taskset-260424-pinchbench-v2rc2
+#   themis_task_id: task_csv_gdp_regions
+#   themis_rank_original: 55
+#   themis_metrics: { std_trim: 0.370, range_trim: 0.915, mean_trim: 0.561 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP86_world_gdp_regional_analysis
+task_name: "全球 GDP 区域分析（CP86 / 源 taskset-260424-pinchbench-v2rc2:task_csv_gdp_regions）"
+version: "1.0"
+category: data_analysis
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_csv_gdp_regions"
+source_dataset: "taskset-260424-pinchbench-v2rc2"
+source_description: "PinchBench top100 rank 55（std_trim 0.370）。Workspace WS2 数据分析 + 业务知识（地理常识）。verifier 8 个隐藏锚点（8 个区域识别 / 各区代表性国家 / 主导区域 / 平均 GDP / 内部差距 / 边界案例如 Russia/Turkey / 总结段）。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/world_gdp_2014.csv 是各国 GDP 数据（没有区域列）。
+    按你对世界地理的认识把每个国家归到一个区域，做一份区域 GDP 分析报告
+    给我，写到 /workspace/gdp_regions_report.md。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/world_gdp_2014.csv
+
+sandbox_grader_files:
+  - fixtures/verify_gdp_regions.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_gdp_regions.py
+
+env_snapshot_files:
+  - /workspace/gdp_regions_report.md
+
+environment:
+  timeout_seconds: 480
+  max_turns: 14
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward gdp_regions_report.md categorizing 222 countries into 8 regions (North America/Europe/East Asia & Pacific/South Asia/Latin America & Caribbean/Middle East & North Africa/Sub-Saharan Africa/Central Asia & Caucasus), with regional GDP totals + percentage shares + top 3 economies per region (US/Germany/China/India/Brazil/Saudi Arabia/Nigeria/Kazakhstan), dominant top-3 regions (~75-80% share), avg GDP per country comparison (NA highest / SSA lowest), internal disparity ratio per region, borderline cases (Russia/Turkey) noted, and a summary paragraph."
+
+reference_solution: |
+  Read csv. Map each country to one of 8 regions using geography. Group by
+  region, sum GDP, compute percentage of world total. Top 3 per region.
+  Average GDP per country per region. Disparity = max/min ratio per region.
+  Note Russia (transcontinental, usually Europe) + Turkey (similar) as
+  borderline cases. Write
+  /workspace/gdp_regions_report.md with sections + summary.
+
+primary_dimensions: [completion, communication, safety]

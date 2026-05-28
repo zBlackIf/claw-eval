@@ -1,0 +1,74 @@
+# provenance:
+#   themis_dataset: taskset-260427-195223
+#   themis_task_id: task_93_mobile_video_page
+#   themis_rank_original: 67
+#   themis_metrics: { std_trim: 0.346, range_trim: 0.800, mean_trim: 0.800 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP96_mobile_video_operation_page
+task_name: "移动端操作视频页面（CP96 / 源 taskset-260427-195223:task_93_mobile_video_page）"
+version: "1.0"
+category: coding
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_93_mobile_video_page"
+source_dataset: "taskset-260427-195223"
+source_description: "PinchBench top100 rank 67（std_trim 0.346）。Workspace WS2 Vue 3 + TS 前端组件。verifier 6 个隐藏锚点（vue 页面创建 / <video> 标签 / fullscreen API / v-for 视频列表 / TS 类型 / UnoCSS 样式）。"
+
+services: []
+
+prompt:
+  text: |
+    mobile 端要加一个操作视频页面。已有的 API 定义在 /workspace/fixtures/src/api/
+    video.ts，技术栈见 package.json。按 mobile 路由习惯把页面文件写到
+    /workspace/src/pages/(mobile)/video/[id].vue。视频要能播放、点击自动全屏。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/package.json
+  - fixtures/src/api/video.ts
+
+sandbox_grader_files:
+  - fixtures/verify_video_page.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_video_page.py
+
+environment:
+  timeout_seconds: 720
+  max_turns: 16
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a Vue 3 + TS page at src/pages/(mobile)/video/[id].vue with native <video> element, requestFullscreen API on play (autofullscreen behavior), v-for video list rendering, TypeScript typing via VideoItem from api/video.ts, UnoCSS or class utility styling, top nav (back+title+close), main player + info bar."
+
+reference_solution: |
+  Write src/pages/(mobile)/video/[id].vue:
+  <script setup lang="ts">
+  import { ref } from 'vue'
+  import { getVideoList, type VideoItem } from '@/api/video'
+  const current = ref<VideoItem | null>(null)
+  const videos = ref<VideoItem[]>([])
+  const player = ref<HTMLVideoElement | null>(null)
+  function play() {
+    player.value?.requestFullscreen()
+    player.value?.play()
+  }
+  </script>
+  <template>
+    <header un-flex ...><back/><span>操作视频</span><close/></header>
+    <video ref="player" :src="current?.url" :poster="current?.cover" />
+    <div>{{ current?.title }} · {{ current?.duration }}</div>
+    <div v-for="v in videos" @click="current = v">
+      <img :src="v.thumb" /><div>{{ v.title }}</div>
+    </div>
+  </template>
+
+primary_dimensions: [completion, communication, safety]

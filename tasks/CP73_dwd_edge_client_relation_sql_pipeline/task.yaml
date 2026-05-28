@@ -1,0 +1,175 @@
+# provenance:
+#   themis_dataset: taskset-260427-121234
+#   themis_task_id: task_14_sql_edge_client_relation
+#   themis_rank_original: 38
+#   themis_metrics: { std_trim: 0.392, range_trim: 0.944, mean_trim: 0.472 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP73_dwd_edge_client_relation_sql_pipeline
+task_name: "DWD 层边-PP 客户关系 SQL（CP73 / 源 taskset-260427-121234:task_14_sql_edge_client_relation）"
+version: "1.0"
+category: coding
+difficulty: hard
+tags: [general, service_assisted, sandbox]
+
+source_task_id: "task_14_sql_edge_client_relation"
+source_dataset: "taskset-260427-121234"
+source_description: "Workspace-primary SQL task with auxiliary warehouse_catalog service added per claw-eval-task-designer-v2: service supplies schema, lineage, edge/node traps, and submit/confirm audit evidence while hidden verifier remains the main SQL check."
+
+services:
+  - name: warehouse_catalog
+    command: python tasks/CP73_dwd_edge_client_relation_sql_pipeline/services/warehouse_catalog/server.py
+    port: 9373
+    health_check: http://localhost:9373/warehouse_catalog/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9373/warehouse_catalog/reset
+    env:
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP73_dwd_edge_client_relation_sql_pipeline/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_NAME: warehouse_catalog
+
+prompt:
+  text: |
+    DWD SQL 仍然写到 /workspace/dwd_gu_user_gdb_edge_client_to_meta.sql。数仓目录服务里有表结构、字段口径、血缘说明和几个易混边/点关系样例，先查目录并复核后再按 /workspace/fixtures/requirements.md 落 SQL。
+
+    交付前把 SQL 口径说明提交并确认到目录服务，最终回复概述文件位置。
+  language: zh
+
+tools:
+  - name: warehouse_catalog_list
+    description: List records available in the warehouse catalog service; use this before targeted reads.
+    input_schema:
+      type: object
+      properties:
+        kind:
+          type: string
+        tag:
+          type: string
+        limit:
+          type: integer
+          default: 20
+      required: []
+  - name: warehouse_catalog_search
+    description: Search the warehouse catalog service for candidate records, source notes, and trap cases.
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        kind:
+          type: string
+        max_results:
+          type: integer
+          default: 10
+      required: [query]
+  - name: warehouse_catalog_get
+    description: Fetch one full service record by record_id.
+    input_schema:
+      type: object
+      properties:
+        record_id:
+          type: string
+      required: [record_id]
+  - name: warehouse_catalog_cross_check
+    description: Cross-check selected records against known traps and conflicting evidence.
+    input_schema:
+      type: object
+      properties:
+        primary_id:
+          type: string
+        comparison_ids:
+          type: array
+          items:
+            type: string
+        focus:
+          type: string
+      required: []
+  - name: warehouse_catalog_submit_report
+    description: Submit the working conclusion or artifact summary back to the service.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        content:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        decision:
+          type: string
+        metadata:
+          type: object
+      required: [report_id, content]
+  - name: warehouse_catalog_confirm_report
+    description: Confirm the submitted conclusion after cross-checking source_ids.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        checklist:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+      required: [report_id]
+tool_endpoints:
+  - tool_name: warehouse_catalog_list
+    url: http://localhost:9373/warehouse_catalog/list
+    method: POST
+  - tool_name: warehouse_catalog_search
+    url: http://localhost:9373/warehouse_catalog/search
+    method: POST
+  - tool_name: warehouse_catalog_get
+    url: http://localhost:9373/warehouse_catalog/get
+    method: POST
+  - tool_name: warehouse_catalog_cross_check
+    url: http://localhost:9373/warehouse_catalog/cross_check
+    method: POST
+  - tool_name: warehouse_catalog_submit_report
+    url: http://localhost:9373/warehouse_catalog/submit
+    method: POST
+  - tool_name: warehouse_catalog_confirm_report
+    url: http://localhost:9373/warehouse_catalog/confirm
+    method: POST
+
+sandbox_files:
+  - fixtures/requirements.md
+
+sandbox_grader_files:
+  - fixtures/verify_dwd_sql.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_dwd_sql.py
+
+env_snapshot_files:
+  - /workspace/dwd_gu_user_gdb_edge_client_to_meta.sql
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a substantive SQL file dwd_gu_user_gdb_edge_client_to_meta.sql with: two JOINs (source_node→node_id, target_node→node_id), filter source.node_type='edge_pp_client' AND target.node_type='pp_client', recent_time computed as GREATEST/MAX of 3 timestamps with FROM_UNIXTIME conversion, json_value derived via merge (CONCAT/JSON_ARRAY) and unx_value via GREATEST/MAX."
+
+reference_solution: |
+  Read requirements.md. Write dwd_gu_user_gdb_edge_client_to_meta.sql:
+  SELECT ... FROM edge_table e
+  JOIN node_table s ON s.node_id = e.source_node AND s.node_type='edge_pp_client'
+  JOIN node_table t ON t.node_id = e.target_node AND t.node_type='pp_client'
+  with recent_time = FROM_UNIXTIME(GREATEST(s.update_ts, t.update_ts, e.update_ts))
+  and json_value = CONCAT(s.json_attr, ',', t.json_attr) (or similar merge)
+  and unx_value = GREATEST(s.unx_value, t.unx_value).
+
+primary_dimensions: [completion, communication, safety]

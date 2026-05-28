@@ -1,36 +1,28 @@
 {
-  "hostname": "prod-gateway-01",
-  "os": "Ubuntu 22.04.3 LTS",
-  "kernel": "5.15.0-91-generic",
-  "uptime_hours": 847,
-  "memory_total_gb": 16,
-  "memory_used_gb": 11.2,
-  "cpu_cores": 8,
-  "load_avg": [2.34, 1.89, 1.56],
-  "disk_usage_percent": 67,
-  "network": {
-    "eth0": {
-      "ip": "10.0.1.15",
-      "mask": "255.255.255.0",
-      "gateway": "10.0.1.1"
+  "hostname": "liudi-desktop",
+  "os": "Ubuntu 22.04",
+  "cpu": "AMD Ryzen 9 7945HX",
+  "ram_gb": 125,
+  "gpu": "RTX 5090 D 32GB",
+  "openclaw_installations": [
+    {
+      "path": "~/.openclaw",
+      "version": "0.8.3",
+      "gateway_port": 18789,
+      "bind_address": "0.0.0.0",
+      "status": "stopped"
     }
-  },
-  "openclaw_version": "0.9.2",
-  "openclaw_pid": null,
-  "openclaw_port": 8443,
-  "openclaw_config": "/opt/openclaw/config/gateway.yaml",
-  "listening_ports": [
-    {"port": 22, "process": "sshd", "bind": "0.0.0.0"},
-    {"port": 80, "process": "nginx", "bind": "0.0.0.0"},
-    {"port": 443, "process": "nginx", "bind": "0.0.0.0"},
-    {"port": 8443, "process": "node", "bind": "0.0.0.0", "note": "orphaned process from previous crash"}
   ],
-  "last_restart": "2026-04-15T03:22:00Z",
-  "certificates": {
-    "gateway_tls": {
-      "path": "/opt/openclaw/certs/server.pem",
-      "expires": "2026-06-01T00:00:00Z",
-      "issuer": "Let's Encrypt"
-    }
+  "local_models": [
+    {"name": "bge-m3", "port": 8081, "type": "embedding"},
+    {"name": "Qwen3-1.7B", "port": 8082, "type": "chat"},
+    {"name": "Qwen3-4B", "port": 8083, "type": "chat"}
+  ],
+  "systemd_services": ["llama-embedding", "llama-chat", "llama-chat-4b"],
+  "hermes_config": {
+    "primary_model": "glm-5",
+    "provider": "zai",
+    "fallback_model": "ark-code-latest",
+    "fallback_provider": "volcano"
   }
 }

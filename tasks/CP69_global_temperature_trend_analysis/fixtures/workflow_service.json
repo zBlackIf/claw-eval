@@ -1,0 +1,243 @@
+[
+  {
+    "record_id": "brief:task-context",
+    "kind": "brief",
+    "title": "Global temperature trend analysis with regression-segment, milestone-year, baseline, and source-mix traps.",
+    "content": "Task CP69_global_temperature_trend_analysis: Global temperature trend analysis with regression-segment, milestone-year, baseline, and source-mix traps. Use list/search/get/cross_check before submit/confirm; workspace artifact remains required.",
+    "tags": [
+      "brief",
+      "workflow"
+    ],
+    "metadata": {
+      "task_id": "CP69_global_temperature_trend_analysis",
+      "service": "climate_data",
+      "mode": "workflow"
+    }
+  },
+  {
+    "record_id": "source:global_temperature.csv",
+    "kind": "source",
+    "title": "Workspace fixture export: global_temperature.csv",
+    "content": "Source,Year,Mean\ngcag,1850-01,-0.6746\ngcag,1850-02,-0.3334\ngcag,1850-03,-0.5913\ngcag,1850-04,-0.5887\ngcag,1850-05,-0.5088\ngcag,1850-06,-0.3442\ngcag,1850-07,-0.1598\ngcag,1850-08,-0.2077\ngcag,1850-09,-0.3847\ngcag,1850-10,-0.5331\ngcag,1850-11,-0.2825\ngcag,1850-12,-0.4037\ngcag,1851-01,-0.2007\ngcag,1851-02,-0.4693\ngcag,1851-03,-0.6461\ngcag,1851-04,-0.5421\ngcag,1851-05,-0.1976\ngcag,1851-06,-0.1367\ngcag,1851-07,-0.0968\ngcag,1851-08,-0.1018\ngcag,1851-09,-0.0912\ngcag,1851-10,-0.0084\ngcag,1851-11,-0.0819\ngcag,1851-12,-0.2275\ngcag,1852-01,-0.3751\ngcag,1852-02,-0.4767\ngcag,1852-03,-0.5598\ngcag,1852-04,-0.5854\ngcag,1852-05,-0.1274\ngcag,1852-06,-0.0837\ngcag,1852-07,0.005\ngcag,1852-08,-0.1356\ngcag,1852-09,-0.0019\ngcag,1852-10,-0.1724\ngcag,1852-11,-0.3052\ngcag,1852-12,0.0654\ngcag,1853-01,-0.2326\ngcag,1853-02,-0.4037\ngcag,1853-03,-0.2804\ngcag,1853-04,-0.3863\ngcag,1853-05,-0.2679\ngcag,1853-06,-0.1424\ngcag,1853-07,-0.0834\ngcag,1853-08,-0.0566\ngcag,1853-09,-0.2503\ngcag,1853-10,-0.3918\ngcag,1853-11,-0.4114\ngcag,1853-12,-0.3374\ngcag,1854-01,-0.3814\ngcag,1854-02,-0.3611\ngcag,1854-03,-0.2427\ngcag,1854-04,-0.3338\ngcag,1854-05,-0.2895\ngcag,1854-06,-0.299\ngcag,1854-07,-0.1786\ngcag,1854-08,-0.2394\ngcag,1854-09,-0.2167\ngcag,1854-10,-0.0953\ngcag,1854-11,-0.4103\ngcag,1854-12,-0.4504\ngcag,1855-01,-0.1592\ngcag,1855-02,-0.3134\ngcag,1855-03,-0.344\ngcag,1855-04,-0.2182\ngcag,1855-05,-0.3873\ngcag,1855-06,-0.333\ngcag,1855-07,-0.333\ngcag,1855-08,-0.1995\ngcag,1855-09,-0.2707\ngcag,1855-10,-0.1954\ngcag,1855-11,-0.3893\ngcag,1855-12,-0.4199\ngcag,1856-01,-0.0756\ngcag,1856-02,-0.3371\ngcag,1856-03,-0.3577\ngcag,1856-04,-0.3159\ngcag,1856-05,-0.2851\ngcag,1856-06,-0.2142\ngcag,1856-07,-0.2247\ngcag,1856-08,-0.2377\ngcag,1856-09,-0.3882\ngcag,1856-10,-0.4381\ngcag,1856-11,-0.5523\ngcag,1856-12,-0.4175\ngcag,1857-01,-0.4948\ngcag,1857-02,-0.4349\ngcag,1857-03,-0.4786\ngcag,1857-04,-0.6443\ngcag,1857-05,-0.6587\ngcag,1857-06,-0.3041\ngcag,1857-07,-0.4114\ngcag,1857-08,-0.369\ngcag,1857-09,-0.3797\ngcag,1857-10,-0.4726\ngcag,1857-11,-0.6851\ngcag,1857-12,-0.2735\ngcag,1858-01,-0.2955\ngcag,1858-02,-0.4769\ngcag,1858-03,-0.5477\ngcag,1858-04,-0.428\ngcag,1858-05,-0.5321\ngcag,1858-06,-0.3795\ngcag,1858-07,-0.3356\ngcag,1858-08,-0.2775\ngcag,1858-09,-0.2832\ngcag,1858-10,-0.2887\ngcag,1858-11,-0.3655\ngcag,1858-12,-0.455\ngcag,1859-01,-0.3815\ngcag,1859-02,-0.3435\ngcag,1859-03,-0.3137\ngcag,1859-04,-0.1572\ngcag,1859-05,-0.1525\ngcag,1859-06,-0.2496\ngcag,1859-07,-0.3121\ngcag,1859-08,-0.2446\ngcag,1859-09,-0.3939\ngcag,1859-10,-0.2547\ngcag,1859-11,-0.2875\ngcag,1859-12,-0.2844\ngcag,1860-01,-0.3906\ngcag,1860-02,-0.4683\ngcag,1860-03,-0.7865\ngcag,1860-04,-0.3061\ngcag,1860-05,-0.3636\ngcag,1860-06,-0.2115\ngcag,1860-07,-0.1848\ngcag,1860-08,-0.1142\ngcag,1860-09,-0.1313\ngcag,1860-10,-0.346\ngcag,1860-11,-0.6049\ngcag,1860-12,-0.7742\ngcag,1861-01,-0.918\ngcag,1861-02,-0.6246\ngcag,1861-03,-0.4157\ngcag,1861-04,-0.3862\ngcag,1861-05,-0.6603\ngcag,1861-06,-0.2514\ngcag,1861-07,-0.2967\ngcag,1861-08,-0.0411\ngcag,1861-09,-0.2703\ngcag,1861-10,-0.4766\ngcag,1861-11,-0.4576\ngcag,1861-12,-0.3509\ngcag,1862-01,-0.8248\ngcag,1862-02,-0.7155\ngcag,1862-03,-0.5354\ngcag,1862-04,-0.5221\ngcag,1862-05,-0.3475\ngcag,1862-06,-0.3066\ngcag,1862-07,-0.3449\ngcag,1862-08,-0.4562\ngcag,1862-09,-0.3624\ngcag,1862-10,-0.4487\ngcag,1862-11,-0.6778\ngcag,1862-12,-0.8945\ngcag,1863-01,-0.0763\ngcag,1863-02,-0.2495\ngcag,1863-03,-0.355\ngcag,1863-04,-0.2883\ngcag,1863-05,-0.3837\ngcag,1863-06,-0.3683\ngcag,1863-07,-0.3123\ngcag,1863-08,-0.2974\ngcag,1863-09,-0.352\ngcag,1863-10,-0.5043\ngcag,1863-11,-0.4406\ngcag,1863-12,-0.5032\ngcag,1864-01,-0.8532\ngcag,1864-02,-0.5934\ngcag,1864-03,-0.4994\ngcag,1864-04,-0.5436\ngcag,1864-05,-0.3238\ngcag,1864-06,-0.1125\ngcag,1864-07,-0.2596\ngcag,1864-08,-0.3079\ngcag,1864-09,-0.4425\ngcag,1864-10,-0.6029\ngcag,1864-11,-0.4562\ngcag,1864-12,-0.5903\ngcag,1865-01,-0.1761\ngcag,1865-02,-0.4667\ngcag,1865-03,-0.6612\ngcag,1865-04,-0.4482\ngcag,1865-05,-0.3775\ngcag,1865-06,-0.1952\ngcag,1865-07,-0.2152\ngcag,1865-08,-0.2118\ngcag,1865-09,-0.1709\ngcag,1865-10,-0.2694\ngcag,1865-11,-0.3371\ngcag,1865-12,-0.4606\ngcag,1866-01,-0.1321\ngcag,1866-02,-0.4011\ngcag,1866-03,-0.6822\ngcag,1866-04,-0.4544\ngcag,1866-05,-0.5728\ngcag,1866-06,-0.0981\ngcag,1866-07,-0.0083\ngcag,1866-08,-0.2495\ngcag,1866-09,-0.3778\ngcag,1866-10,-0.4206\ngcag,1866-11,-0.2983\ngcag,1866-12,-0.4004\ngcag,1867-01,-0.4052\ngcag,1867-02,-0.3536\ngcag,1867-03,-0.6812\ngcag,1867-04,-0.4213\ngcag,1867-05,-0.5748\ngcag,1867-06,-0.3504\ngcag,1867-07,-0.2528\ngcag,1867-08,-0.3305\ngcag,1867-09,-0.1479\ngcag,1867-10,-0.1253\ngcag,1867-11,-0.1957\ngcag,1867-12,-0.4454\ngcag,1868-01,-0.6849\ngcag,1868-02,-0.6933\ngcag,1868-03,-0.3339\ngcag,1868-04,-0.363\ngcag,1868-05,-0.2855\ngcag,1868-06,-0.2969\ngcag,1868-07,-0.0596\ngcag,1868-08,-0.1933\ngcag,1868-09,-0.3448\ngcag,1868-10,-0.2297\ngcag,1868-11,-0.4232\ngcag,1868-12,-0.314\ngcag,1869-01,-0.3357\ngcag,1869-02,0.1313\ngcag,1869-03,-0.626\ngcag,1869-04,-0.4057\ngcag,1869-05,-0.31\ngcag,1869-06,-0.3845\ngcag,1869-07,-0.4171\ngcag,1869-08,-0.1679\ngcag,1869-09,-0.1716\ngcag,1869-10,-0.2935\ngcag,1869-11,-0.2818\ngcag,1869-12,-0.5366\ngcag,1870-01,-0.2111\ngcag,1870-02,-0.4549\ngcag,1870-03,-0.4983\ngcag,1870-04,-0.3329\ngcag,1870-05,-0.2977\ngcag,1870-06,-0.2312\ngcag,1870-07,-0.0734\ngcag,1870-08,-0.2582\ngcag,1870-09,-0.2023\ngcag,1870-10,-0.4429\ngcag,1870-11,-0.2658\ngcag,1870-12,-0.6664\ngcag,1871-01,-0.5583\ngcag,1871-02,-0.6721\ngcag,1871-03,-0.1709\ngcag,1871-04,-0.2219\ngcag,1871-05,-0.3622\ngcag,1871-06,-0.2864\ngcag,1871-07,-0.0824\ngcag,1871-08,-0.3224\ngcag,1871-09,-0.3611\ngcag,1871-10,-0.3733\ngcag,1871-11,-0.5227\ngcag,1871-12,-0.489\ngcag,1872-01,-0.5988\ngcag,1872-02,-0.6208\ngcag,1872-03,-0.5237\ngcag,1872-04,-0.3854\ngcag,1872-05,-0.1415\ngcag,1872-06,-0.2794\ngcag,1872-07,-0.1463\ngcag,1872-08,0.0086\ngcag,1872-09,-0.1765\ngcag,1872-10,-0.2035\ngcag,1872-11,-0.322\ngcag,1872-12,-0.548\ngcag,1873-01,-0.2617\ngcag,1873-02,-0.2825\ngcag,1873-03,-0.4087\ngcag,1873-04,-0.4806\ngcag,1873-05,-0.3509\ngcag,1873-06,-0.3205\ngcag,1873-07,-0.1757\ngcag,1873-08,-0.2278\ngcag,1873-09,-0.4053\ngcag,1873-10,-0.3906\ngcag,1873-11,-0.4633\ngcag,1873-12,-0.3279\ngcag,1874-01,-0.1985\ngcag,1874-02,-0.4384\ngcag,1874-03,-0.6729\ngcag,1874-04,-0.437\ngcag,1874-05,-0.334\ngcag,1874-06,-0.5658\ngcag,1874-07,-0.1671\ngcag,1874-08,-0.2961\ngcag,1874-09,-0.1682\ngcag,1874-10,-0.4712\ngcag,1874-11,-0.4177\ngcag,1874-12,-0.312\ngcag,1875-01,-0.5711\ngcag,1875-02,-0.4793\ngcag,1875-03,-0.5643\ngcag,1875-04,-0.3581\ngcag,1875-05,-0.2728\ngcag,1875-06,-0.28\ngcag,1875-07,-0.1821\ngcag,1875-08,-0.2465\ngcag,1875-09,-0.2343\ngcag,1875-10,-0.2332\ngcag,1875-11,-0.5092\ngcag,1875-12,-0.5767\ngcag,1876-01,-0.5137\ngcag,1876-02,-0.3374\ngcag,1876-03,-0.3623\ngcag,1876-04,-0.4243\ngcag,1876-05,-0.5904\ngcag,1876-06,-0.3523\ngcag,1876-07,-0.2137\ngcag,1876-08,-0.3272\ngcag,1876-09,-0.4178\ngcag,1876-10,-0.2998\ngcag,1876-11,-0.6068\ngcag,1876-12,-0.6434\ngcag,1877-01,-0.4111\ngcag,1877-02,-0.2093\ngcag,1877-03,-0.0914\ngcag,1877-04,-0.3459\ngcag,1877-05,-0.4113\ngcag,1877-06,-0.1382\ngcag,1877-07,-0.0163\ngcag,1877-08,0.2107\ngcag,1877-09,0.1076\ngcag,1877-10,0.1133\ngcag,1877-11,0.034\ngcag,1877-12,-0.0556\ngcag,1878-01,-0.0698\ngcag,1878-02,0.2294\ngcag,1878-03,0.3613\ngcag,1878-04,0.1885\ngcag,1878-05,-0.1224\ngcag,1878-06,0.0103\ngcag,1878-07,-0.0772\ngcag,1878-08,-0.0466\ngcag,1878-09,0.0208\ngcag,1878-10,-0.165\ngcag,1878-11,-0.1426\ngcag,1878-12,-0.3226\ngcag,1879-01,-0.2378\ngcag,1879-02,-0.266\ngcag,1879-03,-0.2584\ngcag,1879-04,-0.3824\ngcag,1879-05,-0.3439\ngcag,1879-06,-0.2833\ngcag,1879-07,-0.2641\ngcag,1879-08,-0.2653\ngcag,1879-09,-0.2356\ngcag,1879-10,-0.1591\ngcag,1879-11,-0.3973\ngcag,1879-12,-0.5505\nGISTEMP,1880-01,-0.2\ngcag,1880-01,-0.3939\nGISTEMP,1880-02,-0.25\ngcag,1880-02,-0.4499\nGISTEMP,1880-03,-0.09\ngcag,1880-03,-0.1944\nGISTEMP,1880-04,-0.16\ngcag,1880-04,-0.338\nGISTEMP,1880-05,-0.09\ngcag,1880-05,-0.3254\nGISTEMP,1880-06,-0.22\ngcag,1880-06,-0.3805\nGISTEMP,1880-07,-0.2\ngcag,1880-07,-0.3148\nGISTEMP,1880-08,-0.09\ngcag,1880-08,-0.1072\nGISTEMP,1880-09,-0.15\ngcag,1880-09,-0.297\nGISTEMP,1880-10,-0.22\ngcag,1880-10,-0.3909\nGISTEMP,1880-11,-0.22\ngcag,1880-11,-0.\n\n[... clipped 64100 characters; full file remains in /workspace/fixtures ...]\n\nMP,2007-12,0.5\ngcag,2007-12,0.419\nGISTEMP,2008-01,0.3\ngcag,2008-01,0.2102\nGISTEMP,2008-02,0.38\ngcag,2008-02,0.2693\nGISTEMP,2008-03,0.75\ngcag,2008-03,0.6137\nGISTEMP,2008-04,0.54\ngcag,2008-04,0.4481\nGISTEMP,2008-05,0.5\ngcag,2008-05,0.4325\nGISTEMP,2008-06,0.49\ngcag,2008-06,0.384\nGISTEMP,2008-07,0.6\ngcag,2008-07,0.5341\nGISTEMP,2008-08,0.46\ngcag,2008-08,0.4528\nGISTEMP,2008-09,0.61\ngcag,2008-09,0.548\nGISTEMP,2008-10,0.67\ngcag,2008-10,0.591\nGISTEMP,2008-11,0.68\ngcag,2008-11,0.6322\nGISTEMP,2008-12,0.54\ngcag,2008-12,0.4721\nGISTEMP,2009-01,0.65\ngcag,2009-01,0.5903\nGISTEMP,2009-02,0.52\ngcag,2009-02,0.4713\nGISTEMP,2009-03,0.53\ngcag,2009-03,0.4468\nGISTEMP,2009-04,0.61\ngcag,2009-04,0.5281\nGISTEMP,2009-05,0.65\ngcag,2009-05,0.5503\nGISTEMP,2009-06,0.64\ngcag,2009-06,0.6235\nGISTEMP,2009-07,0.74\ngcag,2009-07,0.6807\nGISTEMP,2009-08,0.69\ngcag,2009-08,0.6221\nGISTEMP,2009-09,0.71\ngcag,2009-09,0.6818\nGISTEMP,2009-10,0.66\ngcag,2009-10,0.6202\nGISTEMP,2009-11,0.79\ngcag,2009-11,0.7061\nGISTEMP,2009-12,0.67\ngcag,2009-12,0.6402\nGISTEMP,2010-01,0.75\ngcag,2010-01,0.7106\nGISTEMP,2010-02,0.83\ngcag,2010-02,0.7901\nGISTEMP,2010-03,0.92\ngcag,2010-03,0.8602\nGISTEMP,2010-04,0.85\ngcag,2010-04,0.8335\nGISTEMP,2010-05,0.75\ngcag,2010-05,0.7149\nGISTEMP,2010-06,0.68\ngcag,2010-06,0.645\nGISTEMP,2010-07,0.63\ngcag,2010-07,0.6174\nGISTEMP,2010-08,0.67\ngcag,2010-08,0.6146\nGISTEMP,2010-09,0.63\ngcag,2010-09,0.5643\nGISTEMP,2010-10,0.71\ngcag,2010-10,0.6421\nGISTEMP,2010-11,0.81\ngcag,2010-11,0.7346\nGISTEMP,2010-12,0.45\ngcag,2010-12,0.437\nGISTEMP,2011-01,0.52\ngcag,2011-01,0.4568\nGISTEMP,2011-02,0.48\ngcag,2011-02,0.4291\nGISTEMP,2011-03,0.65\ngcag,2011-03,0.5564\nGISTEMP,2011-04,0.64\ngcag,2011-04,0.6022\nGISTEMP,2011-05,0.53\ngcag,2011-05,0.4434\nGISTEMP,2011-06,0.62\ngcag,2011-06,0.5482\nGISTEMP,2011-07,0.7\ngcag,2011-07,0.6449\nGISTEMP,2011-08,0.75\ngcag,2011-08,0.651\nGISTEMP,2011-09,0.56\ngcag,2011-09,0.5379\nGISTEMP,2011-10,0.65\ngcag,2011-10,0.5763\nGISTEMP,2011-11,0.58\ngcag,2011-11,0.5113\nGISTEMP,2011-12,0.59\ngcag,2011-12,0.4948\nGISTEMP,2012-01,0.47\ngcag,2012-01,0.3696\nGISTEMP,2012-02,0.49\ngcag,2012-02,0.4647\nGISTEMP,2012-03,0.56\ngcag,2012-03,0.421\nGISTEMP,2012-04,0.72\ngcag,2012-04,0.6105\nGISTEMP,2012-05,0.78\ngcag,2012-05,0.6589\nGISTEMP,2012-06,0.64\ngcag,2012-06,0.6294\nGISTEMP,2012-07,0.58\ngcag,2012-07,0.5678\nGISTEMP,2012-08,0.66\ngcag,2012-08,0.6449\nGISTEMP,2012-09,0.72\ngcag,2012-09,0.6476\nGISTEMP,2012-10,0.79\ngcag,2012-10,0.7322\nGISTEMP,2012-11,0.78\ngcag,2012-11,0.721\nGISTEMP,2012-12,0.53\ngcag,2012-12,0.4637\nGISTEMP,2013-01,0.7\ngcag,2013-01,0.6078\nGISTEMP,2013-02,0.62\ngcag,2013-02,0.5265\nGISTEMP,2013-03,0.67\ngcag,2013-03,0.5829\nGISTEMP,2013-04,0.53\ngcag,2013-04,0.5748\nGISTEMP,2013-05,0.6\ngcag,2013-05,0.5569\nGISTEMP,2013-06,0.69\ngcag,2013-06,0.6593\nGISTEMP,2013-07,0.59\ngcag,2013-07,0.5892\nGISTEMP,2013-08,0.7\ngcag,2013-08,0.6352\nGISTEMP,2013-09,0.76\ngcag,2013-09,0.7222\nGISTEMP,2013-10,0.69\ngcag,2013-10,0.6504\nGISTEMP,2013-11,0.83\ngcag,2013-11,0.77\nGISTEMP,2013-12,0.7\ngcag,2013-12,0.6076\nGISTEMP,2014-01,0.76\ngcag,2014-01,0.6696\nGISTEMP,2014-02,0.55\ngcag,2014-02,0.4908\nGISTEMP,2014-03,0.78\ngcag,2014-03,0.6945\nGISTEMP,2014-04,0.8\ngcag,2014-04,0.7363\nGISTEMP,2014-05,0.86\ngcag,2014-05,0.7371\nGISTEMP,2014-06,0.67\ngcag,2014-06,0.6175\nGISTEMP,2014-07,0.58\ngcag,2014-07,0.581\nGISTEMP,2014-08,0.83\ngcag,2014-08,0.7338\nGISTEMP,2014-09,0.87\ngcag,2014-09,0.7568\nGISTEMP,2014-10,0.8\ngcag,2014-10,0.7424\nGISTEMP,2014-11,0.67\ngcag,2014-11,0.63\nGISTEMP,2014-12,0.78\ngcag,2014-12,0.6848\nGISTEMP,2015-01,0.87\ngcag,2015-01,0.74\nGISTEMP,2015-02,0.9\ngcag,2015-02,0.7818\nGISTEMP,2015-03,0.96\ngcag,2015-03,0.7953\nGISTEMP,2015-04,0.75\ngcag,2015-04,0.7009\nGISTEMP,2015-05,0.79\ngcag,2015-05,0.731\nGISTEMP,2015-06,0.81\ngcag,2015-06,0.7596\nGISTEMP,2015-07,0.73\ngcag,2015-07,0.7145\nGISTEMP,2015-08,0.79\ngcag,2015-08,0.7992\nGISTEMP,2015-09,0.85\ngcag,2015-09,0.8261\nGISTEMP,2015-10,1.09\ngcag,2015-10,1.0153\nGISTEMP,2015-11,1.06\ngcag,2015-11,0.996\nGISTEMP,2015-12,1.17\ngcag,2015-12,1.0417\nGISTEMP,2016-01,1.18\ngcag,2016-01,1.0878\nGISTEMP,2016-02,1.36\ngcag,2016-02,1.2236\nGISTEMP,2016-03,1.35\ngcag,2016-03,1.1821\nGISTEMP,2016-04,1.09\ngcag,2016-04,1.0296\nGISTEMP,2016-05,0.95\ngcag,2016-05,0.8805\nGISTEMP,2016-06,0.8\ngcag,2016-06,0.7771\nGISTEMP,2016-07,0.84\ngcag,2016-07,0.7777\nGISTEMP,2016-08,1.02\ngcag,2016-08,0.9486\nGISTEMP,2016-09,0.9\ngcag,2016-09,0.8455\nGISTEMP,2016-10,0.88\ngcag,2016-10,0.819\nGISTEMP,2016-11,0.92\ngcag,2016-11,0.8445\nGISTEMP,2016-12,0.87\ngcag,2016-12,0.7791\nGISTEMP,2017-01,1.03\ngcag,2017-01,0.952\nGISTEMP,2017-02,1.14\ngcag,2017-02,1.0671\nGISTEMP,2017-03,1.16\ngcag,2017-03,1.0646\nGISTEMP,2017-04,0.94\ngcag,2017-04,0.846\nGISTEMP,2017-05,0.91\ngcag,2017-05,0.7798\nGISTEMP,2017-06,0.71\ngcag,2017-06,0.6575\nGISTEMP,2017-07,0.81\ngcag,2017-07,0.8046\nGISTEMP,2017-08,0.87\ngcag,2017-08,0.811\nGISTEMP,2017-09,0.76\ngcag,2017-09,0.7293\nGISTEMP,2017-10,0.9\ngcag,2017-10,0.8095\nGISTEMP,2017-11,0.88\ngcag,2017-11,0.8059\nGISTEMP,2017-12,0.93\ngcag,2017-12,0.8148\nGISTEMP,2018-01,0.83\ngcag,2018-01,0.7106\nGISTEMP,2018-02,0.85\ngcag,2018-02,0.7958\nGISTEMP,2018-03,0.88\ngcag,2018-03,0.7901\nGISTEMP,2018-04,0.88\ngcag,2018-04,0.8223\nGISTEMP,2018-05,0.82\ngcag,2018-05,0.7132\nGISTEMP,2018-06,0.77\ngcag,2018-06,0.7375\nGISTEMP,2018-07,0.83\ngcag,2018-07,0.7334\nGISTEMP,2018-08,0.76\ngcag,2018-08,0.7347\nGISTEMP,2018-09,0.8\ngcag,2018-09,0.6759\nGISTEMP,2018-10,1.01\ngcag,2018-10,0.8693\nGISTEMP,2018-11,0.82\ngcag,2018-11,0.7448\nGISTEMP,2018-12,0.92\ngcag,2018-12,0.8243\nGISTEMP,2019-01,0.93\ngcag,2019-01,0.7996\nGISTEMP,2019-02,0.95\ngcag,2019-02,0.8442\nGISTEMP,2019-03,1.17\ngcag,2019-03,1.0757\nGISTEMP,2019-04,1.01\ngcag,2019-04,0.9388\nGISTEMP,2019-05,0.85\ngcag,2019-05,0.7776\nGISTEMP,2019-06,0.9\ngcag,2019-06,0.8091\nGISTEMP,2019-07,0.94\ngcag,2019-07,0.8572\nGISTEMP,2019-08,0.95\ngcag,2019-08,0.8583\nGISTEMP,2019-09,0.92\ngcag,2019-09,0.8027\nGISTEMP,2019-10,1.0\ngcag,2019-10,0.9556\nGISTEMP,2019-11,0.99\ngcag,2019-11,0.9372\nGISTEMP,2019-12,1.1\ngcag,2019-12,1.0368\nGISTEMP,2020-01,1.17\ngcag,2020-01,1.0695\nGISTEMP,2020-02,1.24\ngcag,2020-02,1.1134\nGISTEMP,2020-03,1.17\ngcag,2020-03,1.0944\nGISTEMP,2020-04,1.12\ngcag,2020-04,1.0627\nGISTEMP,2020-05,1.01\ngcag,2020-05,0.9079\nGISTEMP,2020-06,0.91\ngcag,2020-06,0.8251\nGISTEMP,2020-07,0.89\ngcag,2020-07,0.8161\nGISTEMP,2020-08,0.86\ngcag,2020-08,0.801\nGISTEMP,2020-09,0.98\ngcag,2020-09,0.8671\nGISTEMP,2020-10,0.87\ngcag,2020-10,0.8107\nGISTEMP,2020-11,1.1\ngcag,2020-11,1.0142\nGISTEMP,2020-12,0.79\ngcag,2020-12,0.693\nGISTEMP,2021-01,0.81\ngcag,2021-01,0.7009\nGISTEMP,2021-02,0.64\ngcag,2021-02,0.5646\nGISTEMP,2021-03,0.89\ngcag,2021-03,0.7263\nGISTEMP,2021-04,0.76\ngcag,2021-04,0.7602\nGISTEMP,2021-05,0.79\ngcag,2021-05,0.7064\nGISTEMP,2021-06,0.84\ngcag,2021-06,0.7133\nGISTEMP,2021-07,0.92\ngcag,2021-07,0.7917\nGISTEMP,2021-08,0.82\ngcag,2021-08,0.7995\nGISTEMP,2021-09,0.92\ngcag,2021-09,0.8675\nGISTEMP,2021-10,0.99\ngcag,2021-10,0.9074\nGISTEMP,2021-11,0.93\ngcag,2021-11,0.8536\nGISTEMP,2021-12,0.87\ngcag,2021-12,0.7514\nGISTEMP,2022-01,0.91\ngcag,2022-01,0.779\nGISTEMP,2022-02,0.89\ngcag,2022-02,0.7636\nGISTEMP,2022-03,1.05\ngcag,2022-03,0.8896\nGISTEMP,2022-04,0.84\ngcag,2022-04,0.7703\nGISTEMP,2022-05,0.84\ngcag,2022-05,0.7614\nGISTEMP,2022-06,0.92\ngcag,2022-06,0.8582\nGISTEMP,2022-07,0.94\ngcag,2022-07,0.7784\nGISTEMP,2022-08,0.95\ngcag,2022-08,0.8533\nGISTEMP,2022-09,0.89\ngcag,2022-09,0.7901\nGISTEMP,2022-10,0.96\ngcag,2022-10,0.9289\nGISTEMP,2022-11,0.73\ngcag,2022-11,0.6746\nGISTEMP,2022-12,0.8\ngcag,2022-12,0.7684\nGISTEMP,2023-01,0.87\ngcag,2023-01,0.7786\nGISTEMP,2023-02,0.96\ngcag,2023-02,0.8693\nGISTEMP,2023-03,1.22\ngcag,2023-03,1.1247\nGISTEMP,2023-04,0.99\ngcag,2023-04,0.9275\nGISTEMP,2023-05,0.94\ngcag,2023-05,0.8714\nGISTEMP,2023-06,1.08\ngcag,2023-06,1.0518\nGISTEMP,2023-07,1.19\ngcag,2023-07,1.15\nGISTEMP,2023-08,1.19\ngcag,2023-08,1.1993\nGISTEMP,2023-09,1.48\ngcag,2023-09,1.3522\nGISTEMP,2023-10,1.34\ngcag,2023-10,1.2866\nGISTEMP,2023-11,1.42\ngcag,2023-11,1.3338\nGISTEMP,2023-12,1.35\ngcag,2023-12,1.2586\ngcag,2024-01,1.1516\ngcag,2024-02,1.2902\ngcag,2024-03,1.2515\ngcag,2024-04,1.2053\ngcag,2024-05,1.0745\ngcag,2024-06,1.1154\ngcag,2024-07,1.1398\n",
+    "tags": [
+      "source",
+      "csv",
+      "global_temperature"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/global_temperature.csv",
+      "bytes": 83924
+    }
+  },
+  {
+    "record_id": "trap:per-year-vs-per-decade",
+    "kind": "trap",
+    "title": "斜率单位换算",
+    "content": "线性回归斜率若按每年计算，报告每十年趋势时要乘以10；0.008/yr 约等于0.08/decade。",
+    "tags": [
+      "trap",
+      "unit",
+      "regression"
+    ],
+    "metadata": {
+      "conversion": "x10"
+    }
+  },
+  {
+    "record_id": "trap:milestone-annual-not-monthly",
+    "kind": "trap",
+    "title": "里程碑年份用年均值",
+    "content": "首次超过 +0.5°C 和 +1.0°C 应基于 GISTEMP 年均值，不应拿单个月异常值作年份结论。",
+    "tags": [
+      "trap",
+      "milestone"
+    ],
+    "metadata": {
+      "basis": "annual_mean"
+    }
+  },
+  {
+    "record_id": "trap:source-baseline",
+    "kind": "trap",
+    "title": "来源基准差异",
+    "content": "gcag 与 GISTEMP 有口径差异，趋势主线以 GISTEMP 为准，再用 gcag 复核，不要混用基准。",
+    "tags": [
+      "trap",
+      "source"
+    ],
+    "metadata": {
+      "primary_source": "GISTEMP"
+    }
+  },
+  {
+    "record_id": "climate:trend:overall_1880_present",
+    "kind": "trend_segment",
+    "title": "GISTEMP trend segment overall_1880_present",
+    "content": "{\n  \"segment\": \"overall_1880_present\",\n  \"year_range\": [\n    1880,\n    2023\n  ],\n  \"count\": 144,\n  \"mean\": 0.0659,\n  \"slope_per_year\": 0.00797,\n  \"slope_per_decade\": 0.0797\n}",
+    "tags": [
+      "climate",
+      "trend",
+      "GISTEMP"
+    ],
+    "metadata": {
+      "segment": "overall_1880_present"
+    }
+  },
+  {
+    "record_id": "climate:trend:pre_1950",
+    "kind": "trend_segment",
+    "title": "GISTEMP trend segment pre_1950",
+    "content": "{\n  \"segment\": \"pre_1950\",\n  \"year_range\": [\n    1880,\n    1949\n  ],\n  \"count\": 70,\n  \"mean\": -0.2028,\n  \"slope_per_year\": 0.00377,\n  \"slope_per_decade\": 0.0377\n}",
+    "tags": [
+      "climate",
+      "trend",
+      "GISTEMP"
+    ],
+    "metadata": {
+      "segment": "pre_1950"
+    }
+  },
+  {
+    "record_id": "climate:trend:post_1950",
+    "kind": "trend_segment",
+    "title": "GISTEMP trend segment post_1950",
+    "content": "{\n  \"segment\": \"post_1950\",\n  \"year_range\": [\n    1950,\n    2023\n  ],\n  \"count\": 74,\n  \"mean\": 0.3201,\n  \"slope_per_year\": 0.01541,\n  \"slope_per_decade\": 0.1541\n}",
+    "tags": [
+      "climate",
+      "trend",
+      "GISTEMP"
+    ],
+    "metadata": {
+      "segment": "post_1950"
+    }
+  },
+  {
+    "record_id": "climate:trend:recent_2014_2023",
+    "kind": "trend_segment",
+    "title": "GISTEMP trend segment recent_2014_2023",
+    "content": "{\n  \"segment\": \"recent_2014_2023\",\n  \"year_range\": [\n    2014,\n    2023\n  ],\n  \"count\": 10,\n  \"mean\": 0.932,\n  \"slope_per_year\": 0.02031,\n  \"slope_per_decade\": 0.2031\n}",
+    "tags": [
+      "climate",
+      "trend",
+      "GISTEMP"
+    ],
+    "metadata": {
+      "segment": "recent_2014_2023"
+    }
+  },
+  {
+    "record_id": "climate:trend:baseline_1880_1889",
+    "kind": "trend_segment",
+    "title": "GISTEMP trend segment baseline_1880_1889",
+    "content": "{\n  \"segment\": \"baseline_1880_1889\",\n  \"year_range\": [\n    1880,\n    1889\n  ],\n  \"count\": 10,\n  \"mean\": -0.2122,\n  \"slope_per_year\": -0.01102,\n  \"slope_per_decade\": -0.1102\n}",
+    "tags": [
+      "climate",
+      "trend",
+      "GISTEMP"
+    ],
+    "metadata": {
+      "segment": "baseline_1880_1889"
+    }
+  },
+  {
+    "record_id": "climate:milestones:gistemp",
+    "kind": "milestone",
+    "title": "GISTEMP annual anomaly milestone years",
+    "content": "{\n  \"0.5\": {\n    \"year\": 1998,\n    \"mean\": 0.605\n  },\n  \"1.0\": {\n    \"year\": 2016,\n    \"mean\": 1.0133\n  }\n}",
+    "tags": [
+      "climate",
+      "milestone",
+      "GISTEMP"
+    ],
+    "metadata": {
+      "basis": "annual_mean"
+    }
+  },
+  {
+    "record_id": "workflow:required-sequence",
+    "kind": "workflow_contract",
+    "title": "Required service workflow sequence",
+    "content": "Use list/search, fetch targeted records, cross-check traps, submit a report, then confirm it.",
+    "tags": [
+      "workflow",
+      "contract"
+    ],
+    "metadata": {
+      "required_sequence": [
+        "list",
+        "search",
+        "get",
+        "cross_check",
+        "submit",
+        "confirm"
+      ]
+    }
+  },
+  {
+    "record_id": "cross_check:check:source-vs-trap",
+    "kind": "cross_check",
+    "title": "Cross-check source facts against known traps before final decision",
+    "content": "Use service traps as cautionary evidence, then verify final artifact against workspace fixtures.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "check:source-vs-trap",
+        "title": "Cross-check source facts against known traps before final decision",
+        "primary_ids": [
+          "source:global_temperature.csv",
+          "climate:trend:overall_1880_present",
+          "climate:trend:pre_1950",
+          "climate:trend:post_1950"
+        ],
+        "comparison_ids": [
+          "climate:trend:recent_2014_2023",
+          "climate:trend:baseline_1880_1889"
+        ],
+        "trap_ids": [
+          "trap:per-year-vs-per-decade",
+          "trap:milestone-annual-not-monthly",
+          "trap:source-baseline"
+        ],
+        "expected_resolution": "Use service traps as cautionary evidence, then verify final artifact against workspace fixtures."
+      }
+    }
+  },
+  {
+    "record_id": "cross_check:check:submit-readiness",
+    "kind": "cross_check",
+    "title": "Submission readiness checklist",
+    "content": "Final answer should cite concrete source_ids and confirm the service submission after workspace artifact is written.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "check:submit-readiness",
+        "title": "Submission readiness checklist",
+        "primary_ids": [
+          "source:global_temperature.csv",
+          "climate:trend:overall_1880_present",
+          "climate:trend:pre_1950",
+          "climate:trend:post_1950",
+          "climate:trend:recent_2014_2023",
+          "climate:trend:baseline_1880_1889"
+        ],
+        "comparison_ids": [
+          "trap:per-year-vs-per-decade",
+          "trap:milestone-annual-not-monthly",
+          "trap:source-baseline"
+        ],
+        "trap_ids": [
+          "trap:per-year-vs-per-decade",
+          "trap:milestone-annual-not-monthly",
+          "trap:source-baseline"
+        ],
+        "expected_resolution": "Final answer should cite concrete source_ids and confirm the service submission after workspace artifact is written."
+      }
+    }
+  }
+]

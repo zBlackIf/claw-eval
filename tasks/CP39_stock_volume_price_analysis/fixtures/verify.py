@@ -7,12 +7,30 @@ overall_score = mean(components).
 """
 from __future__ import annotations
 
+import csv
+import io
 import json
 import re
 import sys
 from pathlib import Path
 
 WORKSPACE = Path("/workspace")
+EXPECTED_CODES = {"sh.600519", "sz.000858", "sz.002304"}
+EXPECTED_COLUMNS = [
+    "code",
+    "correlation",
+    "avg_volume",
+    "avg_price_change",
+    "data_quality_notes",
+]
+
+
+def _numeric(value: str) -> bool:
+    try:
+        number = float(str(value).strip())
+    except (TypeError, ValueError):
+        return False
+    return number == number and number not in (float("inf"), float("-inf"))
 
 
 def automated_score(workspace: Path) -> dict[str, float]:
@@ -29,24 +47,49 @@ def automated_score(workspace: Path) -> dict[str, float]:
         scores["results_created"] = 1.0
         try:
             content = results_csv.read_text(encoding="utf-8")
-            reader = csv.reader(io.StringIO(content))
-            rows = list(reader)
-            data_rows = [r for r in rows[1:] if r and r[0].strip()]
-            scores["has_all_stocks"] = min(len(data_rows) / 3.0, 1.0)
+            reader = csv.DictReader(io.StringIO(content))
+            rows = [r for r in reader if r.get("code")]
+            header = [h.strip() for h in (reader.fieldnames or [])]
+            scores["schema_exact"] = 1.0 if header == EXPECTED_COLUMNS else 0.0
 
-            has_numeric = any(
-                len(r) >= 2
-                and r[1].strip().replace("-", "").replace(".", "").replace("e", "").isdigit()
-                for r in data_rows
-            ) if data_rows else False
-            scores["has_correlation_values"] = 1.0 if has_numeric else 0.0
+            codes = {str(r.get("code", "")).strip() for r in rows}
+            scores["has_all_stocks"] = len(EXPECTED_CODES.intersection(codes)) / len(EXPECTED_CODES)
+
+            corr_ok = sum(
+                1
+                for r in rows
+                if str(r.get("code", "")).strip() in EXPECTED_CODES
+                and _numeric(str(r.get("correlation", "")))
+            )
+            avg_ok = sum(
+                1
+                for r in rows
+                if str(r.get("code", "")).strip() in EXPECTED_CODES
+                and _numeric(str(r.get("avg_volume", "")))
+                and _numeric(str(r.get("avg_price_change", "")))
+            )
+            scores["has_correlation_values"] = corr_ok / len(EXPECTED_CODES)
+            scores["has_average_metrics"] = avg_ok / len(EXPECTED_CODES)
+
+            notes_text = " ".join(str(r.get("data_quality_notes", "")) for r in rows).lower()
+            scores["notes_missing_value"] = (
+                1.0
+                if any(k in notes_text for k in ["missing", "nan", "缺失", "空值", "dropped", "filled"])
+                else 0.0
+            )
         except Exception:
+            scores["schema_exact"] = 0.0
             scores["has_all_stocks"] = 0.0
             scores["has_correlation_values"] = 0.0
+            scores["has_average_metrics"] = 0.0
+            scores["notes_missing_value"] = 0.0
     else:
         scores["results_created"] = 0.0
+        scores["schema_exact"] = 0.0
         scores["has_all_stocks"] = 0.0
         scores["has_correlation_values"] = 0.0
+        scores["has_average_metrics"] = 0.0
+        scores["notes_missing_value"] = 0.0
 
     summary = workspace / "analysis_summary.txt"
     if not summary.exists():
@@ -61,8 +104,21 @@ def automated_score(workspace: Path) -> dict[str, float]:
             s in sc for s in ["600519", "002304", "000858", "茅台", "贵州"]
         )
         scores["summary_has_stock_info"] = 1.0 if has_stock_mention else 0.0
+        scores["summary_mentions_missing"] = (
+            1.0
+            if re.search(r"missing|nan|缺失|空值|质量|quality", sc, re.IGNORECASE)
+            else 0.0
+        )
     else:
         scores["summary_has_stock_info"] = 0.0
+        scores["summary_mentions_missing"] = 0.0
+
+    all_text = ""
+    for path in [results_csv, summary]:
+        if path.exists():
+            all_text += path.read_text(encoding="utf-8", errors="ignore").lower() + "\n"
+    hallucinated = any(code in all_text for code in ["000001", "300750", "601318", "aapl", "tsla"])
+    scores["no_ticker_hallucination"] = 0.0 if hallucinated else 1.0
 
     return scores
 

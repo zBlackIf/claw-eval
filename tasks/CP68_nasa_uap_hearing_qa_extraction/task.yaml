@@ -1,0 +1,103 @@
+# provenance:
+#   themis_dataset: taskset-260424-pinchbench-v2rc2
+#   themis_task_id: task_meeting_gov_qa_extract
+#   themis_rank_original: 31
+#   themis_metrics: { std_trim: 0.408, range_trim: 0.938, mean_trim: 0.609 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP68_nasa_uap_hearing_qa_extraction
+task_name: "NASA UAP 听证会 Q&A 抽取（CP68 / 源 taskset-260424-pinchbench-v2rc2:task_meeting_gov_qa_extract）"
+version: "1.1"
+category: data_analysis
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_meeting_gov_qa_extract"
+source_dataset: "taskset-260424-pinchbench-v2rc2"
+source_description: "PinchBench top100 rank 31（std_trim 0.408）。Workflow + workspace 混合：sandbox 提供 250KB 逐字稿，kb 提供 Q&A 摘录占位文章 + 摘录模板。agent 读 transcript → 调 kb_get_article 看占位 + 模板 → kb_update_article 把提炼的 Q&A 写进知识库。grader 从 audit_data['kb'] 取 update content，按 9 个隐藏锚点打分。"
+
+services:
+  - name: kb
+    command: python mock_services/kb/server.py
+    port: 9106
+    health_check: http://localhost:9106/kb/search
+    health_check_method: POST
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9106/kb/reset
+    env:
+      KB_FIXTURES: tasks/CP68_nasa_uap_hearing_qa_extraction/fixtures/kb/articles.json
+
+prompt:
+  text: |
+    /workspace/fixtures/transcript.md 是 NASA 第一次 UAP 公开听证会的逐字稿。
+    帮我把里面所有问答对都摘出来，填到知识库那篇还没整理的 Q&A 摘录文章里，
+    格式按知识库里的模板。
+  language: zh
+
+tools:
+  - name: kb_search
+    description: 在内部知识库搜索文章
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        category:
+          type: string
+        max_results:
+          type: integer
+          default: 5
+      required: [query]
+  - name: kb_get_article
+    description: 按 ID 获取知识库文章全文
+    input_schema:
+      type: object
+      properties:
+        article_id:
+          type: string
+      required: [article_id]
+  - name: kb_update_article
+    description: 按 ID 整体替换文章 content
+    input_schema:
+      type: object
+      properties:
+        article_id:
+          type: string
+        content:
+          type: string
+      required: [article_id, content]
+
+tool_endpoints:
+  - tool_name: kb_search
+    url: http://localhost:9106/kb/search
+    method: POST
+  - tool_name: kb_get_article
+    url: http://localhost:9106/kb/articles/get
+    method: POST
+  - tool_name: kb_update_article
+    url: http://localhost:9106/kb/articles/update
+    method: POST
+
+sandbox_files:
+  - fixtures/transcript.md
+
+environment:
+  timeout_seconds: 900
+  max_turns: 22
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward an update to KB-NASA-UAP-2025-QA that follows the KB-MEETING-QA-TEMPLATE format and captures ≥10 numbered Q&A pairs, with panel-to-presenter and public Q&A sections separated, including the Drake↔Kirkpatrick database-size exchange (800 cases + 2-5% anomalous), FAA/Freie radar exchanges (≥2 of: retention/filter/pilot reporting/coverage), public Q&A on non-human intelligence / extraterrestrial origin, and attribution covering ≥6 named speakers (Drake/Kirkpatrick/Spergel/Fox/Freie/Gold/Walter/Bianco/Bontempi/Wright/Berea/Grinspoon)."
+
+reference_solution: |
+  Read /workspace/fixtures/transcript.md (long; skim presentations to find
+  Q&A turns). kb_search('Q&A template') → kb_get_article('KB-MEETING-QA-TEMPLATE')
+  to learn the formatting. kb_get_article('KB-NASA-UAP-2025-QA') to confirm
+  the placeholder. Compose the full Q&A digest in markdown (numbered, with
+  Panel/Public sections), then kb_update_article('KB-NASA-UAP-2025-QA',
+  content=<digest>). Include Drake↔Kirkpatrick (800 cases, 2-5% anomalous),
+  Freie/FAA exchanges, public Q&A on non-human intelligence, 6+ named speakers.
+
+primary_dimensions: [completion, robustness, communication]

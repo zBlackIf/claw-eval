@@ -51,7 +51,8 @@ def automated_score(workspace: Path) -> dict[str, float]:
     # Check Postman Collection v2.1 format
     has_info = "info" in collection
     has_item = "item" in collection
-    scores["collection_format"] = 1.0 if (has_info and has_item) else 0.0
+    schema_url = str(collection.get("info", {}).get("schema", "")) if isinstance(collection.get("info"), dict) else ""
+    scores["collection_format"] = 1.0 if (has_info and has_item and "v2.1" in schema_url) else (0.5 if has_info and has_item else 0.0)
 
     # Check for 3 test cases
     items = collection.get("item", [])
@@ -63,21 +64,27 @@ def automated_score(workspace: Path) -> dict[str, float]:
 
         found_cases = 0
         collection_text = json.dumps(collection).lower()
-        if "no_conflict" in collection_text or "no conflict" in collection_text:
+        if "no_conflict" in collection_text or "no conflict" in collection_text or "无冲突" in collection_text:
             found_cases += 1
-        if "conflict" in collection_text and "no_conflict" not in collection_text.replace("no_conflict", ""):
+        if re.search(r"(?<!no_)conflict|冲突", collection_text):
             found_cases += 1
         if "empty" in collection_text or "400" in collection_text:
             found_cases += 1
 
         scores["has_three_cases"] = min(found_cases / 3.0, 1.0) if len(items) >= 3 else min(len(items) / 3.0, 1.0)
+        request_text = json.dumps(items)
+        has_method = bool(re.search(r'"method"\s*:\s*"POST"', request_text, re.I))
+        has_body = bool(re.search(r'"body"\s*:', request_text, re.I))
+        has_assertion = bool(re.search(r"pm\.test|status.*200|status.*400|responseCode", request_text, re.I))
+        scores["request_contract"] = sum([has_method, has_body, has_assertion]) / 3.0
     else:
         scores["has_three_cases"] = 0.0
+        scores["request_contract"] = 0.0
 
     # Check enum values are correct
     collection_text = json.dumps(collection)
     enum_hits = sum(1 for v in VALID_ENUM_VALUES if v in collection_text)
-    scores["correct_enum_values"] = min(enum_hits / 3.0, 1.0)
+    scores["correct_enum_values"] = enum_hits / len(VALID_ENUM_VALUES)
 
     # Check src/ files were not modified
     src_files = list((workspace / "src").glob("*.py")) if (workspace / "src").exists() else []

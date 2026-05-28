@@ -1,0 +1,305 @@
+[
+  {
+    "record_id": "brief:task-context",
+    "kind": "brief",
+    "title": "Iris outlier detection with global-vs-species traps, row-number caveats, and multi-feature review records.",
+    "content": "Task CP71_iris_flowers_outlier_detection: Iris outlier detection with global-vs-species traps, row-number caveats, and multi-feature review records. Use list/search/get/cross_check before submit/confirm; workspace artifact remains required.",
+    "tags": [
+      "brief",
+      "workflow"
+    ],
+    "metadata": {
+      "task_id": "CP71_iris_flowers_outlier_detection",
+      "service": "dataset_review",
+      "mode": "workflow"
+    }
+  },
+  {
+    "record_id": "source:iris_flowers.csv",
+    "kind": "source",
+    "title": "Workspace fixture export: iris_flowers.csv",
+    "content": "SepalLength,SepalWidth,PetalLength,PetalWidth,Name\n5.1,3.5,1.4,0.2,Iris-setosa\n4.9,3.0,1.4,0.2,Iris-setosa\n4.7,3.2,1.3,0.2,Iris-setosa\n4.6,3.1,1.5,0.2,Iris-setosa\n5.0,3.6,1.4,0.2,Iris-setosa\n5.4,3.9,1.7,0.4,Iris-setosa\n4.6,3.4,1.4,0.3,Iris-setosa\n5.0,3.4,1.5,0.2,Iris-setosa\n4.4,2.9,1.4,0.2,Iris-setosa\n4.9,3.1,1.5,0.1,Iris-setosa\n5.4,3.7,1.5,0.2,Iris-setosa\n4.8,3.4,1.6,0.2,Iris-setosa\n4.8,3.0,1.4,0.1,Iris-setosa\n4.3,3.0,1.1,0.1,Iris-setosa\n5.8,4.0,1.2,0.2,Iris-setosa\n5.7,4.4,1.5,0.4,Iris-setosa\n5.4,3.9,1.3,0.4,Iris-setosa\n5.1,3.5,1.4,0.3,Iris-setosa\n5.7,3.8,1.7,0.3,Iris-setosa\n5.1,3.8,1.5,0.3,Iris-setosa\n5.4,3.4,1.7,0.2,Iris-setosa\n5.1,3.7,1.5,0.4,Iris-setosa\n4.6,3.6,1.0,0.2,Iris-setosa\n5.1,3.3,1.7,0.5,Iris-setosa\n4.8,3.4,1.9,0.2,Iris-setosa\n5.0,3.0,1.6,0.2,Iris-setosa\n5.0,3.4,1.6,0.4,Iris-setosa\n5.2,3.5,1.5,0.2,Iris-setosa\n5.2,3.4,1.4,0.2,Iris-setosa\n4.7,3.2,1.6,0.2,Iris-setosa\n4.8,3.1,1.6,0.2,Iris-setosa\n5.4,3.4,1.5,0.4,Iris-setosa\n5.2,4.1,1.5,0.1,Iris-setosa\n5.5,4.2,1.4,0.2,Iris-setosa\n4.9,3.1,1.5,0.1,Iris-setosa\n5.0,3.2,1.2,0.2,Iris-setosa\n5.5,3.5,1.3,0.2,Iris-setosa\n4.9,3.1,1.5,0.1,Iris-setosa\n4.4,3.0,1.3,0.2,Iris-setosa\n5.1,3.4,1.5,0.2,Iris-setosa\n5.0,3.5,1.3,0.3,Iris-setosa\n4.5,2.3,1.3,0.3,Iris-setosa\n4.4,3.2,1.3,0.2,Iris-setosa\n5.0,3.5,1.6,0.6,Iris-setosa\n5.1,3.8,1.9,0.4,Iris-setosa\n4.8,3.0,1.4,0.3,Iris-setosa\n5.1,3.8,1.6,0.2,Iris-setosa\n4.6,3.2,1.4,0.2,Iris-setosa\n5.3,3.7,1.5,0.2,Iris-setosa\n5.0,3.3,1.4,0.2,Iris-setosa\n7.0,3.2,4.7,1.4,Iris-versicolor\n6.4,3.2,4.5,1.5,Iris-versicolor\n6.9,3.1,4.9,1.5,Iris-versicolor\n5.5,2.3,4.0,1.3,Iris-versicolor\n6.5,2.8,4.6,1.5,Iris-versicolor\n5.7,2.8,4.5,1.3,Iris-versicolor\n6.3,3.3,4.7,1.6,Iris-versicolor\n4.9,2.4,3.3,1.0,Iris-versicolor\n6.6,2.9,4.6,1.3,Iris-versicolor\n5.2,2.7,3.9,1.4,Iris-versicolor\n5.0,2.0,3.5,1.0,Iris-versicolor\n5.9,3.0,4.2,1.5,Iris-versicolor\n6.0,2.2,4.0,1.0,Iris-versicolor\n6.1,2.9,4.7,1.4,Iris-versicolor\n5.6,2.9,3.6,1.3,Iris-versicolor\n6.7,3.1,4.4,1.4,Iris-versicolor\n5.6,3.0,4.5,1.5,Iris-versicolor\n5.8,2.7,4.1,1.0,Iris-versicolor\n6.2,2.2,4.5,1.5,Iris-versicolor\n5.6,2.5,3.9,1.1,Iris-versicolor\n5.9,3.2,4.8,1.8,Iris-versicolor\n6.1,2.8,4.0,1.3,Iris-versicolor\n6.3,2.5,4.9,1.5,Iris-versicolor\n6.1,2.8,4.7,1.2,Iris-versicolor\n6.4,2.9,4.3,1.3,Iris-versicolor\n6.6,3.0,4.4,1.4,Iris-versicolor\n6.8,2.8,4.8,1.4,Iris-versicolor\n6.7,3.0,5.0,1.7,Iris-versicolor\n6.0,2.9,4.5,1.5,Iris-versicolor\n5.7,2.6,3.5,1.0,Iris-versicolor\n5.5,2.4,3.8,1.1,Iris-versicolor\n5.5,2.4,3.7,1.0,Iris-versicolor\n5.8,2.7,3.9,1.2,Iris-versicolor\n6.0,2.7,5.1,1.6,Iris-versicolor\n5.4,3.0,4.5,1.5,Iris-versicolor\n6.0,3.4,4.5,1.6,Iris-versicolor\n6.7,3.1,4.7,1.5,Iris-versicolor\n6.3,2.3,4.4,1.3,Iris-versicolor\n5.6,3.0,4.1,1.3,Iris-versicolor\n5.5,2.5,4.0,1.3,Iris-versicolor\n5.5,2.6,4.4,1.2,Iris-versicolor\n6.1,3.0,4.6,1.4,Iris-versicolor\n5.8,2.6,4.0,1.2,Iris-versicolor\n5.0,2.3,3.3,1.0,Iris-versicolor\n5.6,2.7,4.2,1.3,Iris-versicolor\n5.7,3.0,4.2,1.2,Iris-versicolor\n5.7,2.9,4.2,1.3,Iris-versicolor\n6.2,2.9,4.3,1.3,Iris-versicolor\n5.1,2.5,3.0,1.1,Iris-versicolor\n5.7,2.8,4.1,1.3,Iris-versicolor\n6.3,3.3,6.0,2.5,Iris-virginica\n5.8,2.7,5.1,1.9,Iris-virginica\n7.1,3.0,5.9,2.1,Iris-virginica\n6.3,2.9,5.6,1.8,Iris-virginica\n6.5,3.0,5.8,2.2,Iris-virginica\n7.6,3.0,6.6,2.1,Iris-virginica\n4.9,2.5,4.5,1.7,Iris-virginica\n7.3,2.9,6.3,1.8,Iris-virginica\n6.7,2.5,5.8,1.8,Iris-virginica\n7.2,3.6,6.1,2.5,Iris-virginica\n6.5,3.2,5.1,2.0,Iris-virginica\n6.4,2.7,5.3,1.9,Iris-virginica\n6.8,3.0,5.5,2.1,Iris-virginica\n5.7,2.5,5.0,2.0,Iris-virginica\n5.8,2.8,5.1,2.4,Iris-virginica\n6.4,3.2,5.3,2.3,Iris-virginica\n6.5,3.0,5.5,1.8,Iris-virginica\n7.7,3.8,6.7,2.2,Iris-virginica\n7.7,2.6,6.9,2.3,Iris-virginica\n6.0,2.2,5.0,1.5,Iris-virginica\n6.9,3.2,5.7,2.3,Iris-virginica\n5.6,2.8,4.9,2.0,Iris-virginica\n7.7,2.8,6.7,2.0,Iris-virginica\n6.3,2.7,4.9,1.8,Iris-virginica\n6.7,3.3,5.7,2.1,Iris-virginica\n7.2,3.2,6.0,1.8,Iris-virginica\n6.2,2.8,4.8,1.8,Iris-virginica\n6.1,3.0,4.9,1.8,Iris-virginica\n6.4,2.8,5.6,2.1,Iris-virginica\n7.2,3.0,5.8,1.6,Iris-virginica\n7.4,2.8,6.1,1.9,Iris-virginica\n7.9,3.8,6.4,2.0,Iris-virginica\n6.4,2.8,5.6,2.2,Iris-virginica\n6.3,2.8,5.1,1.5,Iris-virginica\n6.1,2.6,5.6,1.4,Iris-virginica\n7.7,3.0,6.1,2.3,Iris-virginica\n6.3,3.4,5.6,2.4,Iris-virginica\n6.4,3.1,5.5,1.8,Iris-virginica\n6.0,3.0,4.8,1.8,Iris-virginica\n6.9,3.1,5.4,2.1,Iris-virginica\n6.7,3.1,5.6,2.4,Iris-virginica\n6.9,3.1,5.1,2.3,Iris-virginica\n5.8,2.7,5.1,1.9,Iris-virginica\n6.8,3.2,5.9,2.3,Iris-virginica\n6.7,3.3,5.7,2.5,Iris-virginica\n6.7,3.0,5.2,2.3,Iris-virginica\n6.3,2.5,5.0,1.9,Iris-virginica\n6.5,3.0,5.2,2.0,Iris-virginica\n6.2,3.4,5.4,2.3,Iris-virginica\n5.9,3.0,5.1,1.8,Iris-virginica\n",
+    "tags": [
+      "source",
+      "csv",
+      "iris_flowers"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/iris_flowers.csv",
+      "bytes": 4601
+    }
+  },
+  {
+    "record_id": "trap:row-index-offset",
+    "kind": "trap",
+    "title": "行号口径提醒",
+    "content": "CSV 第一行是表头；报告可用1-based数据行或含表头行号，但必须说明口径，避免 row 16/17 偏移。",
+    "tags": [
+      "trap",
+      "row_index"
+    ],
+    "metadata": {
+      "risk": "off_by_one"
+    }
+  },
+  {
+    "record_id": "trap:global-vs-species",
+    "kind": "trap",
+    "title": "全局异常与分物种异常不同",
+    "content": "SepalWidth 全局 IQR 能发现若干异常；within-species 还会突出 setosa row 42、virginica row 107 等局部异常。",
+    "tags": [
+      "trap",
+      "method"
+    ],
+    "metadata": {
+      "methods": [
+        "global_iqr",
+        "species_iqr"
+      ]
+    }
+  },
+  {
+    "record_id": "trap:no-delete-rows",
+    "kind": "trap",
+    "title": "异常点分析不是清洗删除",
+    "content": "本题要求报告异常点证据，不是直接删除 CSV 行后输出干净数据。",
+    "tags": [
+      "trap",
+      "deliverable"
+    ],
+    "metadata": {
+      "deliverable": "report"
+    }
+  },
+  {
+    "record_id": "iris:stats:ALL",
+    "kind": "species_stats",
+    "title": "Iris IQR stats ALL",
+    "content": "{\n  \"SepalLength\": {\n    \"q1\": 5.1,\n    \"q3\": 6.4,\n    \"iqr\": 1.3,\n    \"lower\": 3.15,\n    \"upper\": 8.35\n  },\n  \"SepalWidth\": {\n    \"q1\": 2.8,\n    \"q3\": 3.3,\n    \"iqr\": 0.5,\n    \"lower\": 2.05,\n    \"upper\": 4.05\n  },\n  \"PetalLength\": {\n    \"q1\": 1.6,\n    \"q3\": 5.1,\n    \"iqr\": 3.5,\n    \"lower\": -3.65,\n    \"upper\": 10.35\n  },\n  \"PetalWidth\": {\n    \"q1\": 0.3,\n    \"q3\": 1.8,\n    \"iqr\": 1.5,\n    \"lower\": -1.95,\n    \"upper\": 4.05\n  }\n}",
+    "tags": [
+      "iris",
+      "iqr",
+      "ALL"
+    ],
+    "metadata": {
+      "species": "ALL"
+    }
+  },
+  {
+    "record_id": "iris:stats:Iris-setosa",
+    "kind": "species_stats",
+    "title": "Iris IQR stats Iris-setosa",
+    "content": "{\n  \"SepalLength\": {\n    \"q1\": 4.8,\n    \"q3\": 5.2,\n    \"iqr\": 0.4,\n    \"lower\": 4.2,\n    \"upper\": 5.8\n  },\n  \"SepalWidth\": {\n    \"q1\": 3.1,\n    \"q3\": 3.7,\n    \"iqr\": 0.6,\n    \"lower\": 2.2,\n    \"upper\": 4.6\n  },\n  \"PetalLength\": {\n    \"q1\": 1.4,\n    \"q3\": 1.6,\n    \"iqr\": 0.2,\n    \"lower\": 1.1,\n    \"upper\": 1.9\n  },\n  \"PetalWidth\": {\n    \"q1\": 0.2,\n    \"q3\": 0.3,\n    \"iqr\": 0.1,\n    \"lower\": 0.05,\n    \"upper\": 0.45\n  }\n}",
+    "tags": [
+      "iris",
+      "iqr",
+      "Iris-setosa"
+    ],
+    "metadata": {
+      "species": "Iris-setosa"
+    }
+  },
+  {
+    "record_id": "iris:stats:Iris-versicolor",
+    "kind": "species_stats",
+    "title": "Iris IQR stats Iris-versicolor",
+    "content": "{\n  \"SepalLength\": {\n    \"q1\": 5.6,\n    \"q3\": 6.3,\n    \"iqr\": 0.7,\n    \"lower\": 4.55,\n    \"upper\": 7.35\n  },\n  \"SepalWidth\": {\n    \"q1\": 2.5,\n    \"q3\": 3.0,\n    \"iqr\": 0.5,\n    \"lower\": 1.75,\n    \"upper\": 3.75\n  },\n  \"PetalLength\": {\n    \"q1\": 4.0,\n    \"q3\": 4.6,\n    \"iqr\": 0.6,\n    \"lower\": 3.1,\n    \"upper\": 5.5\n  },\n  \"PetalWidth\": {\n    \"q1\": 1.2,\n    \"q3\": 1.5,\n    \"iqr\": 0.3,\n    \"lower\": 0.75,\n    \"upper\": 1.95\n  }\n}",
+    "tags": [
+      "iris",
+      "iqr",
+      "Iris-versicolor"
+    ],
+    "metadata": {
+      "species": "Iris-versicolor"
+    }
+  },
+  {
+    "record_id": "iris:stats:Iris-virginica",
+    "kind": "species_stats",
+    "title": "Iris IQR stats Iris-virginica",
+    "content": "{\n  \"SepalLength\": {\n    \"q1\": 6.2,\n    \"q3\": 6.9,\n    \"iqr\": 0.7,\n    \"lower\": 5.15,\n    \"upper\": 7.95\n  },\n  \"SepalWidth\": {\n    \"q1\": 2.8,\n    \"q3\": 3.2,\n    \"iqr\": 0.4,\n    \"lower\": 2.2,\n    \"upper\": 3.8\n  },\n  \"PetalLength\": {\n    \"q1\": 5.1,\n    \"q3\": 5.9,\n    \"iqr\": 0.8,\n    \"lower\": 3.9,\n    \"upper\": 7.1\n  },\n  \"PetalWidth\": {\n    \"q1\": 1.8,\n    \"q3\": 2.3,\n    \"iqr\": 0.5,\n    \"lower\": 1.05,\n    \"upper\": 3.05\n  }\n}",
+    "tags": [
+      "iris",
+      "iqr",
+      "Iris-virginica"
+    ],
+    "metadata": {
+      "species": "Iris-virginica"
+    }
+  },
+  {
+    "record_id": "iris:row:16",
+    "kind": "outlier_candidate",
+    "title": "Iris row 16 candidate (Iris-setosa)",
+    "content": "{\n  \"SepalLength\": \"5.7\",\n  \"SepalWidth\": \"4.4\",\n  \"PetalLength\": \"1.5\",\n  \"PetalWidth\": \"0.4\",\n  \"Name\": \"Iris-setosa\",\n  \"_data_row\": 16\n}",
+    "tags": [
+      "iris",
+      "outlier_candidate",
+      "Iris-setosa"
+    ],
+    "metadata": {
+      "data_row": 16,
+      "species": "Iris-setosa"
+    }
+  },
+  {
+    "record_id": "iris:row:33",
+    "kind": "outlier_candidate",
+    "title": "Iris row 33 candidate (Iris-setosa)",
+    "content": "{\n  \"SepalLength\": \"5.2\",\n  \"SepalWidth\": \"4.1\",\n  \"PetalLength\": \"1.5\",\n  \"PetalWidth\": \"0.1\",\n  \"Name\": \"Iris-setosa\",\n  \"_data_row\": 33\n}",
+    "tags": [
+      "iris",
+      "outlier_candidate",
+      "Iris-setosa"
+    ],
+    "metadata": {
+      "data_row": 33,
+      "species": "Iris-setosa"
+    }
+  },
+  {
+    "record_id": "iris:row:34",
+    "kind": "outlier_candidate",
+    "title": "Iris row 34 candidate (Iris-setosa)",
+    "content": "{\n  \"SepalLength\": \"5.5\",\n  \"SepalWidth\": \"4.2\",\n  \"PetalLength\": \"1.4\",\n  \"PetalWidth\": \"0.2\",\n  \"Name\": \"Iris-setosa\",\n  \"_data_row\": 34\n}",
+    "tags": [
+      "iris",
+      "outlier_candidate",
+      "Iris-setosa"
+    ],
+    "metadata": {
+      "data_row": 34,
+      "species": "Iris-setosa"
+    }
+  },
+  {
+    "record_id": "iris:row:42",
+    "kind": "outlier_candidate",
+    "title": "Iris row 42 candidate (Iris-setosa)",
+    "content": "{\n  \"SepalLength\": \"4.5\",\n  \"SepalWidth\": \"2.3\",\n  \"PetalLength\": \"1.3\",\n  \"PetalWidth\": \"0.3\",\n  \"Name\": \"Iris-setosa\",\n  \"_data_row\": 42\n}",
+    "tags": [
+      "iris",
+      "outlier_candidate",
+      "Iris-setosa"
+    ],
+    "metadata": {
+      "data_row": 42,
+      "species": "Iris-setosa"
+    }
+  },
+  {
+    "record_id": "iris:row:61",
+    "kind": "outlier_candidate",
+    "title": "Iris row 61 candidate (Iris-versicolor)",
+    "content": "{\n  \"SepalLength\": \"5.0\",\n  \"SepalWidth\": \"2.0\",\n  \"PetalLength\": \"3.5\",\n  \"PetalWidth\": \"1.0\",\n  \"Name\": \"Iris-versicolor\",\n  \"_data_row\": 61\n}",
+    "tags": [
+      "iris",
+      "outlier_candidate",
+      "Iris-versicolor"
+    ],
+    "metadata": {
+      "data_row": 61,
+      "species": "Iris-versicolor"
+    }
+  },
+  {
+    "record_id": "iris:row:107",
+    "kind": "outlier_candidate",
+    "title": "Iris row 107 candidate (Iris-virginica)",
+    "content": "{\n  \"SepalLength\": \"4.9\",\n  \"SepalWidth\": \"2.5\",\n  \"PetalLength\": \"4.5\",\n  \"PetalWidth\": \"1.7\",\n  \"Name\": \"Iris-virginica\",\n  \"_data_row\": 107\n}",
+    "tags": [
+      "iris",
+      "outlier_candidate",
+      "Iris-virginica"
+    ],
+    "metadata": {
+      "data_row": 107,
+      "species": "Iris-virginica"
+    }
+  },
+  {
+    "record_id": "workflow:required-sequence",
+    "kind": "workflow_contract",
+    "title": "Required service workflow sequence",
+    "content": "Use list/search, fetch targeted records, cross-check traps, submit a report, then confirm it.",
+    "tags": [
+      "workflow",
+      "contract"
+    ],
+    "metadata": {
+      "required_sequence": [
+        "list",
+        "search",
+        "get",
+        "cross_check",
+        "submit",
+        "confirm"
+      ]
+    }
+  },
+  {
+    "record_id": "cross_check:check:source-vs-trap",
+    "kind": "cross_check",
+    "title": "Cross-check source facts against known traps before final decision",
+    "content": "Use service traps as cautionary evidence, then verify final artifact against workspace fixtures.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "check:source-vs-trap",
+        "title": "Cross-check source facts against known traps before final decision",
+        "primary_ids": [
+          "source:iris_flowers.csv",
+          "iris:stats:ALL",
+          "iris:stats:Iris-setosa",
+          "iris:stats:Iris-versicolor"
+        ],
+        "comparison_ids": [
+          "iris:stats:Iris-virginica"
+        ],
+        "trap_ids": [
+          "trap:row-index-offset",
+          "trap:global-vs-species",
+          "trap:no-delete-rows"
+        ],
+        "expected_resolution": "Use service traps as cautionary evidence, then verify final artifact against workspace fixtures."
+      }
+    }
+  },
+  {
+    "record_id": "cross_check:check:submit-readiness",
+    "kind": "cross_check",
+    "title": "Submission readiness checklist",
+    "content": "Final answer should cite concrete source_ids and confirm the service submission after workspace artifact is written.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "check:submit-readiness",
+        "title": "Submission readiness checklist",
+        "primary_ids": [
+          "source:iris_flowers.csv",
+          "iris:stats:ALL",
+          "iris:stats:Iris-setosa",
+          "iris:stats:Iris-versicolor",
+          "iris:stats:Iris-virginica"
+        ],
+        "comparison_ids": [
+          "trap:row-index-offset",
+          "trap:global-vs-species",
+          "trap:no-delete-rows"
+        ],
+        "trap_ids": [
+          "trap:row-index-offset",
+          "trap:global-vs-species",
+          "trap:no-delete-rows"
+        ],
+        "expected_resolution": "Final answer should cite concrete source_ids and confirm the service submission after workspace artifact is written."
+      }
+    }
+  }
+]

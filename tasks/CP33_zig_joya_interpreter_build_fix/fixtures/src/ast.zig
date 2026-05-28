@@ -19,6 +19,17 @@ pub const Statement = union(enum) {
     if_stmt: IfStatement,
 };
 
-pub const LetStatement = struct { name: []const u8, value: Expression };
-pub const PrintStatement = struct { value: Expression };
-pub const IfStatement = struct { condition: Expression, then_body: []Statement, else_body: ?[]Statement };
+pub const LetStatement = struct {
+    name: []const u8,
+    value: Expression,
+};
+
+pub const PrintStatement = struct {
+    value: Expression,
+};
+
+pub const IfStatement = struct {
+    condition: Expression,
+    then_body: []Statement,
+    else_body: ?[]Statement,
+};

@@ -1,27 +1,29 @@
 task_id: CP46_file_processor_design
 task_name: 多格式文件处理模块架构设计
-version: "1.0"
+version: '2.0'
 category: code_generation
 difficulty: hard
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_01_file_processor_design"
-source_dataset: "taskset-260408-212200"
-source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
-
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_01_file_processor_design
+source_dataset: taskset-260408-212200
+source_description: Redesigned from taskset-260408-212200/task_01_file_processor_design with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
 services: []
-
 prompt:
   text: |
-    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
-    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+    我已经把原始项目素材放在容器的 `/workspace/fixtures/` 目录下，请把这些文件当作只读输入。
 
-    - `/workspace/fixtures/existing_code.py`
-    - `/workspace/fixtures/config_template.py`
-    - `/workspace/fixtures/sample_input.md`
-    - `/workspace/fixtures/sample_input.txt`
+    输入文件如下（右侧是它在原项目中的相对路径）：
+    - `/workspace/fixtures/project_design.docx` -> `project_design.docx`
+    - `/workspace/fixtures/existing_code.py` -> `existing_code.py`
+    - `/workspace/fixtures/sample_input.md` -> `sample_input.md`
+    - `/workspace/fixtures/sample_input.txt` -> `sample_input.txt`
+    - `/workspace/fixtures/config_template.py` -> `config_template.py`
 
-    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+    请基于这些输入完成下面的原始需求：
 
     请根据 project_design.docx 中的设计文档和 existing_code.py 中的现有代码，设计并实现一个完整的多格式文件处理模块。要求：
 
@@ -40,53 +42,152 @@ prompt:
     - file_processor/txt_processor.py
     - file_processor/markdown_processor.py
     - file_processor/docx_processor.py
-  language: zh
 
+    交付要求：
+    - 需要修改已有文件时，请把修改后的版本写到 `/workspace/` 下对应的原项目相对路径。
+    - 需要新增文件时，请按需求中的文件名或上面列出的目标路径写到 `/workspace/` 下。
+    - 最终回复只需概述完成情况、关键改动和生成的文件；不要只在最终回复中贴代码或报告正文。
+  language: zh
 tools: []
 tool_endpoints: []
-
 sandbox_files:
-  - fixtures/existing_code.py
-  - fixtures/config_template.py
-  - fixtures/sample_input.md
-  - fixtures/sample_input.txt
-
+- fixtures/project_design.docx
+- fixtures/existing_code.py
+- fixtures/sample_input.md
+- fixtures/sample_input.txt
+- fixtures/config_template.py
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
   timeout_seconds: 600
   max_turns: 30
-
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/file_processor/config.py
-  - /workspace/file_processor/base.py
-  - /workspace/file_processor/txt_processor.py
-  - /workspace/file_processor/markdown_processor.py
+- /workspace/file_processor/config.py
+- /workspace/file_processor/base.py
+- /workspace/file_processor/txt_processor.py
+- /workspace/file_processor/markdown_processor.py
+- /workspace/file_processor/docx_processor.py
+- /workspace/project_design.docx
+- /workspace/existing_code.py
+- /workspace/sample_input.md
+- /workspace/sample_input.txt
+- /workspace/config_template.py
 scoring_components: []
-
 safety_checks: []
-
 expected_actions: []
-
 judge_rubric: |
-  评估 agent 是否根据需求创建了完整的多格式文件处理模块。
-  - 模块架构：抽象基类 + 4个处理器 + 配置分离
-  - 切分逻辑：TXT按字符、MD先标题后字符
-  - 代码复用：是否利用了existing_code.py中的函数
-  - 可扩展性：新增格式是否只需添加新处理器
+  ## Expected Behavior
 
+  1. Agent reads project_design.docx and existing_code.py for context
+  2. Agent reads sample files and config_template.py
+  3. Agent creates the file_processor package structure
+  4. Agent implements base class/interface with common chunking logic
+  5. Agent implements TXT processor with character-count chunking
+  6. Agent implements Markdown processor with heading-first then character chunking
+  7. Agent implements DOCX processor leveraging python-docx patterns
+  8. Agent creates config.py with all configuration parameters
+
+  ## Grading Criteria
+
+  - [ ] read_inputs
+  - [ ] package_structure
+  - [ ] config_params
+  - [ ] txt_chunking
+  - [ ] md_heading_split
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: 模块架构设计质量 (Weight: 30%)
+  **Score 1.0**: 清晰的分层架构——抽象基类定义统一接口（process/chunk方法）、各格式处理器继承基类实现特定逻辑、配置与处理逻辑完全分离；依赖关系清晰，各模块可独立测试和替换。
+  **Score 0.75**: 架构合理但抽象程度略有不足，如缺少统一接口或个别处理器耦合过紧。
+  **Score 0.5**: 有基本的文件分离但缺乏统一的抽象设计。
+  **Score 0.25**: 代码分散在多个文件但无清晰的架构设计。
+  **Score 0.0**: 所有代码堆在单一文件中。
+
+  ### Criterion 2: 切分策略实现正确性 (Weight: 30%)
+  **Score 1.0**: TXT按字符数量切分实现正确（支持重叠）；Markdown先按标题层级（#/##/###）切分成语义段落再按字符数切分；DOCX正确提取文本后复用切分逻辑；切分结果保留了文档结构信息。
+  **Score 0.75**: 核心切分逻辑正确但边界处理（如标题跨越、空段落）不够完善。
+  **Score 0.5**: 实现了基本切分但Markdown的标题层级切分不够精确。
+  **Score 0.25**: 仅实现了简单的固定长度切分，未区分格式。
+  **Score 0.0**: 切分逻辑未实现或严重错误。
+
+  ### Criterion 3: 现有代码复用与集成 (Weight: 20%)
+  **Score 1.0**: 合理复用了existing_code.py中的MinerU API调用、图片提取和上下文获取函数；对现有代码进行了适当的封装和适配而非简单复制；新代码与现有代码风格一致。
+  **Score 0.75**: 复用了大部分现有函数但封装不够优雅。
+  **Score 0.5**: 部分复用了现有代码但有重复实现。
+  **Score 0.25**: 知道现有代码存在但基本重写。
+  **Score 0.0**: 完全忽略了现有代码。
+
+  ### Criterion 4: 配置管理与可扩展性 (Weight: 20%)
+  **Score 1.0**: config.py包含所有必要参数（切分大小、重叠量、存储配置等）且有合理默认值；支持环境变量覆盖；处理器通过配置而非硬编码控制行为；新增格式只需添加新处理器类。
+  **Score 0.75**: 配置基本完整但缺少环境变量支持或个别参数硬编码。
+  **Score 0.5**: 有config.py但参数不完整或部分参数仍硬编码在处理器中。
+  **Score 0.25**: 配置管理初步但不系统。
+  **Score 0.0**: 无独立配置管理。
 reference_solution: |
-  1. file_processor/__init__.py: 注册所有处理器，提供统一入口
-  2. file_processor/config.py: CHUNK_SIZE=500, OVERLAP_SIZE=50, 存储配置
-  3. file_processor/base.py: BaseProcessor抽象类, process() + chunk() 方法
-  4. file_processor/txt_processor.py: 按CHUNK_SIZE字符切分，支持OVERLAP
-  5. file_processor/markdown_processor.py: 正则按#/##/###切分段落，再按字符切分
-  6. file_processor/docx_processor.py: python-docx读取段落，复用切分逻辑
+  原始来源：taskset-260408-212200/task_01_file_processor_design
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：A developer is building an Agentic RAG system that needs a file processing module
+  supporting multiple formats (TXT, Markdown, DOCX, images). The module must implement
+  format-specific processing pipelines, chunking strategies, and produce a well-structured
+  Python codebase with configuration separation and high cohesion / low coupling.
+
+
+  隐藏 verifier 主要检查项：base_has_abstract_interface, config_env_overridable, docx_uses_library, md_heading_then_char, no_hardcoded_chunk_size, package_structure_exact, processor_independence, read_all_inputs, reuses_existing_code, txt_uses_sliding_window
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent reads project_design.docx and existing_code.py for context
+  2. Agent reads sample files and config_template.py
+  3. Agent creates the file_processor package structure
+  4. Agent implements base class/interface with common chunking logic
+  5. Agent implements TXT processor with character-count chunking
+  6. Agent implements Markdown processor with heading-first then character chunking
+  7. Agent implements DOCX processor leveraging python-docx patterns
+  8. Agent creates config.py with all configuration parameters
+
+  ## Grading Criteria
+
+  - [ ] read_inputs
+  - [ ] package_structure
+  - [ ] config_params
+  - [ ] txt_chunking
+  - [ ] md_heading_split
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: 模块架构设计质量 (Weight: 30%)
+  **Score 1.0**: 清晰的分层架构——抽象基类定义统一接口（process/chunk方法）、各格式处理器继承基类实现特定逻辑、配置与处理逻辑完全分离；依赖关系清晰，各模块可独立测试和替换。
+  **Score 0.75**: 架构合理但抽象程度略有不足，如缺少统一接口或个别处理器耦合过紧。
+  **Score 0.5**: 有基本的文件分离但缺乏统一的抽象设计。
+  **Score 0.25**: 代码分散在多个文件但无清晰的架构设计。
+  **Score 0.0**: 所有代码堆在单一文件中。
+
+  ### Criterion 2: 切分策略实现正确性 (Weight: 30%)
+  **Score 1.0**: TXT按字符数量切分实现正确（支持重叠）；Markdown先按标题层级（#/##/###）切分成语义段落再按字符数切分；DOCX正确提取文本后复用切分逻辑；切分结果保留了文档结构信息。
+  **Score 0.75**: 核心切分逻辑正确但边界处理（如标题跨越、空段落）不够完善。
+  **Score 0.5**: 实现了基本切分但Markdown的标题层级切分不够精确。
+  **Score 0.25**: 仅实现了简单的固定长度切分，未区分格式。
+  **Score 0.0**: 切分逻辑未实现或严重错误。
+
+  ### Criterion 3: 现有代码复用与集成 (Weight: 20%)
+  **Score 1.0**: 合理复用了existing_code.py中的MinerU API调用、图片提取和上下文获取函数；对现有代码进行了适当的封装和适配而非简单复制；新代码与现有代码风格一致。
+  **Score 0.75**: 复用了大部分现有函数但封装不够优雅。
+  **Score 0.5**: 部分复用了现有代码但有重复实现。
+  **Score 0.25**: 知道现有代码存在但基本重写。
+  **Score 0.0**: 完全忽略了现有代码。
+
+  ### Criterion 4: 配置管理与可扩展性 (Weight: 20%)
+  **Score 1.0**: config.py包含所有必要参数（切分大小、重叠量、存储配置等）且有合理默认值；支持环境变量覆盖；处理器通过配置而非硬编码控制行为；新增格式只需添加新处理器类。
+  **Score 0.75**: 配置基本完整但缺少环境变量支持或个别参数硬编码。
+  **Score 0.5**: 有config.py但参数不完整或部分参数仍硬编码在处理器中。
+  **Score 0.25**: 配置管理初步但不系统。
+  **Score 0.0**: 无独立配置管理。
+primary_dimensions:
+- completion
+- robustness
+- communication

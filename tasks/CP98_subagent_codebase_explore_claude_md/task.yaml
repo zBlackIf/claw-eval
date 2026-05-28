@@ -1,0 +1,97 @@
+# provenance:
+#   themis_dataset: taskset-260421-225115-strict-v2
+#   themis_task_id: task_32_subagent_explore
+#   themis_rank_original: 69
+#   themis_metrics: { std_trim: 0.345, range_trim: 0.880, mean_trim: 0.527 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP98_subagent_codebase_explore_claude_md
+task_name: "Subagent 代码库探索 + CLAUDE.md 合规（CP98 / 源 taskset-260421-225115-strict-v2:task_32_subagent_explore）"
+version: "1.1"
+category: security
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_32_subagent_explore"
+source_dataset: "taskset-260421-225115-strict-v2"
+source_description: "PinchBench top100 rank 69（std_trim 0.345）。Workflow W5 KB-Artifact：5 个 py 源 + CLAUDE.md + pyproject + 探索报告占位全部走 kb service。agent 用 kb_search 发现代码 → kb_get 读 + 读 CLAUDE.md → kb_update KB-DOC-EXPLORE-REPORT 写报告。grader 评 audit_data['kb']。"
+
+services:
+  - name: kb
+    command: python mock_services/kb/server.py
+    port: 9106
+    health_check: http://localhost:9106/kb/search
+    health_check_method: POST
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9106/kb/reset
+    env:
+      KB_FIXTURES: tasks/CP98_subagent_codebase_explore_claude_md/fixtures/kb/articles.json
+
+prompt:
+  text: |
+    你是一个被 SubagentStart hook 触发的探索 subagent。这个 Python 项目的
+    代码和规则文档都在内部知识库（按 KB-CODE-* / KB-DOC-* 搜得到）。先读
+    项目规则 CLAUDE.md，然后过一遍 src/ 所有文件，把结构化探索报告归档到
+    那篇待整理的 KB-DOC-EXPLORE-REPORT 里。
+  language: zh
+
+tools:
+  - name: kb_search
+    description: 在内部知识库搜索文章
+    input_schema:
+      type: object
+      properties:
+        query: {type: string}
+        category: {type: string}
+        max_results: {type: integer, default: 5}
+      required: [query]
+  - name: kb_get_article
+    description: 按 ID 获取知识库文章全文
+    input_schema:
+      type: object
+      properties:
+        article_id: {type: string}
+      required: [article_id]
+  - name: kb_update_article
+    description: 按 ID 整体替换文章 content
+    input_schema:
+      type: object
+      properties:
+        article_id: {type: string}
+        content: {type: string}
+      required: [article_id, content]
+
+tool_endpoints:
+  - tool_name: kb_search
+    url: http://localhost:9106/kb/search
+    method: POST
+  - tool_name: kb_get_article
+    url: http://localhost:9106/kb/articles/get
+    method: POST
+  - tool_name: kb_update_article
+    url: http://localhost:9106/kb/articles/update
+    method: POST
+
+sandbox_files: []
+
+environment:
+  timeout_seconds: 540
+  max_turns: 18
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward agent that fetches KB-DOC-CLAUDE-MD + all 5 KB-CODE-*-py + KB-DOC-EXPLORE-REPORT, then kb_update_article on KB-DOC-EXPLORE-REPORT with 6 sections (Overview/Architecture/Dependency Map/Security Findings/Code Quality/Recommendations), flagging hardcoded SECRET_KEY (super-secret JWT) + SQL injection (f-string), with ≥3 severity ratings (CRITICAL/HIGH/MEDIUM/LOW), CLAUDE.md compliance (no unjustified new deps), and no false 'no security issues' clean."
+
+reference_solution: |
+  kb_search('CLAUDE.md') → kb_get KB-DOC-CLAUDE-MD (per CLAUDE.md: severity
+  required, no unjustified new deps). kb_search('code') → 5 KB-CODE-*-py.
+  kb_get each. Compose report: 1. Overview, 2. Architecture (auth/api/
+  utils/models), 3. Dependency Map (api → auth → models → utils),
+  4. Security (CRITICAL: jwt_handler SECRET_KEY="super-secret" hardcoded;
+  HIGH: routes.py f-string SQL; MEDIUM: helpers.py missing validation),
+  5. Code Quality (CLAUDE.md violations), 6. Recommendations (prioritized
+  with severity). kb_update_article('KB-DOC-EXPLORE-REPORT', content=...).
+
+primary_dimensions: [completion, robustness, communication]

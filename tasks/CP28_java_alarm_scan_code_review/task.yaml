@@ -1,92 +1,172 @@
 task_id: CP28_java_alarm_scan_code_review
 task_name: Java Alarm Scan Engine Code Review
-version: "1.0"
+version: '2.0'
 category: code_review
 difficulty: medium
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_05_java_code_review"
-source_dataset: "taskset-260408-212200"
-source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
-
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_05_java_code_review
+source_dataset: taskset-260408-212200
+source_description: Redesigned from taskset-260408-212200/task_05_java_code_review with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
 services: []
-
 prompt:
   text: |
-    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
-    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+    I have placed the original project materials under `/workspace/fixtures/`. Treat those files as read-only inputs.
 
-    - `/workspace/fixtures/design_spec.md`
-    - `/workspace/fixtures/src/main/java/com/example/rule/RuleEngine.java`
-    - `/workspace/fixtures/src/main/java/com/example/scanner/AlarmScanner.java`
-    - `/workspace/fixtures/src/main/java/com/example/notify/EmailNotifier.java`
+    Input files are listed below; the right side is each file's original project-relative path:
+    - `/workspace/fixtures/design_spec.md` -> `design_spec.md`
+    - `/workspace/fixtures/src/main/java/com/example/scanner/AlarmScanner.java` -> `src/main/java/com/example/scanner/AlarmScanner.java`
+    - `/workspace/fixtures/src/main/java/com/example/rule/RuleEngine.java` -> `src/main/java/com/example/rule/RuleEngine.java`
+    - `/workspace/fixtures/src/main/java/com/example/notify/EmailNotifier.java` -> `src/main/java/com/example/notify/EmailNotifier.java`
 
-    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+    Use those inputs to complete the original request below:
 
     As a senior Java developer, review the alarm-scan-engine project code. Read the design_spec.md first, then review each source file. Produce a review report (review_report.md) covering:
     1. Project structure clarity and code readability (clean code compliance)
     2. Whether the implementation follows the alarm classification design spec (identify missing components)
     3. Specific code issues with severity (CRITICAL/HIGH/MEDIUM/LOW)
     4. Actionable improvement suggestions
-  language: en
 
+    Delivery requirements:
+    - When you modify an existing file, write the modified version under `/workspace/` using the same project-relative path.
+    - When you create a new file, write it under `/workspace/` using the filename or target path requested above.
+    - In your final response, only summarize the status, key changes, and generated files; do not only paste code or report text in chat.
+  language: en
 tools: []
 tool_endpoints: []
-
 sandbox_files:
-  - fixtures/design_spec.md
-  - fixtures/src/main/java/com/example/rule/RuleEngine.java
-  - fixtures/src/main/java/com/example/scanner/AlarmScanner.java
-  - fixtures/src/main/java/com/example/notify/EmailNotifier.java
-
+- fixtures/design_spec.md
+- fixtures/src/main/java/com/example/scanner/AlarmScanner.java
+- fixtures/src/main/java/com/example/rule/RuleEngine.java
+- fixtures/src/main/java/com/example/notify/EmailNotifier.java
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
   timeout_seconds: 600
   max_turns: 30
-
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/review_report.md
-  - /workspace/**/*.md
-  - /workspace/**/*review*
+- /workspace/review_report.md
+- /workspace/**/*.md
+- /workspace/**/*review*
+- /workspace/design_spec.md
+- /workspace/src/main/java/com/example/scanner/AlarmScanner.java
+- /workspace/src/main/java/com/example/rule/RuleEngine.java
+- /workspace/src/main/java/com/example/notify/EmailNotifier.java
 scoring_components: []
-
 safety_checks: []
-
 expected_actions: []
-
 judge_rubric: |
-  Evaluate whether the agent produced a comprehensive Java code review.
+  ## Expected Behavior
 
-  ## Analysis Depth
-  - Did the agent read the design spec AND all source files?
-  - Did the agent identify key issues: public fields, swallowed exceptions, hardcoded values, missing interface?
-  - Did the agent identify missing components from the spec (Repository, Builder, Strategy pattern)?
+  1. Agent reads design_spec.md to understand the intended architecture
+  2. Agent reads AlarmScanner.java and identifies: not an interface (TODO noted), mutable state
+  3. Agent reads RuleEngine.java and identifies: public field, swallowed exception, returns null
+  4. Agent reads EmailNotifier.java and identifies: hardcoded values, no Strategy pattern, no interface
+  5. Agent identifies missing components: AlarmRepository, NotificationDispatcher, Builder pattern, YAML config
+  6. Agent writes review_report.md with structured findings
 
-  ## Report Quality
-  - Does the report have severity classifications (CRITICAL/HIGH/MEDIUM/LOW)?
-  - Are suggestions actionable and specific?
-  - Is the report well-structured?
+  ## Grading Criteria
 
-  ## Scoring
-  - 0.9-1.0: Comprehensive review, all major issues found, well-structured report
-  - 0.7-0.8: Most issues found, report exists but may miss some
-  - 0.4-0.6: Partial review, some issues found
-  - 0.0-0.3: Incomplete or superficial review
+  - [ ] read_spec
+  - [ ] read_sources
+  - [ ] report_created
+  - [ ] issues_identified
+  - [ ] has_severity
 
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Code Issue Detection (Weight: 30%)
+  **Score 1.0**: Identified all major issues: AlarmScanner as concrete class instead of interface, public rules field in RuleEngine, silently swallowed exception, hardcoded SMTP and recipient in EmailNotifier, null return pattern, mutable state in scanner.
+  **Score 0.75**: Identified 4-5 of the major issues with clear explanations.
+  **Score 0.5**: Identified 2-3 issues but missed critical ones like swallowed exception or public field.
+  **Score 0.25**: Identified only 1 obvious issue.
+  **Score 0.0**: Failed to identify meaningful code issues.
+
+  ### Criterion 2: Design Spec Alignment (Weight: 30%)
+  **Score 1.0**: Thoroughly checked implementation against spec -- identified missing AlarmRepository, missing NotificationDispatcher interface (Strategy pattern), missing Builder pattern for Alarm, missing YAML configuration, missing Chain of Responsibility in RuleEngine.
+  **Score 0.75**: Identified 3-4 missing components from the design spec.
+  **Score 0.5**: Identified 1-2 missing components, incomplete gap analysis.
+  **Score 0.25**: Vaguely mentioned some gaps without specifics.
+  **Score 0.0**: Did not compare implementation against design spec.
+
+  ### Criterion 3: Review Structure and Actionability (Weight: 25%)
+  **Score 1.0**: Review is well-structured with severity classifications (CRITICAL/HIGH/MEDIUM/LOW), each finding has clear description, location, and actionable fix suggestion; organized by file or category.
+  **Score 0.75**: Good structure with severity levels, most findings have actionable suggestions.
+  **Score 0.5**: Has findings but lacks consistent structure or severity classification.
+  **Score 0.25**: Unstructured list of observations without severity or clear suggestions.
+  **Score 0.0**: No structured review output.
+
+  ### Criterion 4: Clean Code Assessment (Weight: 15%)
+  **Score 1.0**: Assessed code against clean code principles -- naming conventions, single responsibility, encapsulation, dependency injection, error handling patterns; provided specific examples from the code.
+  **Score 0.75**: Good clean code assessment covering most principles with code references.
+  **Score 0.5**: Mentioned some clean code concepts but without code-specific examples.
+  **Score 0.25**: Superficial clean code commentary.
+  **Score 0.0**: No clean code assessment.
 reference_solution: |
-  Key issues to find:
-  1. RuleEngine.rules is public (should be private) - HIGH
-  2. Exception silently swallowed in RuleEngine.evaluate() - CRITICAL
-  3. EmailNotifier has hardcoded SMTP config and recipient - HIGH
-  4. AlarmScanner is a concrete class (design spec requires interface) - MEDIUM
-  5. Missing: AlarmRepository, AlarmClassifier interface, Builder pattern, Strategy pattern for notifications
-  6. No dependency injection framework
+  原始来源：taskset-260408-212200/task_05_java_code_review
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：A senior Java developer needs to review an alarm scan engine project for code
+  quality, clean code compliance, and alignment with the alarm classification design
+  specification. The review must cover project structure, readability, and implementation
+  completeness against the design document.
+
+
+  隐藏 verifier 主要检查项：has_severity, issues_identified, read_sources, read_spec, report_created
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent reads design_spec.md to understand the intended architecture
+  2. Agent reads AlarmScanner.java and identifies: not an interface (TODO noted), mutable state
+  3. Agent reads RuleEngine.java and identifies: public field, swallowed exception, returns null
+  4. Agent reads EmailNotifier.java and identifies: hardcoded values, no Strategy pattern, no interface
+  5. Agent identifies missing components: AlarmRepository, NotificationDispatcher, Builder pattern, YAML config
+  6. Agent writes review_report.md with structured findings
+
+  ## Grading Criteria
+
+  - [ ] read_spec
+  - [ ] read_sources
+  - [ ] report_created
+  - [ ] issues_identified
+  - [ ] has_severity
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Code Issue Detection (Weight: 30%)
+  **Score 1.0**: Identified all major issues: AlarmScanner as concrete class instead of interface, public rules field in RuleEngine, silently swallowed exception, hardcoded SMTP and recipient in EmailNotifier, null return pattern, mutable state in scanner.
+  **Score 0.75**: Identified 4-5 of the major issues with clear explanations.
+  **Score 0.5**: Identified 2-3 issues but missed critical ones like swallowed exception or public field.
+  **Score 0.25**: Identified only 1 obvious issue.
+  **Score 0.0**: Failed to identify meaningful code issues.
+
+  ### Criterion 2: Design Spec Alignment (Weight: 30%)
+  **Score 1.0**: Thoroughly checked implementation against spec -- identified missing AlarmRepository, missing NotificationDispatcher interface (Strategy pattern), missing Builder pattern for Alarm, missing YAML configuration, missing Chain of Responsibility in RuleEngine.
+  **Score 0.75**: Identified 3-4 missing components from the design spec.
+  **Score 0.5**: Identified 1-2 missing components, incomplete gap analysis.
+  **Score 0.25**: Vaguely mentioned some gaps without specifics.
+  **Score 0.0**: Did not compare implementation against design spec.
+
+  ### Criterion 3: Review Structure and Actionability (Weight: 25%)
+  **Score 1.0**: Review is well-structured with severity classifications (CRITICAL/HIGH/MEDIUM/LOW), each finding has clear description, location, and actionable fix suggestion; organized by file or category.
+  **Score 0.75**: Good structure with severity levels, most findings have actionable suggestions.
+  **Score 0.5**: Has findings but lacks consistent structure or severity classification.
+  **Score 0.25**: Unstructured list of observations without severity or clear suggestions.
+  **Score 0.0**: No structured review output.
+
+  ### Criterion 4: Clean Code Assessment (Weight: 15%)
+  **Score 1.0**: Assessed code against clean code principles -- naming conventions, single responsibility, encapsulation, dependency injection, error handling patterns; provided specific examples from the code.
+  **Score 0.75**: Good clean code assessment covering most principles with code references.
+  **Score 0.5**: Mentioned some clean code concepts but without code-specific examples.
+  **Score 0.25**: Superficial clean code commentary.
+  **Score 0.0**: No clean code assessment.
+primary_dimensions:
+- completion
+- robustness
+- communication

@@ -1,25 +1,26 @@
 task_id: CP26_mpython_optical_encoder_speedometer
 task_name: mPython光电编码器测速系统重写
-version: "1.0"
+version: '2.0'
 category: code_generation
 difficulty: hard
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_21_arduino_speedometer"
-source_dataset: "taskset-260421-225115"
-source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
-
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_21_arduino_speedometer
+source_dataset: taskset-260421-225115
+source_description: Redesigned from taskset-260421-225115/task_21_arduino_speedometer with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
 services: []
-
 prompt:
   text: |
-    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
-    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+    我已经把原始项目素材放在容器的 `/workspace/fixtures/` 目录下，请把这些文件当作只读输入。
 
-    - `/workspace/fixtures/DS_speed_car/diagnostic_data.csv`
-    - `/workspace/fixtures/DS_speed_car/sensor_test_reference.py`
+    输入文件如下（右侧是它在原项目中的相对路径）：
+    - `/workspace/fixtures/DS_speed_car/diagnostic_data.csv` -> `DS_speed_car/diagnostic_data.csv`
+    - `/workspace/fixtures/DS_speed_car/sensor_test_reference.py` -> `DS_speed_car/sensor_test_reference.py`
 
-    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+    请基于这些输入完成下面的原始需求：
 
     现在请你充当一下硬件工程师。
 
@@ -39,60 +40,140 @@ prompt:
     代码必须符合mPython的microPython规范，参考 DS_speed_car/sensor_test_reference.py 中的引脚初始化方式。
 
     同时给每个程序附一个说明md文件。
-  language: zh
 
+    交付要求：
+    - 需要修改已有文件时，请把修改后的版本写到 `/workspace/` 下对应的原项目相对路径。
+    - 需要新增文件时，请按需求中的文件名或上面列出的目标路径写到 `/workspace/` 下。
+    - 最终回复只需概述完成情况、关键改动和生成的文件；不要只在最终回复中贴代码或报告正文。
+  language: zh
 tools: []
 tool_endpoints: []
-
 sandbox_files:
-  - fixtures/DS_speed_car/diagnostic_data.csv
-  - fixtures/DS_speed_car/sensor_test_reference.py
-
+- fixtures/DS_speed_car/diagnostic_data.csv
+- fixtures/DS_speed_car/sensor_test_reference.py
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
   timeout_seconds: 600
   max_turns: 30
-
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/DS_speed_car
-  - /workspace/**/*master*.py
-  - /workspace/**/*slave*.py
+- /workspace/DS_speed_car
+- /workspace/DS_speed_car/master_speedometer.py
+- /workspace/DS_speed_car/slave_display.py
+- /workspace/DS_speed_car/diagnostic_data.csv
+- /workspace/DS_speed_car/sensor_test_reference.py
 scoring_components: []
-
 safety_checks: []
-
 expected_actions: []
-
 judge_rubric: |
-  评估 agent 是否正确重写了 mPython 光电测速系统。
+  ## Expected Behavior
 
-  ## 核心修复
-  - 是否实现了动态校准流程（A键开始/B键结束）
-  - 阈值是否基于实测电压动态计算（非硬编码）
-  - 状态机是否完整（未校准→校准中→已校准→测量中）
-  - 每个脉冲是否产生速度数据（非时间批次）
-  - 是否有2秒超时自动停止
+  1. Agent reads diagnostic data to understand actual voltage ranges
+  2. Agent reads reference code to understand mPython API conventions
+  3. Creates master program with calibration state machine
+  4. Creates slave program for wireless data reception
+  5. Creates documentation for both programs
+  6. Uses correct mPython APIs (MPythonPin, PinMode, button_a, oled, etc.)
 
-  ## API 合规
-  - 是否使用正确的 mPython API（MPythonPin, PinMode, read_analog, oled, button_a/b）
-  - 是否参考了 sensor_test_reference.py 的引脚初始化
+  ## Grading Criteria
 
-  ## 评分标准
-  - 0.9-1.0: 全部功能正确实现，API合规
-  - 0.7-0.8: 主要功能正确，少量API不合规
-  - 0.4-0.6: 部分功能实现但有明显错误
-  - 0.0-0.3: 未完成或严重错误
+  - [ ] master_program_created: Master program .py file created
+  - [ ] slave_program_created: Slave program .py file created
+  - [ ] calibration_flow: Master has A-key calibration, B-key stop calibration logic
+  - [ ] dynamic_threshold: Threshold computed from calibration data, not hardcoded
+  - [ ] per_pulse_speed: Each pulse generates a speed data point
+  - [ ] auto_stop: 2-second timeout stops measurement
+  - [ ] correct_mpython_api: Uses MPythonPin, PinMode.ANALOG, oled.DispChar etc.
 
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Bug Fix Effectiveness (Weight: 30%)
+    - 1.0: Dynamic calibration fully replaces hardcoded thresholds, addresses the exact voltage range issue (1359-4095) shown in diagnostic data
+    - 0.75: Calibration implemented but might not handle the full voltage range
+    - 0.5: Partial fix - wider thresholds but still hardcoded
+    - 0.25: Acknowledges the problem but fix is insufficient
+    - 0.0: Same hardcoded thresholds or worse
+
+  ### Criterion 2: State Machine Design (Weight: 25%)
+    - 1.0: Clean state machine with proper transitions (idle->calibrating->calibrated->measuring->done), handles edge cases
+    - 0.75: State machine works but edge cases not handled
+    - 0.5: States exist but transitions are fragile
+    - 0.25: No clear state machine, ad-hoc logic
+    - 0.0: No state management
+
+  ### Criterion 3: Signal Processing (Weight: 25%)
+    - 1.0: Correct hysteresis filter with dynamic thresholds, per-pulse speed calculation using arc distance, proper edge detection
+    - 0.75: Good signal processing with minor issues
+    - 0.5: Basic edge detection but no hysteresis
+    - 0.25: Speed calculation has physics errors
+    - 0.0: No meaningful signal processing
+
+  ### Criterion 4: mPython API Compliance (Weight: 20%)
+    - 1.0: All APIs match mPython spec (MPythonPin, read_analog, write_digital, oled.DispChar, button_a.value, wifi/radio for wireless)
+    - 0.75: Most APIs correct, 1-2 wrong
+    - 0.5: Mix of correct and incorrect APIs
+    - 0.25: Mostly standard Python, not mPython
+    - 0.0: No mPython-specific APIs used
 reference_solution: |
-  1. 主机程序实现动态校准+状态机+逐脉冲测速
-  2. 从机程序接收无线数据并串口输出
-  3. 两个说明md文件
+  原始来源：taskset-260421-225115/task_21_arduino_speedometer
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：mpython_optical_speedometer_calibration
+
+  隐藏 verifier 主要检查项：auto_stop, calibration_flow, correct_mpython_api, dynamic_threshold, master_program_created, per_pulse_speed, slave_program_created
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent reads diagnostic data to understand actual voltage ranges
+  2. Agent reads reference code to understand mPython API conventions
+  3. Creates master program with calibration state machine
+  4. Creates slave program for wireless data reception
+  5. Creates documentation for both programs
+  6. Uses correct mPython APIs (MPythonPin, PinMode, button_a, oled, etc.)
+
+  ## Grading Criteria
+
+  - [ ] master_program_created: Master program .py file created
+  - [ ] slave_program_created: Slave program .py file created
+  - [ ] calibration_flow: Master has A-key calibration, B-key stop calibration logic
+  - [ ] dynamic_threshold: Threshold computed from calibration data, not hardcoded
+  - [ ] per_pulse_speed: Each pulse generates a speed data point
+  - [ ] auto_stop: 2-second timeout stops measurement
+  - [ ] correct_mpython_api: Uses MPythonPin, PinMode.ANALOG, oled.DispChar etc.
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Bug Fix Effectiveness (Weight: 30%)
+    - 1.0: Dynamic calibration fully replaces hardcoded thresholds, addresses the exact voltage range issue (1359-4095) shown in diagnostic data
+    - 0.75: Calibration implemented but might not handle the full voltage range
+    - 0.5: Partial fix - wider thresholds but still hardcoded
+    - 0.25: Acknowledges the problem but fix is insufficient
+    - 0.0: Same hardcoded thresholds or worse
+
+  ### Criterion 2: State Machine Design (Weight: 25%)
+    - 1.0: Clean state machine with proper transitions (idle->calibrating->calibrated->measuring->done), handles edge cases
+    - 0.75: State machine works but edge cases not handled
+    - 0.5: States exist but transitions are fragile
+    - 0.25: No clear state machine, ad-hoc logic
+    - 0.0: No state management
+
+  ### Criterion 3: Signal Processing (Weight: 25%)
+    - 1.0: Correct hysteresis filter with dynamic thresholds, per-pulse speed calculation using arc distance, proper edge detection
+    - 0.75: Good signal processing with minor issues
+    - 0.5: Basic edge detection but no hysteresis
+    - 0.25: Speed calculation has physics errors
+    - 0.0: No meaningful signal processing
+
+  ### Criterion 4: mPython API Compliance (Weight: 20%)
+    - 1.0: All APIs match mPython spec (MPythonPin, read_analog, write_digital, oled.DispChar, button_a.value, wifi/radio for wireless)
+    - 0.75: Most APIs correct, 1-2 wrong
+    - 0.5: Mix of correct and incorrect APIs
+    - 0.25: Mostly standard Python, not mPython
+    - 0.0: No mPython-specific APIs used
+primary_dimensions:
+- completion
+- robustness
+- communication

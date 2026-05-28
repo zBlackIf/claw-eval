@@ -56,6 +56,15 @@ def automated_score(workspace: Path) -> dict[str, float]:
         }
         found = sum(1 for v in vuln_checks.values() if v)
         scores["vulns_identified"] = round(found / 5.0, 2)
+        control_checks = {
+            "canonical_path": bool(re.search(r"canonical|normalize|realpath|标准化", content, re.I)),
+            "extension_allowlist": bool(re.search(r"allowlist|whitelist|白名单|扩展名", content, re.I)),
+            "size_limit": bool(re.search(r"max.*size|size.*limit|大小限制", content, re.I)),
+            "outside_webroot": bool(re.search(r"outside.*web|非web|private|不可直接访问|web.?root", content, re.I)),
+            "auth_or_csrf": bool(re.search(r"auth|鉴权|csrf|token|permission", content, re.I)),
+            "virus_or_content_scan": bool(re.search(r"scan|virus|mime|content.?type|内容校验", content, re.I)),
+        }
+        scores["security_controls_covered"] = sum(control_checks.values()) / len(control_checks)
 
         # Has risk level classification
         has_risk_level = bool(re.search(
@@ -77,7 +86,14 @@ def automated_score(workspace: Path) -> dict[str, float]:
     # Check fix code exists
     fix_files = list(workspace.rglob("*fix*")) + list(workspace.rglob("*secure*"))
     java_fix = [f for f in fix_files if f.suffix in (".java", ".ts")]
-    scores["fix_code_present"] = 1.0 if java_fix else 0.0
+    fix_text = "\n".join(f.read_text(encoding="utf-8", errors="ignore") for f in java_fix[:5])
+    code_controls = [
+        bool(re.search(r"normalize|canonical|Paths\.get|getCanonical", fix_text, re.I)),
+        bool(re.search(r"MAX_|max.*size|contentLength|size", fix_text, re.I)),
+        bool(re.search(r"allow|white|extension|mime|contentType", fix_text, re.I)),
+        bool(re.search(r"uuid|random|sanitize|clean", fix_text, re.I)),
+    ]
+    scores["fix_code_present"] = min(sum(code_controls) / 3.0, 1.0) if java_fix else 0.0
 
     return scores
 

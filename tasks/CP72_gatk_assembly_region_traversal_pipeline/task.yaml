@@ -1,0 +1,97 @@
+# provenance:
+#   themis_dataset: taskset-260421-225115-strict-v2
+#   themis_task_id: task_02_gatk_assembly_region_analysis
+#   themis_rank_original: 37
+#   themis_metrics: { std_trim: 0.392, range_trim: 0.860, mean_trim: 0.613 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP72_gatk_assembly_region_traversal_pipeline
+task_name: "GATK HaplotypeCaller AssemblyRegion 调用链分析（CP72 / 源 taskset-260421-225115-strict-v2:task_02_gatk_assembly_region_analysis）"
+version: "1.1"
+category: synthesis
+difficulty: hard
+tags: [general]
+
+source_task_id: "task_02_gatk_assembly_region_analysis"
+source_dataset: "taskset-260421-225115-strict-v2"
+source_description: "PinchBench top100 rank 37（std_trim 0.392，strict-v2）。Workflow W5：5 个 java 源 + debug 日志 + 分析文档占位全部走 kb service。agent 用 kb_search/get 跟踪代码调用链 + 读日志，kb_update KB-CODE-PIPELINE-ANALYSIS 填分析。grader 评 audit_data['kb']。"
+
+services:
+  - name: kb
+    command: python mock_services/kb/server.py
+    port: 9106
+    health_check: http://localhost:9106/kb/search
+    health_check_method: POST
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9106/kb/reset
+    env:
+      KB_FIXTURES: tasks/CP72_gatk_assembly_region_traversal_pipeline/fixtures/kb/articles.json
+
+prompt:
+  text: |
+    在研究 GATK HaplotypeCaller 的源码。代码索引和最近一次 debug 日志都在
+    内部知识库（按文件名搜得到）。帮我追一下从 `traverse()` 到
+    `apply(assemblyRegion)` 的完整数据流，把分析归档到那篇待整理的
+    调用链分析文档里。另外看 debug 日志里有没有异常迹象。
+  language: zh
+
+tools:
+  - name: kb_search
+    description: 在内部知识库搜索文章
+    input_schema:
+      type: object
+      properties:
+        query: {type: string}
+        category: {type: string}
+        max_results: {type: integer, default: 5}
+      required: [query]
+  - name: kb_get_article
+    description: 按 ID 获取知识库文章全文
+    input_schema:
+      type: object
+      properties:
+        article_id: {type: string}
+      required: [article_id]
+  - name: kb_update_article
+    description: 按 ID 整体替换文章 content
+    input_schema:
+      type: object
+      properties:
+        article_id: {type: string}
+        content: {type: string}
+      required: [article_id, content]
+
+tool_endpoints:
+  - tool_name: kb_search
+    url: http://localhost:9106/kb/search
+    method: POST
+  - tool_name: kb_get_article
+    url: http://localhost:9106/kb/articles/get
+    method: POST
+  - tool_name: kb_update_article
+    url: http://localhost:9106/kb/articles/update
+    method: POST
+
+sandbox_files: []
+
+environment:
+  timeout_seconds: 720
+  max_turns: 22
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward agent that searches kb for 5 code articles (AssemblyRegionWalker/Iterator/MultiIntervalLocalReadShard/GATKTool/HaplotypeCallerEngine) + KB-LOG-GATK-DEBUG + KB-CODE-PIPELINE-ANALYSIS, fetches each, kb_update analysis with: call chain (traverse→processReadShard→AssemblyRegionIterator.loadNextAssemblyRegion→apply), all 5 data structures (MultiIntervalLocalReadShard/AssemblyRegion/AlignmentContext/ReadPileup/PileupElement), file:line references, 5 questions answered (shard iteration / iterator / pileup+isActive / downsampling / padding contig boundary), debug log anomalies (depth=0 at chrM:310, 0 reads in chrM:450-600)."
+
+reference_solution: |
+  kb_search('AssemblyRegion') / kb_search('GATK') → find code articles +
+  debug log + analysis stub. kb_get_article all 7. Trace call chain via
+  AssemblyRegionWalker.traverse → for shard: processReadShard →
+  AssemblyRegionIterator.loadNextAssemblyRegion → apply(assemblyRegion).
+  Reference java filename:line. Address 5 questions. Note debug log
+  anomalies (chrM:310 depth=0, chrM:450-600 no reads — possible
+  filtering bug / contig boundary issue).
+  kb_update_article('KB-CODE-PIPELINE-ANALYSIS', content=...).
+
+primary_dimensions: [completion, robustness, communication]

@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -26,8 +28,9 @@ def automated_score(workspace: Path) -> dict[str, float]:
         has_generic = "CircularBuffer<T>" in content or "CircularBuffer<" in content
         has_thread_safe = "SemaphoreSlim" in content or "lock" in content or "Monitor" in content
         has_methods = all(m in content for m in ["Write", "Read", "Count", "Capacity"])
+        has_wraparound = any(k in content for k in ["% Capacity", "% _capacity", "head", "tail", "_head", "_tail"])
         scores["buffer_quality"] = (
-            1.0 if (has_generic and has_thread_safe and has_methods)
+            1.0 if (has_generic and has_thread_safe and has_methods and has_wraparound)
             else (0.5 if has_generic else 0.0)
         )
     else:
@@ -42,8 +45,9 @@ def automated_score(workspace: Path) -> dict[str, float]:
         has_severity = "AlarmSeverity" in content or "Severity" in content
         has_event = "event" in content or "Event" in content
         has_methods = "RaiseAlarm" in content and "AcknowledgeAlarm" in content
+        has_state = any(k in content for k in ["Active", "Acknowledged", "Cleared", "Timestamp"])
         scores["alarm_quality"] = (
-            1.0 if (has_severity and has_event and has_methods)
+            1.0 if (has_severity and has_event and has_methods and has_state)
             else (0.5 if has_severity else 0.0)
         )
     else:
@@ -57,7 +61,8 @@ def automated_score(workspace: Path) -> dict[str, float]:
         scores["log_created"] = 1.0
         has_enum = "enum LogLevel" in content or "enum" in content
         has_extension = "Extensions" in content or "static" in content
-        scores["log_quality"] = 1.0 if (has_enum and has_extension) else (0.5 if has_enum else 0.0)
+        has_values = sum(1 for v in ["Trace", "Debug", "Info", "Warning", "Error", "Critical"] if v in content)
+        scores["log_quality"] = 1.0 if (has_enum and has_extension and has_values >= 4) else (0.5 if has_enum else 0.0)
     else:
         scores["log_created"] = 0.0
         scores["log_quality"] = 0.0
@@ -69,6 +74,20 @@ def automated_score(workspace: Path) -> dict[str, float]:
         if "MinqiaIndustrialComponentLibrary" in f.read_text(encoding="utf-8", errors="ignore")
     )
     scores["namespace_consistent"] = 1.0 if ns_correct >= 3 else (0.5 if ns_correct >= 1 else 0.0)
+    if shutil.which("dotnet") and (workspace / "MinqiaIndustrialComponentLibrary.csproj").exists():
+        try:
+            proc = subprocess.run(
+                ["dotnet", "build", "--nologo"],
+                cwd=str(workspace),
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            scores["dotnet_build"] = 1.0 if proc.returncode == 0 else 0.0
+        except Exception:
+            scores["dotnet_build"] = 0.0
+    else:
+        scores["dotnet_build"] = scores["namespace_consistent"]
 
     return scores
 

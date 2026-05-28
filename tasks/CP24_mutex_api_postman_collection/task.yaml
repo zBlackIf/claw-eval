@@ -1,26 +1,28 @@
 task_id: CP24_mutex_api_postman_collection
 task_name: 功能互斥校验接口Postman Collection生成
-version: "1.0"
+version: '2.0'
 category: api_testing
 difficulty: medium
-tags: [general, single_turn, coding_plan]
-
-source_task_id: "task_20_mutex_api_postman_params"
-source_dataset: "taskset-260421-234136"
-source_description: "从 PinchBench eval-260427-172048-209429 (10模型×99题) 中按跨模型标准差排名精选的高区分度任务，改编为 Claw-Eval Pattern D (sandbox-adapted) 格式。原始 prompt 保留，grader 基于 PinbenchAdaptedGrader 实现自动化评分。"
-
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_20_mutex_api_postman_params
+source_dataset: taskset-260421-234136
+source_description: Redesigned from taskset-260421-234136/task_20_mutex_api_postman_params with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
 services: []
-
 prompt:
   text: |
-    <!-- CLAW-EVAL-FIXTURE-PREAMBLE -->
-    以下文件已注入到容器内，请按给出的容器绝对路径读取（容器 WORKDIR = `/workspace`）：
+    我已经把原始项目素材放在容器的 `/workspace/fixtures/` 目录下，请把这些文件当作只读输入。
 
-    - `/workspace/fixtures/src/function_exclusion_check.py`
-    - `/workspace/fixtures/src/function_exclusion_check_svc.py`
-    - `/workspace/fixtures/src/function_exclusion_enum.py`
+    输入文件如下（右侧是它在原项目中的相对路径）：
+    - `/workspace/fixtures/README.md` -> `README.md`
+    - `/workspace/fixtures/src/function_exclusion_enum.py` -> `src/function_exclusion_enum.py`
+    - `/workspace/fixtures/src/function_exclusion_check.py` -> `src/function_exclusion_check.py`
+    - `/workspace/fixtures/src/function_exclusion_check_svc.py` -> `src/function_exclusion_check_svc.py`
 
-    所有产物请落到 `/workspace/...` 下；评分仅捕获 `/workspace/` 内的文件。
+    请基于这些输入完成下面的原始需求：
 
     读 `src/function_exclusion_*.py` 理解接口契约（路径 / method / request shape /
     enum 合法值 / MUTEX_GROUPS 规则）。然后在 `tests/postman_params.json` 产出
@@ -30,67 +32,130 @@ prompt:
     - `case_empty` — 空 function_codes（应 400）
 
     不要改 src/ 下文件。
-  language: zh
 
+    交付要求：
+    - 需要修改已有文件时，请把修改后的版本写到 `/workspace/` 下对应的原项目相对路径。
+    - 需要新增文件时，请按需求中的文件名或上面列出的目标路径写到 `/workspace/` 下。
+    - 最终回复只需概述完成情况、关键改动和生成的文件；不要只在最终回复中贴代码或报告正文。
+  language: zh
 tools: []
 tool_endpoints: []
-
 sandbox_files:
-  - fixtures/src/function_exclusion_check.py
-  - fixtures/src/function_exclusion_check_svc.py
-  - fixtures/src/function_exclusion_enum.py
-
+- fixtures/README.md
+- fixtures/src/function_exclusion_enum.py
+- fixtures/src/function_exclusion_check.py
+- fixtures/src/function_exclusion_check_svc.py
 sandbox_grader_files:
-  - fixtures/verify.py
-
+- fixtures/verify.py
 environment:
-  timeout_seconds: 300
-  max_turns: 20
-
+  timeout_seconds: 600
+  max_turns: 30
   env_snapshot_timeout: 30
-
 env_snapshot_commands:
-  - python /workspace/fixtures/verify.py
-
+- python /workspace/fixtures/verify.py
 env_snapshot_files:
-  - /workspace/tests/postman_params.json
-  - /workspace/src
+- /workspace/tests/postman_params.json
+- /workspace/src/function_exclusion_enum.py
+- /workspace/src/function_exclusion_check.py
+- /workspace/src/function_exclusion_check_svc.py
+- /workspace/README.md
 scoring_components: []
-
 safety_checks: []
 expected_actions: []
-
 judge_rubric: |
-  评估 agent 生成的 Postman Collection 是否正确覆盖了功能互斥校验接口的测试用例。
+  ## Expected Behavior
 
-  ## Postman Collection 结构
-  - 是否生成了合法的 Postman Collection v2.1 格式 JSON
-  - 是否包含了 info、item 等必要字段
-  - 是否有正确的请求方法（POST）和路径
+  1. 合法 v2.1 Collection；info.schema 指向 v2.1；item[].request 符合 Postman 约定
+  2. 三个 case 都存在、body 内容准确反映预期场景（no_conflict 用不冲突组合，conflict 用 MUTEX_GROUPS 里的组合，empty 用空数组）
+  3. 所有 function_codes 值都是 enum 里存在的字符串
+  4. src/ 未动；产物只有 tests/postman_params.json
 
-  ## 测试用例覆盖
-  - case_no_conflict: PAY_NO_PASSWORD + DAILY_LIMIT 应期望成功响应
-  - case_conflict: PAY_NO_PASSWORD + LIMIT_PER_TXN_5K 应期望失败响应（互斥冲突）
-  - case_empty: 空 function_codes 应期望 400 错误
+  ## Grading Criteria
 
-  ## 接口契约准确性
-  - 请求体格式是否符合 src 定义（function_codes 字段）
-  - enum 值是否使用了正确的常量名
-  - 是否正确理解了 MUTEX_GROUPS 规则
+  - [ ] postman_file_exists: `tests/postman_params.json` 存在且合法 JSON
+  - [ ] info_name_correct: 根对象的 `info.name` 为 `ac-common-service 功能互斥校验`
+  - [ ] three_items: `item` 是数组且长度 ≥ 3
+  - [ ] case_names_present: 三个用例名 `case_no_conflict` / `case_conflict` / `case_empty` 都在 item 列表里
+  - [ ] post_method_on_all: 所有 item 的 `request.method` 都是 `POST`
+  - [ ] url_path_correct: URL 里含 `/ac-common-service/function/exclusion/check`
+  - [ ] body_has_required_fields: 每个非空 body 的 JSON 含 `tenant_id` + `user_id` + `function_codes`
+  - [ ] function_codes_are_enum: function_codes 里只出现合法枚举值（不编造）
+  - [ ] source_untouched: src/function_exclusion_*.py 字节不变
 
-  ## 约束遵守
-  - 是否未修改 src/ 下文件
+  ## LLM Judge Rubric
 
-  ## 评分标准
-  - 0.9-1.0: 合法 Collection，3 个用例全覆盖，接口契约正确
-  - 0.7-0.8: Collection 格式正确但有小细节问题
-  - 0.4-0.6: 部分用例缺失或格式有误
-  - 0.0-0.3: 未生成或完全错误
+  ### Criterion 1: Postman Schema Correctness (Weight: 30%)
+    - 1.0: 合法 v2.1 Collection；info.schema 指向 v2.1；item[].request 符合 Postman 约定
+    - 0.75: 结构基本对但 schema 链接缺
+    - 0.5: 只有裸 JSON 没套 Collection 层
+    - 0.0: 非合法 JSON
 
+  ### Criterion 2: Scenario Coverage (Weight: 30%)
+    - 1.0: 三个 case 都存在、body 内容准确反映预期场景（no_conflict 用不冲突组合，conflict 用 MUTEX_GROUPS 里的组合，empty 用空数组）
+    - 0.75: 2/3 场景对
+    - 0.5: 用例名称对但 body 不匹配
+    - 0.0: 场景全混
+
+  ### Criterion 3: Enum Fidelity (Weight: 25%)
+    - 1.0: 所有 function_codes 值都是 enum 里存在的字符串
+    - 0.75: 一处编造
+    - 0.0: 多个编造
+
+  ### Criterion 4: Scope Discipline (Weight: 15%)
+    - 1.0: src/ 未动；产物只有 tests/postman_params.json
+    - 0.5: 新增了辅助脚本
+    - 0.0: 改了 src/
 reference_solution: |
-  1. 读取 src 文件理解：POST /api/v1/function-exclusion/check
-  2. Request body: {"function_codes": ["CODE1", "CODE2"]}
-  3. MUTEX_GROUPS: [[PAY_NO_PASSWORD, LIMIT_PER_TXN_5K], ...]
-  4. 生成 Postman Collection v2.1 格式 JSON
+  原始来源：taskset-260421-234136/task_20_mutex_api_postman_params
 
-primary_dimensions: [completion, robustness, communication]
+  原始场景：postman_collection_for_mutex_api
+
+  隐藏 verifier 主要检查项：body_has_required_fields, case_names_present, function_codes_are_enum, info_name_correct, post_method_on_all, postman_file_exists, source_untouched, three_items, url_path_correct
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. 合法 v2.1 Collection；info.schema 指向 v2.1；item[].request 符合 Postman 约定
+  2. 三个 case 都存在、body 内容准确反映预期场景（no_conflict 用不冲突组合，conflict 用 MUTEX_GROUPS 里的组合，empty 用空数组）
+  3. 所有 function_codes 值都是 enum 里存在的字符串
+  4. src/ 未动；产物只有 tests/postman_params.json
+
+  ## Grading Criteria
+
+  - [ ] postman_file_exists: `tests/postman_params.json` 存在且合法 JSON
+  - [ ] info_name_correct: 根对象的 `info.name` 为 `ac-common-service 功能互斥校验`
+  - [ ] three_items: `item` 是数组且长度 ≥ 3
+  - [ ] case_names_present: 三个用例名 `case_no_conflict` / `case_conflict` / `case_empty` 都在 item 列表里
+  - [ ] post_method_on_all: 所有 item 的 `request.method` 都是 `POST`
+  - [ ] url_path_correct: URL 里含 `/ac-common-service/function/exclusion/check`
+  - [ ] body_has_required_fields: 每个非空 body 的 JSON 含 `tenant_id` + `user_id` + `function_codes`
+  - [ ] function_codes_are_enum: function_codes 里只出现合法枚举值（不编造）
+  - [ ] source_untouched: src/function_exclusion_*.py 字节不变
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Postman Schema Correctness (Weight: 30%)
+    - 1.0: 合法 v2.1 Collection；info.schema 指向 v2.1；item[].request 符合 Postman 约定
+    - 0.75: 结构基本对但 schema 链接缺
+    - 0.5: 只有裸 JSON 没套 Collection 层
+    - 0.0: 非合法 JSON
+
+  ### Criterion 2: Scenario Coverage (Weight: 30%)
+    - 1.0: 三个 case 都存在、body 内容准确反映预期场景（no_conflict 用不冲突组合，conflict 用 MUTEX_GROUPS 里的组合，empty 用空数组）
+    - 0.75: 2/3 场景对
+    - 0.5: 用例名称对但 body 不匹配
+    - 0.0: 场景全混
+
+  ### Criterion 3: Enum Fidelity (Weight: 25%)
+    - 1.0: 所有 function_codes 值都是 enum 里存在的字符串
+    - 0.75: 一处编造
+    - 0.0: 多个编造
+
+  ### Criterion 4: Scope Discipline (Weight: 15%)
+    - 1.0: src/ 未动；产物只有 tests/postman_params.json
+    - 0.5: 新增了辅助脚本
+    - 0.0: 改了 src/
+primary_dimensions:
+- completion
+- robustness
+- communication
