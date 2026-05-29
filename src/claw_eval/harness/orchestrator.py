@@ -34,9 +34,12 @@ from claw_eval.trace.writer import TraceWriter
 from .claude_code import HarnessRunResult, load_claude_code_runtime_config, run_claude_code
 from .codex import load_codex_runtime_config, run_codex
 from .config_gen import codex_mcp_config_overrides, mcp_server_args, shell_join, write_claude_mcp_config
+from .openclaw import load_openclaw_runtime_config, run_openclaw
+from .hermes import load_hermes_runtime_config, run_hermes
+from .opencode import load_opencode_runtime_config, run_opencode
 
 
-HARNESS_NAMES = ("claude-code", "codex")
+HARNESS_NAMES = ("claude-code", "codex", "openclaw", "hermes", "opencode")
 
 
 @dataclass
@@ -308,6 +311,9 @@ def run_harness_task(
     no_judge: bool = False,
     claude_code_runtime_config: Path | None = None,
     codex_runtime_config: Path | None = None,
+    openclaw_runtime_config: Path | None = None,
+    hermes_runtime_config: Path | None = None,
+    opencode_runtime_config: Path | None = None,
 ) -> dict:
     if harness not in HARNESS_NAMES:
         raise ValueError(f"Unknown harness: {harness}")
@@ -397,7 +403,7 @@ def run_harness_task(
                             raw_dir=raw_dir,
                             claude_runtime_config=claude_runtime,
                         )
-                    else:
+                    elif harness == "codex":
                         codex_runtime = (
                             load_codex_runtime_config(Path(codex_runtime_config))
                             if codex_runtime_config
@@ -415,6 +421,56 @@ def run_harness_task(
                             raw_dir=raw_dir,
                             codex_runtime_config=codex_runtime,
                         )
+                    elif harness == "openclaw":
+                        oc_runtime = (
+                            load_openclaw_runtime_config(Path(openclaw_runtime_config))
+                            if openclaw_runtime_config
+                            else None
+                        )
+                        harness_result = run_openclaw(
+                            prompt=prompt,
+                            model=oc_runtime.model_name if oc_runtime else model_id,
+                            python=sys.executable,
+                            server_args=server_args,
+                            cwd=tmp_dir,
+                            timeout_seconds=task.environment.timeout_seconds,
+                            raw_dir=raw_dir,
+                            openclaw_runtime_config=oc_runtime,
+                        )
+                    elif harness == "hermes":
+                        h_runtime = (
+                            load_hermes_runtime_config(Path(hermes_runtime_config))
+                            if hermes_runtime_config
+                            else None
+                        )
+                        harness_result = run_hermes(
+                            prompt=prompt,
+                            model=h_runtime.model_name if h_runtime else model_id,
+                            python=sys.executable,
+                            server_args=server_args,
+                            cwd=tmp_dir,
+                            timeout_seconds=task.environment.timeout_seconds,
+                            raw_dir=raw_dir,
+                            hermes_runtime_config=h_runtime,
+                        )
+                    elif harness == "opencode":
+                        ocode_runtime = (
+                            load_opencode_runtime_config(Path(opencode_runtime_config))
+                            if opencode_runtime_config
+                            else None
+                        )
+                        harness_result = run_opencode(
+                            prompt=prompt,
+                            model=ocode_runtime.model_name if ocode_runtime else model_id,
+                            python=sys.executable,
+                            server_args=server_args,
+                            cwd=tmp_dir,
+                            timeout_seconds=task.environment.timeout_seconds,
+                            raw_dir=raw_dir,
+                            opencode_runtime_config=ocode_runtime,
+                        )
+                    else:
+                        raise ValueError(f"Unknown harness: {harness}")
 
                 if handle:
                     from claw_eval.cli import _collect_env_snapshot, _save_env_snapshot

@@ -1587,6 +1587,9 @@ def cmd_harness(args: argparse.Namespace) -> None:
             no_judge=getattr(args, "no_judge", False),
             claude_code_runtime_config=Path(args.claude_code_runtime_config) if args.claude_code_runtime_config else None,
             codex_runtime_config=Path(args.codex_runtime_config) if args.codex_runtime_config else None,
+            openclaw_runtime_config=Path(args.openclaw_runtime_config) if getattr(args, "openclaw_runtime_config", None) else None,
+            hermes_runtime_config=Path(args.hermes_runtime_config) if getattr(args, "hermes_runtime_config", None) else None,
+            opencode_runtime_config=Path(args.opencode_runtime_config) if getattr(args, "opencode_runtime_config", None) else None,
         )
         result["trial"] = trial_index + 1
         results.append(result)
@@ -1617,12 +1620,86 @@ def cmd_harness(args: argparse.Namespace) -> None:
         print(f"pass^{trials}:  {compute_pass_hat_k(scores, k=trials):.3f}")
 
 
-def cmd_harness_batch(args: argparse.Namespace) -> None:
-    """Run a set of tasks through one or more external harnesses."""
-    _apply_proxy(getattr(args, "proxy", None))
+def _run_single_harness_task(
+    task_dir: str,
+    harness: str,
+    model_id: str,
+    config_path: str | None,
+    trace_dir: str,
+    port_offset: int,
+    sandbox: bool,
+    sandbox_image: str | None,
+    no_judge: bool,
+    claude_code_runtime_config: str | None,
+    codex_runtime_config: str | None,
+    openclaw_runtime_config: str | None,
+    hermes_runtime_config: str | None,
+    opencode_runtime_config: str | None,
+    trial_index: int,
+    proxy: str | None = None,
+) -> dict:
+    """Run a single harness task in a worker process. Returns a result dict."""
+    os.environ.setdefault("no_proxy", "localhost,127.0.0.1")
+    os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
+    _apply_proxy(proxy)
 
     from .config import load_config
     from .harness.orchestrator import run_harness_task
+
+    cfg = load_config(config_path)
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            result = run_harness_task(
+                task_yaml=Path(task_dir) / "task.yaml",
+                harness=harness,
+                model_id=model_id,
+                cfg=cfg,
+                trace_dir=Path(trace_dir),
+                port_offset=port_offset,
+                sandbox=sandbox,
+                sandbox_image=sandbox_image,
+                no_judge=no_judge,
+                claude_code_runtime_config=Path(claude_code_runtime_config) if claude_code_runtime_config else None,
+                codex_runtime_config=Path(codex_runtime_config) if codex_runtime_config else None,
+                openclaw_runtime_config=Path(openclaw_runtime_config) if openclaw_runtime_config else None,
+                hermes_runtime_config=Path(hermes_runtime_config) if hermes_runtime_config else None,
+                opencode_runtime_config=Path(opencode_runtime_config) if opencode_runtime_config else None,
+            )
+            result["trial"] = trial_index + 1
+            return result
+        except (ConnectionError, OSError) as exc:
+            if attempt < max_retries - 1:
+                wait = 2 ** attempt
+                print(f"  [{Path(task_dir).name}] retry {attempt + 1}/{max_retries} after {type(exc).__name__}, waiting {wait}s")
+                time.sleep(wait)
+            else:
+                return {
+                    "task_id": Path(task_dir).name,
+                    "harness": harness,
+                    "model": model_id,
+                    "trial": trial_index + 1,
+                    "error": str(exc),
+                    "task_score": 0.0,
+                    "passed": False,
+                }
+        except Exception as exc:
+            return {
+                "task_id": Path(task_dir).name,
+                "harness": harness,
+                "model": model_id,
+                "trial": trial_index + 1,
+                "error": str(exc),
+                "task_score": 0.0,
+                "passed": False,
+            }
+
+
+def cmd_harness_batch(args: argparse.Namespace) -> None:
+    """Run a set of tasks through one or more external harnesses in parallel."""
+    _apply_proxy(getattr(args, "proxy", None))
+
+    from .config import load_config
 
     cfg = load_config(args.config)
     tasks_dir = Path(args.tasks_dir)
@@ -1642,52 +1719,131 @@ def cmd_harness_batch(args: argparse.Namespace) -> None:
     agents = [item.strip() for item in args.agent.split(",") if item.strip()]
     model_id = args.model or cfg.model.model_id
     trace_dir = Path(args.trace_dir or cfg.defaults.trace_dir)
-    results = []
     trials = max(1, int(getattr(args, "trials", 1) or 1))
-    total = len(task_dirs) * len(agents) * trials
-    idx = 0
+    workers = getattr(args, "parallel", 4) or 4
+    port_base_offset = getattr(args, "port_base_offset", 0) or 0
+    _STRIDE = 50
+
+    results: list[dict] = []
+    start_time = time.monotonic()
+
     for agent in agents:
         agent_trace_dir = _make_trace_dir(trace_dir, f"{agent}_{model_id}")
-        for task_dir in task_dirs:
-            for trial_index in range(trials):
-                idx += 1
-                offset = (getattr(args, "port_base_offset", 0) or 0) + (idx - 1) * 50
-                print(f"[{idx}/{total}] {agent} {task_dir.name} trial={trial_index + 1}/{trials}")
-                try:
-                    result = run_harness_task(
-                        task_yaml=task_dir / "task.yaml",
-                        harness=agent,
-                        model_id=model_id,
-                        cfg=cfg,
-                        trace_dir=agent_trace_dir,
-                        port_offset=offset,
-                        sandbox=getattr(args, "sandbox", False) or cfg.sandbox.enabled,
-                        sandbox_image=getattr(args, "sandbox_image", None),
-                        no_judge=getattr(args, "no_judge", False),
-                        claude_code_runtime_config=Path(args.claude_code_runtime_config) if args.claude_code_runtime_config else None,
-                        codex_runtime_config=Path(args.codex_runtime_config) if args.codex_runtime_config else None,
-                    )
-                    result["trial"] = trial_index + 1
-                except Exception as exc:
-                    result = {
-                        "task_id": task_dir.name,
-                        "harness": agent,
-                        "model": model_id,
-                        "trial": trial_index + 1,
-                        "error": str(exc),
-                        "task_score": 0.0,
-                        "passed": False,
-                    }
-                    print(f"  ERROR: {exc}")
-                else:
-                    status = "PASS" if result["passed"] else "FAIL"
-                    print(f"  {result['task_score']:.2f} {status} trace={result['trace']}")
-                results.append(result)
 
+        # Build work items: (task_dir, trial_index) pairs
+        work_items = [
+            (task_dir, trial_index)
+            for task_dir in task_dirs
+            for trial_index in range(trials)
+        ]
+        total = len(work_items)
+        finished = 0
+
+        print(f"Running {total} tasks ({len(task_dirs)} × {trials} trials) with {workers} parallel workers [harness={agent}]")
+        print(f"Traces → {agent_trace_dir}\n")
+
+        available_slots = list(range(workers))
+        pending: dict = {}  # future → (task_dir, trial_index, slot)
+        work_queue = list(work_items)
+
+        with ProcessPoolExecutor(max_workers=workers) as pool:
+            def _submit(td, trial_idx):
+                slot = available_slots.pop(0)
+                offset = port_base_offset + slot * _STRIDE
+                fut = pool.submit(
+                    _run_single_harness_task,
+                    task_dir=str(td),
+                    harness=agent,
+                    model_id=model_id,
+                    config_path=args.config,
+                    trace_dir=str(agent_trace_dir),
+                    port_offset=offset,
+                    sandbox=getattr(args, "sandbox", False) or cfg.sandbox.enabled,
+                    sandbox_image=getattr(args, "sandbox_image", None),
+                    no_judge=getattr(args, "no_judge", False),
+                    claude_code_runtime_config=getattr(args, "claude_code_runtime_config", None),
+                    codex_runtime_config=getattr(args, "codex_runtime_config", None),
+                    openclaw_runtime_config=getattr(args, "openclaw_runtime_config", None),
+                    hermes_runtime_config=getattr(args, "hermes_runtime_config", None),
+                    opencode_runtime_config=getattr(args, "opencode_runtime_config", None),
+                    trial_index=trial_idx,
+                    proxy=getattr(args, "proxy", None),
+                )
+                pending[fut] = (td, trial_idx, slot)
+
+            # Seed initial batch
+            while work_queue and available_slots:
+                td, trial_idx = work_queue.pop(0)
+                _submit(td, trial_idx)
+
+            # Process completions
+            while pending:
+                for fut in as_completed(pending):
+                    td, trial_idx, slot = pending.pop(fut)
+                    available_slots.append(slot)
+                    finished += 1
+
+                    try:
+                        result = fut.result()
+                    except Exception as e:
+                        result = {
+                            "task_id": Path(td).name,
+                            "harness": agent,
+                            "model": model_id,
+                            "trial": trial_idx + 1,
+                            "error": str(e),
+                            "task_score": 0.0,
+                            "passed": False,
+                        }
+
+                    results.append(result)
+
+                    # Print task result
+                    tid = result.get("task_id", Path(td).name)
+                    if result.get("error"):
+                        print(f"  [{finished}/{total}] {tid} trial={result.get('trial', '?')}: ERROR — {result['error'][:80]}")
+                    else:
+                        status = "PASS" if result["passed"] else "FAIL"
+                        print(
+                            f"  [{finished}/{total}] {tid} trial={result.get('trial', '?')}: "
+                            f"{result['task_score']:.2f} {status}"
+                        )
+
+                    # Progress
+                    elapsed = time.monotonic() - start_time
+                    if finished < total:
+                        eta = elapsed / finished * (total - finished)
+                        eta_str = f" | ETA ~{_fmt_duration(eta)}"
+                    else:
+                        eta_str = ""
+                    avg_score = sum(r.get("task_score", 0) for r in results) / len(results)
+                    n_pass = sum(1 for r in results if r.get("passed"))
+                    print(
+                        f"  [Progress] {finished}/{total} ({finished*100//total}%) "
+                        f"| avg={avg_score:.2f} pass={n_pass}/{finished} "
+                        f"| elapsed {_fmt_duration(elapsed)}{eta_str}"
+                    )
+
+                    # Incremental save
+                    out = trace_dir / "harness_batch_results.json"
+                    out.parent.mkdir(parents=True, exist_ok=True)
+                    try:
+                        out.write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
+                    except Exception:
+                        pass
+
+                    # Submit next work item
+                    if work_queue and available_slots:
+                        td_next, trial_next = work_queue.pop(0)
+                        _submit(td_next, trial_next)
+
+                    break  # restart as_completed loop with updated pending
+
+    # Final save
     out = trace_dir / "harness_batch_results.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"Results saved to {out}")
+    print(f"\nResults saved to {out}")
 
 
 def cmd_cleanup(args: argparse.Namespace) -> None:
@@ -1806,11 +1962,14 @@ def main(argv: list[str] | None = None) -> None:
     # harness
     p_harness = sub.add_parser("harness", help="Run a task through Claude Code or Codex")
     p_harness.add_argument("--task", required=True, help="Path to task dir or YAML")
-    p_harness.add_argument("--agent", required=True, choices=["claude-code", "codex"])
+    p_harness.add_argument("--agent", required=True, choices=["claude-code", "codex", "openclaw", "hermes", "opencode"])
     p_harness.add_argument("--model", default=None, help="Model ID passed to the external harness")
     p_harness.add_argument("--config", default=None, help="Path to config.yaml")
     p_harness.add_argument("--claude-code-runtime-config", default=None, help="Path to Claude Code runtime sidecar JSON")
     p_harness.add_argument("--codex-runtime-config", default=None, help="Path to Codex runtime sidecar JSON")
+    p_harness.add_argument("--openclaw-runtime-config", default=None, help="Path to OpenClaw runtime sidecar JSON")
+    p_harness.add_argument("--hermes-runtime-config", default=None, help="Path to Hermes runtime sidecar JSON")
+    p_harness.add_argument("--opencode-runtime-config", default=None, help="Path to OpenCode runtime sidecar JSON")
     p_harness.add_argument("--trace-dir", default=None, help="Output directory for traces")
     p_harness.add_argument("--trials", type=int, default=1, help="Number of trials")
     p_harness.add_argument("--port-offset", type=int, default=0, help="Offset for all service ports")
@@ -1820,17 +1979,21 @@ def main(argv: list[str] | None = None) -> None:
     p_harness.add_argument("--proxy", default=None, help="HTTP proxy URL for model/judge API traffic")
 
     # harness-batch
-    p_harness_batch = sub.add_parser("harness-batch", help="Run multiple tasks through Claude Code and/or Codex")
+    p_harness_batch = sub.add_parser("harness-batch", help="Run multiple tasks through external harnesses")
     p_harness_batch.add_argument("--tasks-dir", default="tasks", help="Tasks directory")
-    p_harness_batch.add_argument("--agent", required=True, help="Comma-separated agents: claude-code,codex")
+    p_harness_batch.add_argument("--agent", required=True, help="Comma-separated agents: claude-code,codex,openclaw,hermes,opencode")
     p_harness_batch.add_argument("--model", default=None, help="Model ID passed to the external harness")
     p_harness_batch.add_argument("--config", default=None, help="Path to config.yaml")
     p_harness_batch.add_argument("--claude-code-runtime-config", default=None, help="Path to Claude Code runtime sidecar JSON")
     p_harness_batch.add_argument("--codex-runtime-config", default=None, help="Path to Codex runtime sidecar JSON")
+    p_harness_batch.add_argument("--openclaw-runtime-config", default=None, help="Path to OpenClaw runtime sidecar JSON")
+    p_harness_batch.add_argument("--hermes-runtime-config", default=None, help="Path to Hermes runtime sidecar JSON")
+    p_harness_batch.add_argument("--opencode-runtime-config", default=None, help="Path to OpenCode runtime sidecar JSON")
     p_harness_batch.add_argument("--trace-dir", default=None, help="Output directory for traces")
     p_harness_batch.add_argument("--trials", type=int, default=1, help="Number of trials per task")
     p_harness_batch.add_argument("--filter", default=None, help="Only run tasks matching this substring")
     p_harness_batch.add_argument("--limit", type=int, default=None, help="Limit number of matched tasks")
+    p_harness_batch.add_argument("--parallel", type=int, default=4, help="Number of parallel workers (default: 4)")
     p_harness_batch.add_argument("--port-base-offset", type=int, default=0, help="Base port offset")
     p_harness_batch.add_argument("--sandbox", action="store_true", help="Run sandbox tools inside Docker containers")
     p_harness_batch.add_argument("--sandbox-image", default=None, help="Override sandbox Docker image name")

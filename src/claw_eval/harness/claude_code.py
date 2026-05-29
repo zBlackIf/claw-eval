@@ -230,6 +230,8 @@ def run_claude_code(
     (raw_dir / "claude-code.stdout.jsonl").write_text(stdout, encoding="utf-8")
     (raw_dir / "claude-code.stderr.log").write_text(stderr, encoding="utf-8")
     final_text, input_tokens, output_tokens, turns, failure_modes = _extract_final_text(stdout)
+    if returncode == 124 and not any("imed out" in fm for fm in failure_modes):
+        failure_modes.append(f"Timed out after {timeout_seconds} seconds")
     return HarnessRunResult(
         harness="claude-code",
         command=command,
