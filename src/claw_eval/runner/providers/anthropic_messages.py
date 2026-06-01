@@ -321,7 +321,8 @@ class AnthropicMessagesProvider:
         last_exc: Exception | None = None
         for attempt in range(max_attempts):
             try:
-                resp = self.client.messages.create(**kwargs)
+                with self.client.messages.stream(**kwargs) as stream:
+                    resp = stream.get_final_message()
                 msg = _from_anthropic_response(resp)
                 usage = TokenUsage(
                     input_tokens=getattr(resp.usage, "input_tokens", 0) or 0,

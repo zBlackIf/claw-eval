@@ -14,14 +14,14 @@ source_dataset: taskset-260408-163403
 source_description: "Workflow + sandbox hybrid redesigned with claw-eval-task-designer-v2: catalog alignment service adds multi-call lookup, cross-check traps, submit/confirm evidence; hidden verifier still checks /workspace/alignment_output.json."
 services:
   - name: catalog_alignment
-    command: python tasks/CP36_catalog_alignment_comparison/services/catalog_alignment/server.py
+    command: python tasks/CP34_catalog_alignment_comparison/services/catalog_alignment/server.py
     port: 9336
     health_check: http://localhost:9336/catalog_alignment/health
     health_check_method: GET
     ready_timeout: 10
     reset_endpoint: http://localhost:9336/catalog_alignment/reset
     env:
-      WORKFLOW_SERVICE_FIXTURES: tasks/CP36_catalog_alignment_comparison/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP34_catalog_alignment_comparison/fixtures/workflow_service.json
       WORKFLOW_SERVICE_NAME: catalog_alignment
 prompt:
   text: |

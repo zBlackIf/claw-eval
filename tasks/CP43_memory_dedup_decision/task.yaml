@@ -14,7 +14,7 @@ source_dataset: taskset-260408-212200
 source_description: "Workflow + sandbox hybrid redesigned with claw-eval-task-designer-v2: memory workflow service provides candidate/existing memories, historical merges, semantic-overlap traps, submit/confirm audit evidence; hidden verifier checks workspace artifacts."
 services:
   - name: memory_workflow
-    command: python tasks/CP45_memory_dedup_decision/services/memory_workflow/server.py
+    command: python tasks/CP43_memory_dedup_decision/services/memory_workflow/server.py
     port: 9345
     health_check: http://localhost:9345/memory_workflow/health
     health_check_method: GET

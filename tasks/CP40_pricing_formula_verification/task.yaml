@@ -14,14 +14,14 @@ source_dataset: taskset-260427-121234
 source_description: "Workflow + sandbox hybrid redesigned with claw-eval-task-designer-v2: pricing workflow service adds tier ledger, scenario caveats, boundary/trap records, submit/confirm audit evidence; hidden verifier checks pricing artifacts."
 services:
   - name: pricing_workflow
-    command: python tasks/CP42_pricing_formula_verification/services/pricing_workflow/server.py
+    command: python tasks/CP40_pricing_formula_verification/services/pricing_workflow/server.py
     port: 9342
     health_check: http://localhost:9342/pricing_workflow/health
     health_check_method: GET
     ready_timeout: 10
     reset_endpoint: http://localhost:9342/pricing_workflow/reset
     env:
-      WORKFLOW_SERVICE_FIXTURES: tasks/CP42_pricing_formula_verification/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP40_pricing_formula_verification/fixtures/workflow_service.json
       WORKFLOW_SERVICE_NAME: pricing_workflow
 prompt:
   text: |

@@ -14,7 +14,7 @@ source_dataset: taskset-260408-212200
 source_description: "Workflow + sandbox hybrid redesigned with claw-eval-task-designer-v2: market data service provides trading-calendar caveats, data-quality traps, and submit/confirm audit evidence; hidden verifier checks CSV/report artifacts."
 services:
   - name: market_data
-    command: python tasks/CP39_stock_volume_price_analysis/services/market_data/server.py
+    command: python tasks/CP37_stock_volume_price_analysis/services/market_data/server.py
     port: 9339
     health_check: http://localhost:9339/market_data/health
     health_check_method: GET

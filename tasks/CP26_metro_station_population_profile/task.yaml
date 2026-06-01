@@ -14,14 +14,14 @@ source_dataset: taskset-260421-225115
 source_description: "Workflow + sandbox hybrid redesigned with claw-eval-task-designer-v2: a per-task metro profile service provides station records, aliases, duplicate/trap cases, submit/confirm audit evidence; /workspace existing_stations_v4.txt remains the downstream artifact verified by hidden checker."
 services:
   - name: metro_profile
-    command: python tasks/CP27_metro_station_population_profile/services/metro_profile/server.py
+    command: python tasks/CP26_metro_station_population_profile/services/metro_profile/server.py
     port: 9327
     health_check: http://localhost:9327/metro_profile/health
     health_check_method: GET
     ready_timeout: 10
     reset_endpoint: http://localhost:9327/metro_profile/reset
     env:
-      WORKFLOW_SERVICE_FIXTURES: tasks/CP27_metro_station_population_profile/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP26_metro_station_population_profile/fixtures/workflow_service.json
       WORKFLOW_SERVICE_NAME: metro_profile
 prompt:
   text: |

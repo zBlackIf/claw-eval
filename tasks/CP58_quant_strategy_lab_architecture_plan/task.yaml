@@ -25,7 +25,7 @@ services:
     ready_timeout: 10
     reset_endpoint: http://localhost:9106/kb/reset
     env:
-      KB_FIXTURES: tasks/CP55_quant_strategy_lab_architecture_plan/fixtures/kb/articles.json
+      KB_FIXTURES: tasks/CP58_quant_strategy_lab_architecture_plan/fixtures/kb/articles.json
 
 prompt:
   text: |
