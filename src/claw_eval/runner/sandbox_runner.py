@@ -435,12 +435,60 @@ class SandboxRunner:
             "text/plain", "text/csv", "text/markdown", "text/html",
             "text/xml", "application/json", "application/xml",
             "application/yaml", "application/x-yaml", "application/javascript",
+            "application/sql", "application/x-sql", "application/x-sh",
+            "application/x-shellscript",
         }
         _TEXT_EXTENSIONS = {
-            ".txt", ".md", ".csv", ".json", ".yaml", ".yml", ".xml",
-            ".html", ".htm", ".js", ".ts", ".py", ".sh", ".bash",
-            ".cfg", ".ini", ".toml", ".log", ".sql", ".r", ".rmd",
+            ".txt", ".md", ".markdown", ".csv", ".tsv", ".json", ".jsonl", ".ndjson",
+            ".yaml", ".yml", ".xml", ".html", ".htm", ".css", ".scss", ".sass",
+            ".less", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".vue", ".svelte",
+            ".py", ".pyi", ".sh", ".bash", ".zsh", ".fish", ".ps1", ".bat", ".cmd",
+            ".cfg", ".conf", ".ini", ".toml", ".env", ".properties", ".log", ".sql",
+            ".r", ".rmd", ".java", ".kt", ".kts", ".scala", ".sc", ".groovy",
+            ".gradle", ".c", ".cc", ".cxx", ".cpp", ".h", ".hh", ".hpp", ".hxx",
+            ".cs", ".php", ".go", ".rs", ".dart", ".swift", ".m", ".mm", ".lua",
+            ".pl", ".pm", ".rb", ".ex", ".exs", ".erl", ".hrl", ".clj", ".cljs",
+            ".edn", ".zig", ".gd", ".proto", ".lmp", ".dockerfile", ".gitignore",
+            ".dockerignore", ".npmrc", ".yarnrc", ".editorconfig", ".lock", ".service",
+            ".timer",
         }
+        _TEXT_FILENAMES = {
+            "dockerfile",
+            "makefile",
+            "rakefile",
+            "gemfile",
+            "podfile",
+            "cmakelists.txt",
+        }
+
+        def _looks_like_utf8_text(path: Path, sample_size: int = 8192) -> bool:
+            try:
+                with path.open("rb") as fh:
+                    sample = fh.read(sample_size)
+            except OSError:
+                return False
+            if not sample:
+                return True
+            if b"\x00" in sample:
+                return False
+            try:
+                sample.decode("utf-8")
+            except UnicodeDecodeError:
+                return False
+            control_bytes = sum(
+                1 for byte in sample
+                if byte < 32 and byte not in (8, 9, 10, 12, 13)
+            )
+            return (control_bytes / len(sample)) <= 0.05
+
+        def _is_text_file(path: Path, mime: str | None, ext: str) -> bool:
+            if ext in _TEXT_EXTENSIONS or path.name.lower() in _TEXT_FILENAMES:
+                return True
+            if mime in _TEXT_MIMES or (mime is not None and mime.startswith("text/")):
+                return True
+            if mime is None:
+                return _looks_like_utf8_text(path)
+            return False
 
         # Project root for cross-task fixture references (e.g. "tasks/T14/fixtures/...")
         # Walk up from the resolved task dir to find the directory containing "tasks/"
@@ -468,11 +516,7 @@ class SandboxRunner:
                 container_path = f"/workspace/{rel_path}"
                 mime, _ = mimetypes.guess_type(str(src))
                 ext = src.suffix.lower()
-                is_text = (
-                    mime in _TEXT_MIMES
-                    or (mime is not None and mime.startswith("text/"))
-                    or (mime is None and ext in _TEXT_EXTENSIONS)
-                )
+                is_text = _is_text_file(src, mime, ext)
 
                 if is_text:
                     content = src.read_text(encoding="utf-8", errors="replace")

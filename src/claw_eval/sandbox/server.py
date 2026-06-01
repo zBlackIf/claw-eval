@@ -315,10 +315,12 @@ def exec_command(req: ExecRequest):
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True,
+            text=False,
             start_new_session=True,
         )
-        stdout, stderr = proc.communicate(timeout=req.timeout_seconds)
+        stdout_bytes, stderr_bytes = proc.communicate(timeout=req.timeout_seconds)
+        stdout = _decode_process_output(stdout_bytes)
+        stderr = _decode_process_output(stderr_bytes)
         return {
             "exit_code": proc.returncode,
             "stdout": _truncate_text(stdout),
@@ -360,6 +362,14 @@ def _truncate_text(value: str) -> str:
         value[:MAX_EXEC_OUTPUT_CHARS]
         + f"\n[claw-eval sandbox truncated {len(value) - MAX_EXEC_OUTPUT_CHARS} chars]"
     )
+
+
+def _decode_process_output(value: bytes | str | None) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    return value.decode("utf-8", errors="replace")
 
 
 @app.post("/identity/bootstrap")
@@ -414,16 +424,68 @@ _TEXT_MIMES = {
     "application/yaml",
     "application/x-yaml",
     "application/javascript",
+    "application/sql",
+    "application/x-sql",
+    "application/x-sh",
+    "application/x-shellscript",
 }
 _TEXT_EXTENSIONS = {
-    ".txt", ".md", ".csv", ".json", ".yaml", ".yml", ".xml",
-    ".html", ".htm", ".js", ".ts", ".py", ".sh", ".bash",
-    ".cfg", ".ini", ".toml", ".log", ".sql", ".r", ".rmd",
+    ".txt", ".md", ".markdown", ".csv", ".tsv", ".json", ".jsonl", ".ndjson",
+    ".yaml", ".yml", ".xml", ".html", ".htm", ".css", ".scss", ".sass",
+    ".less", ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".vue", ".svelte",
+    ".py", ".pyi", ".sh", ".bash", ".zsh", ".fish", ".ps1", ".bat", ".cmd",
+    ".cfg", ".conf", ".ini", ".toml", ".env", ".properties", ".log", ".sql",
+    ".r", ".rmd", ".java", ".kt", ".kts", ".scala", ".sc", ".groovy",
+    ".gradle", ".c", ".cc", ".cxx", ".cpp", ".h", ".hh", ".hpp", ".hxx",
+    ".cs", ".php", ".go", ".rs", ".dart", ".swift", ".m", ".mm", ".lua",
+    ".pl", ".pm", ".rb", ".ex", ".exs", ".erl", ".hrl", ".clj", ".cljs",
+    ".edn", ".zig", ".gd", ".proto", ".lmp", ".dockerfile", ".gitignore",
+    ".dockerignore", ".npmrc", ".yarnrc", ".editorconfig", ".lock", ".service",
+    ".timer",
+}
+_TEXT_FILENAMES = {
+    "dockerfile",
+    "makefile",
+    "rakefile",
+    "gemfile",
+    "podfile",
+    "cmakelists.txt",
 }
 
 # Image/video extensions (used by /read to detect media files)
 _IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tiff", ".tif", ".svg"}
 _VIDEO_EXTS = {".mp4", ".avi", ".mov", ".mkv", ".webm", ".flv", ".wmv", ".m4v"}
+
+
+def _looks_like_utf8_text(p: Path, sample_size: int = 8192) -> bool:
+    try:
+        with p.open("rb") as fh:
+            sample = fh.read(sample_size)
+    except OSError:
+        return False
+    if not sample:
+        return True
+    if b"\x00" in sample:
+        return False
+    try:
+        sample.decode("utf-8")
+    except UnicodeDecodeError:
+        return False
+    control_bytes = sum(
+        1 for byte in sample
+        if byte < 32 and byte not in (8, 9, 10, 12, 13)
+    )
+    return (control_bytes / len(sample)) <= 0.05
+
+
+def _is_text_file(p: Path, mime: str | None, ext: str) -> bool:
+    if ext in _TEXT_EXTENSIONS or p.name.lower() in _TEXT_FILENAMES:
+        return True
+    if mime in _TEXT_MIMES or (mime is not None and mime.startswith("text/")):
+        return True
+    if mime is None:
+        return _looks_like_utf8_text(p)
+    return False
 
 
 @app.post("/read")
@@ -449,13 +511,7 @@ def read_file(req: FileReadRequest):
         return _read_pdf(p, req.pages or "all", 100)
 
     mime, _ = mimetypes.guess_type(str(p))
-    # Known text mime OR known text extension → text; otherwise binary.
-    # mime=None with unknown extension defaults to binary (safer).
-    is_text = (
-        mime in _TEXT_MIMES
-        or (mime is not None and mime.startswith("text/"))
-        or (mime is None and ext in _TEXT_EXTENSIONS)
-    )
+    is_text = _is_text_file(p, mime, ext)
     if is_text:
         content = p.read_text(encoding="utf-8", errors="replace")
         # Apply offset/limit if provided

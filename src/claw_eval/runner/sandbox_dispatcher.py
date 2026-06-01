@@ -93,6 +93,14 @@ def _byte_len(text: str) -> int:
     return len(text.encode("utf-8", errors="replace"))
 
 
+def _decode_process_output(value: bytes | str | None) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    return value.decode("utf-8", errors="replace")
+
+
 def _safe_name(value: str) -> str:
     return re.sub(r"[^a-zA-Z0-9_.-]+", "_", value).strip("_") or "tool"
 
@@ -446,13 +454,13 @@ class SandboxToolDispatcher:
                 command,
                 shell=True,
                 capture_output=True,
-                text=True,
+                text=False,
                 timeout=timeout,
             )
             return {
                 "exit_code": proc.returncode,
-                "stdout": proc.stdout,
-                "stderr": proc.stderr,
+                "stdout": _decode_process_output(proc.stdout),
+                "stderr": _decode_process_output(proc.stderr),
             }
         except subprocess.TimeoutExpired:
             return {
@@ -559,9 +567,9 @@ class SandboxToolDispatcher:
         cmd.extend([pattern, path])
         try:
             proc = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=30,
+                cmd, capture_output=True, text=False, timeout=30,
             )
-            output = proc.stdout
+            output = _decode_process_output(proc.stdout)
             if head_limit and head_limit > 0:
                 lines = output.splitlines()[:head_limit]
                 output = "\n".join(lines)
