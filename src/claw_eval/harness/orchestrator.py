@@ -350,7 +350,10 @@ def run_harness_task(
                     from claw_eval.cli import _collect_env_snapshot, _save_env_snapshot
 
                     sandbox_runner = SandboxRunner(cfg.sandbox, image=sandbox_image or cfg.sandbox.image)
-                    handle = sandbox_runner.start_container(run_id=f"{task.task_id}-{trace_id[:8]}")
+                    handle = sandbox_runner.start_container(
+                        run_id=f"{task.task_id}-{trace_id[:8]}",
+                        task_id=task.task_id,
+                    )
                     sandbox_runner.inject_files(handle, task, task_dir=str(task_yaml.parent))
 
                 server_args = mcp_server_args(
@@ -359,6 +362,7 @@ def run_harness_task(
                     dispatch_log=dispatch_log,
                     sandbox_url=handle.sandbox_url if handle else None,
                     port_offset=port_offset,
+                    sandbox_identity=sandbox_runner.identity_payload(handle) if handle and sandbox_runner else None,
                 )
                 prompt = _make_prompt(task)
                 preflight = _preflight_mcp_server(
@@ -476,7 +480,11 @@ def run_harness_task(
                     from claw_eval.cli import _collect_env_snapshot, _save_env_snapshot
 
                     sandbox_runner.inject_grader_files(handle, task, task_dir=str(task_yaml.parent))
-                    env_snapshot = _collect_env_snapshot(handle.sandbox_url, task)
+                    env_snapshot = _collect_env_snapshot(
+                        handle.sandbox_url,
+                        task,
+                        sandbox_identity=sandbox_runner.identity_payload(handle),
+                    )
                     _save_env_snapshot(env_snapshot, trace_path, task.task_id)
                 audits = _collect_audit(task, trace_id)
         finally:

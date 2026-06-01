@@ -1,0 +1,83 @@
+# provenance:
+#   source_session: "8313126485197302459"
+#   scenario: "区块链 / Web3 / Crypto (中文) — 期货大宗商品数据系统"
+#   pattern: "WS2 Full-Repair"
+task_id: CP189_futures_news_commodity_classifier
+task_name: "期货消息分类系统增强：纯碱/玻璃品种专属分类与周月度汇总（CP189）"
+version: "1.0"
+category: data_engineering
+difficulty: hard
+tags: [general, chinese, commodity, data_pipeline]
+
+source_task_id: "session_8313126485197302459"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "Real user session: Enhancing a futures news data collection system to support per-commodity category classification (soda ash, glass) with specialized keywords, weekly/monthly report generation, and date range queries."
+
+services: []
+
+prompt:
+  text: |
+    我有一个期货消息面汇总系统在 /workspace/fixtures/futures_news/ 下面，目前
+    只支持有色金属品种。现在要加入 **纯碱** 和 **玻璃** 两个品种的支持，并且
+    这两个品种需要使用各自独立的分类关键词体系。具体要求：
+
+    1. 品种列表加入"纯碱"和"玻璃"
+    2. 分类改为：价格、供给、需求、库存、成本、利润、市场消息（共7类），
+       纯碱和玻璃各自要有专属的关键词（比如纯碱的"氨碱法""联碱法""天然碱"
+       "远兴""开工率"应该归到供给类；玻璃的"浮法""光伏玻璃""日熔量"
+       "冷修""点火""产线"也归到供给类）
+    3. parser 的 extract_category 要能根据品种名自动选择对应的关键词表
+    4. database.py 加入 weekly_reports 和 monthly_reports 两张表，
+       支持按品种+时间维度存储总结
+    5. 加一个按日期范围查询消息的方法，支持按品种筛选
+
+    代码写好后确保语法没问题就行，不需要实际运行数据库。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/futures_news/config.py
+  - fixtures/futures_news/parser.py
+  - fixtures/futures_news/database.py
+  - fixtures/futures_news/report_generator.py
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete per-commodity classification system: (1) VARIETIES list includes 纯碱 and 玻璃, (2) dedicated category keyword mappings for each commodity (soda ash: 氨碱/联碱/天然碱/远兴/开工率 etc.; glass: 浮法/光伏玻璃/日熔量/冷修/点火/产线 etc.), (3) parser extract_category is variety-aware with conditional routing, (4) weekly_reports table with week_number+variety columns, (5) monthly_reports table with month+variety columns, (6) date range query method with variety filter, (7) new 7-category scheme (价格/供给/需求/库存/成本/利润/市场消息)."
+
+reference_solution: |
+  In config.py:
+  - VARIETIES adds '纯碱', '玻璃'
+  - New per-commodity category mappings: SODA_ASH_CATEGORY_KEYWORDS and
+    GLASS_CATEGORY_KEYWORDS, each mapping 7 categories to domain-specific keywords
+  - CATEGORY_ICONS updated to new 7-category scheme
+
+  In parser.py:
+  - extract_category(content, variety=None) signature
+  - Conditional logic: if variety == "纯碱" use soda ash keywords,
+    elif variety == "玻璃" use glass keywords, else use common mapping
+  - parse_message passes variety to extract_category
+
+  In database.py:
+  - weekly_reports table: id, week_year, week_number, variety, content, created_at
+  - monthly_reports table: id, year, month, variety, content, created_at
+  - get_messages_by_date_range(start_date, end_date, variety=None) method
+    using BETWEEN clause with optional variety filter
+  - Default varieties list includes 纯碱 and 玻璃
+
+primary_dimensions: [completion, communication, safety]

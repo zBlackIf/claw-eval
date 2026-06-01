@@ -1,0 +1,12 @@
+bot:
+  name: "personal-assistant"
+  platform: feishu
+  user_id: "ou_6ee310124cd63f71dc8ea30cb12721a0"
+
+feishu:
+  app_id: "cli_a1b2c3d4e5f6"
+  app_secret: "${FEISHU_APP_SECRET}"
+  webhook_url: "https://open.feishu.cn/open-apis/bot/v2/hook/abc123"
+
+scheduled_tasks: []
+  # TODO: Add cron job definitions here

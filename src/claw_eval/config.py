@@ -86,6 +86,8 @@ class SandboxConfig(BaseModel):
     enable_browser: bool = True
     enable_shell: bool = True
     enable_file: bool = True
+    preserve_on_error: bool = False
+    log_tail_bytes: int = 65536
 
 
 class PromptFilesConfig(BaseModel):

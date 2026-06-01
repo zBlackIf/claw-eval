@@ -1,0 +1,74 @@
+task_id: CP158_refund_allocation_strategy_one
+task_name: "体检收费模块退费分配引擎 — 策略一实现（全额红冲+重收）"
+version: "1.0"
+category: implementation
+difficulty: hard
+tags: [typescript, business-logic, payment, refund]
+
+source_session_id: "11361065710836430786"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "从体检收费模块系统架构设计 session 中提取。实现退费分层模型中的策略一（全额红冲+重收），核心是通道容量约束校验、红冲记录生成、网关退费指令、重收记录（内部调账标记 + 原始 transaction_id 保留）。隐藏校验 5 维度。"
+
+services: []
+
+prompt:
+  text: |
+    体检收费模块正在实现退费功能。架构选定"策略一：全额红冲+重收"——退费时先把
+    结账单上所有支付记录做会计红冲（金额取反），然后按客户选择的通道执行网关退款，
+    最后用剩余金额重新生成内部调整记录（不经过网关）。
+
+    类型定义已在 /workspace/fixtures/casher-refund/src/types.ts，骨架文件在
+    /workspace/fixtures/casher-refund/src/refund-engine.ts。请实现 processRefund
+    函数，满足以下业务规则：
+
+    1. 校验：refund_channels 总额必须等于 refund_items 总额，否则报错。
+    2. 校验：每个退费通道金额不得超过该通道原始支付总额（通道容量约束）。
+    3. 校验：退费项目必须属于该结账单（在 allocations 中存在）。
+    4. 红冲：为每条 active 支付记录生成一条 ReversalRecord（金额取反，保留 transaction_id）。
+    5. 网关退费：按 refund_channels 生成 GatewayRefund（关联原始 transaction_id）。
+    6. 重收：每个通道的剩余金额（原始支付 - 该通道退费）生成 RechargeRecord，
+       标记 is_internal_adjustment=true，记录 original_transaction_id。
+    7. 策略一不需要单独的"调账"步骤——红冲后从零重建，天然对齐。
+
+    代码放在同目录下，TypeScript，类型安全。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/casher-refund/package.json
+  - fixtures/casher-refund/tsconfig.json
+  - fixtures/casher-refund/src/types.ts
+  - fixtures/casher-refund/src/refund-engine.ts
+  - fixtures/casher-refund/src/index.ts
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete Strategy 1 refund implementation: (1) validation of channel capacity constraint, amount totals match, item existence; (2) reversal records for every active payment record with negated amounts and original transaction_id; (3) gateway refund instructions matching customer channel choices; (4) recharge records with correct remaining amounts, is_internal_adjustment=true, original_transaction_id preserved; (5) NO separate internal transfer/调账 step (Strategy 1 doesn't need it since everything is zeroed and rebuilt)."
+
+reference_solution: |
+  processRefund should:
+  1. Sum refund_items amounts and refund_channels amounts; return error if mismatch.
+  2. Group activeRecords by pay_mode, sum per-channel totals.
+  3. For each refund_channel, check amount <= channel's original total; return error if exceeded.
+  4. Check each refund item_id exists in allocations.
+  5. Generate reversal_records: map each activeRecord to { original_record_id, pay_mode, amount: -record.amount, transaction_id }.
+  6. Generate gateway_refunds: map refund_channels to { pay_mode, amount, original_transaction_id from matching active record }.
+  7. Generate recharge_records: for each channel, remaining = original_total - refund_amount (if > 0), with is_internal_adjustment: true, original_transaction_id from that channel's record.
+  8. Return { success: true, reversal_records, gateway_refunds, recharge_records }.
+
+primary_dimensions: [completion, communication, safety]

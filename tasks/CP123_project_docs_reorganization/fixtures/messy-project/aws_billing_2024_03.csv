@@ -1,0 +1,4 @@
+vendor,account_id,service,period_start,period_end,amount,currency
+aws,123456789,EC2,2024-03-01,2024-03-31,15234.56,USD
+aws,123456789,S3,2024-03-01,2024-03-31,2341.78,USD
+aws,123456789,RDS,2024-03-01,2024-03-31,8920.00,USD

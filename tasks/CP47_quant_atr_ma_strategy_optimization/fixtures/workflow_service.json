@@ -1,0 +1,182 @@
+[
+  {
+    "record_id": "brief:task-context",
+    "kind": "brief",
+    "title": "ATR+MA strategy repair with auxiliary review service for rule/caveat cross-checking.",
+    "content": "Task CP49_quant_atr_ma_strategy_optimization: ATR+MA strategy repair with auxiliary review service for rule/caveat cross-checking. Use list/search/get/cross_check before submit/confirm; workspace artifact remains required.",
+    "tags": [
+      "brief",
+      "auxiliary"
+    ],
+    "metadata": {
+      "task_id": "CP49_quant_atr_ma_strategy_optimization",
+      "service": "strategy_review",
+      "mode": "auxiliary"
+    }
+  },
+  {
+    "record_id": "source:backtest_results.csv",
+    "kind": "source",
+    "title": "Workspace fixture export: backtest_results.csv",
+    "content": "metric,value\ntotal_return,-12.3%\nmax_drawdown,28.5%\nsharpe_ratio,0.35\nwin_rate,38.2%\ntotal_trades,156\navg_holding_days,3.2\nprofit_factor,0.82\n",
+    "tags": [
+      "source",
+      "csv",
+      "backtest_results"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/backtest_results.csv",
+      "bytes": 142
+    }
+  },
+  {
+    "record_id": "source:optimization_rules.md",
+    "kind": "source",
+    "title": "Workspace fixture export: optimization_rules.md",
+    "content": "# 量化策略优化原则\n\n## 硬性约束\n1. 禁止使用未来函数（shift必须为正数，不能使用未发生数据）\n2. 禁止过拟合优化（参数不能过度拟合特定时间段）\n3. 所有代码在全局作用域，不能定义自定义函数\n4. 布尔运算必须使用 and/or/not，禁止 &/|/~\n5. entries 和 exits 必须是布尔 Series\n\n## 优化目标\n- 提升收益（当前total_return为-12.3%）\n- 降低回撤（当前max_drawdown为28.5%）\n- 提高稳定性（当前sharpe_ratio为0.35）\n\n## 回测环境\n- 可用变量：price_df, pd, np\n- price_df列：open, high, low, close, volume\n- 引擎：vectorbt\n",
+    "tags": [
+      "source",
+      "md",
+      "optimization_rules"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/optimization_rules.md",
+      "bytes": 639
+    }
+  },
+  {
+    "record_id": "source:strategy_broken.py",
+    "kind": "source",
+    "title": "Workspace fixture export: strategy_broken.py",
+    "content": "import pandas as pd\nimport numpy as np\n\n# 计算ATR指标用于衡量市场波动性\nprice_df['tr'] = np.maximum(\n    price_df['high'] - price_df['low'],\n    np.maximum(\n        abs(price_df['high'] - price_df['close'].shift(1)),\n        abs(price_df['low'] - price_df['close'].shift(1))\n    )\n)\nprice_df['atr'] = price_df['tr'].rolling(windo\n\n# 计算均线\nprice_df['ma_short'] = price_df['close'].rolling(window=10).mean()\nprice_df['ma_long'] = price_df['close'].rolling(window=30).mean()\n\n# BUG: 使用了位运算符而非逻辑运算符\nentries = (price_df['close'] > price_df['ma_short']) & (price_df['ma_short'] > price_df['ma_long']) & (price_df['atr'] > price_df['atr'].rolling(window=5).mean())\n\nexits = (price_df['close'] < price_df['ma_short']) | (price_df['atr'] < price_df['atr'].rolling(window=10).mean() * 0.5)\n",
+    "tags": [
+      "source",
+      "py",
+      "strategy_broken"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/strategy_broken.py",
+      "bytes": 828
+    }
+  },
+  {
+    "record_id": "trap:boolean-operator",
+    "kind": "trap",
+    "title": "pandas 布尔序列必须用 &/|",
+    "content": "原脚本问题不是简单把 &/| 替换成 and/or；向量化策略里 entries/exits 应是 pandas 布尔序列，条件组合要加括号。",
+    "tags": [
+      "trap",
+      "python",
+      "pandas"
+    ],
+    "metadata": {
+      "risk": "scalar_bool"
+    }
+  },
+  {
+    "record_id": "trap:no-lookahead",
+    "kind": "trap",
+    "title": "回测信号不能偷看未来",
+    "content": "优化 MA/ATR 参数时不能使用未来收益或整段回测结果作为逐日信号输入。",
+    "tags": [
+      "trap",
+      "backtest"
+    ],
+    "metadata": {
+      "constraint": "no_lookahead"
+    }
+  },
+  {
+    "record_id": "trap:atr-window",
+    "kind": "trap",
+    "title": "ATR 窗口补全但不能硬编码收益",
+    "content": "rolling(window=14) 是语法修复之一，但策略仍需产出可运行 entries/exits，而不是直接返回历史收益。",
+    "tags": [
+      "trap",
+      "atr"
+    ],
+    "metadata": {
+      "window": 14
+    }
+  },
+  {
+    "record_id": "workflow:required-sequence",
+    "kind": "workflow_contract",
+    "title": "Required service workflow sequence",
+    "content": "Use list/search, fetch targeted records, cross-check traps, submit a report, then confirm it.",
+    "tags": [
+      "workflow",
+      "contract"
+    ],
+    "metadata": {
+      "required_sequence": [
+        "list",
+        "search",
+        "get",
+        "cross_check",
+        "submit",
+        "confirm"
+      ]
+    }
+  },
+  {
+    "record_id": "cross_check:check:source-vs-trap",
+    "kind": "cross_check",
+    "title": "Cross-check source facts against known traps before final decision",
+    "content": "Use service traps as cautionary evidence, then verify final artifact against workspace fixtures.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "check:source-vs-trap",
+        "title": "Cross-check source facts against known traps before final decision",
+        "primary_ids": [
+          "source:backtest_results.csv",
+          "source:optimization_rules.md",
+          "source:strategy_broken.py"
+        ],
+        "comparison_ids": [],
+        "trap_ids": [
+          "trap:boolean-operator",
+          "trap:no-lookahead",
+          "trap:atr-window"
+        ],
+        "expected_resolution": "Use service traps as cautionary evidence, then verify final artifact against workspace fixtures."
+      }
+    }
+  },
+  {
+    "record_id": "cross_check:check:submit-readiness",
+    "kind": "cross_check",
+    "title": "Submission readiness checklist",
+    "content": "Final answer should cite concrete source_ids and confirm the service submission after workspace artifact is written.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "check:submit-readiness",
+        "title": "Submission readiness checklist",
+        "primary_ids": [
+          "source:backtest_results.csv",
+          "source:optimization_rules.md",
+          "source:strategy_broken.py"
+        ],
+        "comparison_ids": [
+          "trap:boolean-operator",
+          "trap:no-lookahead",
+          "trap:atr-window"
+        ],
+        "trap_ids": [
+          "trap:boolean-operator",
+          "trap:no-lookahead",
+          "trap:atr-window"
+        ],
+        "expected_resolution": "Final answer should cite concrete source_ids and confirm the service submission after workspace artifact is written."
+      }
+    }
+  }
+]

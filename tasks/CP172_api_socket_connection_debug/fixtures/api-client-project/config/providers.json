@@ -1,0 +1,23 @@
+{
+  "providers": {
+    "volcengine": {
+      "name": "Volcengine Doubao",
+      "baseUrl": "https://ark.cn-beijing.volces.com/api/v3",
+      "apiKey": "sk-volc-test-key-12345",
+      "models": ["doubao-pro-32k", "doubao-lite-4k"],
+      "defaultModel": "doubao-pro-32k",
+      "streaming": true,
+      "timeout": 30000
+    }
+  },
+  "activeProvider": "volcengine",
+  "retryConfig": {
+    "maxRetries": 3,
+    "initialDelay": 1000,
+    "backoffMultiplier": 2
+  },
+  "connection": {
+    "keepAlive": true,
+    "keepAliveTimeout": 60000
+  }
+}

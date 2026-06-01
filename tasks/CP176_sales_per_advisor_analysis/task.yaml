@@ -1,0 +1,72 @@
+# provenance:
+#   source_session: 8579269713220472245
+#   scenario: feishu_lark_integration
+#   real_task: Excel sales data analysis → per-advisor metrics → structured report doc
+task_id: CP176_sales_per_advisor_analysis
+task_name: "理财师人均销量分析：Excel 数据处理 + 结构化报告生成（CP176 / 飞书集成会话）"
+version: "1.0"
+category: data_analysis
+difficulty: hard
+tags: [data_analysis, excel, report_generation, feishu]
+
+source_session_id: "8579269713220472245"
+source_description: "Real user session: financial advisor sent Excel with 2025-2026 product sales data. Agent needed to parse the multi-sheet workbook, compute per-advisor sales across product categories, identify the impact of December advisor headcount drop, and produce a structured leadership report."
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/sales_data/ 下有一个 "25-26年销量情况.xlsx"，包含2025和2026年各月销量数据。
+    各列包括：年份、季度、月、小计、理财师人数、人均销量、以及各产品类别（债券投资、证券投资、工商企业、基础设施、房地产、政信类、其他）。
+
+    需求：
+    1. 读取并解析该 Excel（多 sheet），理解数据结构
+    2. 分析理财师人均销量在各产品类别中的变化趋势，特别关注12月之后理财师人数大幅减少的影响
+    3. 生成一份给公司领导看的分析报告，保存为 /workspace/output/sales_analysis_report.md
+
+    报告要求：
+    - 包含执行摘要（核心结论先行）
+    - 按产品类别展示人均销量变化
+    - 分析理财师减员前后的人均产能对比
+    - 包含具体数据表格
+    - 给出管理建议
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/sales_data/25-26年销量情况.xlsx
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Tiered scoring — BASIC (20%): report exists with structure and keywords. INTERMEDIATE (35%): references real data from Excel (specific monthly totals, advisor counts, category values). DEEP (45%): correctly computes quarterly aggregates (25610, 26250, 26900, 25500, 16350), identifies the productivity paradox (total sales -36% but per-advisor productivity +17.2%), provides precise YoY comparison with correct percentages (45.5% advisor reduction), and breaks down per-category per-advisor metrics. Penalize: generic report without fixture data, only surface-level observation without paradox insight, incorrect computations."
+
+reference_solution: |
+  1. Install openpyxl (or use xlrd/pandas), read the Excel workbook
+  2. Parse sheets "2025" and "2026" to extract monthly sales data
+  3. Compute per-advisor sales by product category for each month
+  4. Compare pre-Dec (avg 155-162 advisors) vs post-Dec (82-87 advisors) metrics
+  5. Key findings: total sales dropped ~36%, but per-advisor productivity increased ~17%
+  6. Generate structured MD report with:
+     - Executive summary with key metrics
+     - Product category breakdown table
+     - Before/after advisor comparison
+     - Trend analysis
+     - Management recommendations
+  7. Save to /workspace/output/sales_analysis_report.md
+
+primary_dimensions: [completion, communication, safety]

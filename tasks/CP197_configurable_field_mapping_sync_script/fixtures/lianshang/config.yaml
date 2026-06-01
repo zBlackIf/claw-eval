@@ -1,0 +1,14 @@
+# Supplier sync configuration
+upstream_api:
+  base_url: "http://huijin.internal/api/v1"
+  page_size: 1000
+
+downstream:
+  app_id: "6321f8c9e4b0a12345"
+  entry_id: "6321f8c9e4b0b67890"
+  table_name: "supplier_archive"
+
+sync:
+  unique_key: "code"
+  batch_size: 100
+  mode: "incremental"  # incremental | full

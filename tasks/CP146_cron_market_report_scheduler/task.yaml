@@ -1,0 +1,71 @@
+# provenance:
+#   source_session: 10564443006213084432
+#   scenario: 定时任务 / 后台调度 / cron
+#   task_number: 146
+task_id: CP146_cron_market_report_scheduler
+task_name: "Cron 定时股市简报调度器修复与补全"
+version: "1.0"
+category: engineering
+difficulty: medium
+tags: [cron, scheduler, python, trading-calendar]
+
+source_session_id: "10564443006213084432"
+source_description: "用户配置了多个 cron 触发的股市简报脚本（早盘前瞻/午盘速报/收盘复盘/自选股盘点），但调度器有 bug（交易日判断错误）且部分功能未实现。需要修复 + 补全。"
+
+services: []
+
+prompt:
+  text: |
+    我有个股市简报定时调度器 /workspace/fixtures/market-scheduler/scheduler.py，
+    配合 schedule_config.json 和 holidays_sse.json 使用。功能是在交易日的
+    固定时间自动跑不同的简报脚本。
+
+    现在有几个问题：
+    1. `is_trading_day` 函数判断周末有 bug，周六被当作交易日了
+    2. 节假日判断也不对，好像类型比较有问题
+    3. `generate_cron_entry` 没实现，我需要它输出能直接贴进 crontab 的条目
+    4. `run_if_trading` 也是空的，应该先判断是否交易日再决定是否执行脚本
+    5. `get_next_jobs` 没写，我想看接下来几个交易日的排程
+
+    帮我把这些都修好/补全。cron 条目要包含工作日过滤和交易日守卫
+    （即先检查是否交易日再执行）。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/market-scheduler/scheduler.py
+  - fixtures/market-scheduler/schedule_config.json
+  - fixtures/market-scheduler/watchlist.json
+  - fixtures/market-scheduler/holidays_sse.json
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct bug fixes in is_trading_day (weekend >= 6, holiday string comparison), complete generate_cron_entry (proper crontab format with weekday filter and trading-day guard), run_if_trading implementation (checks is_trading_day before exec), and get_next_jobs (iterates forward skipping non-trading days). All check/next/generate-cron commands should produce valid JSON or cron output."
+
+reference_solution: |
+  1. Fix is_trading_day: change isoweekday() > 6 to >= 6; convert date to
+     string (check_date.isoformat()) before checking against holidays list.
+  2. generate_cron_entry: output format "M H * * 1-5 cd <dir> && python
+     scheduler.py run-if-trading <script> <args>" for each enabled schedule.
+  3. run_if_trading: call is_trading_day(date.today()), if False return 0
+     (skip silently), if True run subprocess with the script + args.
+  4. get_next_jobs: starting from from_date or today, iterate forward day by
+     day, for each trading day add all enabled schedule entries, collect up
+     to count entries.
+
+primary_dimensions: [completion, communication, safety]

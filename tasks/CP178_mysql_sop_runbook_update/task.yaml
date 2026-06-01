@@ -1,0 +1,75 @@
+# provenance:
+#   session_id: "5672548092302919147"
+#   scenario: "IDE / 编辑器集成"
+#   model: "glm-5-1-modelhub"
+#   real_user_turns: 37
+#   suitability_score: 10
+#   description: "User conducted MySQL slave1 hardware maintenance, then asked to update the SOP document based on operational experience. Key changes: time window, stop/start commands, keepalived no-enable, processlist check, recovery announcement automation, SHOW slave status loop commands."
+task_id: CP178_mysql_sop_runbook_update
+task_name: "MySQL 运维 SOP 文档迭代更新（CP178 / 源 session 5672548092302919147）"
+version: "1.0"
+category: ops
+difficulty: medium
+tags: [ops, sop, mysql, documentation]
+
+source_session_id: "5672548092302919147"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "从真实运维会话提取：用户执行完 MySQL 从1标准硬件维护后，根据实操经验要求更新 SOP 模板文档。涉及 6 处关键改动。Workspace WS2 文档迭代模式。"
+
+services: []
+
+prompt:
+  text: |
+    我刚完成了一次 MySQL 从1标准硬件维护，发现现有 SOP 文档有几个地方跟实际操作不一致，
+    需要按以下实操经验改一下 /workspace/fixtures/ops-sop/slave1-hardware-maintenance.md：
+
+    1. 操作时间窗口：非工作日可以提前到 21:00 开始（不用等到 22:00），公告时间也改成 21:00~24:00
+    2. 停止 MySQL 实例的命令改成循环脚本：
+       for PORT in $(/usr/local/mysql/reportMysql.sh | grep 'runing' | awk '{print $1}'); do /usr/local/mysql/stopMysql.sh $PORT; done
+    3. 启动 MySQL 实例的命令改成：
+       for PORT in $(/usr/local/mysql/reportMysql.sh | grep 'stopped' | awk '{print $1}'); do touch /data/mysql/mysql_$PORT/logs/localhost.err; chown mysql:mysql /data/mysql/mysql_$PORT/logs/localhost.err;/usr/local/mysql/startMysql.sh $PORT; done
+    4. 恢复 keepalived 只执行 systemctl start keepalived，不要加 systemctl enable（不要开机启动）
+    5. exec-02 业务迁移到主库那步，要加 processlist 检查命令确认从库无业务连接后才能继续：
+       for PORT in $(/usr/local/mysql/reportMysql.sh | grep 'runing' | awk '{print $1}'); do mysql -h 127.0.0.1 -u$(grep '^user=' /usr/local/backup/config.conf | cut -d '=' -f2) -p$(grep '^password=' /usr/local/backup/config.conf | cut -d '=' -f2) -P $PORT -e "SHOW processlist"; done
+    6. exec-09 和 acc-02 的主从同步检查统一改成循环命令：
+       for PORT in $(/usr/local/mysql/reportMysql.sh | grep 'runing' | awk '{print $1}'); do mysql -h 127.0.0.1 -u$(grep '^user=' /usr/local/backup/config.conf | cut -d '=' -f2) -p$(grep '^password=' /usr/local/backup/config.conf | cut -d '=' -f2) -P $PORT -e "SHOW slave status\G"; done
+
+    改完以后确保文档结构完整、格式统一。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/ops-sop/slave1-hardware-maintenance.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct SOP update: (1) time window updated to 21:00 for non-working days in announcement-defaults and prep steps, (2) exec-05 stop command uses reportMysql.sh loop instead of single port, (3) exec-08 start command uses stopped-port loop with touch/chown, (4) exec-11 keepalived only start without enable, (5) exec-02 adds processlist loop check with config.conf credentials, (6) exec-09 and acc-02 use SHOW slave status loop. Hidden easy checks (15%): proper fenced code blocks for multi-line commands, removal of orphan single-port references, document structure preserved, flow condition syntax consistency. Hidden hard checks (30%): prep-01 time consistency (update step 4 from 22:00 to reflect 21:00 for non-working days), exec-02 flow condition updated to mention processlist/connection confirmation, exec-05 netstat verification updated for multi-port, keepalived rationale note explaining why no enable (split-brain risk), exec-03/exec-11 disable/start asymmetry documented."
+
+reference_solution: |
+  Update the SOP markdown file with all 6 requested changes:
+  - announcement-defaults: 开始时间 changed to 21:00, added note about non-working days
+  - prep-01: update step 4 from "22:00 后" to include "非工作日 21:00" option
+  - exec-02: add SHOW processlist loop command, update flow condition to mention "确认从库无业务连接后"
+  - exec-05: replace single-port stopMysql.sh with reportMysql.sh loop; update netstat check to not reference single {port}
+  - exec-08: replace single-port startMysql.sh with stopped-port loop including touch/chown
+  - exec-09: replace manual show slave status with loop command using config.conf
+  - exec-11: remove systemctl enable, keep only systemctl start, add note explaining why (避免自动启动/脑裂风险)
+  - acc-02: replace manual show slave status with loop command
+  Hidden quality signals: use fenced code blocks (```bash) for multi-line commands, maintain cross-section consistency
+
+primary_dimensions: [completion, communication, safety]

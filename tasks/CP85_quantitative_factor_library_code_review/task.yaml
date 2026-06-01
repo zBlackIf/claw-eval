@@ -1,0 +1,105 @@
+# provenance:
+#   themis_dataset: taskset-260421-225115-strict-v2
+#   themis_task_id: task_38_quant_code_review
+#   themis_rank_original: 39
+#   themis_metrics: { std_trim: 0.391, range_trim: 0.910, mean_trim: 0.612 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP85_quantitative_factor_library_code_review
+task_name: "量化因子库代码评审（CP85 / 源 taskset-260421-225115-strict-v2:task_38_quant_code_review）"
+version: "1.0"
+category: security
+difficulty: hard
+tags: [general]
+
+source_task_id: "task_38_quant_code_review"
+source_dataset: "taskset-260421-225115-strict-v2"
+source_description: "PinchBench top100 rank 39（std_trim 0.391，strict-v2）。Workflow + workspace 混合（W5 kb-artifact）：sandbox 提供因子库 + pipeline + tests 源码，kb 提供评审原则 + 评审报告占位文章。agent 读代码 → kb_get 看原则 → kb_update 把 findings 写进 KB-CODE-REVIEW-REPORT。grader 从 audit_data['kb'] 取最新 content，按 6 个隐藏锚点（look-ahead bias / 除零 / 性能 / P0-P3 / 反虚假评审 / 文件路径证据）+ kb tool gate 评分。"
+
+services:
+  - name: kb
+    command: python mock_services/kb/server.py
+    port: 9106
+    health_check: http://localhost:9106/kb/search
+    health_check_method: POST
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9106/kb/reset
+    env:
+      KB_FIXTURES: tasks/CP74_quantitative_factor_library_code_review/fixtures/kb/articles.json
+
+prompt:
+  text: |
+    量化组的因子库在 /workspace/fixtures/ 下（factors/ + pipeline/ + tests/），
+    下周风控审计要看这块，先内部过一遍。把发现的问题归档到内部知识库那篇
+    评审报告里。
+  language: zh
+
+tools:
+  - name: kb_search
+    description: 在内部知识库搜索文章
+    input_schema:
+      type: object
+      properties:
+        query: {type: string}
+        category: {type: string}
+        max_results: {type: integer, default: 5}
+      required: [query]
+  - name: kb_get_article
+    description: 按 ID 获取知识库文章全文
+    input_schema:
+      type: object
+      properties:
+        article_id: {type: string}
+      required: [article_id]
+  - name: kb_update_article
+    description: 按 ID 整体替换文章 content
+    input_schema:
+      type: object
+      properties:
+        article_id: {type: string}
+        content: {type: string}
+      required: [article_id, content]
+
+tool_endpoints:
+  - tool_name: kb_search
+    url: http://localhost:9106/kb/search
+    method: POST
+  - tool_name: kb_get_article
+    url: http://localhost:9106/kb/articles/get
+    method: POST
+  - tool_name: kb_update_article
+    url: http://localhost:9106/kb/articles/update
+    method: POST
+
+sandbox_files:
+  - fixtures/factors/momentum.py
+  - fixtures/factors/value.py
+  - fixtures/factors/volatility.py
+  - fixtures/pipeline/feature_engine.py
+  - fixtures/tests/test_factors.py
+
+environment:
+  timeout_seconds: 720
+  max_turns: 20
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward an update to KB-CODE-REVIEW-REPORT that flags ≥3 substantive findings tied to actual file paths in factors/pipeline/tests, including: (a) look-ahead bias in momentum factor (skip_recent or shift), (b) division-by-zero risk in value factor (book_to_market / earnings_yield), (c) performance issue in feature_engine.py (iterrows / non-vectorized loop), each tagged with P0-P3 severity. Penalize 'no issues found' / 'looks clean' without specific findings."
+
+reference_solution: |
+  Read all 5 .py files. kb_search('code review principles') →
+  kb_get_article('KB-CODE-REVIEW-PRINCIPLES') for P0-P3 framework.
+  kb_get_article('KB-CODE-REVIEW-REPORT') to see placeholder.
+  Compose report with:
+  - P0: look-ahead bias in factors/momentum.py (uses current price without
+    skip_recent gap, future info leaks into ranking)
+  - P1: divide-by-zero in factors/value.py (book_to_market / earnings_yield
+    when denominator is 0 → inf/nan)
+  - P2: pipeline/feature_engine.py uses iterrows in build_training_set, slow
+    for large datasets, should vectorize
+  - P2/P3: missing IS/OOS split in test_factors.py
+  Then kb_update_article('KB-CODE-REVIEW-REPORT', content=<报告全文>).
+
+primary_dimensions: [completion, robustness, communication]

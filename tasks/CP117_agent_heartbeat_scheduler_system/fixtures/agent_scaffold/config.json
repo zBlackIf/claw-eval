@@ -1,0 +1,26 @@
+{
+  "agent_name": "training-assistant",
+  "workspace_root": "/root/.openclaw/workspace",
+  "heartbeat_interval_minutes": 15,
+  "log_dir": "logs",
+  "knowledge_dir": "knowledge",
+  "memory_dir": "memory",
+  "max_log_entries_per_file": 500,
+  "tasks": [
+    {
+      "task_id": "heartbeat_check",
+      "description": "Periodic system health check",
+      "enabled": true,
+      "interval_minutes": 15,
+      "check_dirs": ["knowledge", "memory"],
+      "log_format": "HH:MM - heartbeat: <status>"
+    },
+    {
+      "task_id": "daily_summary",
+      "description": "Generate daily activity summary",
+      "enabled": false,
+      "cron": "0 23 * * *",
+      "output_file": "logs/daily_summary_{date}.md"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "remotion-project",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "remotion studio",
+    "build": "remotion bundle src/index.ts --bundle dist/bundle.js",
+    "render": "remotion render"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "remotion": "4.0.461",
+    "@remotion/cli": "4.0.461",
+    "@remotion/bundler": "4.0.461",
+    "@remotion/renderer": "4.0.461",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/react": "^18.2.0"
+  }
+}

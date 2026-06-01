@@ -1,0 +1,69 @@
+{
+  "execution_id": 952,
+  "name": "技能商店",
+  "status": "doing",
+  "begin": "2026-04-07",
+  "end": "2026-04-28",
+  "tasks": {
+    "total": 40,
+    "done": 32,
+    "doing": 5,
+    "wait": 3,
+    "overdue": 7,
+    "overdue_details": [
+      {
+        "id": 4901,
+        "name": "技能审核流程",
+        "assignedTo": "钱七",
+        "deadline": "2026-04-18",
+        "status": "doing"
+      },
+      {
+        "id": 4902,
+        "name": "技能版本管理",
+        "assignedTo": "钱七",
+        "deadline": "2026-04-19",
+        "status": "doing"
+      },
+      {
+        "id": 4903,
+        "name": "技能搜索引擎优化",
+        "assignedTo": "张三",
+        "deadline": "2026-04-20",
+        "status": "doing"
+      },
+      {
+        "id": 4904,
+        "name": "技能评分系统",
+        "assignedTo": "李四",
+        "deadline": "2026-04-20",
+        "status": "wait"
+      },
+      {
+        "id": 4905,
+        "name": "技能推荐算法",
+        "assignedTo": "张三",
+        "deadline": "2026-04-21",
+        "status": "wait"
+      },
+      {
+        "id": 4906,
+        "name": "技能安装卸载流程",
+        "assignedTo": "钱七",
+        "deadline": "2026-04-21",
+        "status": "doing"
+      },
+      {
+        "id": 4907,
+        "name": "技能依赖管理",
+        "assignedTo": "李四",
+        "deadline": "2026-04-22",
+        "status": "doing"
+      }
+    ]
+  },
+  "progress": {
+    "actual": 80,
+    "expected": 96
+  }
+}

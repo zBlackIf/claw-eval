@@ -1,0 +1,24 @@
+# Top-level SConstruct for modem firmware build
+# Simulates a Qualcomm-style modem build with multiple modules
+
+import os
+
+env = Environment(
+    CC='gcc',
+    CPPPATH=['#/core/api/common', '#/core/api/common/storage'],
+    LIBPATH=[],
+)
+
+# Build core modules
+core_libs = SConscript('core/build/core.scons', exports='env', duplicate=0)
+
+# Build OEM module
+oem_lib = SConscript('oem/fibo_qmi/build/fibo_qmi.scons', exports='env', duplicate=0)
+
+# Link final OEM PD image
+env.Program(
+    target='build/oem_pd_img',
+    source=[],
+    LIBS=[oem_lib, core_libs.get('qmi_framework', [])],
+    LIBPATH=['#/build/libs'],
+)

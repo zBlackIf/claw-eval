@@ -1,0 +1,106 @@
+# provenance:
+#   source_session: 13495785260382641571
+#   scenario: enterprise_saas_business_system
+#   task_number: 164
+task_id: CP164_es_to_mybatis_query_migration
+task_name: "ES 查询迁移到 MyBatis-Plus 数据库查询（CP164 / RuoYi 安全管理模块）"
+version: "1.0"
+category: refactoring
+difficulty: medium
+tags: [java, mybatis-plus, elasticsearch, migration, enterprise]
+
+source_session_id: "13495785260382641571"
+source_description: "Real user session: converting multiple service implementations from Elasticsearch (UniversalSearchService) to MyBatis-Plus LambdaQueryWrapper for a low-traffic safety management system (<10k records, <10 concurrent users)."
+
+services: []
+
+prompt:
+  text: |
+    我们的安全管理系统数据量很小（<1万条记录，<10个并发用户），之前用的 ES 查询
+    完全是过度设计。现在要把 service/impl 下面三个服务的 ES 查询全部改成
+    MyBatis-Plus 的 LambdaQueryWrapper 直接查数据库：
+
+    1. MessageServiceImpl - queryPage 方法要支持按 msgType 筛选、keyword
+       模糊搜索 title 和 content、过滤已删除记录，分页查询
+    2. MessageUserServiceImpl - countUnreadByUserId 方法不要再走 ES，
+       直接用 LambdaQueryWrapper count
+    3. HazardServiceImpl - queryPage 方法要支持按 hazardLevel、status、
+       hazardType、responsibleId、deptId 筛选，keyword 模糊搜索
+       hazardNo、description、location，过滤已删除记录，分页查询
+
+    要求：
+    - 完全移除 UniversalSearchService 和 UniversalSearchAuthFilter 的依赖
+    - 移除对应的 import 和 @Autowired 字段
+    - 保持原有的 VO 转换逻辑不变
+    - keyword 搜索要用 like + or 组合实现多字段模糊匹配
+
+    代码在 /workspace/fixtures/ruoyi-safe/src/ 下面。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/safe/service/impl/MessageServiceImpl.java
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/safe/service/impl/MessageUserServiceImpl.java
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/safe/service/impl/HazardServiceImpl.java
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/safe/service/search/UniversalSearchService.java
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/safe/service/search/UniversalSearchAuthFilter.java
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/safe/service/IMessageService.java
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/safe/service/IMessageUserService.java
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/safe/service/IHazardService.java
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/safe/domain/Message.java
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/safe/domain/MessageUser.java
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/safe/domain/Hazard.java
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/safe/domain/form/MessageQryForm.java
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/safe/domain/form/HazardQryForm.java
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/safe/domain/vo/MessageVO.java
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/safe/domain/vo/HazardVO.java
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/safe/mapper/MessageMapper.java
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/safe/mapper/MessageUserMapper.java
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/safe/mapper/HazardMapper.java
+  - fixtures/ruoyi-safe/src/main/java/com/ruoyi/common/core/service/BaseServiceImpl.java
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete ES-to-MyBatis-Plus migration: all three services (MessageServiceImpl, MessageUserServiceImpl, HazardServiceImpl) must remove UniversalSearchService dependency and use LambdaQueryWrapper instead. MessageServiceImpl must support keyword LIKE on title+content with OR, filter by msgType, exclude deleted. MessageUserServiceImpl count must use LambdaQueryWrapper. HazardServiceImpl must support multi-condition AND filters plus keyword OR-LIKE on 3 fields. All ES imports must be removed. No type-conversion compilation issues."
+
+reference_solution: |
+  MessageServiceImpl:
+  - Remove @Autowired UniversalSearchService
+  - Remove UniversalSearch* imports
+  - queryPage: build LambdaQueryWrapper<Message> with:
+    - .eq(Message::getDelFlag, 0)
+    - .eq(Message::getMsgType, form.getMsgType()) when not null
+    - .and(w -> w.like(Message::getTitle, keyword).or().like(Message::getContent, keyword)) when keyword not blank
+    - Use page(new Page<>(pageNum, pageSize), wrapper).convert(this::toDetailVO)
+
+  MessageUserServiceImpl:
+  - Remove @Autowired UniversalSearchService
+  - countUnreadByUserId: use count(new LambdaQueryWrapper<MessageUser>()
+      .eq(MessageUser::getUserId, userId)
+      .eq(MessageUser::getReadFlag, MessageUser.READ_FLAG_UN_READ))
+  - Note: MyBatis-Plus count() returns long, must handle type correctly
+
+  HazardServiceImpl:
+  - Remove @Autowired UniversalSearchService
+  - queryPage: build LambdaQueryWrapper<Hazard> with:
+    - .eq(Hazard::getDelFlag, 0)
+    - .eq for each non-null filter (hazardLevel, status, hazardType, responsibleId, deptId)
+    - .and(w -> w.like(Hazard::getHazardNo, keyword).or().like(Hazard::getDescription, keyword).or().like(Hazard::getLocation, keyword))
+    - Use page(new Page<>(pageNum, pageSize), wrapper).convert(this::convertToVO)
+
+primary_dimensions: [completion, communication, safety]

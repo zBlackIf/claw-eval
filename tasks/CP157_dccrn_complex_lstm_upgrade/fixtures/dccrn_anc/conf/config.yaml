@@ -1,0 +1,41 @@
+# ============================================================
+# DCCRN-ANC Conditioned Configuration
+# ============================================================
+
+# Signal processing parameters
+stft:
+  sample_rate: 16000
+  n_fft: 320
+  win_length: 320
+  hop_length: 160
+
+# Training hyperparameters
+train:
+  batch_size: 8
+  epochs: 30
+  lr: 0.001
+  val_split: 0.1
+  eta_squared: 0.1
+  accumulation_steps: 4
+  grad_clip_norm: 5.0
+
+# Data paths (placeholders)
+data:
+  audio_dir: './data/noise'
+  rir_mat_dir: './data/rir'
+  task_mode: 'noise_only'
+  rir_keys: ['P_path_RIR', 'S_path_RIR']
+  rir_len: 512
+
+# RIR Conditioning configuration
+conditioning:
+  enabled: true
+  embed_dim: 64
+  rir_encoder_type: 'time_domain'
+  freeze_encoder_epochs: 5
+  embed_reg_weight: 0.01
+  encoder_lr_scale: 0.1
+  encoder_grad_clip_norm: 1.0
+  encoder_warmup_epochs: 3
+  # LSTM type: 'real' (current) or 'complex' (upgrade target)
+  lstm_type: 'real'

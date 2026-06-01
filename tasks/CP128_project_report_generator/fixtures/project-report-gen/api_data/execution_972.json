@@ -1,0 +1,69 @@
+{
+  "execution_id": 972,
+  "name": "一键发布",
+  "status": "doing",
+  "begin": "2026-04-07",
+  "end": "2026-04-22",
+  "tasks": {
+    "total": 25,
+    "done": 17,
+    "doing": 5,
+    "wait": 3,
+    "overdue": 7,
+    "overdue_details": [
+      {
+        "id": 5001,
+        "name": "发布流水线编排",
+        "assignedTo": "孙八",
+        "deadline": "2026-04-15",
+        "status": "doing"
+      },
+      {
+        "id": 5002,
+        "name": "灰度发布策略",
+        "assignedTo": "孙八",
+        "deadline": "2026-04-16",
+        "status": "doing"
+      },
+      {
+        "id": 5003,
+        "name": "回滚机制实现",
+        "assignedTo": "周九",
+        "deadline": "2026-04-17",
+        "status": "doing"
+      },
+      {
+        "id": 5004,
+        "name": "发布审批流程",
+        "assignedTo": "孙八",
+        "deadline": "2026-04-18",
+        "status": "wait"
+      },
+      {
+        "id": 5005,
+        "name": "环境配置管理",
+        "assignedTo": "周九",
+        "deadline": "2026-04-18",
+        "status": "doing"
+      },
+      {
+        "id": 5006,
+        "name": "发布日志审计",
+        "assignedTo": "孙八",
+        "deadline": "2026-04-19",
+        "status": "wait"
+      },
+      {
+        "id": 5007,
+        "name": "一键回滚UI",
+        "assignedTo": "周九",
+        "deadline": "2026-04-20",
+        "status": "doing"
+      }
+    ]
+  },
+  "progress": {
+    "actual": 68,
+    "expected": 100
+  }
+}

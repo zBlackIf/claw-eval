@@ -1,0 +1,82 @@
+# provenance:
+#   themis_dataset: taskset-260421-225115-strict-v2
+#   themis_task_id: task_06_cpp_refactor_return_value
+#   themis_rank_original: 28
+#   themis_metrics: { std_trim: 0.409, range_trim: 1.000, mean_trim: 0.783 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP75_cpp_channel_adapter_return_value_refactor
+task_name: "C++ Channel Adapter 返回值重构 + 新接口（CP75 / 源 taskset-260421-225115-strict-v2:task_06_cpp_refactor_return_value）"
+version: "1.0"
+category: coding
+difficulty: hard
+tags: [general]
+
+source_task_id: "task_06_cpp_refactor_return_value"
+source_dataset: "taskset-260421-225115-strict-v2"
+source_description: "PinchBench top100 rank 28（std_trim 0.409，strict-v2 rubric）。改编为 Claw-Eval sandbox C++ 重构任务：把输出参数式签名改成 unique_ptr 返回值，所有调用点同步更新，并在 vendor adapter 基类加一个新虚接口 + 在两个子类（NVT/MTK）实现。verifier 7 个隐藏锚点。"
+
+services: []
+
+prompt:
+  text: |
+    AiClone 频道管理模块要重构。/workspace/fixtures/src/ 下：
+
+    1. `ChannelMapInstaller::convertToVendorChannel` 现在用输出参数返回结果
+       （ErrorCode + VendorChannel*），照着 `ChannelMapBuilder` 里的
+       `convertVendorChannelToBaseChannel` 那种写法改成 unique_ptr 返回值，
+       错误走异常或 optional。
+    2. `VendorChannelAdapter` 基类加一个新接口 `addDirectTuneChannel(VendorChannel)
+       → ErrorCode`，NVT 和 MTK 两个子类都得实现。
+
+    所有调用点和头文件都要同步改。修改后的代码写到 /workspace/src/（保持
+    原目录结构）。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/src/channel/channel_map_installer.h
+  - fixtures/src/channel/channel_map_installer.cpp
+  - fixtures/src/channel/channel_map_builder.cpp
+  - fixtures/src/vendor/vendor_channel_adapter.h
+  - fixtures/src/vendor/nvt_channel_adapter.h
+  - fixtures/src/vendor/nvt_channel_adapter.cpp
+  - fixtures/src/vendor/mtk_channel_adapter.h
+  - fixtures/src/vendor/mtk_channel_adapter.cpp
+
+sandbox_grader_files:
+  - fixtures/verify_cpp_refactor.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_cpp_refactor.py
+
+env_snapshot_files:
+  - /workspace/src/channel/channel_map_installer.h
+  - /workspace/src/channel/channel_map_installer.cpp
+  - /workspace/src/vendor/vendor_channel_adapter.h
+  - /workspace/src/vendor/nvt_channel_adapter.h
+  - /workspace/src/vendor/nvt_channel_adapter.cpp
+  - /workspace/src/vendor/mtk_channel_adapter.h
+  - /workspace/src/vendor/mtk_channel_adapter.cpp
+
+environment:
+  timeout_seconds: 720
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward the full refactor: convertToVendorChannel returns std::unique_ptr<VendorChannel> (no ErrorCode+output-param leftover), all installer.cpp call sites use 'auto x = convertToVendorChannel(...)' instead of '&local', VendorChannelAdapter base class declares virtual addDirectTuneChannel(VendorChannel)→ErrorCode, NVT and MTK both implement it in .h and .cpp. Penalize partial refactor (mixed old+new patterns)."
+
+reference_solution: |
+  Edit channel_map_installer.h to change signature to:
+  std::unique_ptr<VendorChannel> convertToVendorChannel(const BaseChannel*, const ChannelConfig&);
+  Update channel_map_installer.cpp call sites to: auto vendorChannel = convertToVendorChannel(...);
+  In vendor_channel_adapter.h add: virtual ErrorCode addDirectTuneChannel(const VendorChannel&) = 0;
+  Implement in nvt_channel_adapter.{h,cpp} and mtk_channel_adapter.{h,cpp}.
+
+primary_dimensions: [completion, communication, safety]

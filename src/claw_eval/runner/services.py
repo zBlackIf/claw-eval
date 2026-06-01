@@ -118,6 +118,11 @@ class ServiceManager:
         ):
             base_env.pop(proxy_key, None)
         env = {**base_env, **(svc.env or {})}
+        service_port_key = (
+            "".join(ch if ch.isalnum() else "_" for ch in svc.name).upper() + "_PORT"
+        )
+        env.setdefault("PORT", str(svc.port))
+        env.setdefault(service_port_key, str(svc.port))
         # Inject MOCK_TODAY if the task defines it
         if self._mock_today:
             env["MOCK_TODAY"] = self._mock_today

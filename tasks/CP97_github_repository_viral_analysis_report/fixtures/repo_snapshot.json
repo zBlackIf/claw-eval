@@ -1,0 +1,51 @@
+{
+  "name": "andrej-karpathy-skills",
+  "full_name": "forrestchang/andrej-karpathy-skills",
+  "owner": "forrestchang",
+  "description": "Andrej Karpathy's Claude Code configuration and skills, extracted from his public streams",
+  "stars": 12847,
+  "forks": 1523,
+  "open_issues": 23,
+  "watchers": 312,
+  "language": "Markdown",
+  "created_at": "2026-04-10T03:22:15Z",
+  "updated_at": "2026-04-15T14:30:00Z",
+  "pushed_at": "2026-04-14T09:15:22Z",
+  "license": "MIT",
+  "default_branch": "main",
+  "topics": ["claude-code", "ai-coding", "karpathy", "claude", "anthropic", "skills"],
+  "star_history": [
+    {"date": "2026-04-10", "stars": 150},
+    {"date": "2026-04-11", "stars": 9200},
+    {"date": "2026-04-12", "stars": 10800},
+    {"date": "2026-04-13", "stars": 11500},
+    {"date": "2026-04-14", "stars": 12200},
+    {"date": "2026-04-15", "stars": 12847}
+  ],
+  "file_tree": [
+    "README.md",
+    "CLAUDE.md",
+    "LICENSE",
+    ".claude/settings.json",
+    ".claude/rules/coding-style.md",
+    ".claude/rules/testing.md",
+    ".claude/rules/git-workflow.md",
+    "skills/deep-research/SKILL.md",
+    "skills/code-review/SKILL.md",
+    "skills/tdd-guide/SKILL.md",
+    "agents/planner.md",
+    "agents/architect.md",
+    "agents/code-reviewer.md"
+  ],
+  "top_contributors": [
+    {"login": "forrestchang", "contributions": 15},
+    {"login": "community-member-1", "contributions": 3},
+    {"login": "community-member-2", "contributions": 2}
+  ],
+  "recent_issues": [
+    {"number": 1, "title": "How to install these skills?", "state": "closed", "comments": 12},
+    {"number": 5, "title": "Does Karpathy actually use these?", "state": "open", "comments": 45},
+    {"number": 8, "title": "Skills not working with Claude Code v1.2", "state": "open", "comments": 7},
+    {"number": 12, "title": "Request: Add Python best practices skill", "state": "open", "comments": 3}
+  ]
+}

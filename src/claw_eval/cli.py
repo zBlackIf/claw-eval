@@ -129,7 +129,66 @@ def _make_user_agent(cfg, task):
     )
 
 
-def _collect_env_snapshot(sandbox_url: str, task) -> dict:
+def _sandbox_identity_headers(sandbox_identity: dict[str, str] | None) -> dict[str, str]:
+    if not sandbox_identity:
+        return {}
+    headers: dict[str, str] = {}
+    if sandbox_identity.get("run_id"):
+        headers["X-Claw-Sandbox-Run-Id"] = sandbox_identity["run_id"]
+    if sandbox_identity.get("task_id"):
+        headers["X-Claw-Sandbox-Task-Id"] = sandbox_identity["task_id"]
+    if sandbox_identity.get("token"):
+        headers["X-Claw-Sandbox-Token"] = sandbox_identity["token"]
+    return headers
+
+
+def _sandbox_json_or_raise(resp, *, stage: str, url: str) -> dict:
+    from .runner.sandbox_errors import SandboxInfraError
+
+    try:
+        body = resp.json()
+    except Exception as exc:
+        raise SandboxInfraError(
+            "sandbox_transport",
+            f"{stage} returned non-json response: {exc}",
+            diagnostics={"url": url, "status_code": getattr(resp, "status_code", None)},
+        ) from exc
+    if resp.status_code >= 500 or (
+        isinstance(body, dict)
+        and (body.get("infra_error") is True or str(body.get("error_code") or "").startswith("sandbox_"))
+    ):
+        error_code = str(body.get("error_code") or "sandbox_transport")
+        message = str(body.get("message") or body.get("error") or body)
+        raise SandboxInfraError(
+            error_code,
+            message,
+            diagnostics={
+                "url": url,
+                "stage": stage,
+                "status_code": resp.status_code,
+                "body": body,
+            },
+        )
+    return body
+
+
+def _is_sandbox_infra_exception(exc: Exception) -> bool:
+    from .runner.sandbox_errors import SandboxInfraError
+
+    if isinstance(exc, SandboxInfraError):
+        return True
+    text = str(exc).lower()
+    return (
+        "connection reset by peer" in text
+        or "server disconnected without sending a response" in text
+        or "sandbox_transport" in text
+        or "sandbox_identity_mismatch" in text
+        or "sandbox_workspace_mismatch" in text
+        or "sandbox_container_exited" in text
+    )
+
+
+def _collect_env_snapshot(sandbox_url: str, task, sandbox_identity: dict[str, str] | None = None) -> dict:
     """Collect environment data from the container after the agent loop finishes.
 
     Called between agent loop completion and container destruction.
@@ -142,18 +201,24 @@ def _collect_env_snapshot(sandbox_url: str, task) -> dict:
     import httpx
 
     timeout = getattr(task.environment, "env_snapshot_timeout", 10) if hasattr(task, "environment") else 10
-    client = httpx.Client(timeout=max(timeout + 5, 15.0))
+    client = httpx.Client(
+        timeout=max(timeout + 5, 15.0),
+        headers=_sandbox_identity_headers(sandbox_identity),
+    )
     snapshot: dict = {}
 
     try:
+        from .runner.sandbox_errors import SandboxInfraError
+
         # Run commands FIRST — they typically generate the files we need to collect
         for cmd in getattr(task, "env_snapshot_commands", []):
             try:
+                url = f"{sandbox_url}/exec"
                 resp = client.post(
-                    f"{sandbox_url}/exec",
+                    url,
                     json={"command": cmd, "timeout_seconds": timeout},
                 )
-                cmd_result = resp.json()
+                cmd_result = _sandbox_json_or_raise(resp, stage="env_snapshot_command", url=url)
                 snapshot[f"cmd:{cmd}"] = cmd_result
                 # Debug: show command results
                 exit_code = cmd_result.get("exit_code", "?")
@@ -162,6 +227,8 @@ def _collect_env_snapshot(sandbox_url: str, task) -> dict:
                 print(f"[env_snapshot] cmd exit={exit_code}: {cmd[:80]}")
                 if stderr:
                     print(f"[env_snapshot]   stderr: {stderr}")
+            except SandboxInfraError:
+                raise
             except Exception as exc:
                 snapshot[f"cmd:{cmd}"] = {"error": str(exc)}
                 print(f"[WARNING] env_snapshot command failed: {cmd}: {exc}")
@@ -188,28 +255,39 @@ def _collect_env_snapshot(sandbox_url: str, task) -> dict:
         for pattern in getattr(task, "env_snapshot_files", []):
             try:
                 if "*" in pattern or "?" in pattern:
+                    url = f"{sandbox_url}/glob"
                     resp = client.post(
-                        f"{sandbox_url}/glob",
+                        url,
                         json={"pattern": pattern, "max_files": 50},
                     )
-                    file_list = resp.json().get("files", [])
+                    file_list = _sandbox_json_or_raise(resp, stage="env_snapshot_glob", url=url).get("files", [])
                     print(f"[env_snapshot] glob '{pattern}' → {len(file_list)} file(s)")
                     for f in file_list:
                         try:
+                            url2 = f"{sandbox_url}/read"
                             resp2 = client.post(
-                                f"{sandbox_url}/read",
+                                url2,
                                 json={"path": f["path"]},
                             )
-                            snapshot[f"file:{f['path']}"] = _normalize_read_response(resp2.json())
+                            snapshot[f"file:{f['path']}"] = _normalize_read_response(
+                                _sandbox_json_or_raise(resp2, stage="env_snapshot_read", url=url2)
+                            )
+                        except SandboxInfraError:
+                            raise
                         except Exception as exc:
                             snapshot[f"file:{f['path']}"] = {"error": str(exc)}
                             print(f"[WARNING] env_snapshot file read failed: {f['path']}: {exc}")
                 else:
+                    url = f"{sandbox_url}/read"
                     resp = client.post(
-                        f"{sandbox_url}/read",
+                        url,
                         json={"path": pattern},
                     )
-                    snapshot[f"file:{pattern}"] = _normalize_read_response(resp.json())
+                    snapshot[f"file:{pattern}"] = _normalize_read_response(
+                        _sandbox_json_or_raise(resp, stage="env_snapshot_read", url=url)
+                    )
+            except SandboxInfraError:
+                raise
             except Exception as exc:
                 snapshot[f"file:{pattern}"] = {"error": str(exc)}
                 print(f"[WARNING] env_snapshot file failed: {pattern}: {exc}")
@@ -315,6 +393,53 @@ def _trace_totals(end) -> dict[str, int | float]:
     }
 
 
+def _format_sandbox_stage_fields(fields: dict) -> str:
+    return " ".join(
+        f"{key}={value}"
+        for key, value in fields.items()
+        if value is not None
+    )
+
+
+def _sandbox_handle_diagnostics(sandbox_runner, handle) -> dict:
+    if handle is None:
+        return {}
+    diagnostics = {
+        "run_id": getattr(handle, "run_id", None),
+        "host_port": getattr(handle, "host_port", None),
+        "sandbox_url": getattr(handle, "sandbox_url", None),
+    }
+    describe = getattr(sandbox_runner, "describe_handle", None)
+    if callable(describe):
+        try:
+            diagnostics.update(describe(handle))
+        except Exception as exc:
+            diagnostics["container_diag_error"] = str(exc)
+    return diagnostics
+
+
+def _log_sandbox_stage(
+    stage: str,
+    task_id: str,
+    *,
+    run_id: str | None = None,
+    sandbox_runner=None,
+    handle=None,
+    exc: Exception | None = None,
+) -> None:
+    fields = {
+        "stage": stage,
+        "task": task_id,
+        "run_id": run_id,
+    }
+    fields.update(_sandbox_handle_diagnostics(sandbox_runner, handle))
+    if exc is not None:
+        fields["exc_type"] = type(exc).__name__
+        fields["exc"] = str(exc)
+    prefix = "[sandbox-stage-error]" if exc is not None else "[sandbox-stage]"
+    print(f"{prefix} {_format_sandbox_stage_fields(fields)}")
+
+
 def cmd_run(args: argparse.Namespace) -> None:
     """Run an agent on a task."""
     _apply_proxy(getattr(args, "proxy", None))
@@ -376,7 +501,7 @@ def cmd_run(args: argparse.Namespace) -> None:
                     svc.reset_all()
 
                 run_id = f"{task.task_id}-trial{i}"
-                handle = runner.start_container(run_id=run_id)
+                handle = runner.start_container(run_id=run_id, task_id=task.task_id)
                 try:
                     n_injected = runner.inject_files(handle, task, task_dir=str(task_yaml.parent))
                     expected_files = len(task.sandbox_files) if task.sandbox_files else len(getattr(task.environment, "fixtures", []))
@@ -387,6 +512,7 @@ def cmd_run(args: argparse.Namespace) -> None:
                         trace_dir=trace_dir,
                         sandbox_tools=True,
                         sandbox_url=handle.sandbox_url,
+                        sandbox_identity=runner.identity_payload(handle),
                         prompt_cfg=cfg.prompt,
                         model_cfg=cfg.model,
                         media_cfg=cfg.media,
@@ -398,7 +524,11 @@ def cmd_run(args: argparse.Namespace) -> None:
                     if task.sandbox_grader_files and n_grader < len(task.sandbox_grader_files):
                         print(f"[WARNING] inject_grader_files: only {n_grader}/{len(task.sandbox_grader_files)} files injected")
                     # Collect env snapshot before destroying container
-                    env_snapshot = _collect_env_snapshot(handle.sandbox_url, task)
+                    env_snapshot = _collect_env_snapshot(
+                        handle.sandbox_url,
+                        task,
+                        sandbox_identity=runner.identity_payload(handle),
+                    )
                     _save_env_snapshot(env_snapshot, trace_path, task.task_id)
                 finally:
                     runner.stop_container(handle)
@@ -851,6 +981,7 @@ def _run_single_task(
         "difficulty": task.difficulty,
         "trials": [],
         "error": None,
+        "error_stage": None,
     }
 
     import time
@@ -871,34 +1002,125 @@ def _run_single_task(
                     if i > 0:
                         svc.reset_all()
 
+                    current_stage = "prepare_trial"
+                    failed_stage = None
+                    sandbox_diagnostics = None
+                    preserve_container = False
+                    handle = None
+                    run_id = None
                     try:
                         env_snapshot = None
                         if sandbox_runner:
                             run_id = f"{task.task_id}-t{i}-p{port_offset}"
-                            handle = sandbox_runner.start_container(run_id=run_id)
+                            current_stage = "start_container"
+                            _log_sandbox_stage(current_stage, task.task_id, run_id=run_id)
                             try:
+                                handle = sandbox_runner.start_container(run_id=run_id, task_id=task.task_id)
+                                _log_sandbox_stage(
+                                    "start_container_ready",
+                                    task.task_id,
+                                    run_id=run_id,
+                                    sandbox_runner=sandbox_runner,
+                                    handle=handle,
+                                )
+                            except Exception as stage_exc:
+                                failed_stage = current_stage
+                                _log_sandbox_stage(
+                                    current_stage,
+                                    task.task_id,
+                                    run_id=run_id,
+                                    sandbox_runner=sandbox_runner,
+                                    handle=handle,
+                                    exc=stage_exc,
+                                )
+                                raise
+                            try:
+                                current_stage = "inject_files"
+                                _log_sandbox_stage(
+                                    current_stage,
+                                    task.task_id,
+                                    run_id=run_id,
+                                    sandbox_runner=sandbox_runner,
+                                    handle=handle,
+                                )
                                 n_injected = sandbox_runner.inject_files(handle, task, task_dir=task_dir)
                                 expected_files = len(task.sandbox_files) if task.sandbox_files else len(getattr(task.environment, "fixtures", []))
                                 if expected_files and n_injected < expected_files:
                                     print(f"[WARNING] inject_files: only {n_injected}/{expected_files} files injected")
+                                current_stage = "run_task"
+                                _log_sandbox_stage(
+                                    current_stage,
+                                    task.task_id,
+                                    run_id=run_id,
+                                    sandbox_runner=sandbox_runner,
+                                    handle=handle,
+                                )
                                 trace_path = run_task(
                                     task, provider,
                                     trace_dir=trace_dir or cfg.defaults.trace_dir,
                                     sandbox_tools=True,
                                     sandbox_url=handle.sandbox_url,
+                                    sandbox_identity=sandbox_runner.identity_payload(handle),
                                     prompt_cfg=cfg.prompt,
                                     model_cfg=cfg.model,
                                     media_cfg=cfg.media,
                                     user_agent=_make_user_agent(cfg, task),
                                 )
+                                current_stage = "inject_grader_files"
+                                _log_sandbox_stage(
+                                    current_stage,
+                                    task.task_id,
+                                    run_id=run_id,
+                                    sandbox_runner=sandbox_runner,
+                                    handle=handle,
+                                )
                                 n_grader = sandbox_runner.inject_grader_files(handle, task, task_dir=task_dir)
                                 if task.sandbox_grader_files and n_grader < len(task.sandbox_grader_files):
                                     print(f"[WARNING] inject_grader_files: only {n_grader}/{len(task.sandbox_grader_files)} files injected")
-                                env_snapshot = _collect_env_snapshot(handle.sandbox_url, task)
+                                current_stage = "env_snapshot"
+                                _log_sandbox_stage(
+                                    current_stage,
+                                    task.task_id,
+                                    run_id=run_id,
+                                    sandbox_runner=sandbox_runner,
+                                    handle=handle,
+                                )
+                                env_snapshot = _collect_env_snapshot(
+                                    handle.sandbox_url,
+                                    task,
+                                    sandbox_identity=sandbox_runner.identity_payload(handle),
+                                )
+                                current_stage = "save_env_snapshot"
                                 _save_env_snapshot(env_snapshot, trace_path, task.task_id)
+                            except Exception as stage_exc:
+                                failed_stage = current_stage
+                                preserve_container = _is_sandbox_infra_exception(stage_exc)
+                                if handle is not None:
+                                    sandbox_diagnostics = _sandbox_handle_diagnostics(sandbox_runner, handle)
+                                _log_sandbox_stage(
+                                    current_stage,
+                                    task.task_id,
+                                    run_id=run_id,
+                                    sandbox_runner=sandbox_runner,
+                                    handle=handle,
+                                    exc=stage_exc,
+                                )
+                                raise
                             finally:
-                                sandbox_runner.stop_container(handle)
+                                current_stage = "stop_container"
+                                _log_sandbox_stage(
+                                    current_stage,
+                                    task.task_id,
+                                    run_id=run_id,
+                                    sandbox_runner=sandbox_runner,
+                                    handle=handle,
+                                )
+                                sandbox_runner.stop_container(
+                                    handle,
+                                    preserve=bool(preserve_container and getattr(cfg.sandbox, "preserve_on_error", False)),
+                                )
                         else:
+                            current_stage = "run_task"
                             trace_path = run_task(
                                 task, provider,
                                 trace_dir=trace_dir or cfg.defaults.trace_dir,
@@ -973,12 +1195,16 @@ def _run_single_task(
                             "passed": is_pass(task_score),
                         })
                     except Exception as trial_exc:
-                        result["trials"].append({
+                        trial_error = {
                             "trial": i,
                             "error": str(trial_exc),
+                            "error_stage": failed_stage or current_stage,
                             "task_score": 0.0,
                             "passed": False,
-                        })
+                        }
+                        if sandbox_runner and handle is not None:
+                            trial_error["sandbox_diagnostics"] = sandbox_diagnostics or _sandbox_handle_diagnostics(sandbox_runner, handle)
+                        result["trials"].append(trial_error)
             break  # success — exit retry loop
         except (APIConnectionError, APITimeoutError, InternalServerError, ConnectionError) as e:
             if attempt < max_retries - 1:
@@ -996,6 +1222,7 @@ def _run_single_task(
     if not valid_trials and result["trials"]:
         # All trials errored — propagate as task-level error for summary stats
         result["error"] = result["trials"][0].get("error", "all trials errored")
+        result["error_stage"] = result["trials"][0].get("error_stage")
     trial_scores = [t["task_score"] for t in valid_trials]
     n_trials = len(trial_scores)
     if n_trials > 0:

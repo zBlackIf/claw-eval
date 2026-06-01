@@ -1,0 +1,76 @@
+# provenance:
+#   themis_dataset: taskset-260427-121234
+#   themis_task_id: task_63_flutter_frontend_fix
+#   themis_rank_original: 50
+#   themis_metrics: { std_trim: 0.376, range_trim: 0.836, mean_trim: 0.642 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP88_flutter_trading_dashboard_multiscreen_fix
+task_name: "Flutter 量化交易系统前端多页修复（CP88 / 源 taskset-260427-121234:task_63_flutter_frontend_fix）"
+version: "1.0"
+category: coding
+difficulty: hard
+tags: [general]
+
+source_task_id: "task_63_flutter_frontend_fix"
+source_dataset: "taskset-260427-121234"
+source_description: "PinchBench top100 rank 50（std_trim 0.376）。Workspace WS2 多文件 Flutter 修复任务：dashboard / risk / order / alert / strategy 五页问题修复。verifier 12 个隐藏锚点（3 个空 Container 填充 / metrics / 风控控件 / 订单表格 / 中文编码修复 / 策略版本 / 权重胜率 / 无 add 按钮 / addVersion / Material widgets）。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/lib/screens/ 下我们量化交易系统 Flutter Web 管理界
+    面有几个问题（仪表盘/风控/订单页都是空的、告警页中文乱码、策略页和
+    需求对不上——需求在 requirements/strategy_module.md）。帮我修一下，
+    改后的代码放到 /workspace/lib/screens/。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/lib/screens/dashboard_screen.dart
+  - fixtures/lib/screens/risk_screen.dart
+  - fixtures/lib/screens/order_screen.dart
+  - fixtures/lib/screens/alert_screen.dart
+  - fixtures/lib/screens/strategy_screen.dart
+  - fixtures/lib/services/api_service.dart
+  - fixtures/requirements/strategy_module.md
+
+sandbox_grader_files:
+  - fixtures/verify_flutter_fix.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_flutter_fix.py
+
+env_snapshot_files:
+  - /workspace/lib/screens/dashboard_screen.dart
+  - /workspace/lib/screens/risk_screen.dart
+  - /workspace/lib/screens/order_screen.dart
+  - /workspace/lib/screens/alert_screen.dart
+  - /workspace/lib/screens/strategy_screen.dart
+
+environment:
+  timeout_seconds: 900
+  max_turns: 22
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward fixes for all 5 screens: dashboard not empty (asset/pnl/position metrics), risk not empty (drawdown/loss limit/concentration), order not empty with DataTable/ListView, alert displaying readable Chinese (no \\u escapes or mojibake), strategy showing version + weight + winRate + addVersion (NOT addStrategy button), using Material widgets across files."
+
+reference_solution: |
+  Read requirements/strategy_module.md. For each empty page replace
+  return Container() with Scaffold + Column/ListView showing real metrics.
+  Dashboard: 4 Card widgets (总资产/今日盈亏/持仓数量/策略状态).
+  Risk: drawdown/loss limit/concentration/risk level indicators.
+  Order: DataTable with order_id/pair/side/price/qty/status/time columns.
+  Alert: re-save Chinese strings as proper UTF-8 (no \uXXXX).
+  Strategy: rebuild data model with [{name, version, weight, win_rate}],
+  display as List + add-version button, remove any addStrategy/新增策略
+  button (only addVersion).
+
+primary_dimensions: [completion, communication, safety]

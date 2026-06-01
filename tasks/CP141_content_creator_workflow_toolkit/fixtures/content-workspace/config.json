@@ -1,0 +1,18 @@
+{
+  "project_name": "content-toolkit",
+  "author": "xiaoming",
+  "platforms": ["wechat", "douyin", "xiaohongshu"],
+  "content_rules": {
+    "forbidden_words": ["免费领取", "点击下方", "不看后悔", "限时秒杀", "史上最低"],
+    "max_title_length": 20,
+    "required_hashtags_min": 3,
+    "image_naming_pattern": "^[a-z0-9_]+-\\d{8}-\\d{2}\\.(png|jpg|webp)$"
+  },
+  "publish_schedule": {
+    "wechat": "every_tuesday_thursday",
+    "douyin": "daily_1900",
+    "xiaohongshu": "mon_wed_fri_1200"
+  },
+  "output_dir": "output",
+  "drafts_dir": "drafts"
+}

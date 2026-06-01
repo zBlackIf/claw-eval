@@ -1,0 +1,67 @@
+# provenance:
+#   source_session: 14238919561121551438
+#   scenario: blockchain / Web3 / Crypto
+#   original_issue: NULL_RETURNS on registry lookup in file sync processor
+task_id: CP190_blockchain_null_deref_fix
+task_name: "区块链节点同步服务空指针修复 + 单元测试（CP190）"
+version: "1.0"
+category: bugfix
+difficulty: medium
+tags: [blockchain, java, null-safety, testing]
+
+source_session_id: "14238919561121551438"
+source_description: "修复 BlockSyncFileQueryProcessor.getChainType() 中 ChainRegistryHelper.getNodeByIdentifier() 返回 null 时的 NPE。需要合理处理 null 分支（不能简单赋 null 给 chainType，因下游 getRemoteStoragePath 会拼出 /data/blocks/null/sync），并为新增分支补充单元测试。"
+
+services: []
+
+prompt:
+  text: |
+    BlockSyncFileQueryProcessor.java 第 68 行有个 NULL_RETURNS 问题：
+    ChainRegistryHelper.getNodeByIdentifier() 可能返回 null，直接调用
+    nodeEntity.getChainType() 会 NPE。请修复这个空指针缺陷，注意 chainType
+    不能简单赋 null（下游 getRemoteStoragePath 会把 null 拼进路径），需要有合理
+    的错误处理。修好之后在测试文件里补一个覆盖 null 分支的单元测试。
+
+    代码在 /workspace/fixtures/chain-sync-service/src/ 下。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/chain-sync-service/src/main/java/com/web3/chainsync/service/BlockSyncFileQueryProcessor.java
+  - fixtures/chain-sync-service/src/main/java/com/web3/chainsync/service/BlockSyncRequest.java
+  - fixtures/chain-sync-service/src/main/java/com/web3/chainsync/service/IRpcRoutingService.java
+  - fixtures/chain-sync-service/src/main/java/com/web3/chainsync/entity/ChainNodeEntity.java
+  - fixtures/chain-sync-service/src/main/java/com/web3/chainsync/entity/RpcRouteInfo.java
+  - fixtures/chain-sync-service/src/main/java/com/web3/chainsync/utils/ChainRegistryHelper.java
+  - fixtures/chain-sync-service/src/test/java/com/web3/chainsync/service/BlockSyncFileQueryProcessorTest.java
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 15
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward null-safe fix in getChainType(): (1) proper null check on nodeEntity, (2) meaningful fallback value or exception — NOT assigning null to chainType, (3) error logging with useful context, (4) unit test covering the null branch with mock/stub and assertion, (5) preserving original code structure and style."
+
+reference_solution: |
+  In getChainType():
+  - Add null check: if (nodeEntity != null) { chainType = nodeEntity.getChainType(); }
+  - Else branch: assign "UNKNOWN" or throw IllegalStateException, with log.error
+  - Do NOT assign null (downstream path concat creates "/data/blocks/null/sync")
+  In test file:
+  - Mock IRpcRoutingService to return null/failed RpcRouteInfo
+  - Mock/stub ChainRegistryHelper.getNodeByIdentifier to return null
+  - Assert that getChainType handles null gracefully (no NPE, returns default or throws expected exception)
+
+primary_dimensions: [completion, communication, safety]

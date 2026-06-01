@@ -1,0 +1,75 @@
+# provenance:
+#   source_session: "13950018213536412189"
+#   scenario: "飞书 / Lark 集成"
+#   session_description: "User sends an epub book, agent extracts content, creates structured knowledge base integrating book principles with portfolio context"
+task_id: CP174_epub_extract_knowledge_base
+task_name: "Epub 解析与结构化知识库生成（CP174 / 源 session 13950018213536412189）"
+version: "1.0"
+category: data_processing
+difficulty: medium
+tags: [general, document_processing, knowledge_management]
+
+source_session_id: "13950018213536412189"
+source_description: "从真实用户会话中提取：用户发送一本 epub 格式的投资书籍，agent 需要解析 epub 内容并结合用户持仓上下文，生成结构化的知识库 markdown 文档。Workspace WS2 文档处理+产物生成模式。"
+
+services: []
+
+prompt:
+  text: |
+    我有一本投资方面的电子书（epub 格式）在 /workspace/fixtures/project/systematic_investment_principles.epub，
+    还有我的持仓信息在 /workspace/fixtures/project/portfolio_context.md。
+
+    请帮我：
+    1. 解析这本 epub 书的内容
+    2. 提取书中的核心投资框架和选股准则
+    3. 结合我的持仓情况，生成一份结构化的知识库文档（markdown 格式）
+
+    知识库文档要求：
+    - 覆盖书中所有章节的核心内容
+    - 重点突出选股准则、风控体系、买卖时机框架
+    - 结合我的实际持仓做验证/应用分析
+    - 结构清晰，有层级标题，方便后续查阅
+
+    输出文件放在 /workspace/fixtures/project/ 目录下。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/project/systematic_investment_principles.epub
+  - fixtures/project/portfolio_context.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete epub extraction and knowledge base generation: (1) epub correctly parsed using Python zipfile+HTML parsing, (2) all 5 chapters extracted with key content, (3) 10 stock selection criteria prominently covered, (4) risk control framework included, (5) buy/sell decision framework included, (6) portfolio context integrated with book principles, (7) well-structured markdown with proper headings and lists."
+
+reference_solution: |
+  Steps:
+  1. Parse epub file using zipfile (epub is a zip containing HTML files)
+  2. Read content.opf to identify chapter order and metadata
+  3. Extract HTML content from each chapter using BeautifulSoup or similar
+  4. Organize extracted content into structured knowledge base
+  5. Read portfolio_context.md and integrate holdings analysis
+  6. Output a comprehensive markdown file with:
+     - Book metadata and overview
+     - 10 stock selection criteria (from Chapter 2)
+     - 5-layer risk control model (from Chapter 3)
+     - Buy timing and position management (from Chapter 4)
+     - Sell decision framework (from Chapter 5)
+     - Portfolio application analysis linking criteria to current holdings
+
+primary_dimensions: [completion, communication, safety]

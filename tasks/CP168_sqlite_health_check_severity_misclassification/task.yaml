@@ -1,0 +1,74 @@
+# provenance:
+#   source_session: 9105526407747979197
+#   scenario: "代码 debug / 诊断"
+#   quality_tier: A
+#   model: glm-5-1-modelhub
+task_id: CP168_sqlite_health_check_severity_misclassification
+task_name: "SQLite 健康检查严重性误分类导致数据库损坏（CP168 / 源 session 9105526407747979197）"
+version: "1.0"
+category: debug
+difficulty: hard
+tags: [python, sqlite, reliability, incident-response]
+
+source_session_id: "9105526407747979197"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "Real incident: SQLite health check misclassified informational size warnings as functional failures, triggering auto-recovery that deleted WAL files and corrupted the database. Agent must separate severity levels and remove dangerous recovery logic."
+
+services: []
+
+prompt:
+  text: |
+    线上出了个严重事故，数据库被搞坏了。INCIDENT.md 里有完整时间线。
+
+    简单说就是 check_db_health() 把"数据库文件太大"这种信息性的东西当成了
+    功能性故障，导致 healthy=False，然后触发了 recover_database()，最终
+    策略2把 WAL 文件删了，数据库就坏了。
+
+    帮我修一下 /workspace/fixtures/report-server/app/database.py 和
+    /workspace/fixtures/report-server/app/main.py：
+    1. check_db_health() 要把 issues（真正的功能故障）和 warnings（信息性警告如文件大小）分开
+    2. healthy 只看 issues，不看 warnings
+    3. recover_database() 的策略2 绝对不能删 WAL/SHM 文件
+    4. main.py 里要能打印 warnings 信息但不触发恢复
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/report-server/app/__init__.py
+  - fixtures/report-server/app/database.py
+  - fixtures/report-server/app/main.py
+  - fixtures/report-server/INCIDENT.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward: (1) check_db_health returns separate 'issues' (functional) and 'warnings' (informational) fields; (2) size/WAL/SHM thresholds moved to warnings, not issues; (3) healthy flag based only on issues; (4) recover_database strategy 2 no longer deletes WAL/SHM files; (5) main.py logs warnings without triggering recovery. Penalize: leaving dangerous WAL deletion, not separating severity levels, syntax errors."
+
+reference_solution: |
+  database.py changes:
+  - check_db_health() adds a 'warnings' list alongside 'issues'
+  - Size > 500MB and WAL/SHM > 100MB append to 'warnings', not 'issues'
+  - Return dict includes 'warnings' key
+  - healthy = len(issues) == 0 (unchanged logic, but now correct because size is not in issues)
+  - recover_database() strategy 2: remove os.remove(wal_path) and os.remove(shm_path)
+    Replace with safer approach (e.g., checkpoint WAL, or just skip to strategy 3)
+
+  main.py changes:
+  - After health check, also log health.get('warnings', []) for visibility
+  - Warnings are informational only, do not trigger recovery
+
+primary_dimensions: [completion, communication, safety]

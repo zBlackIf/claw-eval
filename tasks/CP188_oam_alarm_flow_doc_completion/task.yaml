@@ -1,0 +1,69 @@
+# provenance:
+#   source_session: 10377040906450236467
+#   scenario: OAM alarm processing documentation (telecom/NMS domain)
+#   pattern: Workspace WS2 (documentation completion from source code)
+task_id: CP188_oam_alarm_flow_doc_completion
+task_name: "OAM 告警处理流程文档补全（CP188 / 源 session 10377040906450236467）"
+version: "1.0"
+category: documentation
+difficulty: medium
+tags: [telecom, java, documentation, sequence-diagram]
+
+source_session_id: "10377040906450236467"
+source_description: "Real user session: completing partial alarm processing documentation by reading Java source code and extending sections 3.3-5.2 with sequence diagrams and technical details following existing format."
+
+services: []
+
+prompt:
+  text: |
+    fm-adaptor-oam/doc/alarm_processing_flow.md 这个文档还有几个 TODO
+    section 没写完，请参考项目中的 Java 源码（AlarmDelegate.java、
+    FmAlarmService.java 等）把 section 3.3、3.4、4.1、4.2 和 section 5
+    剩余内容按照文件现有格式补充完整。用 ASCII 时序图保持和前面已有章节
+    一致的风格。文件在 /workspace/fixtures/fm-adaptor-oam/ 下面。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/fm-adaptor-oam/doc/alarm_processing_flow.md
+  - fixtures/fm-adaptor-oam/src/main/java/com/zte/ums/em/fm/adapter/alarm/AlarmDelegate.java
+  - fixtures/fm-adaptor-oam/src/main/java/com/zte/ums/em/fm/adapter/alarm/entity/SnmpAlarmData.java
+  - fixtures/fm-adaptor-oam/src/main/java/com/zte/ums/em/fm/adapter/trap/alarm/FmAlarmService.java
+  - fixtures/fm-adaptor-oam/src/main/java/com/zte/ums/em/fm/adapter/trap/entity/OamTrapEntity.java
+  - fixtures/fm-adaptor-oam/src/main/java/com/zte/ums/em/fm/adapter/trap/entity/DelayClearAlarm.java
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete documentation with accurate technical content derived from source code. Section 3.3 must cover AlarmDelegate's 5-step pipeline (validate, enrich, suppress, transform severity, send). Section 3.4 must cover processOamTrapAlarm ordering algorithm with expectedId/currentTrapId comparison (3 cases). Section 4.1/4.2 must have sequence diagrams showing normal and out-of-order flows. Section 5 must complete data structures table and decision points. All sections must use ASCII sequence diagrams consistent with existing format."
+
+reference_solution: |
+  Complete sections 3.3-5.2 based on source code:
+  - 3.3: AlarmDelegate delegateAlarmData() 5-step flow (validate/enrich/suppress/severity/send)
+    with ASCII sequence diagram showing data flow through each step
+  - 3.4: FmAlarmService processOamTrapAlarm() ordering algorithm:
+    case A (==expectedId, normal), case B (>expectedId, gap + delay queue for clears),
+    case C (<expectedId, late arrival / NE restart)
+  - 4.1: Normal sequential alarm scenario with end-to-end diagram (NE->Trap->Parse->Delegate->Kafka)
+  - 4.2: Out-of-order scenario showing trap IDs arriving non-sequentially,
+    clear alarm going to delay queue, raise arriving later
+  - 5.1: Add DelayClearAlarm (fields: alarmData, workId, expireTimeMs) and
+    TrapEvent structure to the data structures table
+  - 5.2: Decision points: notification vs event routing, OAM vs non-OAM branching,
+    ordering decisions (normal/gap/late)
+
+primary_dimensions: [completion, communication, safety]

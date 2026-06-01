@@ -1,0 +1,72 @@
+# provenance:
+#   source_session: 2561532936198686682
+#   scenario: "代码 debug / 诊断"
+#   original_error: "API Error: The socket connection was closed unexpectedly"
+task_id: CP172_api_socket_connection_debug
+task_name: "API 客户端 Socket 连接异常诊断与修复"
+version: "1.0"
+category: debug
+difficulty: medium
+tags: [nodejs, networking, debug, api-client]
+
+source_session_id: "2561532936198686682"
+source_description: "Real user session: Claude Code reporting 'socket connection closed unexpectedly' when configured with Volcengine API endpoint. Root cause was protocol mismatch (http module used for https URL)."
+
+services: []
+
+prompt:
+  text: |
+    我们的 LLM Gateway 客户端一直报错 "The socket connection was closed unexpectedly"，
+    用的是 Volcengine 的 API（https 协议）。日志在 /workspace/fixtures/api-client-project/logs/error.log，
+    代码在 /workspace/fixtures/api-client-project/src/ 目录下。
+
+    帮我诊断根因并修复 api_client.js，要求：
+    1. 找出导致 socket 异常关闭的所有 bug
+    2. 修复后确保 https 协议的 API 能正常连接
+    3. streaming 模式也要能正常工作（不能因为超时被中断）
+
+    修完告诉我改了哪些地方、为什么。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/api-client-project/package.json
+  - fixtures/api-client-project/config/providers.json
+  - fixtures/api-client-project/src/index.js
+  - fixtures/api-client-project/src/config_loader.js
+  - fixtures/api-client-project/src/api_client.js
+  - fixtures/api-client-project/src/stream_handler.js
+  - fixtures/api-client-project/test/run_tests.js
+  - fixtures/api-client-project/logs/error.log
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct diagnosis and fix of socket connection failure: (1) replacing http.Agent with https.Agent for HTTPS URLs, (2) using https.request instead of http.request for HTTPS endpoints, (3) adding Accept: text/event-stream header for streaming SSE connections, (4) properly handling timeout for streaming responses (disable or extend during active stream). Partial credit for identifying some but not all issues."
+
+reference_solution: |
+  In src/api_client.js:
+  1. Import https module: const https = require('https');
+  2. Replace `new http.Agent(...)` with `new https.Agent(...)` (or conditionally
+     select agent based on URL protocol)
+  3. Replace `http.request(options, ...)` with `https.request(options, ...)`
+     (or conditionally select based on protocol)
+  4. Add 'Accept': 'text/event-stream' to headers when params.stream is true
+  5. Disable or extend timeout when in streaming mode (e.g., don't call
+     req.setTimeout for streaming requests, or clear timeout once response starts)
+
+primary_dimensions: [completion, communication, safety]

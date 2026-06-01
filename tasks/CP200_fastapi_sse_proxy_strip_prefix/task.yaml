@@ -1,0 +1,78 @@
+# provenance:
+#   source_session: "17180844075193979994"
+#   scenario: "小说 / 写作 / 创作"
+#   real_bug: "SSE proxy forwards raw 'data: ' prefix causing garbled frontend display"
+task_id: CP200_fastapi_sse_proxy_strip_prefix
+task_name: "FastAPI SSE 代理流式响应修复 — 去除上游 data: 前缀"
+version: "1.0"
+category: bugfix
+difficulty: medium
+tags: [python, fastapi, sse, streaming, proxy]
+
+source_session_id: "17180844075193979994"
+source_description: "Real user session: novel analysis platform chat endpoint proxies upstream LangChain SSE stream but forwards raw 'data: ' prefixes, causing frontend to display 'data: ' between every token."
+
+services: []
+
+prompt:
+  text: |
+    小说分析平台的 /chat 接口有 bug。用户反馈前端聊天显示的是：
+    "你好！data: 根据data: 你data: 提供的data: 小说data: 内容data: 摘要..."
+
+    每个文字片段之间都多了 "data: " 字样。后端代码在
+    /workspace/fixtures/novel_platform_be/app/api/routers/chat.py，
+    upstream LangChain 服务返回标准 SSE 格式（每行以 "data: " 开头），
+    但是我们的代理接口把原始 SSE 帧直接透传给了前端。
+
+    帮我修一下这个 bug，让前端收到的是干净的文本流。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/novel_platform_be/pyproject.toml
+  - fixtures/novel_platform_be/app/__init__.py
+  - fixtures/novel_platform_be/app/main.py
+  - fixtures/novel_platform_be/app/core/__init__.py
+  - fixtures/novel_platform_be/app/core/config.py
+  - fixtures/novel_platform_be/app/core/database.py
+  - fixtures/novel_platform_be/app/core/response.py
+  - fixtures/novel_platform_be/app/api/__init__.py
+  - fixtures/novel_platform_be/app/api/routers/__init__.py
+  - fixtures/novel_platform_be/app/api/routers/chat.py
+  - fixtures/novel_platform_be/app/models/__init__.py
+  - fixtures/novel_platform_be/app/models/novel.py
+  - fixtures/novel_platform_be/tests/test_chat_sse.py
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 480
+  max_turns: 15
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct SSE proxy fix: strip 'data: ' prefix from upstream lines before yielding to client. Must handle empty lines (SSE separators) gracefully, preserve error handling, and ideally handle the [DONE] signal. Best solution: conditional startswith check + slice/removeprefix, with else passthrough for non-SSE lines."
+
+reference_solution: |
+  In chat.py generate() function, change:
+      async for line in response.aiter_lines():
+          if line:
+              yield line
+  To:
+      async for line in response.aiter_lines():
+          if line:
+              if line.startswith("data: "):
+                  yield line[6:]
+              else:
+                  yield line
+
+primary_dimensions: [completion, communication, safety]

@@ -1,0 +1,69 @@
+# provenance:
+#   themis_dataset: taskset-260421-225115-strict-v2
+#   themis_task_id: task_22_skill_manager_refactor
+#   themis_rank_original: 34
+#   themis_metrics: { std_trim: 0.399, range_trim: 0.917, mean_trim: 0.591 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP82_vikingbot_skill_manager_refactoring
+task_name: "VikingBot 企微媒体技能重构（CP82 / 源 taskset-260421-225115-strict-v2:task_22_skill_manager_refactor）"
+version: "1.0"
+category: coding
+difficulty: hard
+tags: [general]
+
+source_task_id: "task_22_skill_manager_refactor"
+source_dataset: "taskset-260421-225115-strict-v2"
+source_description: "PinchBench top100 rank 34（std_trim 0.399，strict-v2 rubric）。Claw-Eval sandbox 技能重构任务：把 wecom-media-downloader + wecom-media-processor 合并为 wecom-media-handler + 拆出 wecom-image-recognizer。verifier 7 个隐藏锚点（新两个 skill 完整 / 旧两个清理 / AES-CBC 解密 / 路径式识别 CLI）。"
+
+services: []
+
+prompt:
+  text: |
+    我们 VikingBot 项目里 wecom-media-downloader 和 wecom-media-processor
+    这两个技能拆得不对——下载和处理本来就是一体的，应该合到一个 handler
+    里；图片识别那块拆出去做成可复用的 image-recognizer。原 SKILL 在
+    /workspace/fixtures/skills/，按这个思路重构后写到 /workspace/skills/。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/skills/skill-manager/SKILL.md
+  - fixtures/skills/wecom-media-downloader/SKILL.md
+  - fixtures/skills/wecom-media-processor/SKILL.md
+
+sandbox_grader_files:
+  - fixtures/verify_skill_refactor.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_skill_refactor.py
+
+env_snapshot_files:
+  - /workspace/skills/wecom-media-handler/SKILL.md
+  - /workspace/skills/wecom-image-recognizer/SKILL.md
+  - /workspace/skills/image-recognizer/SKILL.md
+
+environment:
+  timeout_seconds: 720
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a clean two-skill refactor: a wecom media handler skill that merges download + processing and covers AES-CBC decryption (32-byte key, first 16 bytes IV), plus a reusable image-recognizer skill with a path/file CLI argument. Prefer scripts/handler.py and scripts/recognizer.py, but grade equivalent runnable Python scripts under the new skills. Original wecom-media-downloader and wecom-media-processor should not be carried into /workspace/skills/."
+
+reference_solution: |
+  Read existing skills/ to understand structure. Create
+  skills/wecom-media-handler/SKILL.md (功能/触发方式/处理流程/使用方法 sections)
+  and a runnable Python script (download via msgUrl, AES-CBC decrypt with
+  32-byte key and first-16-byte IV, save under ./media/, compress for image).
+  Create skills/image-recognizer/SKILL.md or skills/wecom-image-recognizer/SKILL.md
+  plus a runnable Python script with argparse --path/--file CLI. Delete
+  fixtures-side wecom-media-downloader and wecom-media-processor (or just
+  don't carry them into /workspace/skills/).
+
+primary_dimensions: [completion, communication, safety]

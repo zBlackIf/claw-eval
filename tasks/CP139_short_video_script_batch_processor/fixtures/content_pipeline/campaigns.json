@@ -1,0 +1,121 @@
+[
+  {
+    "campaign_id": "CAM-2024-001",
+    "template_id": "T001",
+    "platform": "douyin",
+    "variables_override": {
+      "pain_point": "皮肤干燥起皮",
+      "brand_name": "水光肌",
+      "product_category": "护肤",
+      "product_name": "水光肌玻尿酸精华液",
+      "feature_1": "小分子玻尿酸深层补水",
+      "feature_2": "不油腻、好吸收",
+      "usage_period": "两个月",
+      "demo_description": "你看我现在的皮肤状态，跟两个月前简直判若两人",
+      "discount_info": "现在下单立减50元",
+      "time_limit": "48小时"
+    }
+  },
+  {
+    "campaign_id": "CAM-2024-002",
+    "template_id": "T002",
+    "platform": "video_hao",
+    "variables_override": {
+      "topic_question": "隔夜水到底能不能喝？",
+      "topic_name": "饮水健康",
+      "misconception_count": "3",
+      "myth_1": "隔夜水会产生亚硝酸盐致癌",
+      "truth_1": "常温隔夜水中亚硝酸盐含量远低于安全标准",
+      "myth_2": "千滚水有毒",
+      "truth_2": "反复烧开的水完全可以安全饮用",
+      "key_insight": "水的安全性取决于容器和环境，不是放置时间",
+      "mnemonic": "盖好盖、别暴晒、两天内喝完",
+      "interaction_prompt": "点赞收藏",
+      "extra_tag": "健康生活"
+    }
+  },
+  {
+    "campaign_id": "CAM-2024-003",
+    "template_id": "T002",
+    "platform": "douyin",
+    "variables_override": {
+      "topic_question": "为什么你总是睡不好？",
+      "topic_name": "睡眠科学",
+      "misconception_count": "2",
+      "myth_1": "睡前喝牛奶一定助眠",
+      "truth_1": "色氨酸含量不足以产生明显助眠效果",
+      "myth_2": "周末补觉能还睡眠债",
+      "truth_2": "生物钟紊乱反而更伤身体",
+      "key_insight": "固定作息比任何助眠方法都有效",
+      "mnemonic": "定时睡、定时起、午觉别超半小时",
+      "interaction_prompt": "转发给你身边的熬夜党"
+    }
+  },
+  {
+    "campaign_id": "CAM-2024-004",
+    "template_id": "T003",
+    "platform": "kuaishou",
+    "variables_override": {
+      "urgency_opener": "家人们冲啊",
+      "brand_name": "三顿半",
+      "event_name": "618大促",
+      "remaining_time": "3小时",
+      "deal_1": "买三送一",
+      "deal_2": "满199再减30",
+      "reason": "是清库存给新品让位",
+      "personal_quantity": "5盒",
+      "action_instruction": "点下方购物车直接拍",
+      "scarcity_info": "库存只剩200多份了"
+    }
+  },
+  {
+    "campaign_id": "CAM-2024-005",
+    "template_id": "T004",
+    "platform": "douyin",
+    "variables_override": {
+      "skill_duration": "3分钟",
+      "skill_name": "手机剪辑卡点视频",
+      "step_1": "打开剪映，导入你要用的素材",
+      "tip_1": "素材最好提前按顺序命名",
+      "step_2": "选一首节奏感强的BGM，打开自动踩点",
+      "common_mistake": "手动拖拽对齐",
+      "correction": "用自动踩点功能一键对齐节拍",
+      "step_3": "微调转场，加上字幕和贴纸",
+      "result_description": "一条专业级卡点视频",
+      "save_prompt": "收藏这条视频",
+      "skill_category": "剪辑",
+      "follow_prompt": "关注我"
+    }
+  },
+  {
+    "campaign_id": "CAM-2024-006",
+    "template_id": "T002",
+    "platform": "kuaishou",
+    "variables_override": {
+      "topic_question": "维生素C真的能美白吗？",
+      "topic_name": "护肤成分",
+      "misconception_count": "2",
+      "myth_1": "吃维C片就能美白",
+      "truth_1": "口服剂量远达不到外用浓度",
+      "myth_2": "浓度越高越好",
+      "truth_2": "超过20%反而刺激皮肤屏障"
+    }
+  },
+  {
+    "campaign_id": "CAM-2024-007",
+    "template_id": "T001",
+    "platform": "video_hao",
+    "variables_override": {
+      "pain_point": "每天通勤背包太重",
+      "brand_name": "轻行者",
+      "product_category": "箱包",
+      "product_name": "轻行者AIR超轻双肩包",
+      "feature_1": "整包仅重380克",
+      "feature_2": "防水面料日常泼溅不怕",
+      "usage_period": "三周",
+      "demo_description": "装满一天的东西，背起来跟没背一样",
+      "discount_info": "首发价直降80",
+      "time_limit": "72小时"
+    }
+  }
+]

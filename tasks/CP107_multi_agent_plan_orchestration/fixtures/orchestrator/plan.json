@@ -1,0 +1,167 @@
+{
+  "plan": {
+    "plan_id": "PLAN-2026-Q2-LAUNCH",
+    "title": "Q2 Product Launch - 智能客服系统 v3.0",
+    "owner": "张伟",
+    "created_at": "2026-05-28T09:00:00Z",
+    "deadline": "2026-06-15T18:00:00Z",
+    "status": "in_progress",
+    "description": "智能客服系统 v3.0 上线准备，包含多语言支持、知识图谱整合、性能优化和安全审计四条关键路径",
+    "critical_path": ["TASK-001", "TASK-003", "TASK-005", "TASK-007"],
+    "notes": "注意：TASK-004 和 TASK-006 有循环依赖风险，需要协调拆解"
+  },
+  "tasks": [
+    {
+      "task_id": "TASK-001",
+      "title": "多语言模型微调",
+      "description": "基于客户反馈数据完成日语和韩语的模型微调，需要使用 2026-Q1 的标注数据集",
+      "status": "completed",
+      "assigned_agent": "agent-ml-training",
+      "depends_on": [],
+      "priority": "critical",
+      "estimated_hours": 40,
+      "actual_hours": 45,
+      "completion_notes": "日语模型 F1=0.92，韩语 F1=0.89，已部署到 staging"
+    },
+    {
+      "task_id": "TASK-002",
+      "title": "知识图谱数据导入",
+      "description": "从旧系统迁移 15000+ 条知识条目到新图谱引擎，包含产品FAQ、操作手册和故障排查树",
+      "status": "completed",
+      "assigned_agent": "agent-data-pipeline",
+      "depends_on": [],
+      "priority": "high",
+      "estimated_hours": 24,
+      "actual_hours": 30,
+      "completion_notes": "已导入 14832 条，有 203 条因格式问题跳过，需人工复核"
+    },
+    {
+      "task_id": "TASK-003",
+      "title": "多语言 API Gateway 配置",
+      "description": "配置 API Gateway 的路由规则，将不同语言的请求分发到对应的模型实例。需要 TASK-001 的模型端点信息",
+      "status": "pending",
+      "assigned_agent": null,
+      "depends_on": ["TASK-001"],
+      "priority": "critical",
+      "estimated_hours": 16,
+      "notes": "路由规则要区分 ja-JP、ko-KR、zh-CN、en-US 四种 locale"
+    },
+    {
+      "task_id": "TASK-004",
+      "title": "知识图谱查询接口开发",
+      "description": "开发图谱查询 API，支持模糊匹配、意图路由和相关度排序。注意：依赖 TASK-006 的安全接口定义",
+      "status": "pending",
+      "assigned_agent": null,
+      "depends_on": ["TASK-002", "TASK-006"],
+      "priority": "high",
+      "estimated_hours": 32,
+      "notes": "注意循环依赖：TASK-006 也声明依赖 TASK-004，实际上 TASK-006 的安全接口定义部分可以先行"
+    },
+    {
+      "task_id": "TASK-005",
+      "title": "端到端性能压测",
+      "description": "对整合后的系统进行性能压测，目标: P99 < 200ms, QPS >= 5000。需要多语言 Gateway 和知识图谱查询接口都就绪",
+      "status": "pending",
+      "assigned_agent": null,
+      "depends_on": ["TASK-003", "TASK-004"],
+      "priority": "critical",
+      "estimated_hours": 20,
+      "notes": "需要使用生产级压测环境，联系 SRE 团队提前预约"
+    },
+    {
+      "task_id": "TASK-006",
+      "title": "安全审计与渗透测试",
+      "description": "对新增接口进行安全审计，包含 OWASP Top10 扫描、输入注入测试和权限边界验证。注意：依赖 TASK-004 的接口定义",
+      "status": "pending",
+      "assigned_agent": null,
+      "depends_on": ["TASK-004"],
+      "priority": "critical",
+      "estimated_hours": 24,
+      "notes": "与 TASK-004 存在循环依赖：本任务需要接口才能审计，但 TASK-004 又声明要安全接口定义才能开发。实际可拆解：安全接口规范先行（8h），审计跟进"
+    },
+    {
+      "task_id": "TASK-007",
+      "title": "生产环境部署与灰度发布",
+      "description": "将通过压测和安全审计的系统部署到生产环境，灰度比例 5% -> 20% -> 50% -> 100%",
+      "status": "pending",
+      "assigned_agent": null,
+      "depends_on": ["TASK-005", "TASK-006"],
+      "priority": "critical",
+      "estimated_hours": 12,
+      "notes": "灰度期间需要 24h on-call 值班"
+    },
+    {
+      "task_id": "TASK-008",
+      "title": "用户文档与 Changelog 更新",
+      "description": "更新用户手册、API 文档和 Changelog，通知客户新版本特性",
+      "status": "pending",
+      "assigned_agent": null,
+      "depends_on": ["TASK-003"],
+      "priority": "medium",
+      "estimated_hours": 8
+    },
+    {
+      "task_id": "TASK-009",
+      "title": "数据迁移异常条目复核",
+      "description": "人工复核 TASK-002 中跳过的 203 条格式异常知识条目",
+      "status": "in_progress",
+      "assigned_agent": "agent-data-pipeline",
+      "depends_on": ["TASK-002"],
+      "priority": "medium",
+      "estimated_hours": 6,
+      "notes": "已完成 150/203 条，预计今天下班前完成"
+    }
+  ],
+  "agents": [
+    {
+      "agent_id": "agent-ml-training",
+      "name": "ML 训练团队",
+      "specialty": "模型训练、微调、评估",
+      "max_capacity": 2,
+      "current_load": 0,
+      "status": "available"
+    },
+    {
+      "agent_id": "agent-data-pipeline",
+      "name": "数据工程团队",
+      "specialty": "数据迁移、ETL、数据质量",
+      "max_capacity": 3,
+      "current_load": 1,
+      "status": "available",
+      "notes": "当前有 1 个任务在跑（TASK-009），可用容量为 2"
+    },
+    {
+      "agent_id": "agent-backend-dev",
+      "name": "后端开发团队",
+      "specialty": "API 开发、微服务、Gateway 配置",
+      "max_capacity": 3,
+      "current_load": 0,
+      "status": "available"
+    },
+    {
+      "agent_id": "agent-security",
+      "name": "安全团队",
+      "specialty": "渗透测试、安全审计、合规",
+      "max_capacity": 2,
+      "current_load": 0,
+      "status": "available"
+    },
+    {
+      "agent_id": "agent-sre",
+      "name": "SRE 团队",
+      "specialty": "部署、性能测试、监控、on-call",
+      "max_capacity": 2,
+      "current_load": 1,
+      "status": "available",
+      "notes": "当前在处理线上告警，容量有限"
+    },
+    {
+      "agent_id": "agent-docs",
+      "name": "技术写作团队",
+      "specialty": "API 文档、用户手册、Changelog",
+      "max_capacity": 2,
+      "current_load": 0,
+      "status": "available"
+    }
+  ]
+}

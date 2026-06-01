@@ -1,0 +1,74 @@
+# provenance:
+#   source_session: 12507611635196515699
+#   scenario: code_debug_diagnosis
+#   session_summary: Fix DB2 SQLCODE=-302 (string truncation) in iBATIS SQL mapper
+#     where SELECT returns "CODE-DESCRIPTION" but INSERT/UPDATE writes full string
+#     back to narrow VARCHAR columns (COST_CENTER=4, WCE=5).
+task_id: CP169_ibatis_sql_field_truncation_bug
+task_name: "iBATIS SQL 映射器字段截断 Bug 修复（DB2 SQLCODE=-302）"
+version: "1.0"
+category: debug
+difficulty: medium
+tags: [java, sql, ibatis, db2, debug]
+
+source_session_id: "12507611635196515699"
+source_description: "Real user session: iBATIS XML mapper concatenates description text for display in SELECT (CODE || '-' || DESC), but INSERT/UPDATE writes the full concatenated string back to narrow DB columns, causing DB2 data truncation error."
+
+services: []
+
+prompt:
+  text: |
+    我的 iBATIS 应用新增数据时报错：
+    org.springframework.dao.DataIntegrityViolationException: SqlMapClient operation; SQL [];
+    --- The error occurred in com/baosight/egdw/jh/sm/sql/JHSM3110.xml.
+    --- The error occurred while applying a parameter map.
+    --- Check the JHSM3110.update-InlineParameterMap.
+    --- Cause: com.ibm.db2.jcc.am.SqlDataException: DB2 SQL Error: SQLCODE=-302, SQLSTATE=22001, SQLERRMC=null, DRIVER=4.21.29
+
+    代码在 /workspace/fixtures/jhsm-app/ 下面。SQLCODE=-302 表示字符串超长了。
+    请帮我定位问题并修复 JHSM3110.xml 中的 insert 和 update 语句，让新增和修改
+    不再报错。注意查询时的中文描述显示不能丢。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/jhsm-app/java/com/baosight/egdw/jh/sm/sql/JHSM3110.xml
+  - fixtures/jhsm-app/java/com/baosight/egdw/jh/sm/domain/JHSM3110.java
+  - fixtures/jhsm-app/java/com/baosight/egdw/jh/sm/service/ServiceJHSM3110.java
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward fixing the data truncation bug: INSERT and UPDATE must strip the '-DESCRIPTION' suffix from costCenter (VARCHAR 4) and wce (VARCHAR 5) before writing to DB. The SELECT query should still display descriptions for the UI. Hidden check: stNo field inside PRODUCT_CODE_4 composition also carries '-DESC' from the query and needs the same treatment. Penalize if the fix breaks the display query or removes description joins."
+
+reference_solution: |
+  The root cause: SELECT returns costCenter as 'CODE-DESC' (e.g., '1234-炼钢厂'),
+  wce as 'CODE-DESC' (e.g., '41001-铁合金'), stNo as 'CODE-DESC'. When the user
+  edits and saves, these full strings go into INSERT/UPDATE for columns that are
+  only 4/5/8 chars wide.
+
+  Fix in JHSM3110.xml:
+  - INSERT: Change `#costCenter:VARCHAR#` to
+    `LEFT(#costCenter:VARCHAR#, LOCATE('-', #costCenter:VARCHAR#) - 1)` or
+    equivalent truncation. Same for #wce:VARCHAR# and #stNo:VARCHAR#.
+  - UPDATE: Same fix for COST_CENTER = ... and WCE = ... assignments.
+  - SELECT: Keep as-is (the joins with description tables are for display only).
+
+  Alternative: Strip in ServiceJHSM3110.java before calling dao.insert/update
+  using `costCenter.split("-")[0]`.
+
+primary_dimensions: [completion, communication, safety]

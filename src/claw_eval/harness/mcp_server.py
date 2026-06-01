@@ -60,10 +60,15 @@ def build_server(
     dispatch_log: Path,
     sandbox_url: str | None,
     port_offset: int,
+    sandbox_identity: dict[str, str] | None = None,
 ) -> Server:
     task = _load_task(task_yaml, port_offset)
     http_dispatcher = ToolDispatcher(task.get_endpoint_map())
-    dispatcher = SandboxToolDispatcher(http_dispatcher, sandbox_url=sandbox_url)
+    dispatcher = SandboxToolDispatcher(
+        http_dispatcher,
+        sandbox_url=sandbox_url,
+        sandbox_identity=sandbox_identity,
+    )
     lock = threading.Lock()
     dispatch_log.parent.mkdir(parents=True, exist_ok=True)
 
@@ -110,6 +115,11 @@ async def _run(args: argparse.Namespace) -> None:
         trace_id=args.trace_id,
         dispatch_log=Path(args.dispatch_log),
         sandbox_url=args.sandbox_url,
+        sandbox_identity={
+            "run_id": args.sandbox_run_id,
+            "task_id": args.sandbox_task_id,
+            "token": args.sandbox_token,
+        } if args.sandbox_token else None,
         port_offset=args.port_offset,
     )
     async with stdio_server() as (read_stream, write_stream):
@@ -126,6 +136,9 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--trace-id", required=True)
     parser.add_argument("--dispatch-log", required=True)
     parser.add_argument("--sandbox-url", default=None)
+    parser.add_argument("--sandbox-run-id", default="")
+    parser.add_argument("--sandbox-task-id", default="")
+    parser.add_argument("--sandbox-token", default="")
     parser.add_argument("--port-offset", type=int, default=0)
     args = parser.parse_args(argv)
     asyncio.run(_run(args))

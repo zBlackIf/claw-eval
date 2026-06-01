@@ -1,0 +1,94 @@
+# provenance:
+#   source_session: 2097267518250407214
+#   scenario: IoT / embedded / pipeline automation
+#   session_model: glm-4-7-251222
+task_id: CP137_pipeline_if_node_flow_control
+task_name: "Pipeline If-Node Flow Control Implementation (CP137 / session 2097267518250407214)"
+version: "1.0"
+category: implementation
+difficulty: hard
+tags: [csharp, pipeline, flow-control, design-patterns]
+
+source_session_id: "2097267518250407214"
+source_description: "From a real session implementing if/else flow-control in a pipeline execution engine. Agent must add IfPipelineNode model, condition evaluator, branch dispatcher, and register the executor. Hidden anchor: lexical scope isolation."
+
+services: []
+
+prompt:
+  text: |
+    We have a pipeline execution engine in /workspace/fixtures/pipeline-engine/
+    that currently supports "step" and "group" node types. I need you to add an
+    "if" node so we can do conditional branching in our pipelines.
+
+    The IfPipelineNode should have:
+    - A string Condition property (expression to evaluate)
+    - ThenChildren list (executed when condition is true)
+    - ElseChildren list (executed when condition is false)
+
+    You'll need to:
+    1. Create the IfPipelineNode model (inheriting PipelineNode)
+    2. Register it in the polymorphic discriminator with type "if"
+    3. Implement an IfExecutor that evaluates the condition and runs the
+       appropriate branch's children via the registry
+    4. Register the executor in SystemModule
+    5. Make sure variables set inside if-branches don't leak to the parent
+       scope (lexical scoping)
+
+    The condition evaluator should at minimum handle:
+    - Boolean literals ("true"/"false")
+    - Variable references from context
+    - Simple comparisons
+
+    Keep existing code working. .NET 8 / C#.
+  language: en
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/pipeline-engine/PipelineEngine.csproj
+  - fixtures/pipeline-engine/src/Core/Pipeline/PipelineNode.cs
+  - fixtures/pipeline-engine/src/Core/Pipeline/PipelineContext.cs
+  - fixtures/pipeline-engine/src/Core/Pipeline/INodeExecutor.cs
+  - fixtures/pipeline-engine/src/Executors/StepExecutor.cs
+  - fixtures/pipeline-engine/src/Executors/GroupExecutor.cs
+  - fixtures/pipeline-engine/src/Registration/NodeExecutorRegistry.cs
+  - fixtures/pipeline-engine/src/Registration/SystemModule.cs
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 900
+  max_turns: 25
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete if-node implementation: IfPipelineNode record/class with Condition+ThenChildren+ElseChildren inheriting PipelineNode, JsonDerivedType registration with 'if' discriminator, IfExecutor implementing INodeExecutor<IfPipelineNode> with condition evaluation (bool parse + variable lookup + comparison), branch dispatch calling registry.ExecuteNodeAsync for children, registration in SystemModule, and lexical scope isolation (push/pop scope or child context for variable isolation)."
+
+reference_solution: |
+  Under src/Core/Pipeline/:
+  - IfPipelineNode.cs (record inheriting PipelineNode: Condition string,
+    ThenChildren List<PipelineNode>, ElseChildren List<PipelineNode>)
+  - PipelineNode.cs updated with [JsonDerivedType(typeof(IfPipelineNode), "if")]
+  - PipelineContext.cs updated with PushScope()/PopScope() using a
+    Stack<Dictionary<string, object?>> for lexical variable isolation
+
+  Under src/Executors/:
+  - IfExecutor.cs (implements INodeExecutor<IfPipelineNode>):
+    - EvaluateCondition: parses "true"/"false", resolves variable refs
+      via context.GetVariable, handles == / != comparisons
+    - ExecuteAsync: evaluates condition, pushes scope, iterates
+      ThenChildren or ElseChildren calling registry.ExecuteNodeAsync,
+      pops scope on completion
+
+  Under src/Registration/:
+  - SystemModule.cs updated: registry.Register(new IfExecutor(registry))
+
+primary_dimensions: [completion, communication, safety]

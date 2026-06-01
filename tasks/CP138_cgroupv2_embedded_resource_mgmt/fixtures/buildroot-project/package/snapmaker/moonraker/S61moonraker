@@ -1,0 +1,36 @@
+#!/bin/sh
+#
+# Start/stop moonraker - Klipper Web API server
+#
+
+MOONRAKER_BIN=/usr/bin/moonraker
+MOONRAKER_CONF=/etc/moonraker/moonraker.conf
+MOONRAKER_LOG=/var/log/moonraker.log
+MOONRAKER_PID=/var/run/moonraker.pid
+MOONRAKER_USER=lava
+
+case "$1" in
+  start)
+    printf "Starting moonraker: "
+    start-stop-daemon -S -b -m -p "$MOONRAKER_PID" \
+      -c "$MOONRAKER_USER" \
+      -x "$MOONRAKER_BIN" -- \
+      -c "$MOONRAKER_CONF" -l "$MOONRAKER_LOG"
+    echo "OK"
+    ;;
+  stop)
+    printf "Stopping moonraker: "
+    start-stop-daemon -K -p "$MOONRAKER_PID" -s TERM
+    rm -f "$MOONRAKER_PID"
+    echo "OK"
+    ;;
+  restart)
+    "$0" stop
+    sleep 1
+    "$0" start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac

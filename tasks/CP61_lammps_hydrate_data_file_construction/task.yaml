@@ -1,0 +1,68 @@
+# provenance:
+#   themis_dataset: taskset-260421-234136
+#   themis_task_id: task_12_lammps_hydrate_data_builder
+#   themis_rank_original: 12
+#   themis_metrics: { std_trim: 0.419, range_trim: 0.929, mean_trim: 0.667 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP61_lammps_hydrate_data_file_construction
+task_name: "sI 甲烷水合物 LAMMPS 数据文件构造（CP61 / 源 taskset-260421-234136:task_12_lammps_hydrate_data_builder）"
+version: "1.0"
+category: coding
+difficulty: hard
+tags: [general]
+
+source_task_id: "task_12_lammps_hydrate_data_builder"
+source_dataset: "taskset-260421-234136"
+source_description: "PinchBench top100 rank 12 高区分度题（std_trim 0.419）。改编为 Claw-Eval sandbox 计算化学代码任务：替换有 bug 的 step1，写一份正确生成 LAMMPS input.data 的脚本。verifier 隐藏 7 个锚点（CLI/numpy-only/192原子断言/盒边界/TIP4P电荷/Bonds Angles/legacy 不动）。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/ 下是前任写的 step1 脚本，跑 step2 minimize 直接
+    炸了（见 error log）。按 README 重写一份正确的 build_correct_hydrate.py
+    替代 step1，写到 /workspace/。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/README.md
+  - fixtures/step1_create_data.py
+  - fixtures/step2_minimize.lmp
+  - fixtures/step2_minimize_error.log
+
+sandbox_grader_files:
+  - fixtures/verify_lammps_builder.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_lammps_builder.py
+
+env_snapshot_files:
+  - /workspace/build_correct_hydrate.py
+  - /workspace/step1_create_data.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a clean numpy-only build_correct_hydrate.py with CLI (--out), programmatic sI cage geometry generation (not hand-coded coordinates), exact TIP4P/Ice charges (H=+0.5897, M=-1.1794), Masses/Atoms/Bonds/Angles sections, and post-write self-checks for atom count (192) and box bounds (|x,y,z| ≤ a+0.1 Å). Penalize ase/pymatgen imports or modifications to legacy step1."
+
+reference_solution: |
+  Build sI hydrate by iterating over the 8-site cage centers in a cubic
+  box (a=12.03 Å). For each water, place O + 2H + M-site with TIP4P/Ice
+  geometry (rOH=0.9572, HOH angle=104.52, M offset along bisector 0.1577 Å).
+  For methane, place C_UA at cage center. Charges H=+0.5897, M=-1.1794,
+  O=0.0, C_UA=0.0. Emit Masses (4 types), Atoms (192 lines: 46*4 + 8),
+  Bonds (92 = 46*2), Angles (46) sections. argparse --out flag.
+  Post-write: re-open file, assert atom count == 192 and all |coords|
+  <= a + 0.1 Å, else sys.exit(1) with offending index.
+
+primary_dimensions: [completion, communication, safety]

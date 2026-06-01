@@ -1,0 +1,398 @@
+[
+  {
+    "record_id": "brief:task-context",
+    "kind": "brief",
+    "title": "Multi-tier pricing verification with scenario ledger, margin/bonus-cost boundary cases, and percentage-format traps.",
+    "content": "Task CP42_pricing_formula_verification: Multi-tier pricing verification with scenario ledger, margin/bonus-cost boundary cases, and percentage-format traps. Use list/search/get/cross_check before submit/confirm; workspace artifact remains required.",
+    "tags": [
+      "brief",
+      "workflow"
+    ],
+    "metadata": {
+      "task_id": "CP42_pricing_formula_verification",
+      "service": "pricing_workflow",
+      "mode": "workflow"
+    }
+  },
+  {
+    "record_id": "source:pricing_input.json",
+    "kind": "source",
+    "title": "Workspace fixture export: pricing_input.json",
+    "content": "{\n  \"tiers\": [\n    {\"name\": \"Personal Basic\", \"price\": 199, \"type\": \"personal\"},\n    {\"name\": \"Personal Pro\", \"price\": 2999, \"type\": \"personal\"},\n    {\"name\": \"Personal Premium\", \"price\": 6999, \"type\": \"personal\"},\n    {\"name\": \"Enterprise Starter\", \"price\": 14999, \"type\": \"enterprise\"},\n    {\"name\": \"Enterprise Pro\", \"price\": 49999, \"type\": \"enterprise\"},\n    {\"name\": \"Enterprise Ultimate\", \"price\": 99999, \"type\": \"enterprise\"}\n  ],\n  \"parameters\": {\n    \"gross_margin_targets\": {\n      \"199\": 0.40,\n      \"2999\": 0.37,\n      \"6999\": 0.34,\n      \"14999\": 0.29,\n      \"49999\": 0.24,\n      \"99999\": 0.20\n    },\n    \"bonus_feature_costs\": {\n      \"199\": 5,\n      \"2999\": 75,\n      \"6999\": 210,\n      \"14999\": 600,\n      \"49999\": 3225,\n      \"99999\": 7500\n    },\n    \"bonus_sharing_ratio\": 0.0,\n    \"model_premium_ratio\": 0.05\n  },\n  \"scenarios\": [\n    {\"name\": \"no_bonus\", \"bonus_sharing_ratio\": 0.0},\n    {\"name\": \"kol_5pct\", \"bonus_sharing_ratio\": 0.05},\n    {\"name\": \"producer_10pct\", \"bonus_sharing_ratio\": 0.10}\n  ],\n  \"constraints\": {\n    \"bonus_cost_ratio_min\": 0.05,\n    \"bonus_cost_ratio_max\": 0.10,\n    \"margin_range_min\": 0.20,\n    \"margin_range_max\": 0.40,\n    \"monotonicity\": \"higher_tier_more_bonus\"\n  }\n}\n",
+    "tags": [
+      "source",
+      "json",
+      "pricing_input"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/pricing_input.json",
+      "bytes": 1222
+    }
+  },
+  {
+    "record_id": "item:Personal Basic",
+    "kind": "item",
+    "title": "Personal Basic",
+    "content": "{\n  \"name\": \"Personal Basic\",\n  \"price\": 199,\n  \"type\": \"personal\"\n}",
+    "tags": [
+      "item",
+      "pricing_input.json",
+      "pricing_input"
+    ],
+    "metadata": {
+      "source_file": "pricing_input.json",
+      "source_index": 1
+    }
+  },
+  {
+    "record_id": "item:Personal Pro",
+    "kind": "item",
+    "title": "Personal Pro",
+    "content": "{\n  \"name\": \"Personal Pro\",\n  \"price\": 2999,\n  \"type\": \"personal\"\n}",
+    "tags": [
+      "item",
+      "pricing_input.json",
+      "pricing_input"
+    ],
+    "metadata": {
+      "source_file": "pricing_input.json",
+      "source_index": 2
+    }
+  },
+  {
+    "record_id": "item:Personal Premium",
+    "kind": "item",
+    "title": "Personal Premium",
+    "content": "{\n  \"name\": \"Personal Premium\",\n  \"price\": 6999,\n  \"type\": \"personal\"\n}",
+    "tags": [
+      "item",
+      "pricing_input.json",
+      "pricing_input"
+    ],
+    "metadata": {
+      "source_file": "pricing_input.json",
+      "source_index": 3
+    }
+  },
+  {
+    "record_id": "item:Enterprise Starter",
+    "kind": "item",
+    "title": "Enterprise Starter",
+    "content": "{\n  \"name\": \"Enterprise Starter\",\n  \"price\": 14999,\n  \"type\": \"enterprise\"\n}",
+    "tags": [
+      "item",
+      "pricing_input.json",
+      "pricing_input"
+    ],
+    "metadata": {
+      "source_file": "pricing_input.json",
+      "source_index": 4
+    }
+  },
+  {
+    "record_id": "item:Enterprise Pro",
+    "kind": "item",
+    "title": "Enterprise Pro",
+    "content": "{\n  \"name\": \"Enterprise Pro\",\n  \"price\": 49999,\n  \"type\": \"enterprise\"\n}",
+    "tags": [
+      "item",
+      "pricing_input.json",
+      "pricing_input"
+    ],
+    "metadata": {
+      "source_file": "pricing_input.json",
+      "source_index": 5
+    }
+  },
+  {
+    "record_id": "item:Enterprise Ultimate",
+    "kind": "item",
+    "title": "Enterprise Ultimate",
+    "content": "{\n  \"name\": \"Enterprise Ultimate\",\n  \"price\": 99999,\n  \"type\": \"enterprise\"\n}",
+    "tags": [
+      "item",
+      "pricing_input.json",
+      "pricing_input"
+    ],
+    "metadata": {
+      "source_file": "pricing_input.json",
+      "source_index": 6
+    }
+  },
+  {
+    "record_id": "source:skills/pricing_skill.md",
+    "kind": "source",
+    "title": "Workspace fixture export: skills/pricing_skill.md",
+    "content": "# Product Pricing Strategy Standardized Delivery Skill V1.0\n\n## Applicable Scope\nAll multi-tier recharge strategies, membership pricing, value-added service pricing, and any pricing tasks involving formula calculations, multi-rule constraints, and multi-scenario outputs.\n\n## Core Execution Flow\n\n### Phase 1: Requirement Confirmation\n1. Receive and parse all pricing rules, formulas, constraints, and output fields\n2. Structure rules into a Checklist\n3. Confirm with requester before proceeding\n\n### Phase 2: Formula Parsing and Parameter Alignment\n1. Identify all variables in the pricing formula\n2. Confirm unit conversions (e.g., percentage vs decimal)\n3. Validate formula structure for mathematical correctness\n\n### Phase 3: Calculation Execution\n1. Calculate each tier independently using the confirmed formula\n2. Record intermediate calculation steps for auditability\n3. Apply constraints (e.g., monotonicity, range limits)\n\n### Phase 4: Cross-Validation\n1. Verify results against all stated rules\n2. Check inter-tier monotonicity (higher tier => more benefits)\n3. Validate cost ratios within acceptable ranges\n4. Confirm gross margin targets are met per tier\n\n### Phase 5: Delivery\n1. Produce structured output document\n2. Include rule compliance checklist\n3. Include all calculation steps for reproducibility\n\n## Key Formulas\n\n### Recharge-to-Bonus Ratio\n```\nratio = (1/(margin+1) - 1/(margin+1) * (bonus_cost/tier_price*(margin+1)) - 1*sharing_ratio) * (1+premium_ratio) - 1\n```\n\nVariables:\n- margin (Gross Margin Target): decimal, e.g., 0.40 for 40%\n- bonus_cost (Bonus Feature Cost): monetary value in CNY\n- tier_price (Tier Price): monetary value in CNY\n- sharing_ratio (Bonus Sharing Ratio): decimal\n- premium_ratio (Model Premium Ratio): decimal\n\n### Critical Rules\n1. All percentage values MUST be converted to decimals before calculation\n2. Higher tiers MUST receive more bonus than lower tiers (monotonicity)\n3. Bonus feature cost ratio must be between 5%-10% of total cost\n4. Gross margin must stay within 20%-40% range across all tiers\n",
+    "tags": [
+      "source",
+      "md",
+      "pricing_skill"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/skills/pricing_skill.md",
+      "bytes": 2056
+    }
+  },
+  {
+    "record_id": "trap:percent-format",
+    "kind": "trap",
+    "title": "百分比输入口径",
+    "content": "bonus_sharing_ratio 和 model_premium_ratio 均为小数比例，0.05 表示5%，不是5倍或5个百分点整数。",
+    "tags": [
+      "trap",
+      "percentage"
+    ],
+    "metadata": {
+      "field": "bonus_sharing_ratio"
+    }
+  },
+  {
+    "record_id": "trap:boundary-199",
+    "kind": "trap",
+    "title": "低价档成本率边界",
+    "content": "Personal Basic 199 档 bonus cost 很小，容易在保留小数时把 cost ratio 判错，需要展示中间步骤。",
+    "tags": [
+      "trap",
+      "boundary",
+      "tier"
+    ],
+    "metadata": {
+      "tier": "199"
+    }
+  },
+  {
+    "record_id": "trap:monotonic-bonus",
+    "kind": "trap",
+    "title": "单调性看赠送额不是售价",
+    "content": "更高档位售价天然更高，但约束要求赠送更多；必须比较计算出的 bonus，不是只比较 price。",
+    "tags": [
+      "trap",
+      "monotonicity"
+    ],
+    "metadata": {
+      "constraint": "higher_tier_more_bonus"
+    }
+  },
+  {
+    "record_id": "pricing:tier:199",
+    "kind": "pricing_tier",
+    "title": "Personal Basic",
+    "content": "{\n  \"tier\": {\n    \"name\": \"Personal Basic\",\n    \"price\": 199,\n    \"type\": \"personal\"\n  },\n  \"gross_margin_target\": 0.4,\n  \"bonus_feature_cost\": 5,\n  \"constraints\": {\n    \"bonus_cost_ratio_min\": 0.05,\n    \"bonus_cost_ratio_max\": 0.1,\n    \"margin_range_min\": 0.2,\n    \"margin_range_max\": 0.4,\n    \"monotonicity\": \"higher_tier_more_bonus\"\n  }\n}",
+    "tags": [
+      "pricing",
+      "tier",
+      "personal"
+    ],
+    "metadata": {
+      "price": 199,
+      "tier_type": "personal"
+    }
+  },
+  {
+    "record_id": "pricing:tier:2999",
+    "kind": "pricing_tier",
+    "title": "Personal Pro",
+    "content": "{\n  \"tier\": {\n    \"name\": \"Personal Pro\",\n    \"price\": 2999,\n    \"type\": \"personal\"\n  },\n  \"gross_margin_target\": 0.37,\n  \"bonus_feature_cost\": 75,\n  \"constraints\": {\n    \"bonus_cost_ratio_min\": 0.05,\n    \"bonus_cost_ratio_max\": 0.1,\n    \"margin_range_min\": 0.2,\n    \"margin_range_max\": 0.4,\n    \"monotonicity\": \"higher_tier_more_bonus\"\n  }\n}",
+    "tags": [
+      "pricing",
+      "tier",
+      "personal"
+    ],
+    "metadata": {
+      "price": 2999,
+      "tier_type": "personal"
+    }
+  },
+  {
+    "record_id": "pricing:tier:6999",
+    "kind": "pricing_tier",
+    "title": "Personal Premium",
+    "content": "{\n  \"tier\": {\n    \"name\": \"Personal Premium\",\n    \"price\": 6999,\n    \"type\": \"personal\"\n  },\n  \"gross_margin_target\": 0.34,\n  \"bonus_feature_cost\": 210,\n  \"constraints\": {\n    \"bonus_cost_ratio_min\": 0.05,\n    \"bonus_cost_ratio_max\": 0.1,\n    \"margin_range_min\": 0.2,\n    \"margin_range_max\": 0.4,\n    \"monotonicity\": \"higher_tier_more_bonus\"\n  }\n}",
+    "tags": [
+      "pricing",
+      "tier",
+      "personal"
+    ],
+    "metadata": {
+      "price": 6999,
+      "tier_type": "personal"
+    }
+  },
+  {
+    "record_id": "pricing:tier:14999",
+    "kind": "pricing_tier",
+    "title": "Enterprise Starter",
+    "content": "{\n  \"tier\": {\n    \"name\": \"Enterprise Starter\",\n    \"price\": 14999,\n    \"type\": \"enterprise\"\n  },\n  \"gross_margin_target\": 0.29,\n  \"bonus_feature_cost\": 600,\n  \"constraints\": {\n    \"bonus_cost_ratio_min\": 0.05,\n    \"bonus_cost_ratio_max\": 0.1,\n    \"margin_range_min\": 0.2,\n    \"margin_range_max\": 0.4,\n    \"monotonicity\": \"higher_tier_more_bonus\"\n  }\n}",
+    "tags": [
+      "pricing",
+      "tier",
+      "enterprise"
+    ],
+    "metadata": {
+      "price": 14999,
+      "tier_type": "enterprise"
+    }
+  },
+  {
+    "record_id": "pricing:tier:49999",
+    "kind": "pricing_tier",
+    "title": "Enterprise Pro",
+    "content": "{\n  \"tier\": {\n    \"name\": \"Enterprise Pro\",\n    \"price\": 49999,\n    \"type\": \"enterprise\"\n  },\n  \"gross_margin_target\": 0.24,\n  \"bonus_feature_cost\": 3225,\n  \"constraints\": {\n    \"bonus_cost_ratio_min\": 0.05,\n    \"bonus_cost_ratio_max\": 0.1,\n    \"margin_range_min\": 0.2,\n    \"margin_range_max\": 0.4,\n    \"monotonicity\": \"higher_tier_more_bonus\"\n  }\n}",
+    "tags": [
+      "pricing",
+      "tier",
+      "enterprise"
+    ],
+    "metadata": {
+      "price": 49999,
+      "tier_type": "enterprise"
+    }
+  },
+  {
+    "record_id": "pricing:tier:99999",
+    "kind": "pricing_tier",
+    "title": "Enterprise Ultimate",
+    "content": "{\n  \"tier\": {\n    \"name\": \"Enterprise Ultimate\",\n    \"price\": 99999,\n    \"type\": \"enterprise\"\n  },\n  \"gross_margin_target\": 0.2,\n  \"bonus_feature_cost\": 7500,\n  \"constraints\": {\n    \"bonus_cost_ratio_min\": 0.05,\n    \"bonus_cost_ratio_max\": 0.1,\n    \"margin_range_min\": 0.2,\n    \"margin_range_max\": 0.4,\n    \"monotonicity\": \"higher_tier_more_bonus\"\n  }\n}",
+    "tags": [
+      "pricing",
+      "tier",
+      "enterprise"
+    ],
+    "metadata": {
+      "price": 99999,
+      "tier_type": "enterprise"
+    }
+  },
+  {
+    "record_id": "pricing:scenario:no_bonus",
+    "kind": "scenario",
+    "title": "no_bonus",
+    "content": "{\n  \"name\": \"no_bonus\",\n  \"bonus_sharing_ratio\": 0.0\n}",
+    "tags": [
+      "pricing",
+      "scenario"
+    ],
+    "metadata": {
+      "name": "no_bonus",
+      "bonus_sharing_ratio": 0.0
+    }
+  },
+  {
+    "record_id": "pricing:scenario:kol_5pct",
+    "kind": "scenario",
+    "title": "kol_5pct",
+    "content": "{\n  \"name\": \"kol_5pct\",\n  \"bonus_sharing_ratio\": 0.05\n}",
+    "tags": [
+      "pricing",
+      "scenario"
+    ],
+    "metadata": {
+      "name": "kol_5pct",
+      "bonus_sharing_ratio": 0.05
+    }
+  },
+  {
+    "record_id": "pricing:scenario:producer_10pct",
+    "kind": "scenario",
+    "title": "producer_10pct",
+    "content": "{\n  \"name\": \"producer_10pct\",\n  \"bonus_sharing_ratio\": 0.1\n}",
+    "tags": [
+      "pricing",
+      "scenario"
+    ],
+    "metadata": {
+      "name": "producer_10pct",
+      "bonus_sharing_ratio": 0.1
+    }
+  },
+  {
+    "record_id": "workflow:required-sequence",
+    "kind": "workflow_contract",
+    "title": "Required service workflow sequence",
+    "content": "Use list/search, fetch targeted records, cross-check traps, submit a report, then confirm it.",
+    "tags": [
+      "workflow",
+      "contract"
+    ],
+    "metadata": {
+      "required_sequence": [
+        "list",
+        "search",
+        "get",
+        "cross_check",
+        "submit",
+        "confirm"
+      ]
+    }
+  },
+  {
+    "record_id": "cross_check:check:source-vs-trap",
+    "kind": "cross_check",
+    "title": "Cross-check source facts against known traps before final decision",
+    "content": "Use service traps as cautionary evidence, then verify final artifact against workspace fixtures.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "check:source-vs-trap",
+        "title": "Cross-check source facts against known traps before final decision",
+        "primary_ids": [
+          "source:pricing_input.json",
+          "item:Personal Basic",
+          "item:Personal Pro",
+          "item:Personal Premium"
+        ],
+        "comparison_ids": [
+          "item:Enterprise Starter",
+          "item:Enterprise Pro",
+          "item:Enterprise Ultimate",
+          "source:skills/pricing_skill.md"
+        ],
+        "trap_ids": [
+          "trap:percent-format",
+          "trap:boundary-199",
+          "trap:monotonic-bonus"
+        ],
+        "expected_resolution": "Use service traps as cautionary evidence, then verify final artifact against workspace fixtures."
+      }
+    }
+  },
+  {
+    "record_id": "cross_check:check:submit-readiness",
+    "kind": "cross_check",
+    "title": "Submission readiness checklist",
+    "content": "Final answer should cite concrete source_ids and confirm the service submission after workspace artifact is written.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "check:submit-readiness",
+        "title": "Submission readiness checklist",
+        "primary_ids": [
+          "source:pricing_input.json",
+          "item:Personal Basic",
+          "item:Personal Pro",
+          "item:Personal Premium",
+          "item:Enterprise Starter",
+          "item:Enterprise Pro"
+        ],
+        "comparison_ids": [
+          "trap:percent-format",
+          "trap:boundary-199",
+          "trap:monotonic-bonus"
+        ],
+        "trap_ids": [
+          "trap:percent-format",
+          "trap:boundary-199",
+          "trap:monotonic-bonus"
+        ],
+        "expected_resolution": "Final answer should cite concrete source_ids and confirm the service submission after workspace artifact is written."
+      }
+    }
+  }
+]

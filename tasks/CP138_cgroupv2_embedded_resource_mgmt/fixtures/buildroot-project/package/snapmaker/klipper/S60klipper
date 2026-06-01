@@ -1,0 +1,36 @@
+#!/bin/sh
+#
+# Start/stop klipper (klippy) - 3D printer firmware controller
+#
+
+KLIPPY_BIN=/usr/bin/klippy
+KLIPPY_CONF=/etc/klipper/printer.cfg
+KLIPPY_LOG=/var/log/klippy.log
+KLIPPY_PID=/var/run/klippy.pid
+KLIPPY_USER=lava
+
+case "$1" in
+  start)
+    printf "Starting klippy: "
+    start-stop-daemon -S -b -m -p "$KLIPPY_PID" \
+      -c "$KLIPPY_USER" \
+      -x "$KLIPPY_BIN" -- \
+      "$KLIPPY_CONF" -l "$KLIPPY_LOG" -a /tmp/klippy_uds
+    echo "OK"
+    ;;
+  stop)
+    printf "Stopping klippy: "
+    start-stop-daemon -K -p "$KLIPPY_PID" -s TERM
+    rm -f "$KLIPPY_PID"
+    echo "OK"
+    ;;
+  restart)
+    "$0" stop
+    sleep 1
+    "$0" start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac

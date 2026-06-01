@@ -1,0 +1,28 @@
+# Report Generation Specification
+
+## Input
+- `projects.json`: project data from Zentao (with task details)
+- `schedule.csv`: schedule export (execution_id, project_name, owner, phase, schedule_notes)
+
+## Output
+For each project, generate a Markdown report file named `report_{execution_id}.md` in the output directory `/workspace/fixtures/project_data/output/`.
+
+Each report must contain THREE sections:
+
+### Section 1: Project Overview Table
+Fields: project_name, phase (prefer schedule.csv over projects.json status), actual_progress (done_tasks/total_tasks as percentage), expected_progress (tasks with deadline <= current_date / total_tasks as percentage), overdue_count (deadline < current_date AND status != done), lag_rate (expected - actual), total_tasks, estimated_hours_sum, consumed_hours_sum.
+
+### Section 2: Overdue Task Details Table
+List all overdue tasks with: task_id, title, deadline, assignee, status, days_overdue.
+
+### Section 3: Summary and Follow-up
+Fields: schedule (from schedule.csv), progress_status (normal/lagging), follow_up (group overdue by assignee), risk_level.
+
+## Risk Level Rules
+- none: 0 overdue AND lag_rate=0%
+- low: overdue<=2 OR lag_rate<10%
+- medium: overdue 3-7 OR lag_rate 10%-25%
+- high: overdue>7 OR lag_rate>25%
+
+## Report Date
+Use: 2026-04-23

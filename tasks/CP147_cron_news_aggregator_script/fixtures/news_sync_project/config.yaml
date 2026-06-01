@@ -1,0 +1,60 @@
+## AI News Sync Configuration
+## This config drives the news aggregation pipeline
+
+schedule:
+  # Cron expressions for when to run
+  morning: ""   # TODO: 8:00 AM daily
+  evening: ""   # TODO: 8:00 PM daily
+  timezone: "Asia/Shanghai"
+
+sources:
+  - name: arxiv
+    type: rss
+    url: "http://export.arxiv.org/api/query"
+    params:
+      search_query: "cat:cs.AI"
+      sortBy: "submittedDate"
+      sortOrder: "descending"
+      max_results: 10
+    enabled: true
+
+  - name: huggingface
+    type: api
+    url: "https://huggingface.co/api/models"
+    params:
+      sort: "trending"
+      limit: 10
+    enabled: true
+
+  - name: techcrunch
+    type: rss
+    url: "https://techcrunch.com/category/artificial-intelligence/feed/"
+    enabled: true
+
+  - name: openai_blog
+    type: rss
+    url: "https://openai.com/blog/rss.xml"
+    enabled: true
+
+output:
+  format: "markdown"
+  sections:
+    - headline: 1        # top impact event
+    - breakthroughs: 3   # papers/models
+    - business: 2        # product launches
+    - quicklook: 5       # title + link
+
+  rules:
+    dedup: true          # same event keeps earliest authoritative source
+    denoise: true        # filter uncertain content ("may", "might", "upcoming")
+    language: "zh"       # output in Chinese
+    keep_english_terms: true  # preserve English technical terms
+
+api:
+  endpoint: "https://backend.example.com/api/v1/sync-articles"
+  auth_header: "Authorization"
+  auth_prefix: "Bearer"
+  # token loaded from environment variable NEWS_SYNC_API_TOKEN
+  timeout_seconds: 30
+  retry_count: 3
+  retry_delay_seconds: 5

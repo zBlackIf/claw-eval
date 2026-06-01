@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# Start/stop GUI display process
+#
+
+GUI_BIN=/usr/bin/lava_gui
+GUI_PID=/var/run/lava_gui.pid
+
+case "$1" in
+  start)
+    printf "Starting GUI: "
+    start-stop-daemon -S -b -m -p "$GUI_PID" \
+      -x "$GUI_BIN"
+    echo "OK"
+    ;;
+  stop)
+    printf "Stopping GUI: "
+    start-stop-daemon -K -p "$GUI_PID" -s TERM
+    rm -f "$GUI_PID"
+    echo "OK"
+    ;;
+  restart)
+    "$0" stop
+    sleep 1
+    "$0" start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac

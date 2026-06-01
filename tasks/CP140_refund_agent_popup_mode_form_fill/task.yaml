@@ -1,0 +1,68 @@
+# provenance:
+#   source_session: "2746587776136007800"
+#   scenario: "内容创作 / 短视频 / 公众号 / 营销"
+#   real_task: AI退款智能体注入脚本修复 — 弹窗模式+表单自动填充+操作日志
+task_id: CP140_refund_agent_popup_mode_form_fill
+task_name: "退款 AI 智能体弹窗模式 & 表单自动填充修复"
+version: "1.0"
+category: code_repair
+difficulty: hard
+tags: [javascript, frontend, fullstack, agent-injection]
+
+source_session_id: "2746587776136007800"
+source_description: "真实用户场景：AI 退款智能体注入脚本存在多个未完成/BUG 功能——表单填充只打日志、弹窗模式未实现、操作日志未调用、result 类型错误。Workspace WS2。"
+
+services: []
+
+prompt:
+  text: |
+    我们做了个退款申请的 AI 自动填充功能，在 /workspace/fixtures/refund-system/ 下面。
+    agent.js 是注入到业务页面的脚本，main.py 是后端服务。现在有几个问题要修：
+
+    识别完之后表单根本没填进去，只打了 console.log。另外弹窗模式的逻辑还没写——
+    model 接口里 name=弹窗模式 state=1 的时候，点小球应该把页面灰掉只留 AI 面板能用，
+    填完表单灰色自己消失，别弹什么"已激活"的提示框。操作日志那块也没接，识别完要
+    POST /api/logs 记一下，result 字段后端类型声明有 bug 也顺手改了。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/refund-system/agent.js
+  - fixtures/refund-system/main.py
+  - fixtures/refund-system/refund.html
+  - fixtures/refund-system/requirements.txt
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete implementation: fillForm must map records to DOM inputs (querySelector + value assignment), popup mode must fetch /api/models and apply grey overlay with pointer-events:none when 弹窗模式 state=1, overlay auto-removes after fill, no alert/dialog for activation, POST /api/logs called after recognition, LogEntry.result changed from str to int."
+
+reference_solution: |
+  agent.js changes:
+  1. fillForm(): iterate records, map field_name to DOM id (e.g. "客户姓名"→"field-customer-name"),
+     set element.value = record.value
+  2. On ball click: fetch /api/models, find 弹窗模式 with state===1,
+     if active → create overlay div (position:fixed, full-screen, rgba background,
+     pointer-events:none or disable form inputs), keep AI panel z-index above overlay
+  3. After fillForm completes: remove overlay element or set display:none
+  4. Do NOT show alert/modal with "弹窗模式已激活"
+  5. After successful recognize: POST /api/logs with {file_name, business_name:"退款申请", result: 1}
+
+  main.py changes:
+  - Change LogEntry.result type from str to int
+
+primary_dimensions: [completion, communication, safety]

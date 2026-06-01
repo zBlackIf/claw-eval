@@ -1,0 +1,189 @@
+[
+  {
+    "timestamp": "2026-05-18T04:01:00+08:00",
+    "type": "system_timeout",
+    "from": "System",
+    "to": "project-manager",
+    "task_id": "task-11",
+    "task_name": "课程PPT课件制作",
+    "agent": "baiyuekui",
+    "message": "成员 白月魁 的任务 \"课程PPT课件制作\" (task-11) 的会话已不活跃超过 10 分钟。"
+  },
+  {
+    "timestamp": "2026-05-18T04:14:00+08:00",
+    "type": "member_feedback",
+    "from": "baiyuekui",
+    "to": "project-manager",
+    "task_id": "task-11",
+    "task_name": "课程PPT课件制作",
+    "message": "超时提醒已收到，任务正常推进中，无任何阻塞风险。当前处于项目计划内等待阶段。"
+  },
+  {
+    "timestamp": "2026-05-18T04:15:00+08:00",
+    "type": "member_feedback",
+    "from": "baiyuekui",
+    "to": "project-manager",
+    "task_id": "task-11",
+    "task_name": "课程PPT课件制作",
+    "message": "所有今日节点均已100%锁定就绪，整体无任何风险。评审会议通知已完成复核，会议材料已就绪。"
+  },
+  {
+    "timestamp": "2026-05-18T04:16:00+08:00",
+    "type": "member_feedback",
+    "from": "lancer",
+    "to": "project-manager",
+    "task_id": "task-8",
+    "task_name": "教研资料格式自动校验工具开发",
+    "message": "工具实操案例与提示词库素材最终打包状态确认：所有素材已100%完成打包，可供课件制作使用。"
+  },
+  {
+    "timestamp": "2026-05-18T04:28:00+08:00",
+    "type": "system_timeout",
+    "from": "System",
+    "to": "project-manager",
+    "task_id": "task-11",
+    "task_name": "课程PPT课件制作",
+    "agent": "baiyuekui",
+    "message": "成员 白月魁 的任务 \"课程PPT课件制作\" (task-11) 的会话已不活跃超过 10 分钟。"
+  },
+  {
+    "timestamp": "2026-05-18T04:28:30+08:00",
+    "type": "member_feedback",
+    "from": "baiyuekui",
+    "to": "project-manager",
+    "task_id": "task-11",
+    "task_name": "课程PPT课件制作",
+    "message": "任务状态完全正常，无任何风险。正在按计划推进中。"
+  },
+  {
+    "timestamp": "2026-05-18T04:39:00+08:00",
+    "type": "system_timeout",
+    "from": "System",
+    "to": "project-manager",
+    "task_id": "task-11",
+    "task_name": "课程PPT课件制作",
+    "agent": "baiyuekui",
+    "message": "成员 白月魁 的任务 \"课程PPT课件制作\" (task-11) 的会话已不活跃超过 10 分钟。"
+  },
+  {
+    "timestamp": "2026-05-18T04:39:30+08:00",
+    "type": "member_feedback",
+    "from": "baiyuekui",
+    "to": "project-manager",
+    "task_id": "task-11",
+    "task_name": "课程PPT课件制作",
+    "message": "任务状态正常，正在按计划推进。处于等待5月19日教案评审会议阶段。"
+  },
+  {
+    "timestamp": "2026-05-18T04:50:00+08:00",
+    "type": "patrol_request",
+    "from": "System",
+    "to": "project-manager",
+    "project_id": "teaching-platform",
+    "message": "项目教研平台体系建设(teaching-platform)，距离上次项目状态更新已经过1493秒，请检查项目进度。"
+  },
+  {
+    "timestamp": "2026-05-18T05:01:00+08:00",
+    "type": "system_timeout",
+    "from": "System",
+    "to": "project-manager",
+    "task_id": "task-11",
+    "task_name": "课程PPT课件制作",
+    "agent": "baiyuekui",
+    "message": "成员 白月魁 的任务 \"课程PPT课件制作\" (task-11) 的会话已不活跃超过 10 分钟。"
+  },
+  {
+    "timestamp": "2026-05-18T05:04:00+08:00",
+    "type": "member_feedback",
+    "from": "baiyuekui",
+    "to": "project-manager",
+    "task_id": "task-11",
+    "task_name": "课程PPT课件制作",
+    "message": "连续超时提醒已收到。任务状态与后续执行计划：1)当前等待5月19日教案评审 2)下午MVP宣讲会准备已100%就绪 3)零阻塞零风险。"
+  },
+  {
+    "timestamp": "2026-05-18T05:30:00+08:00",
+    "type": "system_timeout",
+    "from": "System",
+    "to": "project-manager",
+    "task_id": "task-8",
+    "task_name": "教研资料格式自动校验工具开发",
+    "agent": "lancer",
+    "message": "成员 Lancer 的任务 \"教研资料格式自动校验工具开发\" (task-8) 的会话已不活跃超过 10 分钟。"
+  },
+  {
+    "timestamp": "2026-05-18T05:32:00+08:00",
+    "type": "member_feedback",
+    "from": "lancer",
+    "to": "project-manager",
+    "task_id": "task-8",
+    "task_name": "教研资料格式自动校验工具开发",
+    "message": "工具开发已完成，正在等待课件制作团队的集成反馈。无阻塞。"
+  },
+  {
+    "timestamp": "2026-05-18T06:00:00+08:00",
+    "type": "escalation",
+    "from": "rider",
+    "to": "project-manager",
+    "task_id": "task-15",
+    "task_name": "视频录制脚本审核",
+    "priority": "high",
+    "message": "脚本中发现3处技术描述错误，需要教研团队确认修改后才能继续录制。阻塞中。"
+  },
+  {
+    "timestamp": "2026-05-18T06:05:00+08:00",
+    "type": "system_timeout",
+    "from": "System",
+    "to": "project-manager",
+    "task_id": "task-11",
+    "task_name": "课程PPT课件制作",
+    "agent": "baiyuekui",
+    "message": "成员 白月魁 的任务 \"课程PPT课件制作\" (task-11) 的会话已不活跃超过 10 分钟。"
+  },
+  {
+    "timestamp": "2026-05-18T06:10:00+08:00",
+    "type": "patrol_request",
+    "from": "System",
+    "to": "project-manager",
+    "project_id": "teaching-platform",
+    "message": "项目教研平台体系建设(teaching-platform)，距离上次项目状态更新已经过1200秒，请检查项目进度。"
+  },
+  {
+    "timestamp": "2026-05-18T06:15:00+08:00",
+    "type": "member_feedback",
+    "from": "archer",
+    "to": "project-manager",
+    "task_id": "task-15",
+    "task_name": "视频录制脚本审核",
+    "message": "已收到rider的反馈，正在审核3处技术描述。预计30分钟内完成修改确认。"
+  },
+  {
+    "timestamp": "2026-05-18T06:45:00+08:00",
+    "type": "member_feedback",
+    "from": "archer",
+    "to": "project-manager",
+    "task_id": "task-15",
+    "task_name": "视频录制脚本审核",
+    "message": "3处技术描述已修正完毕，已通知rider可以继续录制。阻塞已解除。"
+  },
+  {
+    "timestamp": "2026-05-18T07:00:00+08:00",
+    "type": "member_feedback",
+    "from": "rider",
+    "to": "project-manager",
+    "task_id": "task-15",
+    "task_name": "视频录制脚本审核",
+    "priority": "normal",
+    "message": "收到修正后的脚本，阻塞已解除，继续录制。预计今日16:00完成前3节视频初剪。"
+  },
+  {
+    "timestamp": "2026-05-18T07:30:00+08:00",
+    "type": "system_timeout",
+    "from": "System",
+    "to": "project-manager",
+    "task_id": "task-11",
+    "task_name": "课程PPT课件制作",
+    "agent": "baiyuekui",
+    "message": "成员 白月魁 的任务 \"课程PPT课件制作\" (task-11) 的会话已不活跃超过 10 分钟。"
+  }
+]

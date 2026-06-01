@@ -1,0 +1,72 @@
+task_id: CP177_feishu_bot_cron_scheduler
+task_name: "飞书机器人定时任务调度器（CP177 / 源 session 8024352113851321712）"
+version: "1.0"
+category: integration
+difficulty: medium
+tags: [feishu, scheduling, bot]
+
+source_session_id: "8024352113851321712"
+source_description: "Real Feishu bot session: user has a personal assistant bot that delivers daily weather and news via cron jobs at 7:00 and 8:00 Beijing time. Session shows delivery failures, timezone issues, and user feedback on content formatting."
+
+services: []
+
+prompt:
+  text: |
+    我有一个飞书机器人项目（/workspace/fixtures/feishu-bot/），已经写好了
+    messenger.py（发消息）、weather.py（天气查询）、news.py（新闻聚合）。
+    现在需要你帮我加一个定时任务调度模块，实现：
+    1. 每天早上 7:00（北京时间）自动发送天气预报给用户
+    2. 每天早上 8:00（北京时间）自动发送热点新闻给用户
+
+    要求：
+    - 写一个 scheduler 模块（scheduler.py 或类似命名）来管理定时任务
+    - 在 config.yaml 里配置好这两个定时任务的 cron 表达式
+    - 改造 main.py 让它加载配置、注册任务、启动调度器
+    - 目标用户 ID: ou_6ee310124cd63f71dc8ea30cb12721a0
+
+    代码放到 /workspace/fixtures/feishu-bot/ 下面。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/feishu-bot/config.yaml
+  - fixtures/feishu-bot/messenger.py
+  - fixtures/feishu-bot/weather.py
+  - fixtures/feishu-bot/news.py
+  - fixtures/feishu-bot/main.py
+  - fixtures/feishu-bot/pyproject.toml
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a working cron scheduler module: proper cron expression parsing or scheduling library usage, config.yaml with timezone-aware job definitions for weather (7:00) and news (8:00), main.py integration that loads config and starts scheduler, job handlers that wire WeatherProvider/NewsAggregator to FeishuMessageSender, and failure/retry handling for message delivery."
+
+reference_solution: |
+  Under feishu-bot/:
+  - scheduler.py: CronScheduler class with add_job(cron_expr, callback),
+    start(), stop() methods. Uses schedule/apscheduler/croniter or custom
+    cron parsing with threading.
+  - config.yaml: scheduled_tasks list with entries for weather (cron: "0 7 * * *")
+    and news (cron: "0 8 * * *"), timezone: Asia/Shanghai, target user_id.
+  - main.py: loads config, instantiates providers + messenger, registers
+    weather_job and news_job callbacks, starts scheduler with signal handling.
+  - Job handlers: weather_job calls WeatherProvider.format_daily_report then
+    messenger.send_text; news_job calls NewsAggregator then messenger.send_rich_text.
+  - Error handling: try/except around each job execution, retry on failure,
+    logging of delivery status.
+
+primary_dimensions: [completion, communication, safety]

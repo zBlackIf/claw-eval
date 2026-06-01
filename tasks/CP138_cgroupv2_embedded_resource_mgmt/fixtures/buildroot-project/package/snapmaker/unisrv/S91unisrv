@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# Start/stop unisrv - unified service daemon
+#
+
+UNISRV_BIN=/usr/bin/unisrv
+UNISRV_PID=/var/run/unisrv.pid
+
+case "$1" in
+  start)
+    printf "Starting unisrv: "
+    start-stop-daemon -S -b -m -p "$UNISRV_PID" \
+      -x "$UNISRV_BIN"
+    echo "OK"
+    ;;
+  stop)
+    printf "Stopping unisrv: "
+    start-stop-daemon -K -p "$UNISRV_PID" -s TERM
+    rm -f "$UNISRV_PID"
+    echo "OK"
+    ;;
+  restart)
+    "$0" stop
+    sleep 1
+    "$0" start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+esac

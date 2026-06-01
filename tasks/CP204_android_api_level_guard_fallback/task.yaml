@@ -1,0 +1,68 @@
+task_id: CP204_android_api_level_guard_fallback
+task_name: "Android 9 / Huawei 兼容性修复 — API Level Guard + Fallback Pattern"
+version: "1.0"
+category: code_repair
+difficulty: hard
+tags: [android, kotlin, compatibility]
+
+source_session_id: "17886888197736350094"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "Real user session: Android app crashes on API 28 (Huawei) due to missing API level guards for API 34+ features, lateinit crash from EncryptedSharedPreferences KeyStore failure, and missing timeout on Firebase version check."
+
+services: []
+
+prompt:
+  text: |
+    HyperIsle2 线上 Android 9 (API 28) + Huawei 设备不断崩溃。排查下来有几个关联问题：
+    foreground service 用了 API 34 才有的 FOREGROUND_SERVICE_TYPE_SPECIAL_USE 没做版本判断；
+    EncryptedSharedPreferences 在华为 KeyStore 异常时整个 initializeFeatureControl 挂掉，
+    导致 lateinit 变量没初始化后续全 crash；VersionEnforcer 的 Firebase 调用没超时，
+    弱网下 UI 直接卡死；还有 ScreenCaptureCallback 等 API 34 方法在低版本直接 NoSuchMethodError。
+    代码在 /workspace/fixtures/hyperisle-app/，你把这些问题都修了——能在 API 28 上正常跑就行。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/hyperisle-app/app/src/main/java/com/coni/hyperisle/overlay/OverlayForegroundController.kt
+  - fixtures/hyperisle-app/app/src/main/java/com/coni/hyperisle/overlay/ScreenCaptureDetectorActivity.kt
+  - fixtures/hyperisle-app/app/src/main/java/com/coni/hyperisle/overlay/OverlayScreenRecordingController.kt
+  - fixtures/hyperisle-app/app/src/main/java/com/coni/hyperisle/overlay/OverlayPermissionChecker.kt
+  - fixtures/hyperisle-app/app/src/main/java/com/coni/hyperisle/app/HyperIsleApp.kt
+  - fixtures/hyperisle-app/core-version-enforcement/src/main/java/com/coni/hyperisle/core/versionenforcement/VersionEnforcer.kt
+  - fixtures/hyperisle-app/app/src/main/AndroidManifest.xml
+  - fixtures/hyperisle-app/app/build.gradle.kts
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 900
+  max_turns: 25
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward comprehensive Android 9 compatibility fixes: (1) Build.VERSION.SDK_INT >= 34 guard around FOREGROUND_SERVICE_TYPE_SPECIAL_USE with plain startForeground fallback, (2) lateinit var replaced with default fallback (FallbackVersionEnforcer pattern), (3) EncryptedSharedPreferences wrapped in try-catch with KeyStore cleanup retry and plain SharedPreferences fallback, (4) withTimeout on Firebase version check with cache/Allowed fallback, (5) API 34 guards on ScreenCaptureCallback usage with early return/finish, (6) Huawei-specific overlay permission intent chain."
+
+reference_solution: |
+  1. OverlayForegroundController: Add if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+     before startForeground with FOREGROUND_SERVICE_TYPE_SPECIAL_USE; else call plain startForeground(id, notification).
+  2. HyperIsleApp: Replace lateinit var versionEnforcer with default FallbackVersionEnforcer() that
+     returns VersionStatus.Allowed. Same pattern for featureFlagRepository, premiumGate, premiumStatusRepository.
+  3. createEncryptedPrefs(): Try EncryptedSharedPreferences, on exception delete KeyStore entry and retry,
+     on second failure fall back to getSharedPreferences() and log warning.
+  4. VersionEnforcerImpl.checkVersion(): Wrap fetchMinimumVersion() in withTimeout(10_000L),
+     catch TimeoutCancellationException, use cache.getMinimumVersion() or return Allowed.
+  5. ScreenCaptureDetectorActivity: Check SDK_INT >= 34 in onCreate, finish() immediately if below.
+     OverlayScreenRecordingController: Same guard around registerScreenCaptureCallback.
+  6. OverlayPermissionChecker: Try Huawei SystemManager intent first, resolveActivity check,
+     fall back to standard ACTION_MANAGE_OVERLAY_PERMISSION, then ACTION_SETTINGS.
+
+primary_dimensions: [completion, communication, safety]

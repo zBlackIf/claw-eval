@@ -1,0 +1,70 @@
+# provenance:
+#   source_session: "13026198534172885457"
+#   scenario: "Agent 协议 / 元操作"
+#   pattern: WS2 (Full-Repair / code creation)
+task_id: CP117_agent_heartbeat_scheduler_system
+task_name: "Agent 心跳调度器系统实现（CP117 / 源 session 13026198534172885457）"
+version: "1.0"
+category: implementation
+difficulty: medium
+tags: [agent-protocol, scheduler, python]
+
+source_task_id: "session_13026198534172885457"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "Real user session where an OpenClaw agent managed heartbeat/cron tasks with start/stop control, directory monitoring, and structured logging. Workspace WS2 pattern - implement a complete task scheduler module."
+
+services: []
+
+prompt:
+  text: |
+    我们的 agent 框架需要一个内部任务调度模块，用来跑心跳检查、定时汇总这类后台
+    任务。/workspace/fixtures/agent_scaffold/ 下面有 config.json（任务配置）、
+    scheduler_base.py（基础类定义 + 需求说明）和一个 tests/ 目录。你把 scheduler.py
+    实现出来——TaskScheduler 从 config 加载、支持 start/stop/status/list/shutdown、
+    心跳任务要能监控指定目录有没有变化、执行日志按时间戳写文件、进程收到 SIGTERM
+    能优雅退出。tests 里的基础用例能跑通就行。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/agent_scaffold/config.json
+  - fixtures/agent_scaffold/scheduler_base.py
+  - fixtures/agent_scaffold/tests/test_scheduler_basic.py
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a complete, working task scheduler implementation: TaskScheduler class with from_config factory method, HeartbeatTask that monitors directories for changes, full lifecycle (start/stop/status/list/shutdown), timestamp-based file logging with rotation support, and graceful signal-based shutdown (SIGTERM/SIGINT). Threading must be used for periodic execution. Tests in tests/test_scheduler_basic.py should pass."
+
+reference_solution: |
+  scheduler.py in agent_scaffold/:
+  - class HeartbeatTask(ScheduledTask): runs periodically using threading.Timer
+    or threading.Event loop, checks configured dirs via os.listdir/Path.iterdir,
+    reports status string, increments run_count
+  - class CronTask(ScheduledTask): parses cron expression, calculates next run
+  - class TaskLogger: writes timestamped entries to log_dir, supports max_entries
+    rotation
+  - class TaskScheduler:
+    - from_config(path) classmethod loads config.json, instantiates tasks
+    - start(task_id) sets task running with threading
+    - stop(task_id) cancels timer/sets stop event
+    - status(task_id) returns state dict
+    - list_tasks() returns all task summaries
+    - shutdown() stops all tasks, joins threads
+    - signal.signal(SIGTERM/SIGINT) calls shutdown on receipt
+
+primary_dimensions: [completion, communication, safety]

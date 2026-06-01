@@ -1,0 +1,91 @@
+# provenance:
+#   source_session: 1912857379575326259
+#   scenario: api_doc_audit
+#   description: >
+#     Audit API interface documents against Java source code to identify
+#     hallucinated/fabricated parameters, wrong HTTP methods, incorrect
+#     request body structures, and missing parameters.
+task_id: CP112_api_doc_hallucination_audit
+task_name: "API Documentation Hallucination Audit (CP112 / source session 1912857379575326259)"
+version: "1.0"
+category: verification
+difficulty: hard
+tags: [general, documentation, audit]
+
+source_session_id: "1912857379575326259"
+source_description: "Real session where agent audits 83 API interface docs against Java source code, identifying fabricated params, wrong HTTP methods, wrong body structures, and missing parameters. Workspace WS2 pattern."
+
+services: []
+
+prompt:
+  text: |
+    I found some interface docs at /workspace/fixtures/signaling-sim-project/docs/interfaces/
+    that look like they were auto-generated but contain errors. The actual Java source code
+    is at /workspace/fixtures/signaling-sim-project/src/. Please audit ALL 9 interface
+    documents against the source code and fix any discrepancies you find. Common issues
+    include: fabricated parameters that don't exist in the code, wrong HTTP methods, wrong
+    parameter locations (Query vs FormData), incomplete request body structures (only
+    showing a few fields when the entity has many more), and missing parameters.
+
+    Rules:
+    - Only document what actually exists in the source code
+    - Complex types (entities/VOs) must be expanded to show all their fields
+    - Parameter location must match the actual annotation (@QueryParam, @FormDataParam, @Body)
+    - HTTP method must match the actual annotation (@GET, @POST, @PUT, @DELETE)
+  language: en
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/signaling-sim-project/docs/interfaces/01_upload_terminal_behavior.md
+  - fixtures/signaling-sim-project/docs/interfaces/02_download_terminal_behavior.md
+  - fixtures/signaling-sim-project/docs/interfaces/03_upload_access_rate.md
+  - fixtures/signaling-sim-project/docs/interfaces/04_update_brand_proportion.md
+  - fixtures/signaling-sim-project/docs/interfaces/05_add_screen_mapping.md
+  - fixtures/signaling-sim-project/docs/interfaces/06_delete_screen_mapping.md
+  - fixtures/signaling-sim-project/docs/interfaces/07_update_terminal_behavior.md
+  - fixtures/signaling-sim-project/docs/interfaces/08_get_brand_proportion.md
+  - fixtures/signaling-sim-project/docs/interfaces/09_restore_base_station_default.md
+  - fixtures/signaling-sim-project/src/main/java/com/example/simulation/controller/ProfileModelController.java
+  - fixtures/signaling-sim-project/src/main/java/com/example/simulation/controller/ProfileQueryController.java
+  - fixtures/signaling-sim-project/src/main/java/com/example/simulation/controller/MappingController.java
+  - fixtures/signaling-sim-project/src/main/java/com/example/simulation/entity/BrandProportionEntity.java
+  - fixtures/signaling-sim-project/src/main/java/com/example/simulation/entity/MappingAddRequest.java
+  - fixtures/signaling-sim-project/src/main/java/com/example/simulation/entity/MappingDeleteRequest.java
+  - fixtures/signaling-sim-project/src/main/java/com/example/simulation/entity/TerminalProfileEntity.java
+  - fixtures/signaling-sim-project/src/main/java/com/example/simulation/entity/TerminalBrandEntity.java
+  - fixtures/signaling-sim-project/src/main/java/com/example/simulation/entity/ResultModel.java
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 900
+  max_turns: 30
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward systematic audit: (1) Remove fabricated province params from docs 01/02, (2) Fix province location Query→FormData in doc 03, (3) Replace fabricated body structures in docs 04/05 with actual entity fields from source, (4) Fix HTTP method DELETE→POST and body structure in doc 06, (5) Expand incomplete entity fields in doc 07, (6) Add missing query params in docs 08/09. Penalize leaving any hallucinated content unfixed."
+
+reference_solution: |
+  Doc 01: Remove province Query param (upload only has file FormData)
+  Doc 02: Remove province Query param (download has no params)
+  Doc 03: Change province from Query to FormData
+  Doc 04: Replace fabricated {province, brandProportions[{brandName,ratio}]} with
+           List<BrandProportionEntity> showing all 6 fields
+  Doc 05: Replace fabricated {sourceName,targetName,mappingType} with
+           MappingAddRequest showing all 6 fields (screenId, simulationId, etc.)
+  Doc 06: Change DELETE to POST, path to /screen/delete, body to
+           MappingDeleteRequest {screenId, mappingIds}
+  Doc 07: Expand from 3 fields to all 13 fields of TerminalProfileEntity
+  Doc 08: Add missing 'brand' query parameter
+  Doc 09: Add missing 'brand' query parameter
+
+primary_dimensions: [completion, communication, safety]

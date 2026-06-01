@@ -1,0 +1,196 @@
+task_id: CP29_vue_codebase_architecture_analysis
+task_name: Plan模式：代码架构分析与重构计划
+version: '2.0'
+category: architecture
+difficulty: hard
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_09_plan_mode_codebase_analysis
+source_dataset: taskset-260325-020101
+source_description: Redesigned from taskset-260325-020101/task_09_plan_mode_codebase_analysis with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
+services: []
+prompt:
+  text: |
+    我已经把原始项目素材放在容器的 `/workspace/fixtures/` 目录下，请把这些文件当作只读输入。
+
+    输入文件如下（右侧是它在原项目中的相对路径）：
+    - `/workspace/fixtures/src/api/request.js` -> `src/api/request.js`
+    - `/workspace/fixtures/src/api/bills.js` -> `src/api/bills.js`
+    - `/workspace/fixtures/src/api/members.js` -> `src/api/members.js`
+    - `/workspace/fixtures/src/api/budgets.js` -> `src/api/budgets.js`
+    - `/workspace/fixtures/src/pages/BillList.vue` -> `src/pages/BillList.vue`
+    - `/workspace/fixtures/src/pages/MemberList.vue` -> `src/pages/MemberList.vue`
+
+    请基于这些输入完成下面的原始需求：
+
+    这个 Vue 金融管理后台的账单、成员、预算页面越写越重复，后续还要继续加模块。请先阅读现有代码，给出一份可执行的架构梳理和渐进式重构方案。
+    要求：
+    1. 逐一阅读所有源文件，理解项目结构和代码风格
+    2. 分析 API 层、页面加载状态、错误处理、分页、类型约束和迁移风险中的重复模式
+    3. 设计能兼容现有账单导出、成员权限等特殊接口的公共抽象
+    4. 为核心抽象编写可复用示例代码
+    5. 将分析结果写入 `REFACTOR_PLAN.md`，示例代码写入对应文件
+
+    交付要求：
+    - 需要修改已有文件时，请把修改后的版本写到 `/workspace/` 下对应的原项目相对路径。
+    - 需要新增文件时，请按需求中的文件名或上面列出的目标路径写到 `/workspace/` 下。
+    - 最终回复只需概述完成情况、关键改动和生成的文件；不要只在最终回复中贴代码或报告正文。
+  language: zh
+tools: []
+tool_endpoints: []
+sandbox_files:
+- fixtures/src/api/request.js
+- fixtures/src/api/bills.js
+- fixtures/src/api/members.js
+- fixtures/src/api/budgets.js
+- fixtures/src/pages/BillList.vue
+- fixtures/src/pages/MemberList.vue
+sandbox_grader_files:
+- fixtures/verify.py
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+  env_snapshot_timeout: 30
+env_snapshot_commands:
+- python /workspace/fixtures/verify.py
+env_snapshot_files:
+- /workspace/src/api/createCrudApi.ts
+- /workspace/src/composables/useListPage.ts
+- /workspace/src/types/index.ts
+- /workspace/REFACTOR_PLAN.md
+- /workspace/**/*crud*api*
+- /workspace/**/*useListPage*
+- /workspace/**/*types*
+- /workspace/**/*REFACTOR*
+- /workspace/**/*refactor*plan*
+- /workspace/src/api/request.js
+- /workspace/src/api/bills.js
+- /workspace/src/api/members.js
+- /workspace/src/api/budgets.js
+- /workspace/src/pages/BillList.vue
+- /workspace/src/pages/MemberList.vue
+scoring_components: []
+safety_checks: []
+expected_actions: []
+judge_rubric: |
+  ## Expected Behavior
+
+  Agent 应该：
+  1. 遍历读取所有 src/ 下的文件
+  2. 识别 API 层的 CRUD 重复模式
+  3. 识别页面组件的 loading/error/pagination 重复模式
+  4. 创建 `src/api/createCrudApi.ts`（通用 CRUD 工厂）
+  5. 创建 `src/composables/useListPage.ts`（通用列表页 Composable）
+  6. 创建类型定义文件
+  7. 生成完整的 REFACTOR_PLAN.md
+
+  ## Grading Criteria
+
+  - [ ] overall_v1_score
+
+  ## LLM Judge Rubric
+
+
+  ### Criterion 1: 代码理解深度
+  Weight: 25%
+
+  - 1.0 — Agent 是否真正理解了代码而非表面扫描？是否识别了深层次的架构问题（如 request.js 的 401 处理方式、exportBills 的 blob 下载模式）？
+  - 0.75 — Mostly meets the criterion with minor gaps
+  - 0.5 — Partially meets; missing key aspects
+  - 0.25 — Minimal alignment
+  - 0.0 — Does not meet the criterion
+
+  ### Criterion 2: 模式识别能力
+  Weight: 25%
+
+  - 1.0 — 是否准确识别了所有重复模式？提出的抽象方案（CRUD factory、Composable）是否合理且不过度抽象？
+  - 0.75 — Mostly meets the criterion with minor gaps
+  - 0.5 — Partially meets; missing key aspects
+  - 0.25 — Minimal alignment
+  - 0.0 — Does not meet the criterion
+
+  ### Criterion 3: 重构方案质量
+  Weight: 30%
+
+  - 1.0 — 示例代码是否可直接使用？API 工厂是否支持自定义扩展（如 bills 的 export、members 的 permissions）？useListPage 是否涵盖了 loading、error、pagination 全部关注点？
+  - 0.75 — Mostly meets the criterion with minor gaps
+  - 0.5 — Partially meets; missing key aspects
+  - 0.25 — Minimal alignment
+  - 0.0 — Does not meet the criterion
+
+  ### Criterion 4: 计划可执行性
+  Weight: 20%
+
+  - 1.0 — 重构步骤是否有明确的优先级？是否考虑了向后兼容（渐进式迁移）？是否评估了风险和工作量？
+  - 0.75 — Mostly meets the criterion with minor gaps
+  - 0.5 — Partially meets; missing key aspects
+  - 0.25 — Minimal alignment
+  - 0.0 — Does not meet the criterion
+reference_solution: |
+  原始来源：taskset-260325-020101/task_09_plan_mode_codebase_analysis
+
+  原始场景：未声明
+
+  隐藏 verifier 主要检查项：overall_v1_score
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  Agent 应该：
+  1. 遍历读取所有 src/ 下的文件
+  2. 识别 API 层的 CRUD 重复模式
+  3. 识别页面组件的 loading/error/pagination 重复模式
+  4. 创建 `src/api/createCrudApi.ts`（通用 CRUD 工厂）
+  5. 创建 `src/composables/useListPage.ts`（通用列表页 Composable）
+  6. 创建类型定义文件
+  7. 生成完整的 REFACTOR_PLAN.md
+
+  ## Grading Criteria
+
+  - [ ] overall_v1_score
+
+  ## LLM Judge Rubric
+
+
+  ### Criterion 1: 代码理解深度
+  Weight: 25%
+
+  - 1.0 — Agent 是否真正理解了代码而非表面扫描？是否识别了深层次的架构问题（如 request.js 的 401 处理方式、exportBills 的 blob 下载模式）？
+  - 0.75 — Mostly meets the criterion with minor gaps
+  - 0.5 — Partially meets; missing key aspects
+  - 0.25 — Minimal alignment
+  - 0.0 — Does not meet the criterion
+
+  ### Criterion 2: 模式识别能力
+  Weight: 25%
+
+  - 1.0 — 是否准确识别了所有重复模式？提出的抽象方案（CRUD factory、Composable）是否合理且不过度抽象？
+  - 0.75 — Mostly meets the criterion with minor gaps
+  - 0.5 — Partially meets; missing key aspects
+  - 0.25 — Minimal alignment
+  - 0.0 — Does not meet the criterion
+
+  ### Criterion 3: 重构方案质量
+  Weight: 30%
+
+  - 1.0 — 示例代码是否可直接使用？API 工厂是否支持自定义扩展（如 bills 的 export、members 的 permissions）？useListPage 是否涵盖了 loading、error、pagination 全部关注点？
+  - 0.75 — Mostly meets the criterion with minor gaps
+  - 0.5 — Partially meets; missing key aspects
+  - 0.25 — Minimal alignment
+  - 0.0 — Does not meet the criterion
+
+  ### Criterion 4: 计划可执行性
+  Weight: 20%
+
+  - 1.0 — 重构步骤是否有明确的优先级？是否考虑了向后兼容（渐进式迁移）？是否评估了风险和工作量？
+  - 0.75 — Mostly meets the criterion with minor gaps
+  - 0.5 — Partially meets; missing key aspects
+  - 0.25 — Minimal alignment
+  - 0.0 — Does not meet the criterion
+primary_dimensions:
+- completion
+- robustness
+- communication

@@ -1,0 +1,70 @@
+task_id: CP165_gateway_config_repair_and_model_switch
+task_name: "AI Gateway 配置修复与模型切换（CP165 / 源 session 12710761500532919982）"
+version: "1.0"
+category: config
+difficulty: medium
+tags: [general, json, config, schema-validation]
+
+source_session_id: "12710761500532919982"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "真实用户在配置 AI Gateway (OpenClaw) 时遇到 JSON schema 校验错误。用户添加了不被 schema 接受的 locale 字段导致启动失败，同时需要切换默认模型、添加飞书渠道、禁用缺失依赖的插件。"
+
+services: []
+
+prompt:
+  text: |
+    我的 AI Gateway 启动不了了，报错说配置文件有 schema 问题。配置文件在
+    /workspace/fixtures/gateway-config/gateway.json，schema 在同目录的 schema.json。
+    你可以用 python /workspace/fixtures/gateway-config/validate_config.py 来验证。
+
+    帮我：
+    1. 修好配置让它能通过 schema 校验
+    2. 把默认主模型改成 volcengine/ark-coe-latest
+    3. 加一个飞书渠道，channel id 叫 feishu-bot，app_id 是 cli_a5f3x8k，
+       app_secret 是 secret_9d7e2b，设为启用
+    4. amazon-bedrock 插件一直报找不到依赖，先把它禁用了
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/gateway-config/gateway.json
+  - fixtures/gateway-config/schema.json
+  - fixtures/gateway-config/validate_config.py
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 480
+  max_turns: 15
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward: (1) removing all unrecognized keys (root-level 'locale' and controlUi.locale) so schema validation passes; (2) changing agents.defaults.model.primary to 'volcengine/ark-coe-latest'; (3) adding a feishu channel with correct type/enabled/credentials structure; (4) setting plugins.amazon-bedrock.enabled to false. Partial credit for each dimension independently."
+
+reference_solution: |
+  In gateway.json:
+  1. Remove top-level "locale": "zh-CN" (not in schema)
+  2. Remove "locale": "zh-CN" from gateway.controlUi (not in schema)
+  3. Change agents.defaults.model.primary from "volcengine/deepseek-v3-2-251201"
+     to "volcengine/ark-coe-latest"
+  4. Add to gateway.channels:
+     "feishu-bot": {
+       "type": "feishu",
+       "enabled": true,
+       "credentials": {
+         "app_id": "cli_a5f3x8k",
+         "app_secret": "secret_9d7e2b"
+       }
+     }
+  5. Change plugins.amazon-bedrock.enabled from true to false
+
+primary_dimensions: [completion, communication, safety]

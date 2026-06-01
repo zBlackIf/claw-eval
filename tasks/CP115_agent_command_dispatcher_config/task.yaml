@@ -1,0 +1,66 @@
+task_id: CP115_agent_command_dispatcher_config
+task_name: "Agent 命令调度器配置修复（CP115 / 源 session 4181095676977851520）"
+version: "1.0"
+category: design
+difficulty: hard
+tags: [general]
+
+source_session_id: "4181095676977851520"
+source_description: "From a real OpenClaw agent session running a multi-report automated dispatch system. The agent receives structured RUN commands and must route them to correct handler scripts with proper scheduling, error handling, and daily status aggregation."
+
+services: []
+
+prompt:
+  text: |
+    运维那边把我们报告自动化 agent 的调度配置搞坏了，dispatch_config.yaml 和
+    dispatcher.py 都有问题。你看下 /workspace/fixtures/agent-dispatch/ 里的文件，
+    把调度器修好——能正确解析 RUN 指令、路由到对应 handler、生成 daily check 汇总。
+    修好的文件放回 /workspace/agent-dispatch/。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/agent-dispatch/dispatch_config.yaml
+  - fixtures/agent-dispatch/dispatcher.py
+  - fixtures/agent-dispatch/handlers/__init__.py
+  - fixtures/agent-dispatch/handlers/flash_report.py
+  - fixtures/agent-dispatch/handlers/morning_report.py
+  - fixtures/agent-dispatch/handlers/evening_report.py
+  - fixtures/agent-dispatch/handlers/daily_check.py
+  - fixtures/agent-dispatch/run_log.jsonl
+
+sandbox_grader_files:
+  - fixtures/verify_dispatcher.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_dispatcher.py
+
+environment:
+  timeout_seconds: 900
+  max_turns: 22
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct dispatch routing (RUN command parsing → handler mapping), schedule validation (cron expressions valid + no overlaps in time windows), error handling (denied exec graceful fallback), daily aggregation (DAILY_CHECK produces structured status JSON with counts), and config consistency (all referenced handlers exist and are importable)."
+
+reference_solution: |
+  1. dispatch_config.yaml fixes:
+     - Fix broken YAML syntax (unclosed quotes, wrong indentation)
+     - Add missing handler mapping for "午报" type (maps to noon_report handler)
+     - Fix cron expression for evening report (was "0 20 * *" missing field → "0 20 * * *")
+     - Add missing "denied" status to valid exec_status enum
+  2. dispatcher.py fixes:
+     - Fix command parsing regex (was missing '=' in RUN REPORT_TYPE= pattern)
+     - Add fallback routing for unknown report types (log + return error)
+     - Fix daily_check aggregation to read run_log.jsonl correctly
+     - Add proper error status tracking when exec is denied
+     - Fix the status output format to produce valid JSON
+  3. Ensure all handlers are importable and have required interface (handle() method)
+  4. Daily check output includes: total_reports, successful, failed, denied counts
+
+primary_dimensions: [completion, communication, safety]

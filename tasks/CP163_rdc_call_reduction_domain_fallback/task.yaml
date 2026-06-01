@@ -1,0 +1,85 @@
+task_id: CP163_rdc_call_reduction_domain_fallback
+task_name: "RDC API 调用优化与领域解析 Fallback 修复"
+version: "1.0"
+category: bugfix
+difficulty: hard
+tags: [enterprise, optimization, api-reduction, python]
+
+source_session_id: "5439383444897583630"
+source_description: "Real session: user debugging RequirementImpactAnalyzer with 50 redundant RDC calls and empty domain due to missing fetch_data fallback. Workspace WS2 pattern. 5 hidden dimensions: domain fallback, known_type passthrough, aggregated children query, call count reduction, correctness."
+
+services: []
+
+prompt:
+  text: |
+    精准测试项目的 RequirementImpactAnalyzer 有两个问题需要修复：
+
+    1. RAN-1455434 这个需求的领域查出来是空的，但实际上应该是 "07-5G-SPA"。
+       排查发现 batch_get_work_items 的 System_AreaPath 字段为空，但 fetch_data
+       接口返回的 Area.persistentValue.name 有正确值。需要在 _resolve_domain_from_rdc
+       里加 fetch_data fallback。
+
+    2. 用 RAN-5620900 走一遍流程发现有太多次 RDC 调用（理论上聚合查询不应该
+       这么多次）。主要原因：
+       - _step1_resolve_functions 每次都调 judge_pr_or_mr_or_us，但从
+         batch_query_relations 已经知道了需求类型，应该用 known_type 参数跳过
+       - 查子需求用了分开的 batch_get_child_prs_from_mr 和
+         batch_get_child_uss_from_pr，应该合并用 batch_get_children_by_type
+         一次查出所有子类型
+
+    代码在 /workspace/fixtures/precision_testing/core/ 下面。修好后确保
+    analyze("RAN-5620900") 仍然能正确过滤掉不同领域的 PR（RAN-5620906 是
+    03-LTE-RRM 域的，应被过滤）。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/precision_testing/core/__init__.py
+  - fixtures/precision_testing/core/rdc.py
+  - fixtures/precision_testing/core/rdc_handler.py
+  - fixtures/precision_testing/core/requirement_impact_analyzer.py
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: |
+  Reward fixes that: (1) add fetch_data fallback in _resolve_domain_from_rdc when
+  System_AreaPath is empty, extracting Area.persistentValue.name; (2) make
+  _step1_resolve_functions actually USE the known_type parameter to skip
+  judge_pr_or_mr_or_us; (3) replace separate batch_get_child_prs_from_mr +
+  batch_get_child_uss_from_pr with single batch_get_children_by_type call;
+  (4) reduce total RDC calls from ~50 to <=10; (5) maintain correctness of
+  domain filtering (exclude RAN-5620906 from results).
+
+reference_solution: |
+  In _resolve_domain_from_rdc: after batch_get_work_items returns empty
+  System_AreaPath, call fetch_data(req_id) and extract
+  result["fields"]["Area"]["persistentValue"]["name"].
+
+  In _step1_resolve_functions: when known_type is provided, use it directly
+  instead of calling judge_pr_or_mr_or_us. Only call the API if known_type
+  is empty.
+
+  In _analyze_single: replace batch_get_child_prs_from_mr([req_id]) +
+  batch_get_child_uss_from_pr(filtered_prs) with a single
+  batch_get_children_by_type([req_id]) call that returns all child types
+  at once. For grandchild USs, use batch_get_children_by_type(filtered_prs).
+
+  Pass known_type when calling _step1_resolve_functions from the entities loop:
+  self._step1_resolve_functions(entity_id, known_type=entity_type)
+
+primary_dimensions: [completion, robustness, efficiency_turns]

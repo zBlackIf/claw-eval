@@ -1,0 +1,78 @@
+# provenance:
+#   source_session: 11620512814578821048
+#   scenario: Web / 浏览器自动化
+#   real_user_turns: 9
+#   value_score: 51.3
+#   quality_tier: B
+task_id: CP196_api_response_classify_report
+task_name: "API 响应数据分类与结构化报告生成（CP196 / 源 session 11620512814578821048）"
+version: "1.0"
+category: data_processing
+difficulty: medium
+tags: [data_processing, classification, report_generation, json, python]
+
+source_task_id: "11620512814578821048"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "从真实用户会话提取：用户通过API获取金融情报数据（JSON），需要按日期分组、按内容类型分类（宏观/行业/个股），生成结构化Markdown报告，包含统计摘要和热门Top5。Workspace WS2 数据处理脚本型任务。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/intelligence_data/ 目录下有一个 api_response.json，是从情报平台
+    API 拉取的近一周金融情报数据。请写一个 Python 脚本 generate_report.py 完成以下工作：
+
+    1. 读取 api_response.json
+    2. 将每条情报按内容语义重新分类为：大盘/宏观、行业/产业、个股/公司 三个大类
+       （原始数据的 labelName 只是粗分类，你需要根据内容关键词做更精准的归类）
+    3. 按日期（新→旧）分组
+    4. 生成一份 report.md，要求：
+       - 标题含覆盖日期范围
+       - 开头有统计汇总（总条数、各日期条数、各分类条数）
+       - 紧接一个"热门 Top5"板块（按 views 降序取前5条）
+       - 正文按日期分节，每个日期内再按分类分组
+       - 每条情报显示分类标签、时间、内容摘要（截断到 150 字符以内）
+
+    脚本和产出的 report.md 都放在 /workspace/fixtures/intelligence_data/ 目录下。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/intelligence_data/api_response.json
+  - fixtures/intelligence_data/requirements.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 480
+  max_turns: 15
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a working Python script that reads JSON, classifies items by content semantics into macro/industry/stock categories, groups by date, and produces a well-structured Markdown report with statistics summary, top-5 highlights by views, date-grouped content sections, and proper content truncation to 150 chars."
+
+reference_solution: |
+  generate_report.py should:
+  - Read api_response.json (38 items across 6 days)
+  - Classify by content keywords:
+    - 大盘/宏观:央行, MLF, LPR, CPI, PPI, 降息, 社融, 美联储, 资金面
+    - 行业/产业: 国产化率, 行业跟踪, 出货量, 产业链, 市占率
+    - 个股/公司: specific company names, earnings, products, orders
+  - Group by date (6 dates: 2026-05-13 through 2026-05-18)
+  - Generate report.md with:
+    - Title: "金融情报汇总 (2026-05-13 ~ 2026-05-18)"
+    - Stats: 38 items total, per-date and per-category breakdown
+    - Top 5 by views: 宁德时代(15678), 寒武纪(15678), 美联储(14567), 华为昇腾(12345), 苹果WWDC(12345)
+    - Per-date sections with category subsections
+    - Truncated content (max 150 chars per item)
+
+primary_dimensions: [completion, communication, safety]

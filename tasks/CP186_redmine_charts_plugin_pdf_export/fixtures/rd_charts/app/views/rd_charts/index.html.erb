@@ -1,0 +1,100 @@
+<% html_title l(:rd_charts_title) %>
+
+<%= javascript_include_tag 'Chart.min.js', plugin: 'rd_charts' %>
+<%= javascript_include_tag 'rd_charts.js', plugin: 'rd_charts' %>
+<%= stylesheet_link_tag 'rd_charts.css', plugin: 'rd_charts' %>
+
+<h2><%= l(:rd_charts_title) %></h2>
+
+<div class="rd-charts-container">
+  <!-- Tab Navigation -->
+  <div class="rd-tabs">
+    <a href="#" class="rd-tab active" data-tab="overview"><%= l(:rd_tab_overview) %></a>
+    <a href="#" class="rd-tab" data-tab="dimension"><%= l(:rd_tab_dimension) %></a>
+    <a href="#" class="rd-tab" data-tab="trend"><%= l(:rd_tab_trend) %></a>
+    <a href="#" class="rd-tab" data-tab="overdue"><%= l(:rd_tab_overdue) %></a>
+    <a href="#" class="rd-tab" data-tab="efficiency"><%= l(:rd_tab_efficiency) %></a>
+  </div>
+
+  <!-- Overview Panel -->
+  <div class="rd-panel active" id="panel-overview">
+    <div class="rd-kpi-row">
+      <div class="rd-kpi-card">
+        <span class="rd-kpi-value"><%= @total %></span>
+        <span class="rd-kpi-label"><%= l(:rd_kpi_total) %></span>
+      </div>
+      <div class="rd-kpi-card">
+        <span class="rd-kpi-value"><%= @open %></span>
+        <span class="rd-kpi-label"><%= l(:rd_kpi_open) %></span>
+      </div>
+      <div class="rd-kpi-card">
+        <span class="rd-kpi-value"><%= @closed %></span>
+        <span class="rd-kpi-label"><%= l(:rd_kpi_closed) %></span>
+      </div>
+      <div class="rd-kpi-card">
+        <span class="rd-kpi-value"><%= @overdue %></span>
+        <span class="rd-kpi-label"><%= l(:rd_kpi_overdue) %></span>
+      </div>
+    </div>
+    <div class="rd-chart-wrap">
+      <canvas id="chart-overview-pie"></canvas>
+    </div>
+  </div>
+
+  <!-- Dimension Panel -->
+  <div class="rd-panel" id="panel-dimension">
+    <div class="rd-chart-wrap">
+      <canvas id="chart-by-tracker"></canvas>
+    </div>
+    <div class="rd-chart-wrap">
+      <canvas id="chart-by-priority"></canvas>
+    </div>
+    <div class="rd-chart-wrap">
+      <canvas id="chart-by-assignee"></canvas>
+    </div>
+  </div>
+
+  <!-- Trend Panel -->
+  <div class="rd-panel" id="panel-trend">
+    <div class="rd-chart-wrap">
+      <canvas id="chart-trend-line"></canvas>
+    </div>
+  </div>
+
+  <!-- Overdue Panel -->
+  <div class="rd-panel" id="panel-overdue">
+    <div class="rd-chart-wrap">
+      <canvas id="chart-overdue-bar"></canvas>
+    </div>
+    <table class="rd-data-table" id="table-overdue">
+      <thead>
+        <tr><th>Issue</th><th>Due Date</th><th>Days Overdue</th><th>Assignee</th></tr>
+      </thead>
+      <tbody>
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Efficiency Panel -->
+  <div class="rd-panel" id="panel-efficiency">
+    <div class="rd-chart-wrap">
+      <canvas id="chart-efficiency-radar"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.RdChartsData = {
+    total: <%= @total %>,
+    open: <%= @open %>,
+    closed: <%= @closed %>,
+    overdue: <%= @overdue %>,
+    byTracker: <%= raw @by_tracker.to_json %>,
+    byStatus: <%= raw @by_status.to_json %>,
+    byPriority: <%= raw @by_priority.to_json %>,
+    byAssignee: <%= raw @by_assignee.to_json %>,
+    weeklyCreated: <%= raw @weekly_created.to_json %>,
+    weeklyClosed: <%= raw @weekly_closed.to_json %>
+  };
+</script>

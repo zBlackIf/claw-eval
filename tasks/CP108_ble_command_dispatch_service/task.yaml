@@ -1,0 +1,79 @@
+# provenance:
+#   source_session_id: "2926962150177001393"
+#   scenario: "other / unknown"
+#   description: "Embedded BLE firmware - add command dispatch protocol + advertising MAC + periodic notify"
+task_id: CP108_ble_command_dispatch_service
+task_name: "BLE Command Dispatch Service（嵌入式 BLE 外设协议命令分发 + 广播 MAC + 周期通知）"
+version: "1.0"
+category: implementation
+difficulty: hard
+tags: [embedded, ble, firmware, c]
+
+source_task_id: "session_2926962150177001393"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "Real user session: implementing BLE protocol command dispatch table, ATT handle-based service routing, advertising data with MAC address, and periodic notification sending on an embedded BLE peripheral SDK."
+
+services: []
+
+prompt:
+  text: |
+    我有个 BLE 外设工程（/workspace/fixtures/ble_peripheral/），需要你帮我实现以下功能：
+
+    1. 在 ble_user_service.c 里实现一个命令分发表（类似 package_entry_t 数组），
+       App 下发数据格式是 [cmd_type, cmd_id, payload...]，收到后根据 cmd_type+cmd_id
+       查表调用对应处理函数。至少注册 3 个命令处理器（握手 0xEA/0x01、设置时间
+       0xEA/0x04、设置电量 0xEA/0x07）。
+
+    2. write_callback 里正确判断 handle（RX handle 是 0x0011），把收到的数据
+       通过 printf 打印出来（hex dump），然后走分发表。
+
+    3. 在 ble_adv.c 里把 MAC 地址（从 xcfg_cb.le_addr[0..5]）填到广播数据的
+       厂商自定义段里，让 iOS 能解析到设备地址。
+
+    4. 实现一个 ble_user_1s_proc() 函数，每秒通过 notify（handle 0x000E）
+       发一条心跳包给 App。连接后才发，断开就停。
+
+    代码放回 /workspace/ble_peripheral/ 对应路径。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/ble_peripheral/modules/ble/ble_user_service.c
+  - fixtures/ble_peripheral/modules/ble/ble_user_service.h
+  - fixtures/ble_peripheral/modules/ble/ble_adv.c
+  - fixtures/ble_peripheral/modules/ble/ble_adv.h
+  - fixtures/ble_peripheral/modules/ble/ble_profile.h
+  - fixtures/ble_peripheral/modules/ble/ble_service.h
+  - fixtures/ble_peripheral/app/func_bt.c
+  - fixtures/ble_peripheral/app/func_bt.h
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete BLE command dispatch implementation: (1) package_entry_t struct + dispatch table with >= 3 entries, (2) write_callback checking handle 0x0011 with printf hex dump + dispatch call, (3) ble_adv.c dynamically fills MAC from xcfg_cb.le_addr into manufacturer data, (4) ble_user_1s_proc sends notify on handle 0x000E with connection guard, (5) proper C style matching SDK conventions."
+
+reference_solution: |
+  In ble_user_service.c:
+  - typedef struct { u8 cmd_type; u8 cmd_id; void (*handler)(u8*, u16); } package_entry_t;
+  - const package_entry_t ble_package_items[] with entries for 0xEA/0x01, 0xEA/0x04, 0xEA/0x07
+  - dispatch function iterating table, matching cmd_type+cmd_id
+  - service_write_callback: check handle==0x0011, printf hex, call dispatch
+  - ble_user_1s_proc: if connected, send notify via ble_att_server_notify(handle 0x000E, data)
+  In ble_adv.c:
+  - In ble_get_adv_data(), after memcpy of adv_data_const, fill adv_buf offsets with xcfg_cb.le_addr[0..5]
+
+primary_dimensions: [completion, communication, safety]

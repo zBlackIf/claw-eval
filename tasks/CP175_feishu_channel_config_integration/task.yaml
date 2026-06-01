@@ -1,0 +1,76 @@
+task_id: CP175_feishu_channel_config_integration
+task_name: "飞书通道配置集成（CP175 / 源 session 9070522063672678787）"
+version: "1.0"
+category: integration
+difficulty: medium
+tags: [feishu, lark, config, json-editing]
+
+source_session_id: "9070522063672678787"
+source_description: "Real user session: configuring Feishu/Lark bot channel in OpenClaw config JSON, with credentials, features enablement, workspace path change, while preserving existing config."
+
+services: []
+
+prompt:
+  text: |
+    帮我把飞书通道配置到 OpenClaw 里。配置文件在 /workspace/fixtures/openclaw-project/openclaw.json，
+    飞书的文档在 /workspace/fixtures/openclaw-project/docs/channels/feishu.md。
+
+    飞书凭证如下：
+    - App ID: cli_a93c333e8338dcc0
+    - App Secret: WWcDxFqmz3y44utjmBiNNgM0ZBn8yPOc
+    - Verification Token: v-tk-9X8bQ2mLpR7nKz
+
+    启用所有飞书功能插件（文档、知识库、云盘、多维表格、聊天）。
+    机器人名称就叫 "AI助手"。
+
+    另外顺便把工作目录改到 /data/openclaw-workspace，我已经建好那个目录了。
+
+    别把现有的 Telegram 通道配置弄丢了。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/openclaw-project/openclaw.json
+  - fixtures/openclaw-project/docs/channels/feishu.md
+  - fixtures/openclaw-project/workspace/AGENTS.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 480
+  max_turns: 15
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct Feishu channel configuration in openclaw.json: feishu section under channels with correct app_id/app_secret/verification_token, enabled=true, features object with all 5 plugins enabled, bot_name set, existing telegram channel preserved, workspace path updated to /data/openclaw-workspace. Penalize: broken JSON, missing credentials, overwritten existing config."
+
+reference_solution: |
+  Edit /workspace/fixtures/openclaw-project/openclaw.json to add under channels.feishu:
+  {
+    "enabled": true,
+    "app_id": "cli_a93c333e8338dcc0",
+    "app_secret": "WWcDxFqmz3y44utjmBiNNgM0ZBn8yPOc",
+    "verification_token": "v-tk-9X8bQ2mLpR7nKz",
+    "encrypt_key": "",
+    "bot_name": "AI助手",
+    "features": {
+      "doc": true,
+      "wiki": true,
+      "drive": true,
+      "bitable": true,
+      "chat": true
+    }
+  }
+  Also update agents.defaults.workspace to "/data/openclaw-workspace".
+  Preserve telegram channel, gateway config, and agents model settings.
+
+primary_dimensions: [completion, communication, safety]

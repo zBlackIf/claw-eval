@@ -1,0 +1,29 @@
+{
+  "books": [
+    {
+      "title": "故事的力量：叙事如何影响心智",
+      "author": "李明远",
+      "file": "books/story_power.md",
+      "status": "unanalyzed",
+      "chapters": 6,
+      "genre": "non-fiction/narrative"
+    },
+    {
+      "title": "情感设计：用户体验的隐藏维度",
+      "author": "王思涵",
+      "file": "books/emotional_design.md",
+      "status": "analyzed",
+      "analyzed_date": "2026-03-25",
+      "chapters": 8,
+      "genre": "non-fiction/design"
+    },
+    {
+      "title": "写作的节奏：文字中的音乐感",
+      "author": "张云飞",
+      "file": "books/writing_rhythm.md",
+      "status": "unanalyzed",
+      "chapters": 5,
+      "genre": "non-fiction/writing"
+    }
+  ]
+}

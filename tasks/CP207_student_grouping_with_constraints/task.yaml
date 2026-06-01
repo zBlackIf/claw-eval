@@ -1,0 +1,73 @@
+# provenance:
+#   source_session: "16836536179208735206"
+#   scenario: "教育 / 教学 / 课件 / 家庭"
+#   pattern: Workspace WS2
+task_id: CP207_student_grouping_with_constraints
+task_name: "培训班学员分组与画像分析（CP207 / 源 session 16836536179208735206）"
+version: "1.0"
+category: data_processing
+difficulty: medium
+tags: [education, data_analysis, grouping]
+
+source_session_id: "16836536179208735206"
+source_description: "职业技能培训学校管理场景——从学员花名册 CSV 做画像分析 + 带约束的分组（指定人同组、年龄搭配、人数均匀），输出结构化 JSON。"
+
+services: []
+
+prompt:
+  text: |
+    我们培训学校有一期短视频培训班即将开班，学员名单在
+    /workspace/fixtures/training_data/students.csv。请帮我完成以下工作：
+
+    1. 学员画像分析：统计性别分布（人数和占比）、年龄分布（按16-30岁/31-40岁/
+       41-50岁/51-60岁分段统计）、平均年龄、户籍分布（义乌vs非义乌）、
+       行业分布（前5名）。
+
+    2. 学员分组：分成4组，要求如下：
+       - 黄高丽、符群丽、楼静必须分在同一组
+       - 每组人数按 11, 11, 11, 12 分配（总共45人）
+       - 青年（16-30岁）要平均分到每组
+       - 每组要做到年轻和年长互相搭配，各组平均年龄尽量接近
+
+    请把分析结果和分组结果都写到 /workspace/output/ 目录下：
+    - /workspace/output/profile_analysis.json（画像分析）
+    - /workspace/output/grouping_result.json（分组结果，每组包含学员姓名、年龄、
+      性别、手机号码）
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/training_data/students.csv
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct demographic analysis (gender/age/location/industry stats) and valid student grouping that satisfies all constraints: specified students together, group sizes 11/11/11/12, youth evenly distributed, age-balanced across groups."
+
+reference_solution: |
+  1. Read CSV with pandas
+  2. Compute demographics: 35 female (77.8%), 10 male (22.2%); avg age ~40.4;
+     age bins: 16-30(7), 31-40(13), 41-50(22), 51-60(3);
+     youth (<=30) = 7 people; 义乌 42, 非义乌 3;
+     top industries: 外贸(10), 电商(8), 个体经营(6), 建材(3), 自由职业(2)
+  3. Group with constraints:
+     - Put 黄高丽/符群丽/楼静 in group 1
+     - Distribute 7 youth (<=30) as 2-2-2-1 per group
+     - Fill remaining slots with older students balancing avg age
+     - Output JSON with group assignments including 姓名/年龄/性别/手机号码
+
+primary_dimensions: [completion, communication, safety]

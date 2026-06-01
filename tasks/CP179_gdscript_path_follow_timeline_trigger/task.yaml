@@ -1,0 +1,69 @@
+# provenance:
+#   source_session: "4160412470711745571"
+#   scenario: "IDE / 编辑器集成"
+#   task_number: 179
+task_id: CP179_gdscript_path_follow_timeline_trigger
+task_name: "GDScript Path-Follow + Timeline Trigger Integration (CP179)"
+version: "1.0"
+category: implementation
+difficulty: medium
+tags: [gdscript, godot, game-dev, animation]
+
+source_session_id: "4160412470711745571"
+source_description: "Real user session: adding a path-following animated character (dog) triggered at a specific timeline step in a Godot 4 birthday surprise game. Requires path movement logic, timeline signal integration, export variables for editor configurability, and animation continuation after arrival."
+
+services: []
+
+prompt:
+  text: |
+    我有一个 Godot 4 的生日惊喜关卡项目。代码在 /workspace/fixtures/scripts/birthday/ 下面。
+
+    现在我有一个 Dog_Path 节点（Path2D + PathFollow2D 结构），里面有一个 Dog 角色节点。
+    我需要实现以下功能：
+
+    1. 在演出时间线 step 5 时让 dog 沿路径入场
+    2. dog 的移动速度设为 80，并且让我能在编辑器里手动调整这个速度
+    3. dog 到达路径终点后停下来，但继续播放动画（AnimatedSprite2D）
+    4. 修改 TimelineController.gd，将 step 5 的触发时间改为 36 秒，之后的 step 都顺延 36 秒
+
+    请修改 Level_BirthdaySurprise.gd 和 TimelineController.gd 来实现。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/scripts/birthday/Level_BirthdaySurprise.gd
+  - fixtures/scripts/birthday/TimelineController.gd
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete implementation: @export var for dog speed (default 80), @onready var referencing Dog_Path/Dog_Follow, path movement in _process using progress_ratio, movement triggered on performance_step == 5, animation continues after reaching end (progress_ratio >= 1.0), timeline step 5 time changed to 36s with subsequent steps shifted by +36s offset."
+
+reference_solution: |
+  Level_BirthdaySurprise.gd changes:
+  - Add @export var dog_speed: float = 80.0
+  - Add @onready var dog_follow: PathFollow2D = $Dog_Path/Dog_Follow
+  - Add var dog_moving: bool = false
+  - In _process: calculate move_ratio from dog_speed * delta / curve.get_baked_length(),
+    increment dog_follow.progress_ratio, stop movement at >= 1.0 but keep animation
+  - In _on_performance_step step 5: set dog_follow.progress_ratio = 0.0, start animation, set dog_moving = true
+
+  TimelineController.gd changes:
+  - Step 5 time: 36.0 (was 7.0)
+  - Steps 6-10: each shifted +36s from original
+
+primary_dimensions: [completion, communication, safety]

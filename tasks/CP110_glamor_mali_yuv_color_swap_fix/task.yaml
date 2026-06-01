@@ -1,0 +1,70 @@
+# provenance:
+#   source_session: 5535127889412414608
+#   scenario: other / unknown
+#   session_model: glm-5-1-260408
+#   value_score: 63.0
+task_id: CP110_glamor_mali_yuv_color_swap_fix
+task_name: "Glamor EGL Mali GPU YUV Color Swap Bug Fix"
+version: "1.0"
+category: bugfix
+difficulty: hard
+tags: [graphics, gpu, linux, xorg, c]
+
+source_session_id: "5535127889412414608"
+source_description: "X.org Glamor EGL DMA-BUF import has a color-swap bug on Mali GPU. The non-AFBC OES import path produces red/blue inverted video because Mali's hardware YUV->RGB conversion uses wrong Cb/Cr channel order. Fix must skip OES on Mali and fall through to ZC_R8 shader path."
+
+services: []
+
+prompt:
+  text: |
+    我们的 X.org DDX 在 Mali GPU (Panfrost) 上视频播放颜色反了（红蓝互换）。
+    问题出在 glamor/glamor_egl.c 的 glamor_import_dmabuf_textures 函数。
+
+    AFBC 压缩的 OES 导入没问题，但非 AFBC 的普通 OES 导入路径在 Mali 上颜色
+    不对（Cb/Cr swap）。ZC_R8 路径（R8+GR88 手动平面导入 + shader 转换）是
+    正确的。
+
+    请修复这个 bug：让 Mali GPU 跳过非 AFBC OES 路径，直接走 ZC_R8 fallback。
+    要求：
+    - 用 glGetString(GL_RENDERER) 检测 Mali GPU
+    - 只跳过非 AFBC 的 OES 导入，AFBC OES 路径保持不变
+    - 不要动 ZC_R8 的逻辑
+    - 代码在 /workspace/fixtures/glamor/glamor_egl.c
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/glamor/glamor_egl.c
+  - fixtures/glamor/glamor_priv.h
+  - fixtures/glamor/glamor_egl.h
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct Mali GPU detection using glGetString(GL_RENDERER) + strstr for 'Mali', conditional skip of non-AFBC OES import path (the block after AFBC handling), preservation of AFBC OES path, preservation of ZC_R8 fallback paths (NV12/P010/3-plane), no regressions to other code paths."
+
+reference_solution: |
+  In glamor_import_dmabuf_textures(), after the AFBC block and before the
+  non-AFBC OES import:
+  1. Detect Mali GPU: const char *renderer = (const char *)glGetString(GL_RENDERER);
+     Bool is_mali = renderer && strstr(renderer, "Mali");
+  2. Gate the non-AFBC OES block with: if (!is_mali && (epoxy_has_gl_extension(...) || ...))
+     Or alternatively: if (is_mali) goto skip_oes; before the OES block.
+  3. AFBC OES path remains unchanged (it works correctly on Mali).
+  4. ZC_R8 path remains unchanged (it's the correct fallback).
+
+primary_dimensions: [completion, communication, safety]

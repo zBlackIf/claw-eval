@@ -1,0 +1,4 @@
+SubscriptionId,ServiceName,CostInBillingCurrency,BillingCurrency,Date
+sub-001,Virtual Machines,9800.00,USD,2024-03-01
+sub-001,Storage,1200.00,USD,2024-03-01
+sub-001,SQL Database,3400.00,USD,2024-03-01

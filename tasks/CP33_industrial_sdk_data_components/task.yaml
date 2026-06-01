@@ -1,0 +1,174 @@
+task_id: CP33_industrial_sdk_data_components
+task_name: 工业SDK组件库数据模块开发
+version: '2.0'
+category: code_generation
+difficulty: medium
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_18_industrial_sdk_component
+source_dataset: taskset-260408-163403
+source_description: Redesigned from taskset-260408-163403/task_18_industrial_sdk_component with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
+services: []
+prompt:
+  text: |
+    我已经把原始项目素材放在容器的 `/workspace/fixtures/` 目录下，请把这些文件当作只读输入。
+
+    输入文件如下（右侧是它在原项目中的相对路径）：
+    - `/workspace/fixtures/MinqiaIndustrialComponentLibrary.csproj` -> `MinqiaIndustrialComponentLibrary.csproj`
+    - `/workspace/fixtures/Communication/Modbus/ModbusTcpClient.cs` -> `Communication/Modbus/ModbusTcpClient.cs`
+    - `/workspace/fixtures/task_spec.md` -> `task_spec.md`
+
+    请基于这些输入完成下面的原始需求：
+
+    请查看项目的现有代码结构（特别是 Communication/Modbus/ModbusTcpClient.cs 的代码风格），然后按照 task_spec.md 的要求，为 Data 命名空间创建三个新组件：环形缓冲区、报警管理器和日志级别枚举。代码风格要和现有项目保持一致。
+
+    交付要求：
+    - 需要修改已有文件时，请把修改后的版本写到 `/workspace/` 下对应的原项目相对路径。
+    - 需要新增文件时，请按需求中的文件名或上面列出的目标路径写到 `/workspace/` 下。
+    - 最终回复只需概述完成情况、关键改动和生成的文件；不要只在最终回复中贴代码或报告正文。
+  language: zh
+tools: []
+tool_endpoints: []
+sandbox_files:
+- fixtures/MinqiaIndustrialComponentLibrary.csproj
+- fixtures/Communication/Modbus/ModbusTcpClient.cs
+- fixtures/task_spec.md
+sandbox_grader_files:
+- fixtures/verify.py
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+  env_snapshot_timeout: 30
+env_snapshot_commands:
+- python /workspace/fixtures/verify.py
+env_snapshot_files:
+- /workspace/Data/CircularBuffer.cs
+- /workspace/Data/AlarmManager.cs
+- /workspace/Data/LogLevel.cs
+- /workspace/**/*.cs
+- /workspace/MinqiaIndustrialComponentLibrary.csproj
+- /workspace/Communication/Modbus/ModbusTcpClient.cs
+- /workspace/task_spec.md
+scoring_components: []
+safety_checks: []
+expected_actions: []
+judge_rubric: |
+  ## Expected Behavior
+
+  1. Agent 读取 csproj 文件了解项目配置（.NET 6, nullable enabled）
+  2. Agent 读取 ModbusTcpClient.cs 学习项目代码风格（XML注释、SemaphoreSlim、命名空间格式等）
+  3. Agent 读取 task_spec.md 了解要创建的组件详细要求
+  4. 创建 Data/Buffer/CircularBuffer.cs - 线程安全泛型环形缓冲区
+  5. 创建 Data/Alarm/AlarmManager.cs - 报警管理系统
+  6. 创建 Data/Log/LogLevel.cs - 日志级别枚举及扩展方法
+
+  ## Grading Criteria
+
+  - [ ] read_existing_code
+  - [ ] read_spec
+  - [ ] buffer_created
+  - [ ] buffer_quality
+  - [ ] alarm_created
+  - [ ] alarm_quality
+  - [ ] log_created
+  - [ ] log_quality
+  - [ ] namespace_consistent
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: 代码风格一致性 (Weight: 25%)
+  **Score 1.0**: 新创建的三个文件完全匹配现有ModbusTcpClient.cs的代码风格：使用XML summary注释、命名空间格式为MinqiaIndustrialComponentLibrary.Data.XXX、使用nullable reference types、SemaphoreSlim/lock做线程安全、遵循C# 10语法特性。
+  **Score 0.75**: 风格大体一致，但XML注释不够完整或nullable使用不一致。
+  **Score 0.5**: 基本的C#代码风格正确但未特别匹配现有项目风格。
+  **Score 0.25**: 代码风格与项目明显不一致。
+  **Score 0.0**: 未参考现有代码风格。
+
+  ### Criterion 2: CircularBuffer实现质量 (Weight: 30%)
+  **Score 1.0**: 泛型实现正确；线程安全使用SemaphoreSlim或lock；Write/Read/Peek/Clear全部实现；满时覆盖最旧数据、空时Read抛异常的逻辑正确；Count/Capacity/IsEmpty/IsFull属性正确；内部使用数组+head/tail指针的经典实现。
+  **Score 0.75**: 核心功能正确，但边界条件处理有小问题（如满时覆盖逻辑不完美）。
+  **Score 0.5**: 基本结构正确但线程安全缺失或部分方法未实现。
+  **Score 0.25**: 仅有类骨架，大部分方法未实现。
+  **Score 0.0**: 未创建环形缓冲区组件。
+
+  ### Criterion 3: AlarmManager设计合理性 (Weight: 25%)
+  **Score 1.0**: AlarmEntry包含全部字段；AlarmSeverity枚举完整；AlarmManager线程安全，包含event OnAlarmRaised；RaiseAlarm/AcknowledgeAlarm/GetActiveAlarms/GetAlarmHistory/ClearAll全部实现；active和history分离管理。
+  **Score 0.75**: 主要功能实现但event机制缺失或history管理不完善。
+  **Score 0.5**: 基本CRUD功能有但缺少线程安全或事件机制。
+  **Score 0.25**: 仅有AlarmEntry定义，Manager功能不完整。
+  **Score 0.0**: 未创建报警管理组件。
+
+  ### Criterion 4: LogLevel枚举与扩展方法 (Weight: 20%)
+  **Score 1.0**: LogLevel枚举包含Trace到Fatal全部6个级别；LogLevelExtensions静态类包含ToDisplayString()和IsHigherThan()扩展方法；代码简洁，有XML注释。
+  **Score 0.75**: 枚举和扩展方法都有但扩展方法实现不够优雅。
+  **Score 0.5**: 有枚举但缺少扩展方法类。
+  **Score 0.25**: 枚举级别不完整。
+  **Score 0.0**: 未创建日志级别组件。
+reference_solution: |
+  原始来源：taskset-260408-163403/task_18_industrial_sdk_component
+
+  原始场景：用户正在开发一个工业自动化SDK组件库（C#/.NET），项目名为MinqiaIndustrialComponentLibrary。
+  已有Communication/Modbus模块，现在需要为Data命名空间创建新组件：线程安全的环形缓冲区、
+  报警管理系统和日志级别枚举。用户在IDE中打开了项目文件，期望Agent理解现有代码结构并创建
+  符合项目风格的新组件。
+
+
+  隐藏 verifier 主要检查项：alarm_created, alarm_quality, buffer_created, buffer_quality, log_created, log_quality, namespace_consistent, read_existing_code, read_spec
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent 读取 csproj 文件了解项目配置（.NET 6, nullable enabled）
+  2. Agent 读取 ModbusTcpClient.cs 学习项目代码风格（XML注释、SemaphoreSlim、命名空间格式等）
+  3. Agent 读取 task_spec.md 了解要创建的组件详细要求
+  4. 创建 Data/Buffer/CircularBuffer.cs - 线程安全泛型环形缓冲区
+  5. 创建 Data/Alarm/AlarmManager.cs - 报警管理系统
+  6. 创建 Data/Log/LogLevel.cs - 日志级别枚举及扩展方法
+
+  ## Grading Criteria
+
+  - [ ] read_existing_code
+  - [ ] read_spec
+  - [ ] buffer_created
+  - [ ] buffer_quality
+  - [ ] alarm_created
+  - [ ] alarm_quality
+  - [ ] log_created
+  - [ ] log_quality
+  - [ ] namespace_consistent
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: 代码风格一致性 (Weight: 25%)
+  **Score 1.0**: 新创建的三个文件完全匹配现有ModbusTcpClient.cs的代码风格：使用XML summary注释、命名空间格式为MinqiaIndustrialComponentLibrary.Data.XXX、使用nullable reference types、SemaphoreSlim/lock做线程安全、遵循C# 10语法特性。
+  **Score 0.75**: 风格大体一致，但XML注释不够完整或nullable使用不一致。
+  **Score 0.5**: 基本的C#代码风格正确但未特别匹配现有项目风格。
+  **Score 0.25**: 代码风格与项目明显不一致。
+  **Score 0.0**: 未参考现有代码风格。
+
+  ### Criterion 2: CircularBuffer实现质量 (Weight: 30%)
+  **Score 1.0**: 泛型实现正确；线程安全使用SemaphoreSlim或lock；Write/Read/Peek/Clear全部实现；满时覆盖最旧数据、空时Read抛异常的逻辑正确；Count/Capacity/IsEmpty/IsFull属性正确；内部使用数组+head/tail指针的经典实现。
+  **Score 0.75**: 核心功能正确，但边界条件处理有小问题（如满时覆盖逻辑不完美）。
+  **Score 0.5**: 基本结构正确但线程安全缺失或部分方法未实现。
+  **Score 0.25**: 仅有类骨架，大部分方法未实现。
+  **Score 0.0**: 未创建环形缓冲区组件。
+
+  ### Criterion 3: AlarmManager设计合理性 (Weight: 25%)
+  **Score 1.0**: AlarmEntry包含全部字段；AlarmSeverity枚举完整；AlarmManager线程安全，包含event OnAlarmRaised；RaiseAlarm/AcknowledgeAlarm/GetActiveAlarms/GetAlarmHistory/ClearAll全部实现；active和history分离管理。
+  **Score 0.75**: 主要功能实现但event机制缺失或history管理不完善。
+  **Score 0.5**: 基本CRUD功能有但缺少线程安全或事件机制。
+  **Score 0.25**: 仅有AlarmEntry定义，Manager功能不完整。
+  **Score 0.0**: 未创建报警管理组件。
+
+  ### Criterion 4: LogLevel枚举与扩展方法 (Weight: 20%)
+  **Score 1.0**: LogLevel枚举包含Trace到Fatal全部6个级别；LogLevelExtensions静态类包含ToDisplayString()和IsHigherThan()扩展方法；代码简洁，有XML注释。
+  **Score 0.75**: 枚举和扩展方法都有但扩展方法实现不够优雅。
+  **Score 0.5**: 有枚举但缺少扩展方法类。
+  **Score 0.25**: 枚举级别不完整。
+  **Score 0.0**: 未创建日志级别组件。
+primary_dimensions:
+- completion
+- robustness
+- communication

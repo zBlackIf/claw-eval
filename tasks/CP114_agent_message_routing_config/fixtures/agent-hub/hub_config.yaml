@@ -1,0 +1,90 @@
+## D-Pi Agent Hub Configuration
+## Version: 2.1.0
+## Last updated: 2026-05-10
+
+hub:
+  name: "workspace-hub"
+  version: "2.1.0"
+  listen_port: 7890
+  protocol: "jsonrpc"
+  heartbeat_interval_ms: 30000
+  max_reconnect_attempts: 5
+
+sources:
+  - id: "lark-message-watcher"
+    type: "stream"
+    command: "node .pi/lark-message-watcher.js"
+    restart_policy: "always"
+    events:
+      - "im.message.receive_v1"
+      - "drive.notice.comment_add_v1"
+    rate_limit:
+      max_per_minute: 60
+      burst: 10
+
+  - id: "rame-sync-source"
+    type: "cron"
+    command: "node .pi/rame-sync-source.js"
+    schedule: "0 8 * * *"
+    restart_policy: "on-failure"
+    events:
+      - "sync.daily_report"
+
+  - id: "meego-webhook"
+    type: "webhook"
+    endpoint: "/hooks/meego"
+    port: 7891
+    events:
+      - "issue.status_change"
+      - "issue.comment_add"
+    auth:
+      type: "hmac"
+      secret_env: "MEEGO_WEBHOOK_SECRET"
+
+agents:
+  - id: "lark"
+    role: "message-center"
+    model: "deepseek-v4-flash"
+    config_path: ".pi/agents/lark/AGENT.md"
+    capabilities:
+      - "lark-im"
+      - "lark-doc"
+      - "lark-drive"
+    routing_priority: 1
+
+  - id: "obsidian"
+    role: "document-ops"
+    model: "deepseek-v4-flash"
+    config_path: ".pi/agents/obsidian/AGENT.md"
+    capabilities:
+      - "doc-edit"
+      - "doc-create"
+      - "wiki-manage"
+    routing_priority: 2
+
+  - id: "rd"
+    role: "code-ops"
+    model: "claude-opus-4"
+    config_path: ".pi/agents/rd/AGENT.md"
+    capabilities:
+      - "code-review"
+      - "git-ops"
+      - "build-ci"
+    routing_priority: 3
+
+  - id: "devops"
+    role: "infra"
+    model: "deepseek-v4-flash"
+    config_path: ".pi/agents/devops/AGENT.md"
+    capabilities:
+      - "deploy"
+      - "monitor"
+      - "incident-response"
+    routing_priority: 4
+
+routing:
+  default_agent: "lark"
+  rules: []
+  fallback_behavior: "queue"
+  max_queue_size: 100
+  queue_ttl_seconds: 3600

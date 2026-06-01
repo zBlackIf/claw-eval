@@ -1,0 +1,73 @@
+# provenance:
+#   source_session: 12066348804520408567
+#   scenario: "区块链 / Web3 / Crypto (中文)"
+#   session_model: kimi-k2-6-modelhub
+#   session_quality_tier: A
+#   extraction_focus: "Fastjson2 字典字段自动翻译注解系统"
+task_id: CP191_fastjson2_dict_field_auto_label
+task_name: "Fastjson2 字典字段自动翻译注解（DictField + AfterFilter）"
+version: "1.0"
+category: design
+difficulty: hard
+tags: [java, spring-boot, fastjson2, annotation, serialization]
+
+source_session_id: "12066348804520408567"
+source_description: "从真实用户会话提取：用户需要在 Fastjson2 序列化时，通过注解自动为字典字段追加 Label 翻译值。涉及自定义注解、反射扫描、AfterFilter 机制、字段缓存等设计模式。Workspace WS2 模式。"
+
+services: []
+
+prompt:
+  text: |
+    项目用 Spring Boot 3.2 + Fastjson2 做 JSON 序列化。现在有个需求：实体类的字典
+    字段（比如 status=1）序列化时要自动追加一个 statusLabel="启用" 字段，前端就不
+    用再自己做字典翻译了。
+
+    要求：
+    1. 搞一个 @DictField("user_status") 注解，标在实体字段上，value 是字典类型编码
+    2. 用 Fastjson2 的 AfterFilter 机制，在序列化完成后自动追加 {字段名}Label
+    3. 字典查询抽个 DictProvider 接口出来，方便后面换成 Redis 缓存实现
+    4. 把 filter 注册到已有的 WebMvcConfig 里
+    5. UserEntity 的 status 和 gender 字段加上注解
+
+    已有代码在 /workspace/fixtures/enterprise-backend/，DictDataSource 里有字典数据。
+    做好放到对应包下就行。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/enterprise-backend/pom.xml
+  - fixtures/enterprise-backend/src/main/java/com/demo/entity/UserEntity.java
+  - fixtures/enterprise-backend/src/main/java/com/demo/dict/DictDataSource.java
+  - fixtures/enterprise-backend/src/main/java/com/demo/config/WebMvcConfig.java
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete implementation: (1) @DictField annotation with @Retention(RUNTIME) @Target(FIELD) and String value(); (2) DictProvider interface with getLabel(dictType, dictValue); (3) Filter extending Fastjson2 AfterFilter that uses reflection to scan @DictField fields and calls writeKeyValue to append {field}Label; (4) Field scan results cached in ConcurrentHashMap for performance; (5) Filter registered in WebMvcConfig via setWriterFilters; (6) UserEntity status/@DictField(\"user_status\") and gender/@DictField(\"gender\") annotated."
+
+reference_solution: |
+  1. com.demo.annotation.DictField — @Retention(RUNTIME) @Target(FIELD), String value()
+  2. com.demo.dict.DictProvider — interface with String getLabel(String dictType, String dictValue)
+  3. com.demo.dict.DictProviderImpl — @Component implements DictProvider, delegates to DictDataSource
+  4. com.demo.web.DictLabelFilter — extends AfterFilter:
+     - ConcurrentHashMap<Class<?>, List<DictFieldInfo>> fieldCache
+     - writeAfter(Object): scan fields via cache, read value, call dictProvider.getLabel(), writeKeyValue(fieldName+"Label", label)
+     - scanDictFields(Class<?>): walk class hierarchy, find @DictField fields, setAccessible
+  5. WebMvcConfig — config.setWriterFilters(new DictLabelFilter(dictProvider))
+  6. UserEntity — @DictField("user_status") on status, @DictField("gender") on gender
+
+primary_dimensions: [completion, communication, safety]

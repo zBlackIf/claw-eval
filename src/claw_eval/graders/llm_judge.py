@@ -18,6 +18,17 @@ from pydantic import BaseModel
 from ..config import get_last_loaded_config
 from ..models.trace import _now
 
+DEFAULT_MAX_RETRIES = 30
+
+
+def _normalize_max_retries(value: int | None, default: int = DEFAULT_MAX_RETRIES) -> int:
+    if value is None:
+        return default
+    retries = int(value)
+    if retries < 0:
+        raise ValueError("max_retries must be >= 0")
+    return retries
+
 
 class JudgeResult(BaseModel):
     score: float  # 0.0-1.0
@@ -271,9 +282,11 @@ class LLMJudge:
         model_id: str = "google/gemini-2.5-flash",
         api_key: str | None = None,
         base_url: str = "https://openrouter.ai/api/v1",
+        max_retries: int | None = None,
     ) -> None:
         self.model_id = model_id
         self._call_log: list[dict] = []
+        self.max_retries = _normalize_max_retries(max_retries)
         self.api_format = _resolve_judge_api_format(model_id)
         self.extra_body = _resolve_judge_extra_body(model_id)
         self._base_url = base_url
@@ -479,7 +492,7 @@ class LLMJudge:
         call_kwargs: dict,
         log_extra: dict | None = None,
     ) -> JudgeResult:
-        max_retries = 30
+        max_retries = _normalize_max_retries(getattr(self, "max_retries", None))
         max_attempts = max_retries + 1
         last_exc: Exception | None = None
         for attempt_index in range(max_attempts):

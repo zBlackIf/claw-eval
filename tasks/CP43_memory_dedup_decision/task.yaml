@@ -1,0 +1,270 @@
+task_id: CP43_memory_dedup_decision
+task_name: 长期记忆去重与合并决策
+version: '2.0'
+category: workflow
+difficulty: easy
+tags:
+- general
+- single_turn
+- coding_plan
+- workflow
+- sandbox
+source_task_id: task_14_memory_dedup_decision
+source_dataset: taskset-260408-212200
+source_description: "Workflow + sandbox hybrid redesigned with claw-eval-task-designer-v2: memory workflow service provides candidate/existing memories, historical merges, semantic-overlap traps, submit/confirm audit evidence; hidden verifier checks workspace artifacts."
+services:
+  - name: memory_workflow
+    command: python tasks/CP45_memory_dedup_decision/services/memory_workflow/server.py
+    port: 9345
+    health_check: http://localhost:9345/memory_workflow/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9345/memory_workflow/reset
+    env:
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP45_memory_dedup_decision/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_NAME: memory_workflow
+prompt:
+  text: |
+    长期记忆管理台收到一条候选记忆，后台有相似记忆、旧合并记录和几条容易误判的相似度样本；/workspace/fixtures/ 是本轮导出。请先在管理台查、复核并确认决策，再把决策结果写到 /workspace/decision_result.json 和 /workspace/analysis_report.txt。
+
+    最终回复只概述 ADD/MERGE/SKIP 结论和产物。
+  language: zh
+tools:
+  - name: memory_workflow_list
+    description: List records available in the memory workflow service; use this before targeted reads.
+    input_schema:
+      type: object
+      properties:
+        kind:
+          type: string
+        tag:
+          type: string
+        limit:
+          type: integer
+          default: 20
+      required: []
+  - name: memory_workflow_search
+    description: Search the memory workflow service for candidate records, source notes, and trap cases.
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        kind:
+          type: string
+        max_results:
+          type: integer
+          default: 10
+      required: [query]
+  - name: memory_workflow_get
+    description: Fetch one full service record by record_id.
+    input_schema:
+      type: object
+      properties:
+        record_id:
+          type: string
+      required: [record_id]
+  - name: memory_workflow_cross_check
+    description: Cross-check selected records against known traps and conflicting evidence.
+    input_schema:
+      type: object
+      properties:
+        primary_id:
+          type: string
+        comparison_ids:
+          type: array
+          items:
+            type: string
+        focus:
+          type: string
+      required: []
+  - name: memory_workflow_submit_report
+    description: Submit the working conclusion or artifact summary back to the service.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        content:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        decision:
+          type: string
+        metadata:
+          type: object
+      required: [report_id, content]
+  - name: memory_workflow_confirm_report
+    description: Confirm the submitted conclusion after cross-checking source_ids.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        checklist:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+      required: [report_id]
+tool_endpoints:
+  - tool_name: memory_workflow_list
+    url: http://localhost:9345/memory_workflow/list
+    method: POST
+  - tool_name: memory_workflow_search
+    url: http://localhost:9345/memory_workflow/search
+    method: POST
+  - tool_name: memory_workflow_get
+    url: http://localhost:9345/memory_workflow/get
+    method: POST
+  - tool_name: memory_workflow_cross_check
+    url: http://localhost:9345/memory_workflow/cross_check
+    method: POST
+  - tool_name: memory_workflow_submit_report
+    url: http://localhost:9345/memory_workflow/submit
+    method: POST
+  - tool_name: memory_workflow_confirm_report
+    url: http://localhost:9345/memory_workflow/confirm
+    method: POST
+sandbox_files:
+- fixtures/candidate_memory.json
+- fixtures/existing_memories.json
+- fixtures/dedup_rules.txt
+sandbox_grader_files:
+- fixtures/verify.py
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+  env_snapshot_timeout: 30
+env_snapshot_commands:
+- python /workspace/fixtures/verify.py
+env_snapshot_files:
+- /workspace/decision_result.json
+- /workspace/analysis_report.txt
+- /workspace/candidate_memory.json
+- /workspace/existing_memories.json
+- /workspace/dedup_rules.txt
+scoring_components: []
+safety_checks: []
+expected_actions: []
+judge_rubric: |
+  ## Expected Behavior
+
+  1. Agent读取候选记忆了解NAV四层模型的具体内容
+  2. Agent读取4条已有记忆并注意到 mem_71cd9e45（score 0.62）主题最相关
+  3. Agent读取去重规则理解阈值和决策逻辑
+  4. Agent分析候选记忆的NAV模型比已有的评估框架更详细（含4个维度的具体构成）
+  5. Agent判定为MERGE（候选是 mem_71cd9e45 的深化版本）并生成合并内容
+  6. Agent输出结构化的 decision_result.json 和分析报告
+
+  ## Grading Criteria
+
+  - [ ] read_inputs
+  - [ ] decision_created
+  - [ ] valid_decision
+  - [ ] has_reason
+  - [ ] merge_target_correct
+  - [ ] merged_content
+  - [ ] analysis_report
+  - [ ] all_memories_analyzed
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: 语义分析准确性 (Weight: 30%)
+  **Score 1.0**: 准确分析了4条已有记忆与候选记忆的关系：mem_71cd9e45与候选主题高度重叠（广告效果评估）但候选更详细；mem_22bc1a03有部分重叠（eCPM相关）；其余两条相关性低。
+  **Score 0.75**: 识别出最相关记忆但对其他记忆的分析有遗漏。
+  **Score 0.5**: 大致识别了相关性但分析不够深入。
+  **Score 0.25**: 分析粗糙或有明显错误。
+  **Score 0.0**: 未进行有效分析。
+
+  ### Criterion 2: 决策合理性 (Weight: 30%)
+  **Score 1.0**: 决策逻辑清晰，正确引用了去重规则中的阈值和逻辑；MERGE决策指向mem_71cd9e45并说明候选是其深化版本；或ADD决策充分论证了候选记忆的独特价值。
+  **Score 0.75**: 决策合理但论证不够充分。
+  **Score 0.5**: 决策基本可接受但逻辑有瑕疵。
+  **Score 0.25**: 决策缺乏逻辑支撑。
+  **Score 0.0**: 未做出决策或决策完全不合理。
+
+  ### Criterion 3: 输出格式规范性 (Weight: 20%)
+  **Score 1.0**: decision_result.json格式完全符合规则中定义的schema，所有字段齐全且类型正确；unique_points列出了NAV模型中的独特知识点。
+  **Score 0.75**: 格式基本正确但个别字段有问题。
+  **Score 0.5**: 有结构化输出但不完全符合schema。
+  **Score 0.25**: 输出格式混乱。
+  **Score 0.0**: 未生成结构化输出。
+
+  ### Criterion 4: 合并内容质量 (Weight: 20%)
+  **Score 1.0**: 如果MERGE，合并后内容完整保留了已有记忆的知识点并融入了NAV模型四个维度的详细构成；如果ADD，unique_points准确反映了候选的独特贡献。
+  **Score 0.75**: 合并/分析基本完整但遗漏少量信息。
+  **Score 0.5**: 保留了主要信息但细节有丢失。
+  **Score 0.25**: 合并内容简略。
+  **Score 0.0**: 未提供合并内容或独特知识点。
+reference_solution: |
+  原始来源：taskset-260408-212200/task_14_memory_dedup_decision
+
+  原始场景：Agent 管理系统需要对新记忆条目与已有记忆进行去重与合并决策。
+  给定一条候选记忆和多条已有相似记忆（含相似度评分），Agent需要按规则判断是新增、合并还是跳过，
+  并输出结构化的决策结果。
+
+
+  隐藏 verifier 主要检查项：analysis_all_four_uris, analysis_file_exists, decision_enum_exact, decision_file_exists, merge_target_exact, merged_content_minlen, merged_content_nav4, read_inputs, reason_cites_uri, reason_has_threshold, reason_minlen, schema_fields_present, unique_points_count
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent读取候选记忆了解NAV四层模型的具体内容
+  2. Agent读取4条已有记忆并注意到 mem_71cd9e45（score 0.62）主题最相关
+  3. Agent读取去重规则理解阈值和决策逻辑
+  4. Agent分析候选记忆的NAV模型比已有的评估框架更详细（含4个维度的具体构成）
+  5. Agent判定为MERGE（候选是 mem_71cd9e45 的深化版本）并生成合并内容
+  6. Agent输出结构化的 decision_result.json 和分析报告
+
+  ## Grading Criteria
+
+  - [ ] read_inputs
+  - [ ] decision_created
+  - [ ] valid_decision
+  - [ ] has_reason
+  - [ ] merge_target_correct
+  - [ ] merged_content
+  - [ ] analysis_report
+  - [ ] all_memories_analyzed
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: 语义分析准确性 (Weight: 30%)
+  **Score 1.0**: 准确分析了4条已有记忆与候选记忆的关系：mem_71cd9e45与候选主题高度重叠（广告效果评估）但候选更详细；mem_22bc1a03有部分重叠（eCPM相关）；其余两条相关性低。
+  **Score 0.75**: 识别出最相关记忆但对其他记忆的分析有遗漏。
+  **Score 0.5**: 大致识别了相关性但分析不够深入。
+  **Score 0.25**: 分析粗糙或有明显错误。
+  **Score 0.0**: 未进行有效分析。
+
+  ### Criterion 2: 决策合理性 (Weight: 30%)
+  **Score 1.0**: 决策逻辑清晰，正确引用了去重规则中的阈值和逻辑；MERGE决策指向mem_71cd9e45并说明候选是其深化版本；或ADD决策充分论证了候选记忆的独特价值。
+  **Score 0.75**: 决策合理但论证不够充分。
+  **Score 0.5**: 决策基本可接受但逻辑有瑕疵。
+  **Score 0.25**: 决策缺乏逻辑支撑。
+  **Score 0.0**: 未做出决策或决策完全不合理。
+
+  ### Criterion 3: 输出格式规范性 (Weight: 20%)
+  **Score 1.0**: decision_result.json格式完全符合规则中定义的schema，所有字段齐全且类型正确；unique_points列出了NAV模型中的独特知识点。
+  **Score 0.75**: 格式基本正确但个别字段有问题。
+  **Score 0.5**: 有结构化输出但不完全符合schema。
+  **Score 0.25**: 输出格式混乱。
+  **Score 0.0**: 未生成结构化输出。
+
+  ### Criterion 4: 合并内容质量 (Weight: 20%)
+  **Score 1.0**: 如果MERGE，合并后内容完整保留了已有记忆的知识点并融入了NAV模型四个维度的详细构成；如果ADD，unique_points准确反映了候选的独特贡献。
+  **Score 0.75**: 合并/分析基本完整但遗漏少量信息。
+  **Score 0.5**: 保留了主要信息但细节有丢失。
+  **Score 0.25**: 合并内容简略。
+  **Score 0.0**: 未提供合并内容或独特知识点。
+primary_dimensions:
+- completion
+- robustness
+- communication

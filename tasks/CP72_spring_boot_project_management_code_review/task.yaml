@@ -1,0 +1,99 @@
+# provenance:
+#   themis_dataset: taskset-260421-225115-strict-v2
+#   themis_task_id: task_47_java_code_review
+#   themis_rank_original: 25
+#   themis_metrics: { std_trim: 0.410, range_trim: 0.940, mean_trim: 0.584 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP72_spring_boot_project_management_code_review
+task_name: "Spring Boot 项目管理代码评审（CP72 / 源 taskset-260421-225115-strict-v2:task_47_java_code_review）"
+version: "1.1"
+category: security
+difficulty: hard
+tags: [general]
+
+source_task_id: "task_47_java_code_review"
+source_dataset: "taskset-260421-225115-strict-v2"
+source_description: "PinchBench top100 rank 25（std_trim 0.410，strict-v2）。Workflow W5 KB-Artifact：代码（Controller/Service/DAO/Entity 4 files）和评审报告/原则全部走 kb service。agent 用 kb_search/get 读代码 + 看 PRINCIPLES → kb_update REPORT 填发现。grader 从 audit_data['kb'] 评分。"
+
+services:
+  - name: kb
+    command: python mock_services/kb/server.py
+    port: 9106
+    health_check: http://localhost:9106/kb/search
+    health_check_method: POST
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9106/kb/reset
+    env:
+      KB_FIXTURES: tasks/CP64_spring_boot_project_management_code_review/fixtures/kb/articles.json
+
+prompt:
+  text: |
+    项目管理模块的 legacy Spring Boot 代码三年没人 review，下周外部审计要进
+    场——先内部过一遍。代码索引在内部知识库（按文件名搜得到），把发现的
+    问题归档到那篇评审报告里。
+  language: zh
+
+tools:
+  - name: kb_search
+    description: 在内部知识库搜索文章
+    input_schema:
+      type: object
+      properties:
+        query: {type: string}
+        category: {type: string}
+        max_results: {type: integer, default: 5}
+      required: [query]
+  - name: kb_get_article
+    description: 按 ID 获取知识库文章全文
+    input_schema:
+      type: object
+      properties:
+        article_id: {type: string}
+      required: [article_id]
+  - name: kb_update_article
+    description: 按 ID 整体替换文章 content
+    input_schema:
+      type: object
+      properties:
+        article_id: {type: string}
+        content: {type: string}
+      required: [article_id, content]
+
+tool_endpoints:
+  - tool_name: kb_search
+    url: http://localhost:9106/kb/search
+    method: POST
+  - tool_name: kb_get_article
+    url: http://localhost:9106/kb/articles/get
+    method: POST
+  - tool_name: kb_update_article
+    url: http://localhost:9106/kb/articles/update
+    method: POST
+
+sandbox_files: []
+
+environment:
+  timeout_seconds: 720
+  max_turns: 20
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward agent that searches kb for code + principles, fetches all 4 source files (Controller/Service/DAO/Entity), kb_update_article on KB-CODE-REVIEW-REPORT with tiered findings (严重/高/中/建议) citing file articles, covering SQL injection (DAO), N+1 (Service.getStats loop), thread-safety (SimpleDateFormat), hardcoded AES key (generateExportToken), missing @Valid, missing auth on delete."
+
+reference_solution: |
+  kb_search('Project') → find 4 code articles + REPORT + PRINCIPLES.
+  kb_get_article on KB-CODE-Project-java / ProjectDao / ProjectController /
+  ProjectService and KB-CODE-REVIEW-PRINCIPLES + REPORT. Compose tiered
+  findings:
+  - 严重: ProjectDao string-concat SQL → SQL injection
+  - 严重: ProjectController hardcoded AES256 key in generateExportToken
+  - 高: ProjectService.getStats N+1 (loops countTasks/countMembers per project)
+  - 高: ProjectController delete endpoint missing auth
+  - 中: SimpleDateFormat as shared field — thread-unsafe
+  - 中: @RequestBody missing @Valid
+  kb_update_article('KB-CODE-REVIEW-REPORT', content=report_md).
+
+primary_dimensions: [completion, robustness, communication]

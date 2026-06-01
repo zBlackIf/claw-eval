@@ -1,0 +1,79 @@
+[
+  {
+    "article_id": "KB-CODE-Project-java",
+    "title": "entity/Project.java",
+    "category": "source_code",
+    "tags": [
+      "java",
+      "entity",
+      "spring-boot"
+    ],
+    "content": "package com.example.project.entity;\n\npublic class Project {\n    private Long id;\n    private String name;\n    private String description;\n    private String status;\n    private String owner;\n    private String createdAt;\n\n    public Long getId() { return id; }\n    public void setId(Long id) { this.id = id; }\n    public String getName() { return name; }\n    public void setName(String name) { this.name = name; }\n    public String getDescription() { return description; }\n    public void setDescription(String description) { this.description = description; }\n    public String getStatus() { return status; }\n    public void setStatus(String status) { this.status = status; }\n    public String getOwner() { return owner; }\n    public void setOwner(String owner) { this.owner = owner; }\n    public String getCreatedAt() { return createdAt; }\n    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }\n}\n",
+    "last_updated": "2026-03-15",
+    "views": 50
+  },
+  {
+    "article_id": "KB-CODE-ProjectDao-java",
+    "title": "dao/ProjectDao.java",
+    "category": "source_code",
+    "tags": [
+      "java",
+      "dao",
+      "spring-boot"
+    ],
+    "content": "package com.example.project.dao;\n\nimport com.example.project.entity.Project;\nimport org.apache.ibatis.annotations.*;\nimport java.util.List;\n\n@Mapper\npublic interface ProjectDao {\n\n    @Select(\"SELECT * FROM projects ORDER BY created_at DESC\")\n    List<Project> findAll();\n\n    // SQL拼接导致注入风险\n    @Select(\"SELECT * FROM projects WHERE name LIKE '%${keyword}%'\")\n    List<Project> searchByName(@Param(\"keyword\") String keyword);\n\n    @Insert(\"INSERT INTO projects(name, description, status, owner, created_at) \" +\n            \"VALUES(#{name}, #{description}, #{status}, #{owner}, #{createdAt})\")\n    void insert(Project project);\n\n    @Delete(\"DELETE FROM projects WHERE id = #{id}\")\n    void deleteById(@Param(\"id\") Long id);\n\n    @Select(\"SELECT COUNT(*) FROM tasks WHERE project_id = #{projectId}\")\n    int countTasksByProjectId(@Param(\"projectId\") Long projectId);\n\n    @Select(\"SELECT COUNT(*) FROM project_members WHERE project_id = #{projectId}\")\n    int countMembersByProjectId(@Param(\"projectId\") Long projectId);\n\n    @Update(\"UPDATE projects SET status = #{status} WHERE id = #{id}\")\n    void updateStatus(@Param(\"id\") Long id, @Param(\"status\") String status);\n}\n",
+    "last_updated": "2026-03-15",
+    "views": 50
+  },
+  {
+    "article_id": "KB-CODE-ProjectController-java",
+    "title": "controller/ProjectController.java",
+    "category": "source_code",
+    "tags": [
+      "java",
+      "controller",
+      "spring-boot"
+    ],
+    "content": "package com.example.project.controller;\n\nimport com.example.project.entity.Project;\nimport com.example.project.service.ProjectService;\nimport org.springframework.beans.factory.annotation.Autowired;\nimport org.springframework.web.bind.annotation.*;\nimport java.util.*;\n\n@RestController\n@RequestMapping(\"/api/projects\")\npublic class ProjectController {\n\n    @Autowired\n    private ProjectService projectService;\n\n    // 查询所有项目 - 无分页\n    @GetMapping\n    public Map<String, Object> listAll() {\n        List<Project> projects = projectService.findAll();\n        Map<String, Object> result = new HashMap<>();\n        result.put(\"code\", 0);\n        result.put(\"data\", projects);\n        return result;\n    }\n\n    // 按名称模糊搜索 - SQL注入风险\n    @GetMapping(\"/search\")\n    public Map<String, Object> search(@RequestParam String keyword) {\n        List<Project> projects = projectService.searchByName(keyword);\n        Map<String, Object> result = new HashMap<>();\n        result.put(\"code\", 0);\n        result.put(\"data\", projects);\n        return result;\n    }\n\n    // 创建项目 - 无入参校验\n    @PostMapping\n    public Map<String, Object> create(@RequestBody Project project) {\n        projectService.create(project);\n        Map<String, Object> result = new HashMap<>();\n        result.put(\"code\", 0);\n        result.put(\"msg\", \"创建成功\");\n        return result;\n    }\n\n    // 删除项目 - 无权限控制\n    @DeleteMapping(\"/{id}\")\n    public Map<String, Object> delete(@PathVariable Long id) {\n        projectService.deleteById(id);\n        Map<String, Object> result = new HashMap<>();\n        result.put(\"code\", 0);\n        result.put(\"msg\", \"删除成功\");\n        return result;\n    }\n\n    // 批量导入 - 循环中逐条插入\n    @PostMapping(\"/batch-import\")\n    public Map<String, Object> batchImport(@RequestBody List<Project> projects) {\n        int success = 0;\n        int fail = 0;\n        for (Project p : projects) {\n            try {\n                projectService.create(p);\n                success++;\n            } catch (Exception e) {\n                fail++;\n                System.out.println(\"导入失败: \" + e.getMessage());\n            }\n        }\n        Map<String, Object> result = new HashMap<>();\n        result.put(\"code\", 0);\n        result.put(\"success\", success);\n        result.put(\"fail\", fail);\n        return result;\n    }\n\n    // 获取项目统计 - N+1查询\n    @GetMapping(\"/stats\")\n    public Map<String, Object> getStats() {\n        List<Project> projects = projectService.findAll();\n        List<Map<String, Object>> stats = new ArrayList<>();\n        for (Project p : projects) {\n            Map<String, Object> stat = new HashMap<>();\n            stat.put(\"project\", p.getName());\n            stat.put(\"taskCount\", projectService.countTasksByProjectId(p.getId()));\n            stat.put(\"memberCount\", projectService.countMembersByProjectId(p.getId()));\n            stats.add(stat);\n        }\n        Map<String, Object> result = new HashMap<>();\n        result.put(\"code\", 0);\n        result.put(\"data\", stats);\n        return result;\n    }\n}\n",
+    "last_updated": "2026-03-15",
+    "views": 50
+  },
+  {
+    "article_id": "KB-CODE-ProjectService-java",
+    "title": "service/ProjectService.java",
+    "category": "source_code",
+    "tags": [
+      "java",
+      "service",
+      "spring-boot"
+    ],
+    "content": "package com.example.project.service;\n\nimport com.example.project.dao.ProjectDao;\nimport com.example.project.entity.Project;\nimport org.springframework.beans.factory.annotation.Autowired;\nimport org.springframework.stereotype.Service;\nimport java.util.*;\nimport java.text.SimpleDateFormat;\n\n@Service\npublic class ProjectService {\n\n    @Autowired\n    private ProjectDao projectDao;\n\n    // 线程不安全的 SimpleDateFormat 作为成员变量\n    private SimpleDateFormat sdf = new SimpleDateFormat(\"yyyy-MM-dd HH:mm:ss\");\n\n    public List<Project> findAll() {\n        return projectDao.findAll();\n    }\n\n    // SQL拼接 - 注入风险\n    public List<Project> searchByName(String keyword) {\n        return projectDao.searchByName(keyword);\n    }\n\n    public void create(Project project) {\n        project.setCreatedAt(sdf.format(new Date()));\n        projectDao.insert(project);\n    }\n\n    public void deleteById(Long id) {\n        projectDao.deleteById(id);\n    }\n\n    public int countTasksByProjectId(Long projectId) {\n        return projectDao.countTasksByProjectId(projectId);\n    }\n\n    public int countMembersByProjectId(Long projectId) {\n        return projectDao.countMembersByProjectId(projectId);\n    }\n\n    // 批量更新状态 - 无事务注解\n    public void batchUpdateStatus(List<Long> ids, String status) {\n        for (Long id : ids) {\n            projectDao.updateStatus(id, status);\n        }\n    }\n\n    // 导出数据 - 密钥硬编码\n    public String generateExportToken() {\n        String secretKey = \"AES256_Export_Key_2026!@#$\";\n        // ... 加密逻辑\n        return \"encrypted_token\";\n    }\n}\n",
+    "last_updated": "2026-03-15",
+    "views": 50
+  },
+  {
+    "article_id": "KB-CODE-REVIEW-REPORT",
+    "title": "项目管理模块代码评审报告（待整理）",
+    "category": "code_review",
+    "tags": [
+      "spring-boot",
+      "代码评审"
+    ],
+    "content": "# 项目管理模块代码评审报告\n\n> 范围：src/main/java/com/example/project\n> 状态：**待整理**\n\n## 评审摘要\n\n（待填入）\n\n## Findings（按严重等级分级：严重 / 高风险 / 中等 / 建议优化）\n\n（每条 finding：文件位置 + 严重等级 + 问题描述 + 修复建议）\n",
+    "last_updated": "2026-03-01",
+    "views": 8
+  },
+  {
+    "article_id": "KB-CODE-REVIEW-PRINCIPLES",
+    "title": "Java/Spring Boot 代码评审 - 评审维度参考",
+    "category": "guideline",
+    "tags": [
+      "spring-boot",
+      "代码评审",
+      "原则"
+    ],
+    "content": "# Java/Spring Boot 代码评审维度\n\n1. **业务逻辑正确性**：空指针、边界条件、线程安全\n2. **代码规范与可读性**：命名、复杂度、冗余\n3. **性能与效率**：N+1 查询、循环查询、批量操作\n4. **安全风险审计**：SQL 注入、密钥硬编码、未鉴权接口\n5. **架构与设计规范**：分层、耦合度\n6. **异常与稳定性**：异常处理、资源管理\n\n## 严重等级\n\n- **严重**：会导致数据损坏 / 系统不可用 / 安全漏洞被利用\n- **高风险**：影响主要功能 / 隐藏 bug / 性能瓶颈\n- **中等**：维护性差 / 边界条件\n- **建议优化**：风格 / 命名 / 注释\n",
+    "last_updated": "2026-01-10",
+    "views": 142
+  }
+]

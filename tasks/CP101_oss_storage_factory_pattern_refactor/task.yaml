@@ -1,0 +1,68 @@
+# provenance:
+#   themis_dataset: taskset-260421-225115-strict-v2
+#   themis_task_id: task_20_oss_factory_pattern
+#   themis_rank_original: 72
+#   themis_metrics: { std_trim: 0.341, range_trim: 0.839, mean_trim: 0.610 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP101_oss_storage_factory_pattern_refactor
+task_name: "OSS 存储工厂模式重构（CP101 / 源 taskset-260421-225115-strict-v2:task_20_oss_factory_pattern）"
+version: "1.0"
+category: design
+difficulty: hard
+tags: [general]
+
+source_task_id: "task_20_oss_factory_pattern"
+source_dataset: "taskset-260421-225115-strict-v2"
+source_description: "PinchBench top100 rank 72（std_trim 0.341，strict-v2）。Workspace WS2 Spring Boot 工厂模式重构。verifier 7 个隐藏锚点（OssClient 接口/AbstractS3OssClient/Minio 继承/Factory/Facade Service/无多余厂商目录/AWS SDK）。"
+
+services: []
+
+prompt:
+  text: |
+    warehouse 模块要做 OSS 上传下载功能，按工厂模式搭好框架。MinioProperties
+    已经有了（/workspace/fixtures/datares-warehouse/...），用 AWS S3 SDK 做
+    通用底座，留个能让我后续加新厂商的扩展点。代码放到 /workspace/datares-
+    warehouse/src/。Spring Boot 3.5.11 + Java 17。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/datares-warehouse/pom.xml
+  - fixtures/datares-warehouse/src/main/java/cn/dtdream/datares/warehouse/constants/WarehouseConstants.java
+  - fixtures/datares-warehouse/src/main/java/cn/dtdream/datares/warehouse/store/oss/minio/MinioProperties.java
+
+sandbox_grader_files:
+  - fixtures/verify_oss_factory.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_oss_factory.py
+
+environment:
+  timeout_seconds: 900
+  max_turns: 22
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete factory-pattern framework: OssClient interface (upload/download/delete), AbstractS3OssClient (abstract + S3Client via software.amazon.awssdk), MinioOssClient extends AbstractS3OssClient, OssClientFactory managing enabled clients, OssStorageService facade for business layer, Spring Boot auto-config. No aliyun/tencent/aws subdirectories scaffolded (only the core extension framework)."
+
+reference_solution: |
+  Under store/oss/:
+  - OssClient.java (interface: upload/download/delete/exists/presignedUrl)
+  - AbstractS3OssClient.java (abstract class implements OssClient using
+    S3Client from software.amazon.awssdk, holds S3Client + bucket, common
+    operations templated, subclasses provide config)
+  - minio/MinioOssClient.java (extends AbstractS3OssClient, configures
+    S3Client with MinioProperties endpoint)
+  - OssClientFactory.java (Spring component, maps name → OssClient,
+    supports getClient + isEnabled)
+  - OssStorageService.java (facade with simple upload/download API)
+  - OssAutoConfiguration.java (@Configuration @ConditionalOnProperty
+    registers factory + clients)
+
+primary_dimensions: [completion, communication, safety]

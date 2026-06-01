@@ -1,0 +1,75 @@
+# provenance:
+#   themis_dataset: taskset-260421-225115-strict-v2
+#   themis_task_id: task_10_java_activity_registration
+#   themis_rank_original: 63
+#   themis_metrics: { std_trim: 0.355, range_trim: 0.925, mean_trim: 0.726 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP95_java_mobile_activity_registration_bug_fix
+task_name: "Java 移动端活动报名多 bug 修复（CP95 / 源 taskset-260421-225115-strict-v2:task_10_java_activity_registration）"
+version: "1.0"
+category: coding
+difficulty: hard
+tags: [general]
+
+source_task_id: "task_10_java_activity_registration"
+source_dataset: "taskset-260421-225115-strict-v2"
+source_description: "PinchBench top100 rank 63（std_trim 0.355，strict-v2）。Workspace WS2 Spring Boot 多文件修复：移动端活动控制器 5 个问题。verifier 5 个隐藏锚点（过期过滤/userId from UserInfo/checkRegister 接口+状态码/detail 接口+报名信息/contactPhone AES 解密）。"
+
+services: []
+
+prompt:
+  text: |
+    JaSjkjActivityMobileController 几个问题要修——过期活动不应该在移动端显示、
+    register 不能从 body 拿 userId、缺 checkRegister 校验接口、缺 detail
+    接口、contactPhone 要 AES 解密。controller/service 三层都改，参考
+    admin 控制器风格保持一致。代码在 /workspace/fixtures/src/，改后写到
+    /workspace/src/。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/src/main/java/com/tongtech/smzy/areaSpace/jingan/mapper/JaSjkjActivityMapper.xml
+  - fixtures/src/main/java/com/tongtech/smzy/areaSpace/jingan/mapper/JaSjkjActivityMapper.java
+  - fixtures/src/main/java/com/tongtech/smzy/areaSpace/jingan/controller/JaSjkjActivityAdminController.java
+  - fixtures/src/main/java/com/tongtech/smzy/areaSpace/jingan/controller/JaSjkjActivityMobileController.java
+  - fixtures/src/main/java/com/tongtech/smzy/areaSpace/jingan/service/JaSjkjActivityMobileService.java
+  - fixtures/src/main/java/com/tongtech/smzy/areaSpace/jingan/service/impl/JaSjkjActivityMobileServiceImpl.java
+  - fixtures/src/main/java/com/tongtech/smzy/areaSpace/jingan/pojo/dto/JaSjkjActivityDto.java
+  - fixtures/src/main/java/com/tongtech/smzy/areaSpace/jingan/pojo/dto/JaSjkjActivityRegistrationDto.java
+
+sandbox_grader_files:
+  - fixtures/verify_activity_fix.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_activity_fix.py
+
+env_snapshot_files:
+  - /workspace/src/main/java/com/tongtech/smzy/areaSpace/jingan/controller/JaSjkjActivityMobileController.java
+  - /workspace/src/main/java/com/tongtech/smzy/areaSpace/jingan/service/JaSjkjActivityMobileService.java
+  - /workspace/src/main/java/com/tongtech/smzy/areaSpace/jingan/service/impl/JaSjkjActivityMobileServiceImpl.java
+  - /workspace/src/main/java/com/tongtech/smzy/areaSpace/jingan/mapper/JaSjkjActivityMapper.xml
+
+environment:
+  timeout_seconds: 900
+  max_turns: 22
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward fixes to all 5 issues: (1) selectActivityList mobile filters status!=2 (mapper xml or service impl), (2) register userId from UserInfo/SecurityUtils (NOT dto.getUserId), (3) checkRegister endpoint added returning status codes 0/1/2 (满员/已关闭/已报名), (4) detail endpoint added with isRegistered + registration info, (5) contactPhone AES decrypted before returning to mobile."
+
+reference_solution: |
+  Mapper XML: add WHERE status != 2 (or expired check via NOW() > end_time)
+  to selectActivityList mobile path. Service impl: register() reads
+  UserInfo via SecurityUtils.getLoginUser(), not dto.getUserId(). Controller:
+  add @PostMapping /checkRegister with switch returning 0/1/2; @GetMapping
+  /detail returning Activity + isRegistered + registrationInfo. Service:
+  before returning Activity, decrypt contactPhone via AESUtils.decrypt(...)
+  or equivalent.
+
+primary_dimensions: [completion, communication, safety]

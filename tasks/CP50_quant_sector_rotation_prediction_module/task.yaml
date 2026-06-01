@@ -1,0 +1,80 @@
+# provenance:
+#   themis_dataset: taskset-260427-195223
+#   themis_task_id: task_74_quant_sector_rotation
+#   themis_rank_original: 1
+#   themis_metrics: { std_trim: 0.500, range_trim: 1.000, mean_trim: 0.500 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP50_quant_sector_rotation_prediction_module
+task_name: "量化系统板块轮动模块开发（CP50 / 源 taskset-260427-195223:task_74_quant_sector_rotation）"
+version: "1.0"
+category: coding
+difficulty: easy
+tags: [general]
+
+source_task_id: "task_74_quant_sector_rotation"
+source_dataset: "taskset-260427-195223"
+source_description: "从 Themis PinchBench top100（2026-05-27 二次筛选，killer bucket，CP51-CP100 批次）中按跨模型 std_trim 排名第 1 的高区分度题（std_trim 0.500 / range_trim 1.000 / mean_trim 0.500）。改编为 Claw-Eval sandbox 代码产物任务：agent 在 /workspace 下搭出四个同目录 .py 模块，隐藏 verifier 通过 AST + 业务语义 anchor 评分（板块强度维度、龙头评分维度、资金流分类、特征工程等不在 prompt 中暴露）。"
+
+services: []
+
+prompt:
+  text: |
+    组里负责板块轮动策略的王磊请假了，下午老板要看第八模块的进展。他留下
+    的资料都在 /workspace/fixtures/，你按他写的需求把代码搭起来——能跑、
+    能看出业务设计就行，生产数据库下一版再接。先做离线可检查的实现，
+    暂时不要求安装生产依赖或真实联网调用。
+
+    交付前给我一段简报：每块做了什么、有什么暂时跳过的地方。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/docs/module_spec.md
+  - fixtures/data/sw_industry_map.json
+  - fixtures/data/sample_fund_flow.csv
+  - fixtures/docs/akshare_api_reference.md
+
+sandbox_grader_files:
+  - fixtures/verify_quant_modules.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_quant_modules.py
+
+env_snapshot_files:
+  - /workspace/sector_monitor.py
+  - /workspace/leader_tracker.py
+  - /workspace/fund_flow_analyzer.py
+  - /workspace/sector_rotation_predictor.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward four runnable Python modules covering sector monitoring, leader tracking, fund-flow segmentation, and rotation prediction — each with a real class, akshare integration, error handling, and business-meaningful logic (not stubs)."
+
+reference_solution: |
+  Read the akshare reference, sw_industry_map.json and sample_fund_flow.csv from
+  /workspace/fixtures/. Write four modules to /workspace/:
+
+  - sector_monitor.py — class SectorMonitor; pulls sw_index_first_info /
+    sw_index_spot / stock_sector_spot; computes 板块强度 (up_ratio +
+    limit_up_count + turnover_change) and 热度排名; try/except around api calls.
+  - leader_tracker.py — class LeaderTracker; uses stock_zt_pool_em /
+    stock_zh_a_spot_em; scoring dims across volume / 涨幅 / 连板 / 市值 /
+    波动 / 资金流 (≥5 dims).
+  - fund_flow_analyzer.py — class FundFlowAnalyzer; segments 主力 / 超大单 /
+    大单 / 中单 / 小单 / 北向 (≥3 incl. 主力 and 北向).
+  - sector_rotation_predictor.py — class SectorRotationPredictor; ≥3 feature
+    engineering signals (rolling mean, z-score / rank / corr / momentum).
+
+  Final reply: a concise summary of what each module does and any deferred work.
+
+primary_dimensions: [completion, communication, safety]

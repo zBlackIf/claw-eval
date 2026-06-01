@@ -1,0 +1,66 @@
+# provenance:
+#   source_session_id: "6686972067105668220"
+#   scenario: "代码 debug / 诊断"
+#   model: "kimi-k2-6-modelhub"
+#   event_time: "2026-05-18 11:09:21"
+task_id: CP170_save_images_debug_timestamp
+task_name: "_save_images 函数条件化时间戳文件名（CP170 / 源 session 6686972067105668220）"
+version: "1.0"
+category: debug
+difficulty: medium
+tags: [python, logging, conditional-logic]
+
+source_session_id: "6686972067105668220"
+source_description: "机器人巡检系统中 _save_images 函数使用固定文件名。需求：当配置的 logger level 为 DEBUG 时使用带时间戳的文件名保存，否则使用固定文件名。必须使用项目自己的 config logger，不能用 Python 标准 logging 模块的级别检查。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/realman_arm/ 下面是我们的机械臂巡检项目。
+    src/core/inspector.py 里有个 _save_images 函数，现在图片一直覆盖存储。
+    我想让它在 config 里 logging level 是 debug 的时候，把文件名带上时间戳
+    （用函数里已有的 ts 变量），方便排查问题；不是 debug 就还是固定文件名。
+    注意用项目自己的 config logger，别引入标准 logging 模块来判断级别。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/realman_arm/config.yaml
+  - fixtures/realman_arm/src/__init__.py
+  - fixtures/realman_arm/src/logger.py
+  - fixtures/realman_arm/src/config_loader.py
+  - fixtures/realman_arm/src/core/__init__.py
+  - fixtures/realman_arm/src/core/inspector.py
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 480
+  max_turns: 15
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct conditional _save_images: when config logging.level == DEBUG, filenames include the ts timestamp variable; otherwise fixed names (raw.jpg/det.jpg). Must use project config logger (cfg.logging.level or logger.level/getEffectiveLevel), NOT Python stdlib logging.DEBUG import. Timestamp format should be preserved from original code."
+
+reference_solution: |
+  In _save_images, add a conditional check:
+    if logger.level <= logging.DEBUG:  # or cfg.logging.level == "DEBUG"
+        raw_path = save_dir / f"raw_{ts}.jpg"
+        det_path = save_dir / f"det_{ts}.jpg"
+    else:
+        raw_path = save_dir / "raw.jpg"
+        det_path = save_dir / "det.jpg"
+  Key: use logger.level or logger.getEffectiveLevel() or cfg.logging.level
+  for the check, not `import logging` as a new dependency for level detection.
+
+primary_dimensions: [completion, communication, safety]

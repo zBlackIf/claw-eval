@@ -1,0 +1,44 @@
+{
+  "schedules": [
+    {
+      "id": "morning_brief",
+      "name": "A股早盘前瞻",
+      "trigger": "trading_day 09:15 Asia/Shanghai",
+      "script": "market_brief.py",
+      "args": ["morning"],
+      "enabled": true
+    },
+    {
+      "id": "midday_report",
+      "name": "A股午盘速报",
+      "trigger": "trading_day 11:30 Asia/Shanghai",
+      "script": "market_brief.py",
+      "args": ["midday"],
+      "enabled": true
+    },
+    {
+      "id": "closing_review",
+      "name": "A股收盘复盘",
+      "trigger": "trading_day 15:07 Asia/Shanghai",
+      "script": "market_review.py",
+      "args": [],
+      "enabled": true
+    },
+    {
+      "id": "watchlist_report",
+      "name": "自选股收盘盘点",
+      "trigger": "trading_day 16:10 Asia/Shanghai",
+      "script": "watchlist_report.py",
+      "args": [],
+      "enabled": true
+    }
+  ],
+  "trading_calendar": {
+    "exchange": "SSE",
+    "holidays_file": "holidays_sse.json"
+  },
+  "output": {
+    "format": "text",
+    "log_dir": "./logs"
+  }
+}

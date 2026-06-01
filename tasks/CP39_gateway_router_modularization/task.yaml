@@ -1,0 +1,170 @@
+task_id: CP39_gateway_router_modularization
+task_name: Gateway Router Modularization
+version: '2.0'
+category: refactoring
+difficulty: medium
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_37_gateway_router_modularization
+source_dataset: taskset-260427-121234
+source_description: Redesigned from taskset-260427-121234/task_37_gateway_router_modularization with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
+services: []
+prompt:
+  text: |
+    我已经把原始项目素材放在容器的 `/workspace/fixtures/` 目录下，请把这些文件当作只读输入。
+
+    输入文件如下（右侧是它在原项目中的相对路径）：
+    - `/workspace/fixtures/gateway/platforms/weixin.py` -> `gateway/platforms/weixin.py`
+    - `/workspace/fixtures/gateway/bridges/express_bridge.py` -> `gateway/bridges/express_bridge.py`
+    - `/workspace/fixtures/modularization_requirements.md` -> `modularization_requirements.md`
+
+    请基于这些输入完成下面的原始需求：
+
+    把当前服务器整理成长期稳定、好维护、少改主链、可持续扩展的结构。请先查当前代码，再按 `modularization_requirements.md` 小步执行重构。
+
+    交付要求：
+    - 需要修改已有文件时，请把修改后的版本写到 `/workspace/` 下对应的原项目相对路径。
+    - 需要新增文件时，请按需求中的文件名或上面列出的目标路径写到 `/workspace/` 下。
+    - 最终回复只需概述完成情况、关键改动和生成的文件；不要只在最终回复中贴代码或报告正文。
+  language: zh
+tools: []
+tool_endpoints: []
+sandbox_files:
+- fixtures/gateway/platforms/weixin.py
+- fixtures/gateway/bridges/express_bridge.py
+- fixtures/modularization_requirements.md
+sandbox_grader_files:
+- fixtures/verify.py
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+  env_snapshot_timeout: 30
+env_snapshot_commands:
+- python /workspace/fixtures/verify.py
+env_snapshot_files:
+- /workspace/gateway/router.py
+- /workspace/gateway/platforms/weixin.py
+- /workspace/gateway/bridges/express_bridge.py
+- /workspace/gateway/bridges/train_bridge.py
+- /workspace/gateway/bridges/reminder_bridge.py
+- /workspace/gateway/bridges/chat_bridge.py
+- /workspace/modularization_requirements.md
+scoring_components: []
+safety_checks: []
+expected_actions: []
+judge_rubric: |
+  ## Expected Behavior
+
+  1. Agent reads weixin.py and express_bridge.py
+  2. Agent creates gateway/router.py with route matching logic
+  3. Agent refactors weixin.py to delegate to router
+  4. Agent creates train_bridge.py, reminder_bridge.py, chat_bridge.py stubs
+  5. Agent connects express_bridge to the actual API call logic from weixin.py
+
+  **Hard red lines**:
+  - weixin.py still contains business routing logic (pattern matching for express/train/etc.) -> weixin_simplified = 0
+  - No router.py created -> router_present = 0
+  - express_bridge not connected to actual API logic -> express_connected = 0
+
+  ## Grading Criteria
+
+  - [ ] router_present: gateway/router.py exists with route definitions
+  - [ ] weixin_simplified: weixin.py no longer contains business routing logic
+  - [ ] four_bridges: 4 bridge files exist (express, train, reminder, chat)
+  - [ ] uniform_interface: all bridges have async handle(user_id, message) function
+  - [ ] express_connected: express_bridge has API call logic (migrated from weixin.py)
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Migration Correctness (Weight: 35%)
+    - 1.0: All transformations preserve semantics, no data loss, backward compatibility maintained
+    - 0.75: Mostly correct with minor edge case issues
+    - 0.5: Core migration works but some transformations incorrect
+    - 0.25: Significant correctness issues in the migration
+    - 0.0: Migration would break existing functionality
+
+  ### Criterion 2: Completeness (Weight: 25%)
+    - 1.0: All specified items migrated, no orphaned references, all imports updated
+    - 0.75: Most items migrated with minor omissions
+    - 0.5: Core items migrated but some references not updated
+    - 0.25: Incomplete migration with many missed items
+    - 0.0: Barely started
+
+  ### Criterion 3: Code Quality (Weight: 25%)
+    - 1.0: Clean, idiomatic code following project conventions, no dead code introduced
+    - 0.75: Good quality with minor style issues
+    - 0.5: Functional but messy or inconsistent with project style
+    - 0.25: Poor quality code introduced during migration
+    - 0.0: Migration introduces significant technical debt
+
+  ### Criterion 4: Safety and Rollback (Weight: 15%)
+    - 1.0: Migration is reversible, includes validation checks, documents breaking changes
+    - 0.75: Some safety measures in place
+    - 0.5: Basic migration without safety nets
+    - 0.25: Risky migration with no rollback path
+    - 0.0: Destructive changes with no recovery option
+reference_solution: |
+  原始来源：taskset-260427-121234/task_37_gateway_router_modularization
+
+  原始场景：gateway_refactoring
+
+  隐藏 verifier 主要检查项：express_connected, four_bridges, router_present, uniform_interface, weixin_simplified
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent reads weixin.py and express_bridge.py
+  2. Agent creates gateway/router.py with route matching logic
+  3. Agent refactors weixin.py to delegate to router
+  4. Agent creates train_bridge.py, reminder_bridge.py, chat_bridge.py stubs
+  5. Agent connects express_bridge to the actual API call logic from weixin.py
+
+  **Hard red lines**:
+  - weixin.py still contains business routing logic (pattern matching for express/train/etc.) -> weixin_simplified = 0
+  - No router.py created -> router_present = 0
+  - express_bridge not connected to actual API logic -> express_connected = 0
+
+  ## Grading Criteria
+
+  - [ ] router_present: gateway/router.py exists with route definitions
+  - [ ] weixin_simplified: weixin.py no longer contains business routing logic
+  - [ ] four_bridges: 4 bridge files exist (express, train, reminder, chat)
+  - [ ] uniform_interface: all bridges have async handle(user_id, message) function
+  - [ ] express_connected: express_bridge has API call logic (migrated from weixin.py)
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Migration Correctness (Weight: 35%)
+    - 1.0: All transformations preserve semantics, no data loss, backward compatibility maintained
+    - 0.75: Mostly correct with minor edge case issues
+    - 0.5: Core migration works but some transformations incorrect
+    - 0.25: Significant correctness issues in the migration
+    - 0.0: Migration would break existing functionality
+
+  ### Criterion 2: Completeness (Weight: 25%)
+    - 1.0: All specified items migrated, no orphaned references, all imports updated
+    - 0.75: Most items migrated with minor omissions
+    - 0.5: Core items migrated but some references not updated
+    - 0.25: Incomplete migration with many missed items
+    - 0.0: Barely started
+
+  ### Criterion 3: Code Quality (Weight: 25%)
+    - 1.0: Clean, idiomatic code following project conventions, no dead code introduced
+    - 0.75: Good quality with minor style issues
+    - 0.5: Functional but messy or inconsistent with project style
+    - 0.25: Poor quality code introduced during migration
+    - 0.0: Migration introduces significant technical debt
+
+  ### Criterion 4: Safety and Rollback (Weight: 15%)
+    - 1.0: Migration is reversible, includes validation checks, documents breaking changes
+    - 0.75: Some safety measures in place
+    - 0.5: Basic migration without safety nets
+    - 0.25: Risky migration with no rollback path
+    - 0.0: Destructive changes with no recovery option
+primary_dimensions:
+- completion
+- robustness
+- communication

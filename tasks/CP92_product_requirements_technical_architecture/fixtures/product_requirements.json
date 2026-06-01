@@ -1,0 +1,50 @@
+{
+  "project_name": "SmartTask - AI-Powered Task Management Platform",
+  "version": "1.0",
+  "overview": "A multi-tenant task management platform with AI-powered task decomposition, priority scoring, and team collaboration features.",
+  "core_features": [
+    {
+      "id": "F1",
+      "name": "AI Task Decomposition",
+      "description": "Automatically break down complex tasks into subtasks with estimated effort",
+      "priority": "P0"
+    },
+    {
+      "id": "F2",
+      "name": "Smart Priority Scoring",
+      "description": "ML-based priority scoring considering deadline, dependencies, team capacity",
+      "priority": "P0"
+    },
+    {
+      "id": "F3",
+      "name": "Team Collaboration",
+      "description": "Real-time updates, @mentions, file sharing within tasks",
+      "priority": "P1"
+    },
+    {
+      "id": "F4",
+      "name": "Analytics Dashboard",
+      "description": "Team velocity, bottleneck detection, workload distribution charts",
+      "priority": "P1"
+    },
+    {
+      "id": "F5",
+      "name": "Third-party Integrations",
+      "description": "Slack, GitHub, Jira, Calendar sync",
+      "priority": "P2"
+    }
+  ],
+  "non_functional": {
+    "max_concurrent_users": 5000,
+    "api_latency_p99_ms": 200,
+    "data_retention_days": 365,
+    "multi_tenant": true,
+    "sso_required": true
+  },
+  "constraints": {
+    "budget": "mid-size startup",
+    "team_size": "5-8 engineers",
+    "timeline": "MVP in 3 months",
+    "prefer_managed_services": true
+  }
+}

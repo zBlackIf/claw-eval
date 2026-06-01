@@ -1,0 +1,83 @@
+# provenance:
+#   source_session: 17590215506960355296
+#   scenario: "Android / iOS / Flutter / 小程序 (中文)"
+#   task_number: 203
+task_id: CP203_android_api_level_guard_foreground_service
+task_name: "Android API Level Guard — Foreground Service & Compatibility Fixes (API 28 support)"
+version: "1.0"
+category: code_repair
+difficulty: hard
+tags: [android, kotlin, compatibility, api-level-guard]
+
+source_session_id: "17590215506960355296"
+source_description: "Real session: user fixes HyperIsle2 Android app for Android 9 (API 28) / Huawei EMUI compatibility. Multiple API 34+ features used without guards, lateinit crash on init failure, EncryptedSharedPreferences KeyStore crash on Huawei."
+
+services: []
+
+prompt:
+  text: |
+    HyperIsle2 uygulaması compileSdk=36 ve minSdk=26 ile derleniyor ama birkaç
+    kritik uyumluluk sorunu var. Android 9 (API 28) cihazlarda (özellikle Huawei)
+    uygulama crash oluyor. Düzeltmen gerekenler:
+
+    1. OverlayForegroundController — `FOREGROUND_SERVICE_TYPE_SPECIAL_USE` parametresi
+       API 34+ gerektiriyor. API 34 altında sade `startForeground(id, notification)`
+       kullanılmalı, üstünde typed versiyon. Build.VERSION.SDK_INT kontrolü ekle.
+
+    2. HyperIsleApp — `lateinit var versionEnforcer` ve diğer lateinit değişkenler
+       `initializeFeatureControl()` exception fırlatırsa initialize edilmeden kalıyor.
+       lateinit yerine safe default (fallback) pattern kullan. Ayrıca
+       `createEncryptedPrefs()` Huawei'de KeyStore hatası veriyor — try/catch ile
+       plain SharedPreferences fallback ekle.
+
+    3. ScreenCaptureDetectorActivity — `registerScreenCaptureCallback` API 34+
+       gerektiriyor. API 34 altında activity kendini finish() ile kapatmalı.
+
+    4. OverlayScreenRecordingController — `addScreenRecordingCallback` API 34+.
+       API 34 altında early return yap.
+
+    Proje /workspace/fixtures/hyperisle-app/ altında.
+  language: tr
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/hyperisle-app/build.gradle.kts
+  - fixtures/hyperisle-app/src/main/AndroidManifest.xml
+  - fixtures/hyperisle-app/src/main/java/com/coni/hyperisle/overlay/OverlayForegroundController.kt
+  - fixtures/hyperisle-app/src/main/java/com/coni/hyperisle/overlay/ScreenCaptureDetectorActivity.kt
+  - fixtures/hyperisle-app/src/main/java/com/coni/hyperisle/overlay/OverlayScreenRecordingController.kt
+  - fixtures/hyperisle-app/src/main/java/com/coni/hyperisle/app/HyperIsleApp.kt
+  - fixtures/hyperisle-app/src/main/java/com/coni/hyperisle/core/versionenforcement/VersionEnforcer.kt
+  - fixtures/hyperisle-app/src/main/java/com/coni/hyperisle/core/versionenforcement/VersionEnforcerImpl.kt
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct API level guards using Build.VERSION.SDK_INT >= 34 (or UPSIDE_DOWN_CAKE) around all API 34+ features (foregroundServiceType, registerScreenCaptureCallback, addScreenRecordingCallback). Reward replacing lateinit with safe defaults/fallback pattern for versionEnforcer, featureFlagRepository, premiumGate. Reward adding EncryptedSharedPreferences try-catch with plain SharedPreferences fallback. Penalize incomplete guards or solutions that only fix some of the issues."
+
+reference_solution: |
+  1. OverlayForegroundController.kt: Add `if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)` check.
+     - API 34+: `service.startForeground(id, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)`
+     - Below: `service.startForeground(id, notification)`
+  2. HyperIsleApp.kt:
+     - Replace `lateinit var versionEnforcer` with `var versionEnforcer: VersionEnforcer = FallbackVersionEnforcer()` (same for premiumGate, featureFlagRepository)
+     - Create FallbackVersionEnforcer that returns Allowed
+     - Wrap createEncryptedPrefs() in try-catch, fallback to context.getSharedPreferences(...)
+  3. ScreenCaptureDetectorActivity.kt: In onCreate, check SDK_INT >= 34, else finish()
+  4. OverlayScreenRecordingController.kt: In startMonitoring(), early return if SDK_INT < 34
+
+primary_dimensions: [completion, communication, safety]

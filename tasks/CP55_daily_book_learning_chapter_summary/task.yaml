@@ -1,0 +1,107 @@
+# provenance:
+#   themis_dataset: taskset-260408-163403
+#   themis_task_id: task_05_daily_book_learning
+#   themis_rank_original: 6
+#   themis_metrics: { std_trim: 0.447, range_trim: 1.000, mean_trim: 0.690 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP55_daily_book_learning_chapter_summary
+task_name: "每日拆书学习章节提炼（CP55 / 源 taskset-260408-163403:task_05_daily_book_learning）"
+version: "1.2"
+category: workflow
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_05_daily_book_learning"
+source_dataset: "taskset-260408-163403"
+source_description: "PinchBench top100 rank 6（std_trim 0.447）。Claw-Eval Workflow / W5 KB-Artifact 任务：sandbox 只提供书目、书稿和模板作为输入资料，知识库（kb service）是主交付面。agent 从 KB 查现状 + 读书稿 + 用 kb_update_article 追加 pattern/emotion 库，并把当天学习记录归档到 KB。grader 主要读取 audit_data['kb'] 中的 update payload。"
+
+services:
+  - name: kb
+    command: python mock_services/kb/server.py
+    port: 9106
+    health_check: http://localhost:9106/kb/search
+    health_check_method: POST
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9106/kb/reset
+    env:
+      KB_FIXTURES: tasks/CP54_daily_book_learning_chapter_summary/fixtures/kb/articles.json
+
+prompt:
+  text: |
+    每天早上让你跑一遍"拆书"——拣一本还没分析的书拆开提炼，把新条目入库。
+    今天这一轮请跑一下，学习记录也归到库里。资料在 /workspace/fixtures/，
+    知识库走我们的内部 KB。
+  language: zh
+
+tools:
+  - name: kb_search
+    description: 在内部知识库搜索文章
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        category:
+          type: string
+        max_results:
+          type: integer
+          default: 5
+      required: [query]
+  - name: kb_get_article
+    description: 按 ID 获取知识库文章全文
+    input_schema:
+      type: object
+      properties:
+        article_id:
+          type: string
+      required: [article_id]
+  - name: kb_update_article
+    description: 更新知识库文章内容（按 ID 整体替换 content）
+    input_schema:
+      type: object
+      properties:
+        article_id:
+          type: string
+        content:
+          type: string
+      required: [article_id, content]
+
+tool_endpoints:
+  - tool_name: kb_search
+    url: http://localhost:9106/kb/search
+    method: POST
+  - tool_name: kb_get_article
+    url: http://localhost:9106/kb/articles/get
+    method: POST
+  - tool_name: kb_update_article
+    url: http://localhost:9106/kb/articles/update
+    method: POST
+
+sandbox_files:
+  - fixtures/books/catalog.json
+  - fixtures/books/story_power.md
+  - fixtures/templates/chapter-pattern-review-template.md
+
+environment:
+  timeout_seconds: 600
+  max_turns: 22
+  mock_today: "2026-03-28"
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a workflow-style KB update: read the unanalyzed book from the supplied catalog/book files, fetch current KB-PATTERN-LIBRARY and KB-EMOTION-LIBRARY, update both with ≥3 new patterns and ≥3 new emotions tagged with book name + chapter, and optionally archive the day's learning record in KB-DAILY-LEARNING-LOG-20260328. Local report/catalog files are input or scratch only, not primary completion evidence."
+
+reference_solution: |
+  Read catalog.json, pick story_power (unanalyzed). Read story_power.md.
+  kb_search('pattern')/kb_get_article('KB-PATTERN-LIBRARY') to see P001/P002,
+  kb_get_article('KB-EMOTION-LIBRARY') for E001/E002. Extract ≥3 P003+
+  patterns and ≥3 E003+ emotions from chapters of story_power, each tagged
+  来源: 故事的力量 第N章. kb_update_article for both libraries appending
+  rows. kb_get_article('KB-DAILY-LEARNING-LOG-20260328') and append a short
+  markdown learning record with the selected book, chapters covered, new entry
+  IDs and insights, then kb_update_article it.
+
+primary_dimensions: [completion, communication, safety]

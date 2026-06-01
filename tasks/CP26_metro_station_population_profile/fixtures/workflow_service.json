@@ -1,0 +1,415 @@
+[
+  {
+    "record_id": "brief:task-context",
+    "kind": "brief",
+    "title": "Metro station population profile completion with service-side station registry, alias traps, and workspace report artifact.",
+    "content": "Task CP27_metro_station_population_profile: Metro station population profile completion with service-side station registry, alias traps, and workspace report artifact. Use list/search/get/cross_check before submit/confirm; workspace artifact remains required.",
+    "tags": [
+      "brief",
+      "workflow"
+    ],
+    "metadata": {
+      "task_id": "CP27_metro_station_population_profile",
+      "service": "metro_profile",
+      "mode": "workflow"
+    }
+  },
+  {
+    "record_id": "source:existing_stations_v4.txt",
+    "kind": "source",
+    "title": "Workspace fixture export: existing_stations_v4.txt",
+    "content": "# 广州地铁站点人口画像综合分析 v4\n\n## 已完成站点\n\n### 1. 岭南广场站\n\n**精炼描述**：高密度成熟社区，以25-44岁家庭客群为主，通勤需求强劲。\n\n**人群构成**：常住人口2.83万人，密度3.61万/km²，属于高密度站点。25-44岁占比54.2%，略高于全市均值。家有小学生比例41.2%，反映该区域以已婚有子女家庭为主。大学生占比12.3%，低于大学城周边站点。\n\n**出行特征**：\n- 通勤比例52%，以地铁为主要通勤方式\n- 早高峰7:30-8:30进站量占全日25%\n- 周末客流下降30%，通勤属性明显\n\n**设施需求**：\n- 社区便民服务（快递柜、洗衣、家政）\n- 儿童教育培训机构\n- 早餐便利店\n\n**建议**：\n1. 基于41.2%家有小学生比例，优先配置儿童托管和课后服务设施\n2. 通勤率52%表明需加强早餐快餐供给\n3. 高密度(3.61)支撑社区商业，建议引入中型便利店\n\n---\n\n### 2. 赤岗站\n\n**精炼描述**：年轻白领聚集的商务区站点，25-34岁占比突出。\n\n**人群构成**：常住人口1.87万人，密度2.38万/km²。25-34岁占比48.5%，45岁以下占比75%+。大学生比例28.7%，明显高于全市均值。家有小学生32.1%，低于家庭型站点。\n\n**出行特征**：\n- 通勤比例58%，居所有站点前列\n- 岗位密度3.15>人口密度2.38，净流入站点\n- 外卖订单量高，午间消费活跃\n\n**设施需求**：\n- 白领午餐快餐（便当、轻食）\n- 共享办公和会议室\n- 健身运动设施\n\n**建议**：\n1. 岗位>人口的净流入特征表明应增设午间服务设施\n2. 48.5%的25-34岁占比支撑新消费业态（咖啡、轻食）\n3. 大学生28.7%，可增设实习招聘信息站\n\n---\n\n### 3. 南浦西站\n\n**精炼描述**：新兴居住区，人口密度适中，年轻家庭聚集。\n\n**人群构成**：常住人口1.21万人，密度1.54万/km²，属于中低密度站点。25-34岁占比43.8%，家有1-3岁幼儿比例11.2%，高于全市均值。中高收入家庭占比35%。\n\n**出行特征**：\n- 通勤比例48%\n- 地铁接驳公交需求较大\n- 周末亲子出行比例高\n\n**设施需求**：\n- 幼儿托育服务\n- 亲子活动空间\n- 社区医疗服务\n\n**建议**：\n1. 11.2%的1-3岁幼儿占比指向托育需求缺口\n2. 中低密度(1.54)不支撑大型商业，适合社区小店模式\n3. 中高收入35%表明消费力较好，可引入品质社区商业\n\n---\n\n### 4. 石牌南站\n\n**精炼描述**：人口密度最高的成熟商住混合区，多元客群交汇。\n\n**人群构成**：常住人口3.21万人，密度4.09万/km²。25-44岁占比51.3%，大学生26.5%。家有小学生39.8%。人口规模和密度均居前列。\n\n**出行特征**：\n- 通勤比例51%\n- 全日客流波动小，商住复合特征\n- 外来人口比例较高\n\n**设施需求**：\n- 综合便民服务中心\n- 多语言/多元文化服务\n- 交通疏导和安全设施\n\n**建议**：\n1. 密度4.09居全线前列，需要高频次便民服务点\n2. 商住混合使全日经营可行，适合18小时营业模式\n3. 多元客群需要差异化服务菜单\n",
+    "tags": [
+      "source",
+      "txt",
+      "existing_stations_v4"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/existing_stations_v4.txt",
+      "bytes": 3124
+    }
+  },
+  {
+    "record_id": "source:station_requirements.md",
+    "kind": "source",
+    "title": "Workspace fixture export: station_requirements.md",
+    "content": "# 站点人口画像补充要求\n\n请在 `existing_stations_v4.txt` 的既有格式后，补齐以下 17 个站点的人口画像。每个站点保持五块内容：精炼描述、人群构成、出行特征、设施需求、建议。\n\n## 待补站点数据\n\n- 纪念堂：1.59万人，密度2.02，25-44岁52.7%，中老年占比偏高，家有小学生40.99%，岗位>人口\n- 西场：2.55万人，密度3.25，25-34岁39.98%，45岁以下73%，家有小学生40.38%\n- 松溪：0.98万人，密度1.25，25-34岁46.44%，家有小学生43.43%，为最高梯队\n- 南漖：1.43万人，密度1.82，25-34岁42.15%，家有1-3岁10.7%，中高收入38%\n- 广州东站：1.43万人，密度1.82，25-34岁49.10%，大学生33.44%，45岁以下76%，交通枢纽\n- 白云城市中心：0.66万人，密度0.84，25-34岁56.13%，45岁以下80%+\n- 秀全公园：1.18万人，密度1.50，25-34岁45.71%，家有小学生44.59%，初中生22.81%\n- 江高：0.69万人，密度0.88，18-24岁69.08%，大学生62%+\n- 梓元岗：2.17万人，密度2.76，25-34岁45.78%，大学生32.13%，家有小学生42.03%\n- 凤浦公园：0.54万人，密度0.69，25-34岁48.42%，大学生39.03%，通勤63%\n- 远景：3.52万人，密度4.48，25-34岁45.64%，家有小学生40.13%，通勤55%\n- 槎头：1.69万人，密度2.15，25-34岁44.01%，家有小学生42.37%\n- 梅东路：2.66万人，密度3.39，25-34岁34.45%，中高收入32%+，岗位>人口\n- 仓边路：2.30万人，密度2.93，25-44岁52.04%，家有小学生39.69%，岗位密度4.21>人口\n- 烈士陵园：3.19万人，密度4.06，25-44岁54.75%，家有小学生38.15%\n- 京溪路：1.94万人，密度2.47，25-34岁46.29%，18-24岁9.82%，大学生34.18%\n- 棠景：3.58万人，密度4.56，25-34岁46.62%，家有小学生42.01%，密度最高\n",
+    "tags": [
+      "source",
+      "md",
+      "station_requirements"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/station_requirements.md",
+      "bytes": 1818
+    }
+  },
+  {
+    "record_id": "trap:alias-jianggao-campus",
+    "kind": "trap",
+    "title": "江高大学生占比口径提醒",
+    "content": "江高的18-24岁与大学生高占比来自周边校园，不应误写成全龄人口主导商业区。",
+    "tags": [
+      "trap",
+      "alias",
+      "station"
+    ],
+    "metadata": {
+      "risk": "wrong_context"
+    }
+  },
+  {
+    "record_id": "trap:count-17-not-18",
+    "kind": "trap",
+    "title": "待补站点数量核对",
+    "content": "需求标题写17个站点，旧 rubric 有18的历史口径；本轮 station_requirements.md 列表实际为17个，不能凭旧描述多造一站。",
+    "tags": [
+      "trap",
+      "count",
+      "boundary"
+    ],
+    "metadata": {
+      "expected_count": 17
+    }
+  },
+  {
+    "record_id": "trap:density-vs-population",
+    "kind": "trap",
+    "title": "密度最高不等于人口最多",
+    "content": "棠景密度4.56最高，远景人口3.52万、棠景3.58万；比较时需分清人口规模和密度指标。",
+    "tags": [
+      "trap",
+      "metric"
+    ],
+    "metadata": {
+      "risk": "metric_confusion"
+    }
+  },
+  {
+    "record_id": "station:纪念堂",
+    "kind": "station_profile",
+    "title": "纪念堂",
+    "content": "1.59万人，密度2.02，25-44岁52.7%，中老年占比偏高，家有小学生40.99%，岗位>人口",
+    "tags": [
+      "station",
+      "profile",
+      "source_detail"
+    ],
+    "metadata": {
+      "station_name": "纪念堂"
+    }
+  },
+  {
+    "record_id": "station:西场",
+    "kind": "station_profile",
+    "title": "西场",
+    "content": "2.55万人，密度3.25，25-34岁39.98%，45岁以下73%，家有小学生40.38%",
+    "tags": [
+      "station",
+      "profile",
+      "source_detail"
+    ],
+    "metadata": {
+      "station_name": "西场"
+    }
+  },
+  {
+    "record_id": "station:松溪",
+    "kind": "station_profile",
+    "title": "松溪",
+    "content": "0.98万人，密度1.25，25-34岁46.44%，家有小学生43.43%，为最高梯队",
+    "tags": [
+      "station",
+      "profile",
+      "source_detail"
+    ],
+    "metadata": {
+      "station_name": "松溪"
+    }
+  },
+  {
+    "record_id": "station:南漖",
+    "kind": "station_profile",
+    "title": "南漖",
+    "content": "1.43万人，密度1.82，25-34岁42.15%，家有1-3岁10.7%，中高收入38%",
+    "tags": [
+      "station",
+      "profile",
+      "source_detail"
+    ],
+    "metadata": {
+      "station_name": "南漖"
+    }
+  },
+  {
+    "record_id": "station:广州东站",
+    "kind": "station_profile",
+    "title": "广州东站",
+    "content": "1.43万人，密度1.82，25-34岁49.10%，大学生33.44%，45岁以下76%，交通枢纽",
+    "tags": [
+      "station",
+      "profile",
+      "source_detail"
+    ],
+    "metadata": {
+      "station_name": "广州东站"
+    }
+  },
+  {
+    "record_id": "station:白云城市中心",
+    "kind": "station_profile",
+    "title": "白云城市中心",
+    "content": "0.66万人，密度0.84，25-34岁56.13%，45岁以下80%+",
+    "tags": [
+      "station",
+      "profile",
+      "source_detail"
+    ],
+    "metadata": {
+      "station_name": "白云城市中心"
+    }
+  },
+  {
+    "record_id": "station:秀全公园",
+    "kind": "station_profile",
+    "title": "秀全公园",
+    "content": "1.18万人，密度1.50，25-34岁45.71%，家有小学生44.59%，初中生22.81%",
+    "tags": [
+      "station",
+      "profile",
+      "source_detail"
+    ],
+    "metadata": {
+      "station_name": "秀全公园"
+    }
+  },
+  {
+    "record_id": "station:江高",
+    "kind": "station_profile",
+    "title": "江高",
+    "content": "0.69万人，密度0.88，18-24岁69.08%，大学生62%+",
+    "tags": [
+      "station",
+      "profile",
+      "source_detail"
+    ],
+    "metadata": {
+      "station_name": "江高"
+    }
+  },
+  {
+    "record_id": "station:梓元岗",
+    "kind": "station_profile",
+    "title": "梓元岗",
+    "content": "2.17万人，密度2.76，25-34岁45.78%，大学生32.13%，家有小学生42.03%",
+    "tags": [
+      "station",
+      "profile",
+      "source_detail"
+    ],
+    "metadata": {
+      "station_name": "梓元岗"
+    }
+  },
+  {
+    "record_id": "station:凤浦公园",
+    "kind": "station_profile",
+    "title": "凤浦公园",
+    "content": "0.54万人，密度0.69，25-34岁48.42%，大学生39.03%，通勤63%",
+    "tags": [
+      "station",
+      "profile",
+      "source_detail"
+    ],
+    "metadata": {
+      "station_name": "凤浦公园"
+    }
+  },
+  {
+    "record_id": "station:远景",
+    "kind": "station_profile",
+    "title": "远景",
+    "content": "3.52万人，密度4.48，25-34岁45.64%，家有小学生40.13%，通勤55%",
+    "tags": [
+      "station",
+      "profile",
+      "source_detail"
+    ],
+    "metadata": {
+      "station_name": "远景"
+    }
+  },
+  {
+    "record_id": "station:槎头",
+    "kind": "station_profile",
+    "title": "槎头",
+    "content": "1.69万人，密度2.15，25-34岁44.01%，家有小学生42.37%",
+    "tags": [
+      "station",
+      "profile",
+      "source_detail"
+    ],
+    "metadata": {
+      "station_name": "槎头"
+    }
+  },
+  {
+    "record_id": "station:梅东路",
+    "kind": "station_profile",
+    "title": "梅东路",
+    "content": "2.66万人，密度3.39，25-34岁34.45%，中高收入32%+，岗位>人口",
+    "tags": [
+      "station",
+      "profile",
+      "source_detail"
+    ],
+    "metadata": {
+      "station_name": "梅东路"
+    }
+  },
+  {
+    "record_id": "station:仓边路",
+    "kind": "station_profile",
+    "title": "仓边路",
+    "content": "2.30万人，密度2.93，25-44岁52.04%，家有小学生39.69%，岗位密度4.21>人口",
+    "tags": [
+      "station",
+      "profile",
+      "source_detail"
+    ],
+    "metadata": {
+      "station_name": "仓边路"
+    }
+  },
+  {
+    "record_id": "station:烈士陵园",
+    "kind": "station_profile",
+    "title": "烈士陵园",
+    "content": "3.19万人，密度4.06，25-44岁54.75%，家有小学生38.15%",
+    "tags": [
+      "station",
+      "profile",
+      "source_detail"
+    ],
+    "metadata": {
+      "station_name": "烈士陵园"
+    }
+  },
+  {
+    "record_id": "station:京溪路",
+    "kind": "station_profile",
+    "title": "京溪路",
+    "content": "1.94万人，密度2.47，25-34岁46.29%，18-24岁9.82%，大学生34.18%",
+    "tags": [
+      "station",
+      "profile",
+      "source_detail"
+    ],
+    "metadata": {
+      "station_name": "京溪路"
+    }
+  },
+  {
+    "record_id": "station:棠景",
+    "kind": "station_profile",
+    "title": "棠景",
+    "content": "3.58万人，密度4.56，25-34岁46.62%，家有小学生42.01%，密度最高",
+    "tags": [
+      "station",
+      "profile",
+      "source_detail"
+    ],
+    "metadata": {
+      "station_name": "棠景"
+    }
+  },
+  {
+    "record_id": "workflow:required-sequence",
+    "kind": "workflow_contract",
+    "title": "Required service workflow sequence",
+    "content": "Use list/search, fetch targeted records, cross-check traps, submit a report, then confirm it.",
+    "tags": [
+      "workflow",
+      "contract"
+    ],
+    "metadata": {
+      "required_sequence": [
+        "list",
+        "search",
+        "get",
+        "cross_check",
+        "submit",
+        "confirm"
+      ]
+    }
+  },
+  {
+    "record_id": "cross_check:check:source-vs-trap",
+    "kind": "cross_check",
+    "title": "Cross-check source facts against known traps before final decision",
+    "content": "Use service traps as cautionary evidence, then verify final artifact against workspace fixtures.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "check:source-vs-trap",
+        "title": "Cross-check source facts against known traps before final decision",
+        "primary_ids": [
+          "source:existing_stations_v4.txt",
+          "source:station_requirements.md",
+          "station:纪念堂",
+          "station:西场"
+        ],
+        "comparison_ids": [
+          "station:松溪",
+          "station:南漖",
+          "station:广州东站",
+          "station:白云城市中心"
+        ],
+        "trap_ids": [
+          "trap:alias-jianggao-campus",
+          "trap:count-17-not-18",
+          "trap:density-vs-population"
+        ],
+        "expected_resolution": "Use service traps as cautionary evidence, then verify final artifact against workspace fixtures."
+      }
+    }
+  },
+  {
+    "record_id": "cross_check:check:submit-readiness",
+    "kind": "cross_check",
+    "title": "Submission readiness checklist",
+    "content": "Final answer should cite concrete source_ids and confirm the service submission after workspace artifact is written.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "check:submit-readiness",
+        "title": "Submission readiness checklist",
+        "primary_ids": [
+          "source:existing_stations_v4.txt",
+          "source:station_requirements.md",
+          "station:纪念堂",
+          "station:西场",
+          "station:松溪",
+          "station:南漖"
+        ],
+        "comparison_ids": [
+          "trap:alias-jianggao-campus",
+          "trap:count-17-not-18",
+          "trap:density-vs-population"
+        ],
+        "trap_ids": [
+          "trap:alias-jianggao-campus",
+          "trap:count-17-not-18",
+          "trap:density-vs-population"
+        ],
+        "expected_resolution": "Final answer should cite concrete source_ids and confirm the service submission after workspace artifact is written."
+      }
+    }
+  }
+]

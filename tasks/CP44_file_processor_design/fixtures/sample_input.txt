@@ -1,0 +1,12 @@
+This is a plain text document about machine learning fundamentals.
+Machine learning is a subset of artificial intelligence that focuses on building
+systems that learn from data. There are three main types of machine learning:
+supervised learning, unsupervised learning, and reinforcement learning.
+
+Supervised learning uses labeled training data to learn a mapping function
+from inputs to outputs. Common algorithms include linear regression,
+decision trees, and neural networks.
+
+Unsupervised learning works with unlabeled data to discover hidden patterns.
+Clustering and dimensionality reduction are two main categories.
+K-means clustering and principal component analysis are popular algorithms.

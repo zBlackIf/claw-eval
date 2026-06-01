@@ -1,0 +1,98 @@
+# provenance:
+#   source_session_id: "7906766916310023215"
+#   scenario: "Android / iOS / Flutter / 小程序 (中文)"
+#   original_task: "Android 9 (API 28) / Huawei compatibility fixes for HyperIsle2 app"
+task_id: CP205_android_api_compat_guard
+task_name: "Android API 兼容性守卫：为 API 34+ 特性添加版本检查与崩溃防护"
+version: "1.0"
+category: mobile
+difficulty: hard
+tags: [android, kotlin, api-compat, crash-prevention]
+
+source_session_id: "7906766916310023215"
+source_description: "Real session where user implements Android 9 / Huawei compatibility fixes for foreground service types, screen capture APIs, and lateinit crash guards."
+
+services: []
+
+prompt:
+  text: |
+    HyperIsle2 项目（compileSdk=36, minSdk=26）在 Android 9 (API 28) 设备上频繁崩溃。
+    代码在 /workspace/fixtures/HyperIsle2/。请修复以下问题：
+
+    1. OverlayForegroundController 里 startForeground() 使用了
+       ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE，这是 API 34+ 才有的。
+       低于 API 34 的设备上要用不带 type 参数的 startForeground(id, notification)。
+
+    2. HyperIsleApp 里 versionEnforcer 等字段是 lateinit var，如果 initializeFeatureControl()
+       抛异常就会导致后续访问时 UninitializedPropertyAccessException 崩溃。
+       需要创建 FallbackVersionEnforcer（checkVersion 永远返回 Allowed）作为安全默认值，
+       把 lateinit 改成带默认值的 var。
+
+    3. OverlayScreenRecordingController 使用了 API 34+ 的 addScreenRecordingCallback，
+       低版本设备会 NoSuchMethodError。需要加 Build.VERSION.SDK_INT >= 34 的检查，
+       低版本直接 return。
+
+    4. ScreenCaptureDetectorActivity 使用了 API 34+ 的 registerScreenCaptureCallback，
+       低版本设备要在 onCreate 里检查版本，如果低于 API 34 直接 finish() 退出。
+
+    5. createEncryptedPrefs() 在 Huawei Android 9 上 KeyStore 会抛异常。
+       要加 try-catch，失败时 fallback 到普通 SharedPreferences。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/HyperIsle2/build.gradle.kts
+  - fixtures/HyperIsle2/app/build.gradle.kts
+  - fixtures/HyperIsle2/app/src/main/AndroidManifest.xml
+  - fixtures/HyperIsle2/app/src/main/java/com/coni/hyperisle/overlay/OverlayForegroundController.kt
+  - fixtures/HyperIsle2/app/src/main/java/com/coni/hyperisle/overlay/OverlayScreenRecordingController.kt
+  - fixtures/HyperIsle2/app/src/main/java/com/coni/hyperisle/overlay/ScreenCaptureDetectorActivity.kt
+  - fixtures/HyperIsle2/app/src/main/java/com/coni/hyperisle/app/HyperIsleApp.kt
+  - fixtures/HyperIsle2/core-version-enforcement/src/main/java/com/coni/hyperisle/core/versionenforcement/VersionEnforcer.kt
+  - fixtures/HyperIsle2/core-version-enforcement/src/main/java/com/coni/hyperisle/core/versionenforcement/VersionEnforcerImpl.kt
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct implementation of API version guards for Android backward compatibility: (1) OverlayForegroundController must check Build.VERSION.SDK_INT >= UPSIDE_DOWN_CAKE before using FOREGROUND_SERVICE_TYPE_SPECIAL_USE, with plain startForeground for older APIs; (2) HyperIsleApp must replace lateinit with safe defaults using FallbackVersionEnforcer; (3) ScreenRecordingController must guard API 34+ calls; (4) ScreenCaptureDetectorActivity must early-finish on pre-34 devices; (5) EncryptedSharedPreferences must have try-catch with fallback to plain SharedPreferences."
+
+reference_solution: |
+  1. OverlayForegroundController.startForeground():
+     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+         service.startForeground(id, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+     } else {
+         service.startForeground(id, notification)
+     }
+
+  2. FallbackVersionEnforcer.kt:
+     class FallbackVersionEnforcer : VersionEnforcer {
+         override val versionStatus = MutableStateFlow(VersionStatus.Allowed).asStateFlow()
+         override suspend fun checkVersion() = VersionCheckResult.Allowed
+     }
+     HyperIsleApp: var versionEnforcer: VersionEnforcer = FallbackVersionEnforcer()
+
+  3. OverlayScreenRecordingController.register()/unregister():
+     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return
+
+  4. ScreenCaptureDetectorActivity.onCreate():
+     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { finish(); return }
+
+  5. HyperIsleApp.createEncryptedPrefs():
+     try { EncryptedSharedPreferences... }
+     catch (e: Exception) { getSharedPreferences("fallback_prefs", MODE_PRIVATE) }
+
+primary_dimensions: [completion, communication, safety]

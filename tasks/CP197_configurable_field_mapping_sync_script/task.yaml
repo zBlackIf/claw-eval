@@ -1,0 +1,71 @@
+# provenance:
+#   source_session: 2354831044385506292
+#   scenario: "Web / 浏览器自动化"
+#   original_task: "Configurable field mapping for supplier sync script with sub-table support"
+task_id: CP197_configurable_field_mapping_sync_script
+task_name: "供应商同步脚本字段映射配置化重构（CP197 / session 2354831044385506292）"
+version: "1.0"
+category: design
+difficulty: medium
+tags: [general, python, etl, config]
+
+source_session_id: "2354831044385506292"
+source_description: "Real user session: refactoring a supplier data sync script to make field mappings configurable. Key challenge is sub-table field name mapping (upstream 'banks' -> downstream 'gyszhxx_items') and adding sub-table change detection."
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/lianshang/ 目录下有一个供应商档案同步脚本
+    sync_supplier_archive.py，把汇金系统的供应商数据同步到下游简道云系统。
+
+    现在有几个问题需要你解决：
+    1. 字段映射是写死在代码里的，我想改成可配置的（用 YAML 配置文件或模块顶部字典常量都行）
+    2. 子表字段名 "banks" 是上游 API 的叫法，下游系统实际用的是 "gyszhxx_items"，
+       这个映射关系也要可配置，这样以后上游字段名改了我只改配置就行
+    3. 子表内部的字段映射也要配置化（account -> gyszhxx_receiving_account_number 等）
+    4. 现在的 detect_changes 函数跳过了子表对比，要补上子表变更检测
+
+    test_data.json 里有测试数据，改完以后用测试数据跑一下确认能正常工作。
+    field_mapping.yaml.example 是参考格式，你可以参考或者用自己的方式实现。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/lianshang/sync_supplier_archive.py
+  - fixtures/lianshang/config.yaml
+  - fixtures/lianshang/test_data.json
+  - fixtures/lianshang/field_mapping.yaml.example
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward config-driven field mapping: (1) main-table fields loaded from config dict/YAML, converted via loop not hardcoded get(); (2) sub-table name mapping banks->gyszhxx_items is configurable; (3) sub-table internal fields also config-driven; (4) change detection includes sub-table row comparison; (5) script functionally works with test data producing correct downstream field names."
+
+reference_solution: |
+  Refactor sync_supplier_archive.py:
+  - Add MAIN_FIELD_MAPPING dict or load from YAML config
+  - Add SUBFORM_FIELD_MAPPING with _subform_name: {api: "banks", jdy: "gyszhxx_items"}
+    and field-level mapping (account -> gyszhxx_receiving_account_number, etc.)
+  - Rewrite convert_supplier_to_downstream to iterate over mapping dict
+  - Use configured sub-table name for both reading upstream and writing downstream
+  - Add _is_subform_changed() function that compares row count and field values
+  - Remove the "continue" skip in detect_changes for sub-table fields
+  - Verify with test_data.json: SUP001 should show as "updated" (shortName changed + bank added),
+    SUP002 should be "created", SUP003 should be "skipped"
+
+primary_dimensions: [completion, communication, safety]

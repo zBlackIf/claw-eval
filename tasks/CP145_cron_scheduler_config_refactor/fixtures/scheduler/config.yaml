@@ -1,0 +1,38 @@
+## Scheduler Configuration
+## Timezone: UTC (BUG: should be Asia/Shanghai for this deployment)
+timezone: UTC
+
+tasks:
+  - id: daily_checkin_kuaishou
+    name: "快手打卡提醒"
+    cron: "0 8 * * *"
+    action: send_reminder
+    channel: feishu
+    target_group: "oc_69ab47c17815e6eede555c77e0fc1356"
+    message: "快手打卡"
+    ## BUG: no ack_cancel logic — user wants reminder suppressed after ack
+    repeat_until_ack: false
+
+  - id: daily_agent_world
+    name: "Agent World学习打卡"
+    cron: "0 10 * * *"
+    action: send_reminder
+    channel: feishu
+    target_group: "oc_69ab47c17815e6eede555c77e0fc1356"
+    message: "每日Agent World打卡：1. 虾评打卡赚虾米；2. InkWell阅读学习新知识；3. 整理学到的新知识，给出自我迭代优化方案"
+    repeat_until_ack: false
+
+  - id: weekly_report
+    name: "周报提醒"
+    cron: "0 9 * * 5"
+    action: send_reminder
+    channel: feishu
+    target_group: "oc_4a12673cea3c06c21fa5a27e65b26886"
+    message: "本周工作周报该写了"
+    repeat_until_ack: false
+
+notification_settings:
+  retry_interval_minutes: 120
+  max_retries: 7
+  ## BUG: retry fires even after user acknowledges
+  suppress_after_ack: false

@@ -1,0 +1,95 @@
+# provenance:
+#   themis_dataset: taskset-260427-121234
+#   themis_task_id: task_67_reverse_requirements_doc
+#   themis_rank_original: 27
+#   themis_metrics: { std_trim: 0.410, range_trim: 1.000, mean_trim: 0.731 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP74_java_codebase_reverse_engineer_requirements
+task_name: "Java 合约管理系统反推需求（CP74 / 源 taskset-260427-121234:task_67_reverse_requirements_doc）"
+version: "1.1"
+category: synthesis
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_67_reverse_requirements_doc"
+source_dataset: "taskset-260427-121234"
+source_description: "PinchBench top100 rank 27（std_trim 0.410）。Workflow W5 KB-Artifact：4 个 java 源文件 + 需求文档占位全部走 kb。agent 用 kb_search/get 读代码 → kb_update KB-CODE-REQUIREMENTS-DOC 填需求。grader 评 audit_data['kb']：需求覆盖功能模块 / 数据模型 / 业务规则（3 倍押金 / 状态迁移 / 结算周期 / 100,000 阈值）/ API 端点，反幻觉黑名单（不要编造 email/PDF/OAuth）。"
+
+services:
+  - name: kb
+    command: python mock_services/kb/server.py
+    port: 9106
+    health_check: http://localhost:9106/kb/search
+    health_check_method: POST
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9106/kb/reset
+    env:
+      KB_FIXTURES: tasks/CP65_java_codebase_reverse_engineer_requirements/fixtures/kb/articles.json
+
+prompt:
+  text: |
+    物业租赁合同管理系统的原始需求文档丢了，照着代码反推一份给我。代码在
+    内部知识库（按 ContractXXX-java 搜得到），需求文档归档到那篇待整理的
+    KB-CODE-REQUIREMENTS-DOC 里。每条需求要能在代码里找到对应。
+  language: zh
+
+tools:
+  - name: kb_search
+    description: 在内部知识库搜索文章
+    input_schema:
+      type: object
+      properties:
+        query: {type: string}
+        category: {type: string}
+        max_results: {type: integer, default: 5}
+      required: [query]
+  - name: kb_get_article
+    description: 按 ID 获取知识库文章全文
+    input_schema:
+      type: object
+      properties:
+        article_id: {type: string}
+      required: [article_id]
+  - name: kb_update_article
+    description: 按 ID 整体替换文章 content
+    input_schema:
+      type: object
+      properties:
+        article_id: {type: string}
+        content: {type: string}
+      required: [article_id, content]
+
+tool_endpoints:
+  - tool_name: kb_search
+    url: http://localhost:9106/kb/search
+    method: POST
+  - tool_name: kb_get_article
+    url: http://localhost:9106/kb/articles/get
+    method: POST
+  - tool_name: kb_update_article
+    url: http://localhost:9106/kb/articles/update
+    method: POST
+
+sandbox_files: []
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward agent that searches kb for the 4 Contract code articles + REQUIREMENTS-DOC stub, fetches each to read code, kb_update REQUIREMENTS-DOC with 系统概述 / 功能模块 (create/modify/terminate/search/settlement) / 数据模型 (tenant/monthlyRent/deposit/...) / 业务规则 (deposit=3×rent / 100,000 approval / DRAFT→ACTIVE→ARCHIVED/TERMINATED / settlement period) / API endpoints (/api/contracts CRUD). Penalize inventing features absent from code (email/PDF/OAuth/role-based)."
+
+reference_solution: |
+  kb_search('Contract') → find 4 code articles + REQUIREMENTS-DOC.
+  kb_get_article each. Compose requirements: 系统概述 + 功能模块 (5) +
+  数据模型 (tenantName/monthlyRent/deposit/propertyType/billingCycle/status)
+  + 业务规则 (3-month-rent deposit, 100,000 approval threshold, state
+  transitions, termination penalty) + API endpoints (POST/GET/PUT/DELETE).
+  Do NOT invent email/PDF/OAuth/role-based access.
+  kb_update_article('KB-CODE-REQUIREMENTS-DOC', content=...).
+
+primary_dimensions: [completion, robustness, communication]

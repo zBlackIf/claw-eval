@@ -36,6 +36,7 @@ from .compact import (
 from .dispatcher import ToolDispatcher
 from .media_loader import collect_media_references, load_media_from_ref, model_supports_modality, to_content_block
 from .providers.openai_compat import OpenAICompatProvider
+from .sandbox_errors import SandboxInfraError
 from .system_prompt import build_system_prompt
 from .todo import TodoManager
 
@@ -232,6 +233,7 @@ def run_task(
     *,
     sandbox_tools: bool = False,
     sandbox_url: str | None = None,
+    sandbox_identity: dict[str, str] | None = None,
     prompt_cfg: PromptConfig | None = None,
     model_cfg: ModelConfig | None = None,
     media_cfg: MediaConfig | None = None,
@@ -269,6 +271,7 @@ def run_task(
         dispatcher = SandboxToolDispatcher(
             http_dispatcher,
             sandbox_url=sandbox_url,
+            sandbox_identity=sandbox_identity,
             max_images_per_turn=_mcfg.max_images_per_turn,
             tool_image_max_dimension=_mcfg.tool_image_max_dimension,
             tool_image_quality=_mcfg.tool_image_quality,
@@ -487,7 +490,13 @@ def run_task(
 
                     # --- Standard dispatcher (sandbox / HTTP) ---
                     has_non_agent_tool = True
-                    dispatch_result = dispatcher.dispatch(tu, trace_id)
+                    try:
+                        dispatch_result = dispatcher.dispatch(tu, trace_id)
+                    except SandboxInfraError as exc:
+                        if exc.dispatch_event is not None:
+                            writer.write_event(exc.dispatch_event)
+                            tool_time_s += exc.dispatch_event.latency_ms / 1000.0
+                        raise
                     # Support both 2-tuple (legacy) and 3-tuple (media-aware) dispatch
                     if len(dispatch_result) == 3:
                         result, dispatch_event, extra_media = dispatch_result

@@ -1,0 +1,68 @@
+# provenance:
+#   source_session: "9946379842586037887"
+#   scenario: "小说 / 写作 / 创作"
+#   abstraction: "Web scraping + pagination + markdown generation from HTML catalog"
+task_id: CP198_book_catalog_scraper_markdown_gen
+task_name: "书籍目录爬取与Markdown报告生成（CP198 / HTML解析+分页+结构化产物）"
+version: "1.0"
+category: data_processing
+difficulty: medium
+tags: [web_scraping, html_parsing, markdown, data_extraction, pagination]
+
+source_session_id: "9946379842586037887"
+source_description: "从用户爬取影片目录网页、解析分页、生成结构化Markdown报告的真实会话抽象而来。改为书籍目录场景，考察HTML解析、分页处理、数据聚合与Markdown产物生成。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/book_catalog/ 下有一个科幻书籍馆的 HTML 页面
+    （page1.html、page2.html、page3.html），是刘慈欣的作品目录，共3页。
+
+    请写一个 Python 脚本：
+    1. 解析所有分页，提取每本书的信息（书名、ISBN、出版日期、类型、页数、简介、标签）
+    2. 把全部书籍按出版日期倒序排列
+    3. 生成一份结构化的 Markdown 总览文档，包含作者简介 + 所有书籍的详细信息
+
+    把脚本和生成的 Markdown 文件都放到 /workspace/fixtures/book_catalog/ 目录下。
+    中间数据可以先存成 JSON 再转 Markdown。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/book_catalog/page1.html
+  - fixtures/book_catalog/page2.html
+  - fixtures/book_catalog/page3.html
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a complete pipeline: Python script with proper HTML parsing (BeautifulSoup/lxml/etc), pagination handling across all 3 pages, extraction of all 12 books with full metadata, JSON intermediate storage, and a well-structured Markdown output sorted by publication date descending. Script must be runnable. Markdown must have proper headings, metadata fields, and synopses."
+
+reference_solution: |
+  scraper.py:
+  - Uses BeautifulSoup or similar to parse HTML
+  - Iterates over page1.html, page2.html, page3.html
+  - Extracts: title, ISBN, pub_date, genre, pages, synopsis, tags from each .book-item
+  - Stores as list of dicts in books.json
+  - Sorts by pub_date descending (2010 > 2008 > 2005 > ...)
+  - Generates overview.md with:
+    - Author info header
+    - Each book as ## heading with metadata table/list and synopsis
+    - Tags as inline badges or comma-separated
+
+primary_dimensions: [completion, communication, safety]

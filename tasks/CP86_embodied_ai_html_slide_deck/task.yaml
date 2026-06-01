@@ -1,0 +1,173 @@
+# provenance:
+#   themis_dataset: taskset-260421-225115-strict-v2
+#   themis_task_id: task_49_embodied_ai_slides
+#   themis_rank_original: 48
+#   themis_metrics: { std_trim: 0.377, range_trim: 0.955, mean_trim: 0.613 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP86_embodied_ai_html_slide_deck
+task_name: "全球具身智能 15 页 HTML 幻灯片（CP86 / 源 taskset-260421-225115-strict-v2:task_49_embodied_ai_slides）"
+version: "1.0"
+category: coding
+difficulty: hard
+tags: [general, service_assisted, sandbox]
+
+source_task_id: "task_49_embodied_ai_slides"
+source_dataset: "taskset-260421-225115-strict-v2"
+source_description: "Workspace-primary HTML deck task with auxiliary research_brief service added per claw-eval-task-designer-v2: service supplies company/data traps and submit/confirm audit evidence while hidden verifier remains the main pages/ artifact check."
+
+services:
+  - name: research_brief
+    command: python tasks/CP86_embodied_ai_html_slide_deck/services/research_brief/server.py
+    port: 9380
+    health_check: http://localhost:9380/research_brief/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9380/research_brief/reset
+    env:
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP86_embodied_ai_html_slide_deck/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_NAME: research_brief
+
+prompt:
+  text: |
+    这套 15 页 HTML 幻灯片仍然输出到 /workspace/pages/。研究资料服务里有公司清单、融资/市场数据、图表口径和几条容易混淆的产品记录，先查服务并复核素材，再基于 /workspace/fixtures/research_embodied_ai.txt 做华为风格页面。
+
+    交付前把页面规划和引用口径提交并确认到研究服务，最终回复说页面数量和关键产物。
+  language: zh
+
+tools:
+  - name: research_brief_list
+    description: List records available in the research brief service; use this before targeted reads.
+    input_schema:
+      type: object
+      properties:
+        kind:
+          type: string
+        tag:
+          type: string
+        limit:
+          type: integer
+          default: 20
+      required: []
+  - name: research_brief_search
+    description: Search the research brief service for candidate records, source notes, and trap cases.
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+        kind:
+          type: string
+        max_results:
+          type: integer
+          default: 10
+      required: [query]
+  - name: research_brief_get
+    description: Fetch one full service record by record_id.
+    input_schema:
+      type: object
+      properties:
+        record_id:
+          type: string
+      required: [record_id]
+  - name: research_brief_cross_check
+    description: Cross-check selected records against known traps and conflicting evidence.
+    input_schema:
+      type: object
+      properties:
+        primary_id:
+          type: string
+        comparison_ids:
+          type: array
+          items:
+            type: string
+        focus:
+          type: string
+      required: []
+  - name: research_brief_submit_report
+    description: Submit the working conclusion or artifact summary back to the service.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        content:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        decision:
+          type: string
+        metadata:
+          type: object
+      required: [report_id, content]
+  - name: research_brief_confirm_report
+    description: Confirm the submitted conclusion after cross-checking source_ids.
+    input_schema:
+      type: object
+      properties:
+        report_id:
+          type: string
+        source_ids:
+          type: array
+          items:
+            type: string
+        checklist:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+      required: [report_id]
+tool_endpoints:
+  - tool_name: research_brief_list
+    url: http://localhost:9380/research_brief/list
+    method: POST
+  - tool_name: research_brief_search
+    url: http://localhost:9380/research_brief/search
+    method: POST
+  - tool_name: research_brief_get
+    url: http://localhost:9380/research_brief/get
+    method: POST
+  - tool_name: research_brief_cross_check
+    url: http://localhost:9380/research_brief/cross_check
+    method: POST
+  - tool_name: research_brief_submit_report
+    url: http://localhost:9380/research_brief/submit
+    method: POST
+  - tool_name: research_brief_confirm_report
+    url: http://localhost:9380/research_brief/confirm
+    method: POST
+
+sandbox_files:
+  - fixtures/research_embodied_ai.txt
+
+sandbox_grader_files:
+  - fixtures/verify_embodied_slides.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_embodied_slides.py
+
+environment:
+  timeout_seconds: 1200
+  max_turns: 28
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward ≥15 standalone HTML files under /workspace/pages/ at 1280x720, all valid <html>, using Tailwind CDN, ECharts charts on ≥2 pages (financing/market size), Huawei red #c7020e color theme, data tables on ≥2 pages (product comparison), and content references real companies (Tesla/Figure/Agility/优必选/宇树/智元/傅利叶/小鹏/小米 etc.) from the research material. File names may use common numbered slide/page conventions."
+
+reference_solution: |
+  Read research_embodied_ai.txt. Plan 15 pages per the brief (cover/技术
+  路线/海内外玩家/融资/产品对比/商业化/市场预测/产业链/总结). For each
+  page emit one numbered HTML under pages/: <!DOCTYPE html><html><head><link tailwind
+  CDN><script echarts CDN if chart></head><body class="..." style="width:
+  1280px; height: 720px;"><nav with #c7020e>...</body></html>. Financing
+  page uses ECharts bar chart, market size page uses ECharts line chart,
+  product comparison page uses <table>. Reference real companies and
+  numbers from research file.
+
+primary_dimensions: [completion, communication, safety]

@@ -1,0 +1,73 @@
+# provenance:
+#   themis_dataset: taskset-260427-195223
+#   themis_task_id: task_127_python_module_split
+#   themis_rank_original: 54
+#   themis_metrics: { std_trim: 0.371, range_trim: 0.857, mean_trim: 0.786 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP90_python_module_cli_split
+task_name: "Python 模块拆分为独立 CLI 工具（CP90 / 源 taskset-260427-195223:task_127_python_module_split）"
+version: "1.0"
+category: coding
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_127_python_module_split"
+source_dataset: "taskset-260427-195223"
+source_description: "PinchBench top100 rank 54（std_trim 0.371）。Workspace WS2 模块重构：把 skill_analyzer.py 中 4 个函数拆成独立 CLI 工具。verifier 按 /workspace/tools/ 下的 CLI 行为和函数调用归类评分，不强绑具体文件名或根目录 skill_analyzer.py 副本。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/skill_analyzer.py 里有 4 个独立的分析函数，帮我把它们
+    拆成独立 CLI 工具放到 /workspace/tools/ 下，每个能 python3 直接跑。原
+    文件留下别动，保持向后兼容。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/skill_analyzer.py
+
+sandbox_grader_files:
+  - fixtures/verify_module_split.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_module_split.py
+
+env_snapshot_files:
+  - /workspace/skill_analyzer.py
+  - /workspace/tools/__init__.py
+  - /workspace/tools/extract_metadata.py
+  - /workspace/tools/analyze_permissions.py
+  - /workspace/tools/generate_report.py
+  - /workspace/tools/compare_skills.py
+
+environment:
+  timeout_seconds: 540
+  max_turns: 16
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward /workspace/tools/ with four standalone CLI tools, each using argparse or an equivalent CLI main entry and wrapping one of the four original functions: extract_skill_metadata, analyze_skill_permissions, generate_report, compare_skills. Prefer importing from skill_analyzer, but accept fixtures/skill_analyzer.py as the original module source. Exact CLI filenames are not the primary contract; behavior and coverage of the four functions are."
+
+reference_solution: |
+  Keep /workspace/fixtures/skill_analyzer.py available as the original module,
+  or copy it to /workspace/skill_analyzer.py if convenient. Create
+  /workspace/tools/ with four runnable CLI scripts. For each tool e.g.:
+    import argparse, json
+    from skill_analyzer import extract_skill_metadata
+    def main():
+        ap = argparse.ArgumentParser(); ap.add_argument('skill_path')
+        args = ap.parse_args()
+        print(json.dumps(extract_skill_metadata(args.skill_path), ensure_ascii=False, indent=2))
+    if __name__ == '__main__': main()
+  Similar wrappers for analyze_skill_permissions / generate_report (--format opt) /
+  compare_skills (2 path args). Semantic filenames are fine.
+
+primary_dimensions: [completion, communication, safety]

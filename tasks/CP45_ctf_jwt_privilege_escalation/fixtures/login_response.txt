@@ -1,0 +1,7 @@
+HTTP/1.1 302 Found
+Date: Tue, 15 Apr 2026 09:45:30 GMT
+Server: Apache/2.4.41
+Set-Cookie: user_email=dev%40example.com; expires=Tue, 15-Apr-2026 10:45:30 GMT; path=/
+Set-Cookie: token=eyJraWQiOiJwcm9kLmtleSIsInR5cCI6IkpXVCIsImFsZyI6IkhTMjU2In0.eyJlbWFpbCI6ImRldkBleGFtcGxlLmNvbSIsInJvbGUiOiJkZXZlbG9wZXIiLCJleHAiOjE3NzYyMjA5Nzh9.abc123signaturehere; expires=Tue, 15-Apr-2026 10:45:30 GMT; path=/; HttpOnly
+Location: /control.php
+Content-Length: 0

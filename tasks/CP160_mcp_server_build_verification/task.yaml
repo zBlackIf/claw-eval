@@ -1,0 +1,73 @@
+# provenance:
+#   source_session: 1576933432740309909
+#   scenario: 代码开发 / 实现
+#   session_summary: Agent creates MCP server wrapping build verification CLI tools (build, reference_build, compare, detect_changes) with stdio transport
+task_id: CP160_mcp_server_build_verification
+task_name: "MCP Server for Build Verification Tools（CP160 / 源 session 1576933432740309909）"
+version: "1.0"
+category: implementation
+difficulty: hard
+tags: [mcp, python, server, build-tools, stdio]
+
+source_session_id: "1576933432740309909"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "Real session where agent creates an MCP server exposing build verification tools (nxbuild generate, cmake generate, compare_vcxproj, detect_changes, full_verify) via stdio transport using the Python mcp package."
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/build-tools/ 目录下有 4 个构建验证 CLI 工具
+    （build_project.py、reference_build.py、compare_artifacts.py、detect_changes.py），
+    还有一个 requirements.txt 里声明了 mcp>=1.0.0。
+
+    请在该目录下创建 server.py，用 Python mcp 包把这 4 个工具 + 一个 full_verify
+    组合工具（按顺序跑 build → reference_build → compare）暴露为 MCP tools，
+    走 stdio transport。每个 tool 的参数要有类型标注和描述。
+    README.md 里有工具的接口说明可参考。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/build-tools/build_project.py
+  - fixtures/build-tools/reference_build.py
+  - fixtures/build-tools/compare_artifacts.py
+  - fixtures/build-tools/detect_changes.py
+  - fixtures/build-tools/requirements.txt
+  - fixtures/build-tools/README.md
+  - fixtures/build-tools/sample_project/build_defs/engine_core.json
+  - fixtures/build-tools/sample_project/build_defs/network_module.json
+  - fixtures/build-tools/sample_project/legacy_defs/engine_core.json
+  - fixtures/build-tools/sample_project/legacy_defs/network_module.json
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a complete MCP server: (1) valid Python file using the mcp package, (2) Server instance with stdio transport, (3) all 5 tools registered (build, reference_build, compare, detect_changes, full_verify), (4) proper parameter definitions with types and descriptions, (5) tools correctly invoke the underlying CLI scripts and return JSON results."
+
+reference_solution: |
+  server.py using mcp package:
+  - from mcp.server import Server + stdio transport
+  - @server.tool() decorator for each of 5 tools
+  - build_project(project_dir: str, config: str = "Release") -> invokes build_project.py
+  - reference_build(project_dir: str, config: str = "Release") -> invokes reference_build.py
+  - compare_artifacts(project_dir: str, module: str|None, config: str) -> invokes compare_artifacts.py
+  - detect_changes(project_dir: str, since: int = 5) -> invokes detect_changes.py
+  - full_verify(project_dir: str, config: str = "Release") -> runs build+ref+compare in sequence
+  - if __name__ == "__main__": run stdio transport
+
+primary_dimensions: [completion, communication, safety]

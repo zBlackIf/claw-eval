@@ -1,0 +1,73 @@
+# provenance:
+#   source_session: 11560406766530308319
+#   scenario: "Web / browser automation"
+#   model: glm-4-7-251222
+#   real_user_turns: 16
+task_id: CP195_remotion_composition_integration
+task_name: "Remotion Composition Integration — add new video composition to existing project"
+version: "1.0"
+category: engineering
+difficulty: medium
+tags: [frontend, video, remotion, typescript, react]
+
+source_session_id: "11560406766530308319"
+source_description: "User has an existing Remotion project with a BreakingNewsRundown composition. They want to add a new composition based on a YouTube video summary about '5 Ways to Make Money in 2026 (with AI)'. The composition must be properly registered in Root.tsx, use correct Remotion APIs, and be renderable."
+
+services: []
+
+prompt:
+  text: |
+    I have a Remotion project at /workspace/fixtures/remotion-project/ with one
+    composition already (BreakingNewsRundown). I need you to add a new composition
+    called "AiMoneySummary" that visualizes the content from
+    content/summary_ai_money_2026.md. The composition should have multiple
+    scenes/sequences covering the 5 key points from the summary, with a title
+    intro and an outro. Register it in Root.tsx so it shows up in the studio
+    and can be rendered. Make sure it uses proper Remotion APIs (Composition,
+    Sequence, AbsoluteFill, etc.) and TypeScript types. Target 1920x1080 at
+    30fps, around 900 frames total.
+  language: en
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/remotion-project/package.json
+  - fixtures/remotion-project/tsconfig.json
+  - fixtures/remotion-project/remotion.config.ts
+  - fixtures/remotion-project/src/Root.tsx
+  - fixtures/remotion-project/src/index.ts
+  - fixtures/remotion-project/src/Composition.tsx
+  - fixtures/remotion-project/src/videos/daily-rundown-may-9/BreakingNewsRundown.tsx
+  - fixtures/remotion-project/content/summary_ai_money_2026.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a complete, properly integrated Remotion composition: new component file with TypeScript types, correct Remotion API usage (Composition/Sequence/AbsoluteFill/useCurrentFrame), registration in Root.tsx with correct props (id/width/height/fps/durationInFrames), content derived from the summary markdown, multiple sequences for different sections, and no breakage of the existing BreakingNewsRundown composition."
+
+reference_solution: |
+  1. Create src/AiMoneySummary.tsx (or src/videos/ai-money-summary/AiMoneySummary.tsx):
+     - Import from 'remotion': Composition, AbsoluteFill, Sequence, useCurrentFrame, spring, interpolate
+     - Define typed props interface or zod schema
+     - Create main component with multiple Sequences covering title + 5 key points + outro
+     - Export the component and optionally a schema
+  2. Update src/Root.tsx:
+     - Import AiMoneySummary component
+     - Add new <Composition> with id="AiMoneySummary", width=1920, height=1080, fps=30, durationInFrames ~900
+     - Keep existing BreakingNewsRundown composition intact
+  3. The composition must use proper Remotion patterns (AbsoluteFill for layout, Sequence for timing, frame-based animations)
+
+primary_dimensions: [completion, communication, safety]

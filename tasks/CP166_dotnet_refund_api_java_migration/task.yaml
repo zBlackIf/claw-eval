@@ -1,0 +1,79 @@
+# provenance:
+#   source_session: 15100063603137496199
+#   scenario: 企业 / SaaS 业务系统
+#   pattern: Workspace WS2 (full code migration)
+task_id: CP166_dotnet_refund_api_java_migration
+task_name: ".NET 退款接口迁移到 Java Spring Boot（CP166 / 源 session 15100063603137496199）"
+version: "1.0"
+category: migration
+difficulty: hard
+tags: [java, dotnet, api-migration, spring-boot, microservice]
+
+source_session_id: "15100063603137496199"
+source_description: "Workspace WS2 跨语言 API 迁移。将 .NET FinancialSystemRefundInfo 退款接口完整移植到 Java Spring Boot 微服务，需按订单类型分支（预约单走汇付、商城单走微信），对齐路由约定，完善 RPC + 降级。verifier 7 隐藏锚点。"
+
+services: []
+
+prompt:
+  text: |
+    myky-finance-manage 项目需要迁移 dotnet 的 FinancialSystemRefundInfo 退款接口到 Java。
+
+    参考代码在 /workspace/fixtures/dotnet-reference/ 目录，Java 项目在
+    /workspace/fixtures/myky-finance-manage/。前端 API 已经写好了调用路径
+    （见 frontend-api/hospitalTenPay.js），后端需要对齐。
+
+    要求：
+    1. 在 HospitalTenPayController 添加新端点，路由与前端 API 一致
+    2. 完整移植 dotnet 的 FinancialSystemRefundInfo 业务逻辑到 Java service 层
+    3. 补全 RPC client 和 fallback factory
+    4. 新增必要的 DTO/请求类
+
+    项目用 Spring Boot 3 + Java 17 + Lombok。代码放到现有目录结构中。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/myky-finance-manage/src/main/java/com/myky/finance/manage/web/controller/HospitalTenPayController.java
+  - fixtures/myky-finance-manage/src/main/java/com/myky/finance/manage/core/service/HospitalTenPayService.java
+  - fixtures/myky-finance-manage/src/main/java/com/myky/finance/manage/core/service/impl/HospitalTenPayServiceImpl.java
+  - fixtures/myky-finance-manage/src/main/java/com/myky/finance/manage/rpc/HospitalTenPayRpcClient.java
+  - fixtures/myky-finance-manage/src/main/java/com/myky/finance/manage/rpc/HospitalTenPayRpcClientFallbackFactory.java
+  - fixtures/myky-finance-manage/src/main/java/com/myky/finance/manage/model/dto/RefundReq.java
+  - fixtures/myky-finance-manage/frontend-api/hospitalTenPay.js
+  - fixtures/dotnet-reference/BusinessPublicService.FinancialSystemRefundInfo.cs
+  - fixtures/dotnet-reference/FinancialSystemRefundDto.cs
+  - fixtures/dotnet-reference/HospitalTenPayController.cs
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 900
+  max_turns: 25
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete dotnet-to-Java migration: controller with /financial-system-refund endpoint (POST, @RequestBody), DTO with orderCode/refundAmount/orderType/refundReason/operatorName fields, service interface method, service impl with order-type branching (AppointmentOrder→汇付 refundPartially, ShopOrder→微信 WeChatRefund), status update after success, RPC client @PostExchange, fallback factory method. Route must use kebab-case matching frontend API convention."
+
+reference_solution: |
+  1. Controller: @PostMapping("/financial-system-refund") in HospitalTenPayController
+  2. DTO: FinancialSystemRefundReq with orderCode, refundAmount (Long, nullable),
+     orderType (enum/String), refundReason, operatorName
+  3. Service interface: Result financialSystemRefund(FinancialSystemRefundReq req)
+  4. Service impl:
+     - if orderType == AppointmentOrder → call rpcClient.refundPartially(...)
+     - if orderType == ShopOrder → call rpcClient.weChatRefund(...)
+     - on success → update order status to Refunded
+     - on failure → throw BusinessException
+  5. RPC client: @PostExchange("/api/gw/hospital-ten-pay/financial-system-refund")
+  6. Fallback factory: return Result.fail(...) for financialSystemRefund
+
+primary_dimensions: [completion, communication, safety]

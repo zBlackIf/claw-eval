@@ -1,0 +1,69 @@
+# provenance:
+#   themis_dataset: taskset-260427-121234
+#   themis_task_id: task_111_multiagent_tech_architecture
+#   themis_rank_original: 59
+#   themis_metrics: { std_trim: 0.364, range_trim: 0.800, mean_trim: 0.589 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP92_product_requirements_technical_architecture
+task_name: "产品需求反推技术架构设计（CP92 / 源 taskset-260427-121234:task_111_multiagent_tech_architecture）"
+version: "1.0"
+category: design
+difficulty: hard
+tags: [general]
+
+source_task_id: "task_111_multiagent_tech_architecture"
+source_dataset: "taskset-260427-121234"
+source_description: "PinchBench top100 rank 59（std_trim 0.364）。Workspace WS2 系统架构设计：基于 product_requirements.json 输出 4 份文档（architecture/database_schema/api_design/tech_stack_rationale）。verifier 5 个隐藏锚点（多租户隔离 / 架构图 / 6 表 +索引 / API CRUD + 分页 + 鉴权 / 备选方案 + 约束 + 演进）。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/product_requirements.json 这份产品需求，帮我出完整的
+    技术架构设计——架构文档、库表、API spec、技术选型理由，全部放到
+    /workspace/。下周架构评审用。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/product_requirements.json
+
+sandbox_grader_files:
+  - fixtures/verify_tech_arch.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_tech_arch.py
+
+env_snapshot_files:
+  - /workspace/architecture.md
+  - /workspace/database_schema.sql
+  - /workspace/api_design.yaml
+  - /workspace/tech_stack_rationale.md
+
+environment:
+  timeout_seconds: 900
+  max_turns: 22
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward 4 design artifacts: architecture.md with layered diagram + F1-F5 service mapping, database_schema.sql with ≥5 of (users/teams/projects/tasks/subtasks/comments) tables + indexes + multi-tenant (tenant_id) isolation, api_design.yaml covering task CRUD + AI decomposition + auth (JWT/SSO) + pagination, tech_stack_rationale.md comparing alternatives tied to constraints (team size/budget/MVP) with future evolution path."
+
+reference_solution: |
+  Read product_requirements.json. Write 4 files:
+  - architecture.md: monolith→microservices rationale, API Gateway / Service / Data
+    layers (mermaid diagram), F1-F5 to services mapping, tech selection table.
+  - database_schema.sql: CREATE TABLE for users/teams/projects/tasks/subtasks/
+    task_comments, all with tenant_id column + composite indexes.
+  - api_design.yaml: OpenAPI 3.0; /tasks (GET POST PUT DELETE), /tasks/decompose,
+    /tasks/priorities, /teams; bearerAuth JWT scheme; page/limit query params.
+  - tech_stack_rationale.md: 2-3 alternatives per choice (Postgres vs MySQL,
+    Node vs Python, Redis vs RabbitMQ), tied to team_size/budget/MVP timeline,
+    evolution path (monolith→microservices over X months).
+
+primary_dimensions: [completion, communication, safety]

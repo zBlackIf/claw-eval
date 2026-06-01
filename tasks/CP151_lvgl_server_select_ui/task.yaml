@@ -1,0 +1,80 @@
+# provenance:
+#   source_session: "11670344029012922317"
+#   scenario: "Vue / React / 前端 (中文)"
+#   model: "glm-5-1-260408"
+#   event_time: "2026-05-18 10:00:51"
+#   value_score: 56.7
+task_id: CP151_lvgl_server_select_ui
+task_name: "ESP32 LVGL 开机服务器选择页面（CP151 / 源 session 11670344029012922317）"
+version: "1.0"
+category: embedded
+difficulty: medium
+tags: [embedded, lvgl, esp32, ui, chinese]
+
+source_session_id: "11670344029012922317"
+source_description: "ESP32 AI 台灯项目，用 LVGL 实现开机时的服务器选择 UI 页面。按键导航（上下键切换选项，中键确认），确认前阻塞其他开机流程，确认后将选中的 WebSocket URL 写入全局配置。"
+
+services: []
+
+prompt:
+  text: |
+    ESP32 AI 台灯项目（/workspace/fixtures/ai_lamp/）需要加一个开机服务器选择功能。
+    要求：
+    1. 开机后显示服务器选择页面，选项为 ws://20.tcp.vip.cpolar.cn:10244 和 ws://192.168.50.233:61032
+    2. 上下键切换选项高亮，中键确认
+    3. 确认后将选中的 URL 写入 g_cfg（通过 app_config 模块）
+    4. 在用户确认选择之前，不能执行 WebSocket 连接等后续开机操作
+
+    现有代码结构见 main/ 目录，按键驱动在 drivers/drv_key.h，配置在 app_config.h/c，
+    主函数在 app_main.c。请新建 UI 选择模块并集成到启动流程中。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/ai_lamp/main/app_config.h
+  - fixtures/ai_lamp/main/app_config.c
+  - fixtures/ai_lamp/main/app_main.h
+  - fixtures/ai_lamp/main/app_main.c
+  - fixtures/ai_lamp/main/CMakeLists.txt
+  - fixtures/ai_lamp/main/drivers/drv_key.h
+  - fixtures/ai_lamp/main/ui/ui_common.h
+  - fixtures/ai_lamp/main/ui/ui_home.h
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete LVGL server selection UI: dedicated header+implementation files, key handling (UP/DOWN navigation + MIDDLE confirm), both server URLs present, config write-back mechanism, blocking wait loop with LVGL timer handler, proper LVGL UI elements (screen/labels/style highlight), and integration in app_main.c before WebSocket task creation."
+
+reference_solution: |
+  Under main/ui/:
+  - ui_server_select.h (header guard, function declaration with SemaphoreHandle_t param)
+  - ui_server_select.c:
+    - Includes app_config.h, drv_key.h, lvgl.h
+    - Defines server URL options array
+    - Creates LVGL screen with title, option cards, hint text
+    - Polling loop: reads key, UP/DOWN cycles selection, MIDDLE confirms
+    - Updates visual highlight on selection change (border/bg color)
+    - Calls lv_timer_handler() in loop for display refresh
+    - After confirm: writes URL to config via setter or strncpy
+    - Deletes selection screen
+  In app_main.c:
+  - #include "ui_server_select.h"
+  - Call ui_server_select_wait() after ui_common_init() but BEFORE xTaskCreate(task_ws_connect)
+  In app_config.h/c:
+  - Add app_config_set_ws_url(const char *url) function
+
+primary_dimensions: [completion, communication, safety]

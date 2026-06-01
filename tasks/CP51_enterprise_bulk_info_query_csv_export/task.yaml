@@ -1,0 +1,98 @@
+# provenance:
+#   themis_dataset: taskset-260427-195223
+#   themis_task_id: task_96_enterprise_info_query
+#   themis_rank_original: 2
+#   themis_metrics: { std_trim: 0.500, range_trim: 1.000, mean_trim: 0.500 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP51_enterprise_bulk_info_query_csv_export
+task_name: "北京企业批量信息查询导出（CP51 / 源 taskset-260427-195223:task_96_enterprise_info_query）"
+version: "1.0"
+category: research
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_96_enterprise_info_query"
+source_dataset: "taskset-260427-195223"
+source_description: "从 Themis PinchBench top100（2026-05-27 二次筛选，killer bucket，CP51-CP100 批次）中按跨模型 std_trim 排名第 2 的高区分度题（std_trim 0.500 / range_trim 1.000 / mean_trim 0.500）。原题 87 家企业全量查询，因 agent max_turns 限制改编为 12 家代表性北京企业；主交付为 /workspace/enterprise_info.csv，grader 检查表头/行数/信用代码格式/字段非占位率 + web 搜索行为，避免 agent 凭记忆瞎编。"
+
+services:
+  - name: web_real
+    command: python mock_services/web_real/server.py
+    port: 9114
+    health_check: http://localhost:9114/web/health
+    health_check_method: GET
+    ready_timeout: 10
+    reset_endpoint: http://localhost:9114/web/reset
+
+prompt:
+  text: |
+    下周尽调要用，把 /workspace/fixtures/enterprise_list.txt 这 12 家
+    北京公司的工商基础信息拉一份出来给法务和财务，CSV 写到
+    /workspace/enterprise_info.csv 就行。
+
+    回复时说一下有没有要重点关注的（经营异常、法人变更之类的）、
+    有没有查不到的。
+  language: zh
+
+tools:
+  - name: web_search
+    description: 搜索互联网，返回相关网页结果列表（标题、链接、摘要）
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+          description: 搜索关键词
+        max_results:
+          type: integer
+          description: 最大返回结果数
+          default: 10
+      required: [query]
+
+  - name: web_fetch
+    description: 获取指定URL的完整网页内容
+    input_schema:
+      type: object
+      properties:
+        url:
+          type: string
+          description: 要获取的网页URL
+        timeout_seconds:
+          type: integer
+          default: 30
+      required: [url]
+
+tool_endpoints:
+  - tool_name: web_search
+    url: http://localhost:9114/web/search
+    method: POST
+  - tool_name: web_fetch
+    url: http://localhost:9114/web/fetch
+    method: POST
+
+sandbox_files:
+  - fixtures/enterprise_list.txt
+
+env_snapshot_files:
+  - /workspace/enterprise_info.csv
+
+environment:
+  timeout_seconds: 900
+  max_turns: 40
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a UTF-8 CSV with the six required columns, ≥10 of 12 companies populated using real, plausibly-sourced fields (18-character credit codes, real-looking legal reps, sensible registered capital), and a final reply summarizing coverage and anomalies."
+
+reference_solution: |
+  Read /workspace/fixtures/enterprise_list.txt for the 12 companies. For each:
+  web_search('<公司名> 统一社会信用代码 天眼查') then web_fetch top result,
+  or web_search('<公司名> 国家企业信用信息公示系统'). Extract 信用代码 /
+  法人代表 / 注册资本 / 成立日期 / 经营状态. Write CSV with required header
+  to /workspace/enterprise_info.csv (UTF-8). Final reply: how many covered,
+  any 经营异常, any 查不到.
+
+primary_dimensions: [completion, robustness, communication]

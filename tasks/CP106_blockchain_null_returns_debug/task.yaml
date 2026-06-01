@@ -1,0 +1,67 @@
+# provenance:
+#   source_session: "14238919561121551438"
+#   scenario: "区块链 / Web3 / Crypto (中文)"
+#   pattern: Workspace WS2
+task_id: CP106_blockchain_null_returns_debug
+task_name: "区块链文件同步 NPE 修复（CP106 / 源 session 14238919561121551438）"
+version: "1.0"
+category: debug
+difficulty: medium
+tags: [java, null-safety, blockchain]
+
+source_task_id: "14238919561121551438"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "真实对话：用户请求修复区块链网元文件同步流程中 AlarmDbHelper.getRmUidEntityByRuid() 返回 null 导致的 NPE。需追踪 null 在下游 getRemoteDir/createUpSynFile 中的传播影响。"
+
+services: []
+
+prompt:
+  text: |
+    静态分析报了个 Medium 缺陷：XwFmSyncFileQueryProcess.java 第 109 行，
+    getRmUidEntityByRuid 返回值可能为 null，直接调 getNafnetype() 会 NPE。
+    代码在 /workspace/fixtures/cn-naf-fm-xw/src/ 下面，你看一下这个方法和上下游调用链，
+    把这个空指针修掉。注意修完后整个同步流程不能因此挂掉或者生成异常路径。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/cn-naf-fm-xw/src/main/java/com/zte/ums/xw/fm/service/filesync/XwFmSyncFileQueryProcess.java
+  - fixtures/cn-naf-fm-xw/src/main/java/com/zte/ums/xw/fm/utils/db/AlarmDbHelper.java
+  - fixtures/cn-naf-fm-xw/src/main/java/com/zte/ums/xw/fm/model/RmUidEntity.java
+  - fixtures/cn-naf-fm-xw/src/main/java/com/zte/ums/xw/fm/model/VasRmUidInfo.java
+  - fixtures/cn-naf-fm-xw/src/main/java/com/zte/ums/xw/fm/service/filesync/XwFileNameGenarater.java
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward thorough null-safety fix: null check on getRmUidEntityByRuid return, avoidance of 'null' string propagation into path construction (getRemoteDir/createUpSynFile), proper error handling (default value or exception rather than silent null), defensive downstream protection, and warning/error logging for observability."
+
+reference_solution: |
+  In getNeType():
+  - Add null check after getRmUidEntityByRuid() call
+  - If null: log warning with neRuid context, use default "UNKNOWN" or throw IllegalStateException
+  - Never return null or assign null to neType (causes "null" in S3 paths)
+
+  Optionally in process():
+  - Guard neType before passing to getRemoteDir() and createUpSynFile()
+  - If neType is invalid, skip upload with error log rather than uploading to broken path
+
+  Key insight: the fix is NOT just adding `!= null` ternary with null fallback.
+  That naive fix causes StringBuilder.append(null) → "null" in the remote path,
+  which is a silent data corruption bug worse than the original NPE.
+
+primary_dimensions: [completion, communication, safety]

@@ -1,0 +1,67 @@
+task_id: CP103_iot_opencv_detection_pipeline
+task_name: "IoT YOLO 检测管线坐标导出 Bug 修复（CP103 / IoT OpenCV Detection Pipeline）"
+version: "1.0"
+category: debug
+difficulty: hard
+tags: [iot, embedded, opencv, cpp]
+
+source_task_id: "5884901440550377040"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "Real user session debugging a multi-file C++ video pipeline where JSON/TXT coordinate export uses incorrect Y-axis scaling factor (640 instead of 384), and detectImage() has uninitialized buffer regions."
+
+services: []
+
+prompt:
+  text: |
+    我们板子上跑的 YOLO 检测管线有个问题——QA 对比了可视化画框和导出的
+    JSON/TXT 标注文件，发现 Y 方向坐标和高度对不上。可视化那边画的框是对的，
+    但 json_exporter 导出的归一化坐标跟 visualizer 结果不一致。代码在
+    /workspace/fixtures/video_pipeline/，帮我查一下哪里坐标换算逻辑跟 visualizer
+    不统一，改掉让三处输出一致。改完给我说一下根因和改了什么。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/video_pipeline/video_detector.hpp
+  - fixtures/video_pipeline/visualizer.cpp
+  - fixtures/video_pipeline/json_exporter.cpp
+  - fixtures/video_pipeline/yolo_detector_acl.cpp
+  - fixtures/video_pipeline/main.cpp
+  - fixtures/video_pipeline/CMakeLists.txt
+  - fixtures/video_pipeline/README.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward fixing the Y-direction scaling bug in json_exporter.cpp (both JSON and TXT functions should use 384/VPSS_H/SCALED_H instead of 640/MODEL_INPUT_W for y and height mapping), fixing the detectImage buffer initialization issue, handling negative coordinates from border-region detections, and maintaining consistency with the visualizer's coordinate transformation."
+
+reference_solution: |
+  Root cause: json_exporter.cpp uses MODEL_INPUT_W (640) for y-direction scaling
+  when it should use SCALED_H (384), matching the visualizer's approach.
+
+  Fixes needed:
+  1. json_exporter.cpp saveDetectionResultToJson():
+     - orig_y = (obj.rect.y - 128) * image_height / 384.0f  (was /640.0f)
+     - orig_h = obj.rect.height * image_height / 384.0f  (was /640.0f)
+  2. json_exporter.cpp saveDetectionResultToTxt():
+     - Same fix: use 384 for y/h scaling instead of 640
+  3. yolo_detector_acl.cpp detectImage():
+     - Add memset(input_buffer_, 0, YOLO_MODEL_INPUT_SIZE) before partial copy
+     - Or restructure to pad+convert full 640x640 buffer like detect() does
+  4. (Bonus) Add negative coordinate clamping for border-region detections
+
+primary_dimensions: [completion, communication, safety]

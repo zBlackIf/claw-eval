@@ -1,0 +1,77 @@
+# Agent Command Dispatch Configuration
+# Routes RUN commands to appropriate handler scripts
+
+version: "2.1"
+agent_name: "yanjiu-report-bot"
+
+dispatch_rules:
+  - command: "RUN REPORT_TYPE=早报"
+    handler: "handlers.morning_report"
+    schedule: "0 8 * * *"
+    channels:
+      - email
+      - feishu_group
+    timeout_seconds: 300
+
+  - command: "RUN REPORT_TYPE=快报"
+    handler: "handlers.flash_report"
+    schedule: "0 10,12,14,16,18 * * *"
+    channels:
+      - email
+      - feishu_group
+    timeout_seconds: 180
+
+  - command: "RUN REPORT_TYPE=晚报"
+    handler: "handlers.evening_report
+    schedule: "0 20 * *"
+    channels:
+      - email
+      - feishu_group
+    timeout_seconds: 300
+
+  - command: "RUN REPORT_TYPE=周报"
+    handler: "handlers.weekly_report"
+    schedule: "15 20 * * 0"
+    channels:
+      - email
+    timeout_seconds: 600
+
+  - command: "RUN DAILY_REVIEW"
+    handler: "handlers.daily_check"
+    method: "generate_review"
+    schedule: "5 21 * * *"
+    channels:
+      - reply
+    timeout_seconds: 120
+
+  - command: "RUN DAILY_CHECK"
+    handler: "handlers.daily_check"
+    method: "generate_check"
+    schedule: "30 21 * * *"
+    channels:
+      - reply
+    timeout_seconds: 60
+
+exec_policy:
+  valid_statuses:
+    - success
+    - failed
+    - timeout
+  retry_on_failure: true
+  max_retries: 2
+  approval_required: true
+
+output:
+  base_dir: "/root/.openclaw/workspace/agents/yanjiu/output"
+  filename_pattern: "{report_type}_{date}_{time}.md"
+  encoding: "utf-8"
+
+delivery:
+  email:
+    smtp_host: "smtp.sina.cn"
+    smtp_port: 465
+    recipients:
+      - "ops-team@company.com"
+  feishu_group:
+    group_id: "oc_f543c0e1289305408b389c277f5ab3c6"
+    format: "summary"

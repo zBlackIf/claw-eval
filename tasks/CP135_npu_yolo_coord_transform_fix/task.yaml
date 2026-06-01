@@ -1,0 +1,69 @@
+# provenance:
+#   source_session: 5884901440550377040
+#   scenario: IoT / embedded / MCU - NPU YOLO detection pipeline
+#   real_bug: detectImage partial memcpy leaves garbage in border regions
+task_id: CP135_npu_yolo_coord_transform_fix
+task_name: "NPU YOLO 检测流水线 detectImage 坐标不一致修复"
+version: "1.0"
+category: bugfix
+difficulty: hard
+tags: [embedded, cpp, computer-vision, npu, coordinate-transform]
+
+source_session_id: "5884901440550377040"
+source_description: "Real user session: NPU YOLO detection pipeline on embedded device (Ascend 310). The detectImage function for single-image inference incorrectly mimics the VPSS video path by only copying middle 384 rows to the NPU buffer, leaving top/bottom border regions as garbage data. This causes detection coordinates to be inconsistent with the visualizer path (preprocess+detect). Additionally, the TXT export applies clamping only to center coordinates but not to width/height, causing geometric distortion for edge-case boxes."
+
+services: []
+
+prompt:
+  text: |
+    我们的 NPU YOLO 检测流水线有个坐标不一致的 bug。视频帧走 preprocess+detect
+    路径时，可视化绘制框是正确的。但单图推理走 detectImage 路径后导出的 JSON/TXT
+    坐标总是偏小偏低。代码在 /workspace/fixtures/video_pipeline/ 里。
+
+    请分析 detectImage 函数的内存拷贝逻辑，找出为什么它和 preprocess+detect 路径
+    产生不同的推理结果，然后修复。同时检查 json_exporter.cpp 的 TXT 导出是否有
+    一致性问题。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/video_pipeline/video_detector.hpp
+  - fixtures/video_pipeline/yolo_detector_acl.cpp
+  - fixtures/video_pipeline/json_exporter.hpp
+  - fixtures/video_pipeline/json_exporter.cpp
+  - fixtures/video_pipeline/main.cpp
+  - fixtures/video_pipeline/README.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct identification and fix of the detectImage memory copy bug. The main issue is that detectImage only copies 384 rows of NV12 data to the middle of the input buffer (mimicking VPSS path), but the source is already a full 640x640 NV12 frame from OpenCV. Fix should either: (A) copy the full YOLO_MODEL_INPUT_SIZE buffer without offset, or (B) properly offset the source address and ensure borders are pre-initialized. Secondary: fix TXT export clamping inconsistency (clamp all or none). Must not regress the preprocess() video path."
+
+reference_solution: |
+  Primary fix in yolo_detector_acl.cpp detectImage():
+  - Replace partial copy (dest offset + wrong source) with full buffer copy:
+    std::memcpy(input_buffer_, nv12_640x640, YOLO_MODEL_INPUT_SIZE);
+  - This copies the complete 640x640 NV12 including OpenCV-filled black borders.
+  - No need for separate border initialization since OpenCV already padded them.
+
+  Secondary fix in json_exporter.cpp saveDetectionResultToTxt():
+  - Either clamp all 4 values (center_x, center_y, norm_w, norm_h) consistently
+  - Or remove clamping entirely (let upstream handle out-of-bounds filtering)
+
+  Do NOT modify preprocess() — it correctly handles VPSS 640x384 input.
+
+primary_dimensions: [completion, communication, safety]

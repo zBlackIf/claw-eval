@@ -1,0 +1,72 @@
+# provenance:
+#   source_session: 18233719673217882559
+#   scenario: "小说 / 写作 / 创作"
+#   description: "MV storyboard creative writing — agent must produce a structured storyboard document with narrative arc, timing, song structure alignment, and technical specs."
+task_id: CP199_mv_storyboard_script_generation
+task_name: "MV 分镜脚本生成 — 父女合唱 MV 完整分镜文档（CP199 / 源 session 18233719673217882559）"
+version: "1.0"
+category: creative_writing
+difficulty: medium
+tags: [creative, writing, storyboard, multimedia]
+
+source_session_id: "18233719673217882559"
+source_description: "Real user session: team project manager coordinating MV creation for father-daughter duet song. Agent designed 8 storyboard scenes. Task extracts the creative storyboard authoring challenge into a standalone workspace task."
+
+services: []
+
+prompt:
+  text: |
+    我们正在制作一首父女合唱歌曲 "I WILL LISTEN TO MY BABY" 的 MV。项目简介和
+    歌词摘要在 /workspace/fixtures/mv_project/PROJECT_BRIEF.md 里，里面有模板文件
+    STORYBOARD.md 需要你填写完整。
+
+    请根据 PROJECT_BRIEF.md 的要求，完成 STORYBOARD.md 分镜脚本，要求：
+    - 至少 8 个分镜场景，讲述父女从婴儿到长大的成长故事
+    - 每个场景要有画面描述、对应歌词/音频、时长（秒）、镜头运动
+    - 所有场景时长加起来约 60 秒
+    - 填写 METADATA 段和 TECHNICAL NOTES 段
+    - 场景要跟随歌曲结构（主歌→副歌→主歌→桥段→副歌）
+
+    直接编辑 /workspace/fixtures/mv_project/STORYBOARD.md 文件即可。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/mv_project/PROJECT_BRIEF.md
+  - fixtures/mv_project/STORYBOARD.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 15
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a complete, well-structured storyboard document: METADATA section with project info (title, duration, style), at least 8 scenes each with visual description + lyrics/audio + duration + camera movement, total duration summing to ~60s, scenes following song structure (verse/chorus/bridge), narrative arc covering baby→childhood→growing→present stages, and TECHNICAL NOTES with production specifications (aspect ratio, color palette, animation style, transitions)."
+
+reference_solution: |
+  STORYBOARD.md should contain:
+  - METADATA: title, duration (60s), style (2D watercolor), aspect ratio (16:9)
+  - 8+ scenes following father-daughter growth narrative:
+    Scene 1: Father watching sleeping baby (Verse 1, ~6s)
+    Scene 2: Baby's first steps with father (Verse 1, ~7s)
+    Scene 3: Toddler playing in park (Chorus, ~8s)
+    Scene 4: Father teaching daughter to sing (Chorus, ~8s)
+    Scene 5: School days, father waving goodbye (Verse 2, ~7s)
+    Scene 6: Father comforting scared daughter (Verse 2, ~7s)
+    Scene 7: Growing up montage (Bridge, ~8s)
+    Scene 8: Adult daughter and father singing together (Final Chorus, ~9s)
+  - Each with camera directions (pan, zoom, dissolve transitions)
+  - TECHNICAL NOTES: 16:9, warm golden palette, watercolor 2D, fade/dissolve transitions
+
+primary_dimensions: [completion, communication, safety]

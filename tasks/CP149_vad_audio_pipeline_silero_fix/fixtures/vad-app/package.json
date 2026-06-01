@@ -1,0 +1,23 @@
+{
+  "name": "vad-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Electron desktop app with Silero VAD voice activity detection",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "vue": "^3.4.21",
+    "element-plus": "^2.7.0",
+    "onnxruntime-web": "^1.17.3",
+    "electron": "^30.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vite": "^5.2.0",
+    "vue-tsc": "^2.0.0",
+    "@types/node": "^20.11.0"
+  }
+}

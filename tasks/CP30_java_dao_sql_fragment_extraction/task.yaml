@@ -1,0 +1,104 @@
+task_id: CP30_java_dao_sql_fragment_extraction
+task_name: Java DAO SQL Fragment Extraction
+version: '2.0'
+category: refactoring
+difficulty: medium
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_101_java_dao_sql_refactor
+source_dataset: taskset-260427-121234
+source_description: Redesigned from taskset-260427-121234/task_101_java_dao_sql_refactor with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
+services: []
+prompt:
+  text: |
+    我已经把原始项目素材放在容器的 `/workspace/fixtures/` 目录下，请把这些文件当作只读输入。
+
+    输入文件如下（右侧是它在原项目中的相对路径）：
+    - `/workspace/fixtures/dao/TotalScoreDao.java` -> `dao/TotalScoreDao.java`
+    - `/workspace/fixtures/sql/total_score_query.sql` -> `sql/total_score_query.sql`
+    - `/workspace/fixtures/sql/student_booking_list.sql` -> `sql/student_booking_list.sql`
+
+    请基于这些输入完成下面的原始需求：
+
+    我想把 dao/TotalScoreDao.java 的 getQueryCommonParams 方法中 startedCourseSql 和 canTaketestSql 部分提取出去，直接放到 sql 里去写。
+
+    请结合 sql/ 下的这些 SQL 文件内容帮我评估一下修改范围是否可控，可能会存在哪些风险，然后完成重构：
+
+    1. 将 startedCourseSql 的 INNER JOIN 片段移入 sql/total_score_query.sql，用条件 SQL 表达（可以使用 MyBatis 风格的 <if> 标签或注释标记的条件块）
+    2. 将 canTaketestSql 的 INNER JOIN 片段也移入 SQL 文件
+    3. 修改 TotalScoreDao.java，从 Java 拼接改为加载 SQL 模板并传入参数
+    4. 写一份简短的风险评估，保存到 refactor_risk_assessment.md
+
+    交付要求：
+    - 需要修改已有文件时，请把修改后的版本写到 `/workspace/` 下对应的原项目相对路径。
+    - 需要新增文件时，请按需求中的文件名或上面列出的目标路径写到 `/workspace/` 下。
+    - 最终回复只需概述完成情况、关键改动和生成的文件；不要只在最终回复中贴代码或报告正文。
+  language: zh
+tools: []
+tool_endpoints: []
+sandbox_files:
+- fixtures/dao/TotalScoreDao.java
+- fixtures/sql/total_score_query.sql
+- fixtures/sql/student_booking_list.sql
+sandbox_grader_files:
+- fixtures/verify.py
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+  env_snapshot_timeout: 30
+env_snapshot_commands:
+- python /workspace/fixtures/verify.py
+env_snapshot_files:
+- /workspace/sql/total_score_query.sql
+- /workspace/dao/TotalScoreDao.java
+- /workspace/refactor_risk_assessment.md
+- /workspace/sql/student_booking_list.sql
+scoring_components: []
+safety_checks: []
+expected_actions: []
+judge_rubric: |
+  ## Expected Behavior
+
+  1. Agent reads TotalScoreDao.java and both SQL files.
+  2. Agent identifies the two dynamic JOIN fragments to extract.
+  3. Agent moves the JOIN logic into total_score_query.sql with conditional syntax.
+  4. Agent simplifies TotalScoreDao.java to use the SQL template.
+  5. Agent writes a risk assessment noting: parameter binding changes, SQL injection surface, conditional JOIN behavior, test coverage gaps.
+
+  ## Grading Criteria
+
+  - [ ] `sql_has_started_course_join`: total_score_query.sql contains startedcourse JOIN logic
+  - [ ] `sql_has_can_taketest_join`: total_score_query.sql contains examstudenttestqualification JOIN logic
+  - [ ] `sql_is_conditional`: SQL uses conditional syntax (if/when/choose or equivalent)
+  - [ ] `java_simplified`: TotalScoreDao.java no longer has inline startedCourseSql/canTaketestSql string building
+  - [ ] `risk_assessment_exists`: refactor_risk_assessment.md or similar file exists with risk analysis
+reference_solution: |
+  原始来源：taskset-260427-121234/task_101_java_dao_sql_refactor
+
+  原始场景：java_dao_sql_extraction
+
+  隐藏 verifier 主要检查项：java_simplified, risk_assessment_exists, sql_has_can_taketest_join, sql_has_started_course_join, sql_is_conditional
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent reads TotalScoreDao.java and both SQL files.
+  2. Agent identifies the two dynamic JOIN fragments to extract.
+  3. Agent moves the JOIN logic into total_score_query.sql with conditional syntax.
+  4. Agent simplifies TotalScoreDao.java to use the SQL template.
+  5. Agent writes a risk assessment noting: parameter binding changes, SQL injection surface, conditional JOIN behavior, test coverage gaps.
+
+  ## Grading Criteria
+
+  - [ ] `sql_has_started_course_join`: total_score_query.sql contains startedcourse JOIN logic
+  - [ ] `sql_has_can_taketest_join`: total_score_query.sql contains examstudenttestqualification JOIN logic
+  - [ ] `sql_is_conditional`: SQL uses conditional syntax (if/when/choose or equivalent)
+  - [ ] `java_simplified`: TotalScoreDao.java no longer has inline startedCourseSql/canTaketestSql string building
+  - [ ] `risk_assessment_exists`: refactor_risk_assessment.md or similar file exists with risk analysis
+primary_dimensions:
+- completion
+- robustness
+- communication

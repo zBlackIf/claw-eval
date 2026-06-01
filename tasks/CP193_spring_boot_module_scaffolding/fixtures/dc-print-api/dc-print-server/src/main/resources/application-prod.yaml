@@ -1,0 +1,46 @@
+server:
+  port: 48080
+
+--- #################### 数据库相关配置 ####################
+
+spring:
+  autoconfigure:
+    exclude:
+      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
+  datasource:
+    druid:
+      web-stat-filter:
+        enabled: true
+      stat-view-servlet:
+        enabled: true
+        allow:
+        url-pattern: /druid/*
+      filter:
+        stat:
+          enabled: true
+          log-slow-sql: true
+          slow-sql-millis: 100
+          merge-sql: true
+        wall:
+          config:
+            multi-statement-allow: true
+    dynamic:
+      druid:
+        initial-size: 10
+        min-idle: 20
+        max-active: 50
+      datasource:
+        master:
+          name: dc_print_prod
+          url: jdbc:mysql://db-prod.internal:3306/dc_print_prod?useSSL=true&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=false&nullCatalogMeansCurrent=true
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          username: dc_print_app
+          password: ${DB_PASSWORD}
+
+--- #################### Redis 相关配置 ####################
+
+  redis:
+    host: redis-prod.internal
+    port: 6379
+    database: 0
+    password: ${REDIS_PASSWORD}

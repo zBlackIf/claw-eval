@@ -1,0 +1,58 @@
+{
+  "version": "1.0",
+  "description": "POC routing rules - to be migrated into hub_config.yaml",
+  "rules": [
+    {
+      "name": "private-chat-to-lark",
+      "condition": {
+        "event_type": "im.message.receive_v1",
+        "chat_type": "p2p"
+      },
+      "target_agent": "lark",
+      "priority": 10,
+      "description": "Private messages go to lark agent for triage"
+    },
+    {
+      "name": "group-mention-to-lark",
+      "condition": {
+        "event_type": "im.message.receive_v1",
+        "chat_type": "group",
+        "mentions_bot": true
+      },
+      "target_agent": "lark",
+      "priority": 20,
+      "description": "Group messages mentioning bot go to lark"
+    },
+    {
+      "name": "doc-comment-to-obsidian",
+      "condition": {
+        "event_type": "drive.notice.comment_add_v1"
+      },
+      "target_agent": "obsidian",
+      "priority": 30,
+      "description": "Doc comments route to obsidian for handling"
+    },
+    {
+      "name": "meego-issue-to-rd",
+      "condition": {
+        "event_type": "issue.status_change",
+        "source_id": "meego-webhook"
+      },
+      "target_agent": "rd",
+      "priority": 40,
+      "description": "Meego issue changes go to rd agent"
+    },
+    {
+      "name": "daily-sync-to-lark",
+      "condition": {
+        "event_type": "sync.daily_report",
+        "source_id": "rame-sync-source"
+      },
+      "target_agent": "lark",
+      "priority": 50,
+      "description": "Daily sync reports handled by lark for broadcasting"
+    }
+  ],
+  "conflict_resolution": "highest_priority_wins",
+  "unmatched_behavior": "route_to_default"
+}

@@ -1,0 +1,74 @@
+# provenance:
+#   source_session: 11128844219322059593
+#   scenario: "股票 / 量化 / A股 (中文)"
+#   real_scenario: "AMIS 低代码商户管理系统 - 权限过滤 + 协议按钮重构"
+#   quality_tier: B
+task_id: CP122_ts_permission_adaptor_refactor
+task_name: "TypeScript 权限适配器改造 + 协议按钮提取（AMIS 商户系统）"
+version: "1.0"
+category: refactoring
+difficulty: medium
+tags: [typescript, refactoring, permissions]
+
+source_session_id: "11128844219322059593"
+source_description: "真实商户管理系统会话。用户要求：(1) 给 imagesQueryAdaptor 加可选权限参数，有权限字段时按 btnPermission 过滤附件列表；(2) 收单协议和结算协议的 onClick 重复逻辑提取为可复用函数。"
+
+services: []
+
+prompt:
+  text: |
+    商户管理模块 /workspace/fixtures/merch-portal/ 有两处要改：
+
+    1. viewImagesDialog.ts 里的 imagesQueryAdaptor 要支持传一个可选的权限字段
+       (permissFeild)，如果传了就用 btnPermission 检查，没权限就把对应 pic_type
+       的附件过滤掉（比如结算卡附件 pic_type='A10' 要用 viewCustomerSettleInfo 控制）。
+
+    2. protocolSection.ts 里收单协议和结算协议的 onClick 处理逻辑几乎一样，
+       只是 agreement_type 不同。把 onClick 里的内容封装成两个可复用的函数
+       （电子协议走合同查询、其他协议走图片地址），然后两处都调用。
+
+    改完确保没有 TS 类型错误，不破坏现有导出。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/merch-portal/src/assets/js/common.ts
+  - fixtures/merch-portal/src/assets/js/api.ts
+  - fixtures/merch-portal/src/pages/merchInfo/components/viewImagesDialog.ts
+  - fixtures/merch-portal/src/pages/merchInfo/basicInfo/protocolSection.ts
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward: (1) imagesQueryAdaptor gains an optional permission parameter and conditionally filters picList by btnPermission + pic_type; (2) btnPermission is imported or passed into viewImagesDialog.ts; (3) protocol onClick handlers are extracted into named reusable functions with agreement_type as parameter; (4) no TS type errors introduced. Penalize: leaving inline duplicated handlers, breaking existing exports, or hardcoding permission keys without parameterization."
+
+reference_solution: |
+  viewImagesDialog.ts:
+  - Import btnPermission from 'src/assets/js/common'
+  - Add optional param: imagesQueryAdaptor(payload, permissFeild?: string)
+  - Inside: if permissFeild && !btnPermission(permissFeild), filter newList
+    by pic_type (e.g., exclude 'A10' items)
+  - Export updated signature
+
+  protocolSection.ts:
+  - Extract handleElectronicProtocol(props, agreementType) — filters sign_info,
+    calls Api.recordQueryContract, downloads contract_url
+  - Extract handleOtherProtocol(props, agreementType) — filters sign_info,
+    calls Api.common_image_url, downloads image
+  - Both protocol sections call these with '1' or '2'
+
+primary_dimensions: [completion, communication, safety]

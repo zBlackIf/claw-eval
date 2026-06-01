@@ -1,0 +1,66 @@
+# provenance:
+#   source_session: 6587933776754230242
+#   scenario: "AI 框架 / Dify / Coze / n8n / 多模型"
+#   original_task: "Remove auto-backup feature from yh-inklight Obsidian plugin"
+#   pattern: WS2 (Full-Repair workspace)
+task_id: CP156_obsidian_plugin_remove_auto_backup
+task_name: "Obsidian 插件移除自动备份功能（CP156 / 源 session 6587933776754230242）"
+version: "1.0"
+category: refactor
+difficulty: medium
+tags: [typescript, obsidian-plugin, feature-removal]
+
+source_session_id: "6587933776754230242"
+source_description: "Workspace WS2 TypeScript feature removal. Remove auto-backup feature from Obsidian annotation plugin across 4 files (main.ts, annotationStore.ts, types.ts, settingsTab.ts). Verifier checks 5 hidden anchors: field removal, method removal, store cleanup, type/default cleanup, settings UI cleanup."
+
+services: []
+
+prompt:
+  text: |
+    yh-inklight 插件（/workspace/fixtures/yh-inklight/）有个自动备份功能，在其他设备上
+    不可用且存储冗余。请把这个功能完整移除。
+
+    具体来说：每次批注操作已经通过 saveDocument() 即时写入 sidecar JSON，定时备份
+    只是再复制一份，没有恢复机制，跨设备同步还会导致冲突。
+
+    请移除所有与自动备份相关的代码，包括：定时器注册、备份执行逻辑、备份目录常量、
+    设置项和 UI 控件。确保移除后其他功能（高亮、批注、导出、重命名迁移）不受影响。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/yh-inklight/main.ts
+  - fixtures/yh-inklight/src/storage/annotationStore.ts
+  - fixtures/yh-inklight/src/storage/types.ts
+  - fixtures/yh-inklight/src/settings/settingsTab.ts
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete removal of auto-backup feature: (1) lastBackupAt field removed from main.ts, (2) registerAutomaticBackups + runScheduledBackup methods removed, (3) BACKUP_DIR constant + backupDocuments method + backupTimestamp helper removed from annotationStore.ts, (4) backupFrequencyMinutes removed from AnnotationPluginSettings interface and DEFAULT_SETTINGS, (5) backup frequency slider Setting removed from settingsTab.ts. All other functionality (highlights, comments, export, rename migration) must remain intact."
+
+reference_solution: |
+  1. main.ts: Remove `private lastBackupAt = 0;` field, remove `this.registerAutomaticBackups();`
+     call in onload(), delete entire `registerAutomaticBackups()` and `runScheduledBackup()` methods.
+  2. annotationStore.ts: Remove `const BACKUP_DIR = ...` constant, delete entire
+     `backupDocuments()` method, delete `backupTimestamp()` helper function.
+  3. types.ts: Remove `backupFrequencyMinutes: number;` from AnnotationPluginSettings interface,
+     remove `backupFrequencyMinutes: 30,` from DEFAULT_SETTINGS.
+  4. settingsTab.ts: Remove the entire "数据备份频率" Setting block (lines with setLimits,
+     setValue, setDynamicTooltip, onChange for backupFrequencyMinutes).
+
+primary_dimensions: [completion, communication, safety]

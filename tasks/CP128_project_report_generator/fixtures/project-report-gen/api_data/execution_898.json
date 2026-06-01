@@ -1,0 +1,62 @@
+{
+  "execution_id": 898,
+  "name": "获客私域团队交付优化",
+  "status": "doing",
+  "begin": "2026-04-01",
+  "end": "2026-04-22",
+  "tasks": {
+    "total": 45,
+    "done": 38,
+    "doing": 4,
+    "wait": 3,
+    "overdue": 6,
+    "overdue_details": [
+      {
+        "id": 4601,
+        "name": "私域用户标签体系迁移",
+        "assignedTo": "李四",
+        "deadline": "2026-04-15",
+        "status": "doing"
+      },
+      {
+        "id": 4602,
+        "name": "获客渠道数据打通",
+        "assignedTo": "李四",
+        "deadline": "2026-04-16",
+        "status": "doing"
+      },
+      {
+        "id": 4603,
+        "name": "用户画像分析模块",
+        "assignedTo": "王五",
+        "deadline": "2026-04-17",
+        "status": "wait"
+      },
+      {
+        "id": 4604,
+        "name": "私域触达策略引擎",
+        "assignedTo": "赵六",
+        "deadline": "2026-04-18",
+        "status": "doing"
+      },
+      {
+        "id": 4605,
+        "name": "渠道ROI计算模块",
+        "assignedTo": "王五",
+        "deadline": "2026-04-19",
+        "status": "wait"
+      },
+      {
+        "id": 4606,
+        "name": "数据看板联调",
+        "assignedTo": "李四",
+        "deadline": "2026-04-20",
+        "status": "doing"
+      }
+    ]
+  },
+  "progress": {
+    "actual": 89,
+    "expected": 100
+  }
+}

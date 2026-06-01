@@ -1,0 +1,65 @@
+# provenance:
+#   source_session_id: "13378016136932796046"
+#   scenario: "代码开发 / 实现"
+#   event_time: "2026-05-18 15:36:21"
+#   description: "Fix a multi-page forum scraper (Discuz-based) that only scrapes one page due to broken pagination detection and incorrect URL construction."
+task_id: CP161_forum_scraper_pagination_fix
+task_name: "Discuz 论坛爬虫分页修复（CP161 / 源 session 13378016136932796046）"
+version: "1.0"
+category: bugfix
+difficulty: medium
+tags: [python, web-scraping, bugfix]
+
+source_session_id: "13378016136932796046"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "Real user session: forum scraper (Discuz SiS001) only scrapes 1 page. Root causes: (1) pagination detector returns 1 (old CSS selector dead), (2) URL constructed as ?page=N instead of Discuz forum-ID-PAGE.html pattern, (3) encoding is UTF-8 but forum uses GBK."
+
+services: []
+
+prompt:
+  text: |
+    我的论坛爬虫又只能爬一页了。文件在 /workspace/fixtures/scraper_project/forum_scraper.py，
+    目标论坛是 Discuz 架构的，URL 格式是 forum-25-1.html 这种（forum-{板块ID}-{页码}.html）。
+    这个板块有几千页帖子，但爬虫只爬了第一页就停了。帮我修复分页功能，确保能正确
+    检测总页数并逐页爬取。论坛页面编码是 GBK。
+
+    可以用 /workspace/fixtures/scraper_project/mock_forum_server.py 启动一个本地
+    mock 服务器来测试（python mock_forum_server.py 启动后访问
+    http://127.0.0.1:18923/forum/forum-25-1.html）。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/scraper_project/forum_scraper.py
+  - fixtures/scraper_project/mock_forum_server.py
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 45
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward fixing the forum scraper to correctly scrape multiple pages: (1) GBK encoding for response parsing, (2) extracting forum ID from URL to construct proper Discuz pagination URLs (forum-{id}-{page}.html not ?page=N), (3) pagination detection that parses page links from HTML instead of returning hardcoded 1, (4) verified multi-page scraping works end-to-end."
+
+reference_solution: |
+  Fix three bugs in forum_scraper.py:
+  1. Change response encoding from default to 'gbk' (response.encoding = 'gbk')
+  2. Fix get_total_pages() to parse pagination links matching forum-{id}-{page}.html
+     pattern and extract the maximum page number, instead of looking for a dead
+     CSS selector and falling back to return 1
+  3. Fix page URL construction in scrape() to use the Discuz pattern
+     f"forum-{forum_id}-{page}.html" instead of f"{base_url}?page={page}"
+  4. Add forum_id extraction from base_url using regex: re.search(r'forum-(\d+)-', url)
+
+primary_dimensions: [completion, communication, safety]

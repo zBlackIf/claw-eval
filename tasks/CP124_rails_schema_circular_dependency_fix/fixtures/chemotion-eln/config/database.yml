@@ -1,0 +1,21 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: 5
+  username: postgres
+  password: postgres
+  host: postgres
+
+development:
+  <<: *default
+  database: chemotion
+
+test:
+  <<: *default
+  database: chemotion_test
+
+production:
+  <<: *default
+  database: chemotion
+  username: chemotion
+  password: <%= ENV['DATABASE_PASSWORD'] %>

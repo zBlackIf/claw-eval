@@ -1,0 +1,27 @@
+# Field mapping configuration template
+# This file shows the DESIRED format for the configurable field mapping.
+# The sync script should read this file (or a similar structure)
+# to drive its field conversion logic.
+
+# Main table: upstream_field -> downstream_field
+main_fields:
+  code: supplier_code
+  fullName: supplier_full_name
+  shortName: supplier_short_name
+  type: supplier_type
+  receiptAccount: receipt_account
+  receiptBank: receipt_bank
+  receiptCompany: receipt_company
+
+# Sub-table mapping
+subtable:
+  # The upstream API field containing the sub-table array
+  upstream_field: banks
+  # The downstream system's sub-table field name
+  downstream_field: gyszhxx_items
+  # Field mapping within each sub-table row
+  fields:
+    account: gyszhxx_receiving_account_number
+    accountName: gyszhxx_account_name
+    bankName: gyszhxx_bank_name
+    bankAccountProperty: gyszhxx_bank_property

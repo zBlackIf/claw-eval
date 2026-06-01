@@ -1,0 +1,80 @@
+# provenance:
+#   source_session: 11661258083134597304
+#   scenario: other / unknown
+#   task_number: 109
+task_id: CP109_notam_text_wrap_tokenizer
+task_name: "NOTAM E-Item Text Tokenizer and Line Wrapper Fix (CP109)"
+version: "1.0"
+category: code_fix
+difficulty: medium
+tags: [nlp, text_processing, cjk, aviation]
+
+source_session_id: "11661258083134597304"
+source_description: "Real session: user building a NOTAM text formatter for Chinese/English mixed aviation notices. Core bug is English words being split character-by-character due to broken tokenizer. Agent must fix tokenize() to treat consecutive letters + connectors as atomic units."
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/notam_formatter/ 里有个民航通告(NOTAM)E项的文本排版模块。
+    当前 tokenize() 函数对英文适配很差——连续字母会被逐字符拆开，导致换行时
+    英文单词被截断（比如 "available" 变成 "a","v","a"...）。
+
+    请修复 notam_formatter.py 的分词逻辑：
+    1. 连续字母应作为一个不可分割单元
+    2. 与字母紧邻的连接符（如 - ' /）也要合并进去（如 VOR/DME、don't、co-ordinate）
+    3. 保留已有的 CJK 单字符分词、数字分词、换行保留等逻辑不变
+    4. wrap_lines() 的换行算法不需要改，只修 tokenize() 即可
+
+    修好后确保代码可运行且通过基本自测。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/notam_formatter/notam_formatter.py
+  - fixtures/notam_formatter/notam_vocab.txt
+  - fixtures/notam_formatter/config.json
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 480
+  max_turns: 15
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct tokenization fix: English words kept as single tokens (not char-by-char), connectors (/, -, ') between letters merge into the word unit, CJK chars still split individually with width 2, semantic newlines preserved, output lines respect width limit. Key hidden checks: VOR/DME as single token, don't as single token, co-ordinate as single token, available not split."
+
+reference_solution: |
+  Fix tokenize() alpha branch to:
+  1. When encountering a letter, collect all consecutive letters
+  2. After collecting letters, peek at next char: if it's a connector (-, ', /)
+     AND the char after that is also a letter, include connector and continue
+     collecting the next word segment
+  3. This produces tokens like "VOR/DME", "don't", "co-ordinate", "available"
+  4. Numbers and CJK remain unchanged
+  Example implementation:
+    elif ch.isalpha():
+        j = i
+        while j < len(text):
+            # collect consecutive letters
+            while j < len(text) and text[j].isalpha():
+                j += 1
+            # check for connector followed by letter
+            if j < len(text) - 1 and text[j] in "-'/" and text[j+1].isalpha():
+                j += 1  # include connector
+            else:
+                break
+        tokens.append(text[i:j])
+        i = j
+
+primary_dimensions: [completion, code_quality]

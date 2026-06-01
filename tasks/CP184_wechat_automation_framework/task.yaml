@@ -1,0 +1,61 @@
+task_id: CP184_wechat_automation_framework
+task_name: "微信桌面自动化框架开发（CP184 / 源 session 12093237033622096993）"
+version: "1.0"
+category: automation
+difficulty: hard
+tags: [general]
+
+source_session_id: "12093237033622096993"
+source_description: "真实用户在 Flatpak 沙盒环境中开发微信桌面自动化脚本，需要桥接到宿主机控制 GUI。涉及模块化设计、配置外置、沙盒穿透、真人模拟和自动化测试。"
+
+services: []
+
+prompt:
+  text: |
+    我在 Zorin OS 上跑着 wechatAltman3 微信客户端，代码在 Flatpak 沙盒里写。
+    项目在 /workspace/fixtures/wechatproject/，README 和 travel_moments.txt
+    里有背景资料。main_flow.py 里三个函数还是空的，帮我做完整套自动化：
+
+    采集三个旅游群组消息 → 发到朋友圈。沙盒里没法直接控 X11，得桥接到主机。
+    坐标和时序别写死在脚本里，单独放配置文件。弄个测试脚本验证环境能跑通。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/wechatproject/main_flow.py
+  - fixtures/wechatproject/travel_moments.txt
+  - fixtures/wechatproject/README.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 900
+  max_turns: 25
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete automation framework: host_bridge.py module using flatpak-spawn for sandbox-to-host communication (xdotool window activation, clipboard, mouse/keyboard), main_flow.py with implemented bring_wechat_to_front/scrape_group_messages/post_to_moments loading coords from config.json, config.json with coordinates/groups/timings externalized, test_automation.py with 4 test cases (dependency/window/clipboard/mouse), human-simulation anti-detection (random delays, curve mouse, variable typing)."
+
+reference_solution: |
+  Project structure:
+  - config.json: coordinates (search_box, chat_area, moments_button, moments_camera),
+    target_groups list, timings dict
+  - host_bridge.py: _run_on_host() via flatpak-spawn --host, xdotool_version(),
+    find_window(), activate_window(), host_human_move() with bezier curve,
+    host_click(), host_hotkey(), host_clipboard_read/write(), host_type()
+  - main_flow.py: loads config.json, bring_wechat_to_front() calls activate_window,
+    scrape_group_messages() iterates TARGET_GROUPS with search+copy pattern,
+    post_to_moments() uses human_move_and_click + clipboard paste
+  - test_automation.py: 4 test cases — host dependency check (xdotool installed),
+    window activation test, clipboard read/write test, mouse trajectory test
+
+primary_dimensions: [completion, communication, safety]

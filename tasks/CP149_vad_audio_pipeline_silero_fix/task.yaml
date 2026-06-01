@@ -1,0 +1,81 @@
+# provenance:
+#   source_session: 7548751059763552022
+#   scenario: "Vue / React / 前端 (中文)"
+#   session_model: glm-5-1-260408
+#   session_value_score: 51.6
+#   session_quality_tier: B
+task_id: CP149_vad_audio_pipeline_silero_fix
+task_name: "VAD 音频管线 Silero 概率为零 Bug 修复（CP149 / 源 session 7548751059763552022）"
+version: "1.0"
+category: debug
+difficulty: hard
+tags: [frontend, audio, typescript, electron, web-audio-api]
+
+source_session_id: "7548751059763552022"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "Real user session: Electron VAD voice interrupt not working — probability always 0% when speaking. Root causes: AnalyserNode not connected to destination, Silero v4 model fed v3 frame size (480 vs 512), suboptimal read interval and threshold."
+
+services: []
+
+prompt:
+  text: |
+    我们 Electron 桌面应用的 VAD 语音打断功能有 bug：用户说话时，语音概率一直是
+    0%，完全检测不到人声。需求是 TTS 播放时检测到麦克风有人说话就暂停播放。
+
+    代码在 /workspace/fixtures/vad-app/，bug 报告见 BUG_REPORT.md。
+    诊断发现 AnalyserNode 读取的振幅极低（0.0003），Silero 推理概率只有 4.72%。
+
+    请排查 VADController.ts 和 SileroVADService.ts 的问题并修复，确保：
+    1. 音频数据能正常读取（振幅不再接近零）
+    2. Silero VAD 推理能输出正确的概率值
+    3. 整体管线响应足够灵敏
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/vad-app/package.json
+  - fixtures/vad-app/tsconfig.json
+  - fixtures/vad-app/BUG_REPORT.md
+  - fixtures/vad-app/src/composables/live-vad/index.ts
+  - fixtures/vad-app/src/composables/live-vad/types.ts
+  - fixtures/vad-app/src/composables/live-vad/SileroVADService.ts
+  - fixtures/vad-app/src/composables/live-vad/VADController.ts
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct diagnosis and fix of: (1) AnalyserNode must be connected to AudioContext.destination via a silent GainNode (gain=0) to keep audio graph active in Electron/Chromium; (2) REQUIRED_SAMPLES must be 512 for Silero VAD v4 (not 480 which is v3); (3) Frame size in VADController must match the service's expected size; (4) READ_INTERVAL_MS should be reduced to ~50ms for responsive detection; (5) Default probabilityThreshold should be lowered from 50% to ~40%."
+
+reference_solution: |
+  Fix 1 (Critical): In VADController.ts startMicrophone(), after sourceNode.connect(analyser),
+  add a silent GainNode connection:
+    const silentGain = this.audioContext.createGain();
+    silentGain.gain.value = 0;
+    this.analyser.connect(silentGain);
+    silentGain.connect(this.audioContext.destination);
+  This keeps the AnalyserNode active in Electron's Chromium without speaker output.
+
+  Fix 2 (Critical): In SileroVADService.ts, change REQUIRED_SAMPLES from 480 to 512.
+  The v4 model (identified by LSTM state shape [2,1,128]) requires 512-sample frames.
+
+  Fix 3: In VADController.ts processAudioFrame(), update frameSize from 480 to 512.
+
+  Fix 4: Change READ_INTERVAL_MS from 100 to 50 (or lower) for faster response.
+
+  Fix 5: In types.ts, change DEFAULT_VAD_CONFIG.probabilityThreshold from 50 to 40.
+
+primary_dimensions: [completion, communication, safety]

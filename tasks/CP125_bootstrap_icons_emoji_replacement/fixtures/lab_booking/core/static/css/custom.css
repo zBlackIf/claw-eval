@@ -1,0 +1,54 @@
+/* Lab Booking Custom Styles */
+.cal-nav-btn {
+    border: 1px solid rgba(0,0,0,.125);
+    padding: 0.25rem 0.5rem;
+}
+
+.cal-nav-btn svg {
+    vertical-align: middle;
+}
+
+.legend-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.legend-dot.available { background-color: #28a745; }
+.legend-dot.booked { background-color: #dc3545; }
+.legend-dot.mine { background-color: #007bff; }
+
+.stat-card {
+    text-align: center;
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #0d6efd;
+}
+
+.desc-icon {
+    font-style: normal;
+}
+
+.navbar-icon-btn {
+    font-size: 1.2rem;
+    line-height: 1;
+}

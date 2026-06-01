@@ -1,0 +1,90 @@
+# provenance:
+#   source_session: "2497048988411373179"
+#   scenario: "个人事务 / 待办 / 任务管理"
+#   pattern: WS2 (Full-Repair / scaffolding)
+task_id: CP185_maven_module_scaffold_from_template
+task_name: "Maven 多模块工程脚手架搭建（CP185 / 源 session 2497048988411373179）"
+version: "1.0"
+category: design
+difficulty: medium
+tags: [general]
+
+source_task_id: "2497048988411373179"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "从真实 Cline session 提取。用户要求参考已有 dc-print-external 模块结构，创建一个新的 dc-print-vision 模块。涉及 Maven 多模块 POM 搭建、Java 分层架构（domain/mapper/service/controller）、MyBatis XML、包命名等。"
+
+services: []
+
+prompt:
+  text: |
+    你帮我建一个新模块 dc-print-vision，参照已有的 dc-print-external 的结构来搭。
+    模板代码在 /workspace/fixtures/dc-print-external/ 里，根 pom 在 /workspace/fixtures/pom.xml。
+
+    dc-print-vision 是做视觉检测的，业务实体是 VisionTask（视觉检测任务）和
+    VisionResult（检测结果）。每个实体都要有完整的 domain/mapper/service/controller
+    分层，MyBatis XML 也要有。包名按 cn.iocoder.yudao.module.vision 来。
+
+    新模块放到 /workspace/dc-print-vision/，同时把根 pom.xml 复制到 /workspace/pom.xml
+    并加上 vision 模块的声明。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/pom.xml
+  - fixtures/dc-print-external/pom.xml
+  - fixtures/dc-print-external/dc-print-external-api/pom.xml
+  - fixtures/dc-print-external/dc-print-external-api/src/main/java/cn/iocoder/yudao/module/external/api/ExternalApi.java
+  - fixtures/dc-print-external/dc-print-external-biz/pom.xml
+  - fixtures/dc-print-external/dc-print-external-biz/src/main/java/cn/iocoder/yudao/module/external/constant/Constants.java
+  - fixtures/dc-print-external/dc-print-external-biz/src/main/java/cn/iocoder/yudao/module/external/enums/PrintModeEnum.java
+  - fixtures/dc-print-external/dc-print-external-biz/src/main/java/cn/iocoder/yudao/module/external/domain/MesJobRecord.java
+  - fixtures/dc-print-external/dc-print-external-biz/src/main/java/cn/iocoder/yudao/module/external/domain/MesTransferCodeData.java
+  - fixtures/dc-print-external/dc-print-external-biz/src/main/java/cn/iocoder/yudao/module/external/mapper/MesJobRecordMapper.java
+  - fixtures/dc-print-external/dc-print-external-biz/src/main/java/cn/iocoder/yudao/module/external/mapper/MesTransferCodeDataMapper.java
+  - fixtures/dc-print-external/dc-print-external-biz/src/main/java/cn/iocoder/yudao/module/external/service/MesJobRecordService.java
+  - fixtures/dc-print-external/dc-print-external-biz/src/main/java/cn/iocoder/yudao/module/external/service/impl/MesJobRecordServiceImpl.java
+  - fixtures/dc-print-external/dc-print-external-biz/src/main/java/cn/iocoder/yudao/module/external/service/DeviceApiService.java
+  - fixtures/dc-print-external/dc-print-external-biz/src/main/java/cn/iocoder/yudao/module/external/pojo/dto/MesJobRecordSearchDTO.java
+  - fixtures/dc-print-external/dc-print-external-biz/src/main/java/cn/iocoder/yudao/module/external/pojo/vo/MesJobRecordVO.java
+  - fixtures/dc-print-external/dc-print-external-biz/src/main/java/cn/iocoder/yudao/module/external/controller/admin/MesJobRecordController.java
+  - fixtures/dc-print-external/dc-print-external-biz/src/main/resources/mapper/MesJobRecordMapper.xml
+  - fixtures/dc-print-external/dc-print-external-biz/src/main/resources/mapper/MesTransferCodeDataMapper.xml
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 900
+  max_turns: 25
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a complete multi-module Maven scaffold for dc-print-vision mirroring dc-print-external structure: parent pom.xml (packaging=pom, two submodules), api submodule with VisionApi interface, biz submodule with proper dependencies (mybatis, web, api), domain classes (VisionTask + VisionResult with meaningful fields and annotations), mapper interfaces extending BaseMapper, service interface + impl, REST controllers, MyBatis XML mapper files, correct package naming (cn.iocoder.yudao.module.vision), and root pom.xml updated to include the new module."
+
+reference_solution: |
+  dc-print-vision/
+  ├── pom.xml  (packaging=pom, parent=dc-print-api, modules: api + biz)
+  ├── dc-print-vision-api/
+  │   ├── pom.xml  (parent=dc-print-vision)
+  │   └── src/.../vision/api/VisionApi.java
+  └── dc-print-vision-biz/
+      ├── pom.xml  (deps: vision-api, mybatis-starter, web-starter)
+      └── src/main/
+          ├── java/cn/iocoder/yudao/module/vision/
+          │   ├── domain/VisionTask.java, VisionResult.java
+          │   ├── mapper/VisionTaskMapper.java, VisionResultMapper.java
+          │   ├── service/VisionTaskService.java, impl/VisionTaskServiceImpl.java
+          │   ├── service/VisionResultService.java, impl/VisionResultServiceImpl.java
+          │   └── controller/admin/VisionTaskController.java, VisionResultController.java
+          └── resources/mapper/VisionTaskMapper.xml, VisionResultMapper.xml
+  Root pom.xml updated with <module>dc-print-vision</module>
+
+primary_dimensions: [completion, communication, safety]

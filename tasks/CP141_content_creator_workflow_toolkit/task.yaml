@@ -1,0 +1,69 @@
+# provenance:
+#   source_session: 8298050095797339882
+#   scenario: 内容创作 / 短视频 / 公众号 / 营销
+#   pattern: Workspace WS2
+task_id: CP141_content_creator_workflow_toolkit
+task_name: "内容创作者工作流自动化工具（CP141 / 源 session 8298050095797339882）"
+version: "1.0"
+category: automation
+difficulty: medium
+tags: [content-creation, cli-tool, python, workflow]
+
+source_task_id: "8298050095797339882"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "用户是内容创作者，需要一个 Python CLI 工具来自动化内容审核流程——违禁词检查、标题长度校验、批量扫描草稿目录。Workspace WS2 模式，6 个隐藏锚点（CLI 结构/违禁词/标题长度/批量扫描/配置驱动/报告输出）。"
+
+services: []
+
+prompt:
+  text: |
+    我做自媒体的，每周要往公众号、小红书、抖音发内容。写稿子的时候经常踩平台违禁词，
+    标题也老是超长度限制被截断。/workspace/fixtures/content-workspace/ 里有我的项目
+    骨架和几篇草稿，config.json 里写好了各平台的规则。
+
+    帮我把 workflow.py 写成一个能用的 CLI 工具——我想一条命令就能扫一遍 drafts/
+    里所有稿子，告诉我哪篇有违禁词、哪个标题超长了。规则都从 config.json 读，
+    别写死在代码里，以后我改规则不用动代码。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/content-workspace/config.json
+  - fixtures/content-workspace/workflow.py
+  - fixtures/content-workspace/drafts/weekly_plan.md
+  - fixtures/content-workspace/drafts/article_skincare_guide.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a functional Python CLI tool: proper argparse/click subcommands for check/scan, forbidden word detection loaded from config.json (not hardcoded), title length validation against max_title_length, batch scanning of drafts/ directory with glob/iterdir, structured output reporting violations with file/line context. Config-driven design is key — rules come from JSON, not code."
+
+reference_solution: |
+  workflow.py should be rewritten as a proper CLI with:
+  - argparse with subcommands (check, scan, format) or click/typer equivalent
+  - 'check' command: takes a file path, loads config.json forbidden_words list,
+    scans file content for matches, checks title length against max_title_length
+  - 'scan' command: iterates all .md files in drafts/ directory, runs check on each
+  - Config loading: json.load(open('config.json')) to get rules dynamically
+  - Output: structured report showing filename, line number, violation type, matched word
+  - Exit non-zero when violations are found, zero when clean
+  - The tool should find violations in the fixture drafts:
+    - weekly_plan.md contains "不看后悔", "免费领取", "限时秒杀" (forbidden words)
+    - weekly_plan.md has 2 titles exceeding 20 chars (lines 13 and 33)
+    - article_skincare_guide.md should pass clean (no violations)
+
+primary_dimensions: [completion, communication, safety]

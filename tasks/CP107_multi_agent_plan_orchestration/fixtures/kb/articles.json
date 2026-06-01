@@ -1,0 +1,29 @@
+[
+  {
+    "article_id": "KB-ORCH-001",
+    "title": "多 Agent 协作 - 任务调度最佳实践",
+    "category": "engineering-practices",
+    "tags": ["orchestration", "multi-agent", "best-practices"],
+    "content": "# 多 Agent 任务调度最佳实践\n\n## 核心原则\n\n1. **依赖优先**：永远先检查 task 的依赖是否全部 resolved，再 dispatch\n2. **能力匹配**：dispatch 时检查 agent 的 specialty 和当前 load\n3. **错误重试**：agent 暂时不可用时应 retry，不要跳过或换 agent\n4. **状态一致性**：每次 dispatch/complete 后确认 state transition 正确\n5. **循环依赖拆解**：发现循环依赖时，找到最小可独立交付单元先行\n\n## 循环依赖处理\n\n当 A 依赖 B 且 B 依赖 A 时：\n- 分析两个任务的真实依赖粒度\n- 通常可拆出一个\"接口定义/规范\"子任务独立先行\n- 拆解后更新依赖图，消除循环\n- 在 helpdesk 记录拆解决策以备审计\n\n## 风险上报\n\n当出现以下情况时必须在 plan report 中标注风险：\n- 资源冲突（多个 plan 争抢同一环境/人员）\n- 依赖链超过 3 层且含未解决阻塞\n- deadline 余量 < 任务剩余估时的 1.5 倍",
+    "last_updated": "2026-05-20T10:00:00Z",
+    "views": 234
+  },
+  {
+    "article_id": "KB-ORCH-002",
+    "title": "Q2 智能客服 v3.0 - 项目章程",
+    "category": "project-docs",
+    "tags": ["Q2-launch", "project-charter", "smart-cs"],
+    "content": "# Q2 智能客服系统 v3.0 项目章程\n\n## 项目目标\n\n在 2026-06-15 前完成智能客服系统 v3.0 的生产环境上线，核心指标：\n- 多语言支持: ja-JP, ko-KR 新增，zh-CN, en-US 优化\n- 性能: P99 < 200ms, QPS >= 5000\n- 安全: 通过 OWASP Top10 审计\n- 知识图谱: 15000+ 条 FAQ/手册/故障树\n\n## 里程碑\n\n| 日期 | 里程碑 | 负责团队 |\n|------|--------|----------|\n| 05-28 | 模型微调完成 | ML 训练团队 |\n| 06-01 | 数据迁移完成 | 数据工程团队 |\n| 06-05 | Gateway + 查询接口就绪 | 后端开发团队 |\n| 06-08 | 安全审计通过 | 安全团队 |\n| 06-10 | 压测通过 | SRE 团队 |\n| 06-15 | 全量上线 | SRE + 全团队 |\n\n## 关键风险\n\n1. 循环依赖: TASK-004 <-> TASK-006 需要项目经理介入拆解\n2. 压测环境: 6/10-12 被支付团队占用，需协调\n3. 韩语模型: staging 有性能隐患",
+    "last_updated": "2026-05-28T09:30:00Z",
+    "views": 89
+  },
+  {
+    "article_id": "KB-ORCH-003",
+    "title": "Agent 能力矩阵与调度规则",
+    "category": "engineering-practices",
+    "tags": ["agent-routing", "capacity-planning"],
+    "content": "# Agent 能力矩阵\n\n## 调度规则\n\n1. 按 specialty 匹配：\n   - ML/模型类 -> agent-ml-training\n   - 数据/ETL/迁移 -> agent-data-pipeline\n   - API/微服务/Gateway -> agent-backend-dev\n   - 安全/渗透/合规 -> agent-security\n   - 部署/压测/监控 -> agent-sre\n   - 文档/手册 -> agent-docs\n\n2. 容量检查：current_load < max_capacity 才能 dispatch\n\n3. 优先级升级规则：\n   - critical 任务可以抢占 medium/low 任务的 agent 容量\n   - 抢占时需要在 notes 中说明原因\n\n4. 错误处理：\n   - agent_temporarily_unavailable: 等待 retry_after 后重试同一 agent\n   - agent_at_capacity: 检查是否有同能力备选 agent，或等待当前任务完成释放容量\n   - dependency_not_met: 先解决上游阻塞，不要强制 dispatch",
+    "last_updated": "2026-05-25T15:00:00Z",
+    "views": 156
+  }
+]

@@ -1,0 +1,18 @@
+# FireBot Configuration
+base_dir: /opt/firebot
+files_dir: /opt/firebot/files
+
+# Logging
+log_level: info
+log_rotation_days: 30
+
+# Devices
+device_heartbeat_interval: 30000
+device_timeout: 90000
+
+# Alarms
+alarm_retention_days: 365
+
+# Scheduler
+scheduler_enabled: true
+daily_report_cron: "0 0 * * *"

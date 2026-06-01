@@ -1,0 +1,4 @@
+billing_account_id,service_description,cost,currency,usage_start_time
+ACME-GCP-001,Compute Engine,12450.00,USD,2024-03-01T00:00:00Z
+ACME-GCP-001,Cloud Storage,890.50,USD,2024-03-01T00:00:00Z
+ACME-GCP-001,BigQuery,2100.00,USD,2024-03-01T00:00:00Z

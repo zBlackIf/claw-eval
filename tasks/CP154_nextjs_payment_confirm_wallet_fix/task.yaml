@@ -1,0 +1,71 @@
+# provenance:
+#   source_session: 9882178433890283475
+#   scenario: "AI 框架 / Dify / Coze / n8n / 多模型"
+#   task_number: 154
+task_id: CP154_nextjs_payment_confirm_wallet_fix
+task_name: "Next.js 支付确认接口与钱包服务 DB 列名修复"
+version: "1.0"
+category: bugfix
+difficulty: medium
+tags: [nextjs, typescript, database, api]
+
+source_session_id: "9882178433890283475"
+source_description: "从真实会话提取：用户开发 Next.js 动画任务管理系统，支付确认路由和钱包服务中使用了错误的数据库列名（amount_credits/trade_no/order_id/change_credits/amount），需要对照 docs 中的真实 schema 修正为正确列名（credits_to_add/provider_trade_no/source_id/delta_credits/balance_credits）。"
+
+services: []
+
+prompt:
+  text: |
+    线上支付回调接口 /api/payment/confirm 报 500，钱包充值完全不工作。
+    项目代码在 /workspace/fixtures/intelligent-edit/，数据库 schema 在
+    docs/project-startup.md 里有，代码里用的列名跟实际表结构对不上。帮我
+    把 app/api/payment/confirm/route.ts 和 lib/server/wallet-service.ts
+    里的 SQL 全部修正，确保跟真实 schema 一致。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/intelligent-edit/app/api/payment/confirm/route.ts
+  - fixtures/intelligent-edit/app/api/wallet/summary/route.ts
+  - fixtures/intelligent-edit/lib/server/wallet-service.ts
+  - fixtures/intelligent-edit/lib/server/db.ts
+  - fixtures/intelligent-edit/docs/project-startup.md
+  - fixtures/intelligent-edit/package.json
+  - fixtures/intelligent-edit/tsconfig.json
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct alignment of SQL column names to actual DB schema: payment_order uses credits_to_add (not amount_credits), provider_trade_no (not trade_no); user_wallet uses balance_credits (not amount); wallet_ledger uses delta_credits (not change_credits), change_type + source_id (not order_id). Transaction safety and idempotency preserved."
+
+reference_solution: |
+  Fix SQL queries in two files:
+  1. app/api/payment/confirm/route.ts:
+     - SELECT: use credits_to_add instead of amount_credits
+     - UPDATE: use provider_trade_no = $1 instead of trade_no = $1
+     - Response: reference credits_to_add for credits_added field
+  2. lib/server/wallet-service.ts:
+     - addCreditsToWallet UPDATE: SET balance_credits = balance_credits + $1
+       (not SET amount = amount + $1)
+     - addCreditsToWallet INSERT into wallet_ledger: use columns
+       (user_id, change_type, delta_credits, balance_after, source_type, source_id, idempotency_key)
+       instead of (user_id, order_id, change_credits, balance_after, source_type)
+     - getWalletLedger SELECT: use delta_credits, change_type, source_type, source_id
+       instead of order_id, change_credits
+  Keep transaction BEGIN/COMMIT/ROLLBACK and idempotency_key logic intact.
+
+primary_dimensions: [completion, communication, safety]

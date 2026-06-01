@@ -1,0 +1,69 @@
+# provenance:
+#   source_session: 9277750237308684259
+#   scenario: cron / scheduled audit logging / tamper detection
+#   pattern: WS2 (full workspace implementation)
+task_id: CP143_audit_service_hashchain
+task_name: "审计服务 — 哈希链防篡改日志（CP143 / 源 session 9277750237308684259）"
+version: "1.0"
+category: implementation
+difficulty: hard
+tags: [security, logging, nodejs, tamper-detection]
+
+source_session_id: "9277750237308684259"
+source_description: "Real user session: implement an audit service for a Node.js/Electron firefighting robot management app. Service must write daily audit logs (JSON Lines), enforce append-only/read-only after write, and use hash chains so any modification is detectable."
+
+services: []
+
+prompt:
+  text: |
+    FireBot 要加审计功能。files 目录下建个 audit/ 子目录，每天按日期生成审计日志
+    （什么时候来了报警、什么时候控制了设备、下发了哪些任务）。日志写完后只能看不能改，
+    改了要能检测出来。写个专门的 AuditService 放在 src/services/ 下面。
+
+    项目代码在 /workspace/fixtures/firebot/，你看下现有的 DeviceService、
+    AlarmService、TaskScheduleService 的事件就知道要记什么了。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/firebot/package.json
+  - fixtures/firebot/src/config.js
+  - fixtures/firebot/src/services/LoggerService.js
+  - fixtures/firebot/src/services/DeviceService.js
+  - fixtures/firebot/src/services/AlarmService.js
+  - fixtures/firebot/src/services/TaskScheduleService.js
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 900
+  max_turns: 22
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a complete AuditService implementation: (1) dedicated AuditService class/module as singleton, (2) hash chain where each record contains prevHash forming a linked chain for tamper detection, (3) daily file rotation with date-based filenames, (4) defined event categories covering alarms/device-control/tasks, (5) verification method that can detect if any record was modified, (6) integration with existing services via event listeners, (7) file-level write protection (append-only or chmod)."
+
+reference_solution: |
+  src/services/AuditService.js:
+  - Singleton class with methods: log(category, event, data), verify(date), verifyAll()
+  - Uses crypto.createHash('sha256') to build hash chain
+  - Each record: { seq, timestamp, category, event, data, prevHash, hash }
+  - hash = sha256(seq + timestamp + category + event + JSON(data) + prevHash)
+  - Daily rotation: files/audit/YYYY-MM-DD.audit (JSON Lines format)
+  - Optional .chain file storing day-end hash for cross-day sealing
+  - verify() re-reads file, recomputes each hash, checks chain continuity
+  - fs.appendFileSync for write + fs.chmodSync(0o444) after first flush or on day-end
+  - Subscribes to DeviceService('device:control'), AlarmService('alarm:triggered'),
+    TaskScheduleService('task:dispatched') events
+  - Categories: ALARM, DEVICE_CONTROL, TASK_DISPATCH, DEVICE_STATUS, SYSTEM
+
+primary_dimensions: [completion, communication, safety]

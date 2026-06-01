@@ -1,0 +1,159 @@
+task_id: CP36_java_concurrent_modification_debug
+task_name: Java ConcurrentModificationException Debug
+version: '2.0'
+category: debugging
+difficulty: medium
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_33_concurrent_modification
+source_dataset: taskset-260421-225115
+source_description: Redesigned from taskset-260421-225115/task_33_concurrent_modification with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
+services: []
+prompt:
+  text: |
+    I have placed the original project materials under `/workspace/fixtures/`. Treat those files as read-only inputs.
+
+    Input files are listed below; the right side is each file's original project-relative path:
+    - `/workspace/fixtures/src/main/java/cn/dreamit/p1000/util/RequestUtil.java` -> `src/main/java/cn/dreamit/p1000/util/RequestUtil.java`
+    - `/workspace/fixtures/src/main/java/cn/dreamit/p1000/filter/AntiSqlInjectionfilter.java` -> `src/main/java/cn/dreamit/p1000/filter/AntiSqlInjectionfilter.java`
+    - `/workspace/fixtures/error_stacktrace.txt` -> `error_stacktrace.txt`
+
+    Use those inputs to complete the original request below:
+
+    This government OA system runs on TongWeb and the anti-SQL-injection filter intermittently fails only when concurrent requests hit it. The captured exception stack is in `/workspace/fixtures/error_stacktrace.txt`.
+
+    Examine `RequestUtil.java`, `AntiSqlInjectionfilter.java`, and the stacktrace, diagnose the root cause, and fix the code. Write a `diagnosis.md` explaining what causes the intermittent failure and why it only manifests under concurrency.
+
+    Delivery requirements:
+    - When you modify an existing file, write the modified version under `/workspace/` using the same project-relative path.
+    - When you create a new file, write it under `/workspace/` using the filename or target path requested above.
+    - In your final response, only summarize the status, key changes, and generated files; do not only paste code or report text in chat.
+  language: en
+tools: []
+tool_endpoints: []
+sandbox_files:
+- fixtures/src/main/java/cn/dreamit/p1000/util/RequestUtil.java
+- fixtures/src/main/java/cn/dreamit/p1000/filter/AntiSqlInjectionfilter.java
+- fixtures/error_stacktrace.txt
+sandbox_grader_files:
+- fixtures/verify.py
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+  env_snapshot_timeout: 30
+env_snapshot_commands:
+- python /workspace/fixtures/verify.py
+env_snapshot_files:
+- /workspace/src/main/java/cn/dreamit/p1000/util/RequestUtil.java
+- /workspace/diagnosis.md
+- /workspace/src/main/java/cn/dreamit/p1000/filter/AntiSqlInjectionfilter.java
+- /workspace/error_stacktrace.txt
+scoring_components: []
+safety_checks: []
+expected_actions: []
+judge_rubric: |
+  ## Expected Behavior
+
+  1. Agent reads the error stacktrace and source files
+  2. Agent identifies that RequestUtil.contains iterates over a shared mutable ArrayList using an Iterator
+  3. Agent identifies that AntiSqlInjectionfilter modifies the list (or shares state) across threads
+  4. Agent fixes the iteration to be thread-safe (using CopyOnWriteArrayList, synchronized block, or converting to array before iteration)
+  5. Agent writes diagnosis.md explaining the root cause and fix
+
+  ## Grading Criteria
+
+  - [ ] root_cause_identified: diagnosis.md explains shared mutable ArrayList being iterated and modified concurrently
+  - [ ] fix_applied: RequestUtil.java no longer uses bare ArrayList iterator on shared state
+  - [ ] thread_safety_approach: Fix uses a recognized thread-safe pattern (CopyOnWriteArrayList, Collections.unmodifiableList, toArray, synchronized, or stream)
+  - [ ] diagnosis_doc_exists: diagnosis.md exists with concurrency explanation
+  - [ ] red_line_no_suppress: Fix does NOT simply catch and swallow ConcurrentModificationException
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Root Cause Diagnosis (Weight: 30%)
+    - 1.0: Correctly identifies shared mutable state, explains Iterator fail-fast mechanism, and describes the race condition timing
+    - 0.75: Identifies shared state issue but explanation of fail-fast is superficial
+    - 0.5: Knows it is a concurrency issue but does not pinpoint the exact shared list
+    - 0.25: Generic "concurrency problem" without specific analysis
+    - 0.0: Misdiagnoses the issue entirely
+
+  ### Criterion 2: Fix Correctness (Weight: 30%)
+    - 1.0: Fix is thread-safe, preserves filter functionality, and handles edge cases (null values, empty lists)
+    - 0.75: Fix is thread-safe but misses an edge case
+    - 0.5: Fix reduces but does not eliminate the race condition
+    - 0.25: Fix changes code but introduces a different bug
+    - 0.0: No fix or fix makes the problem worse
+
+  ### Criterion 3: Java Concurrency Knowledge (Weight: 20%)
+    - 1.0: Demonstrates deep understanding of Java memory model, Iterator contract, and appropriate concurrent collection choice
+    - 0.75: Good understanding, mentions the right collection types but explanation is brief
+    - 0.5: Knows CopyOnWriteArrayList or synchronized but does not explain trade-offs
+    - 0.25: Mentions "thread safety" without demonstrating understanding
+    - 0.0: No concurrency awareness
+
+  ### Criterion 4: Documentation Quality (Weight: 20%)
+    - 1.0: diagnosis.md is clear, structured, explains the problem to a non-expert, includes before/after code snippets
+    - 0.75: Good explanation but missing code snippets or visual aids
+    - 0.5: Explanation is correct but hard to follow
+    - 0.25: Minimal documentation
+    - 0.0: No documentation
+reference_solution: |
+  原始来源：taskset-260421-225115/task_33_concurrent_modification
+
+  原始场景：java_concurrent_modification_filter_chain
+
+  隐藏 verifier 主要检查项：diagnosis_doc_exists, fix_applied, red_line_no_suppress, root_cause_identified, thread_safety_approach
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent reads the error stacktrace and source files
+  2. Agent identifies that RequestUtil.contains iterates over a shared mutable ArrayList using an Iterator
+  3. Agent identifies that AntiSqlInjectionfilter modifies the list (or shares state) across threads
+  4. Agent fixes the iteration to be thread-safe (using CopyOnWriteArrayList, synchronized block, or converting to array before iteration)
+  5. Agent writes diagnosis.md explaining the root cause and fix
+
+  ## Grading Criteria
+
+  - [ ] root_cause_identified: diagnosis.md explains shared mutable ArrayList being iterated and modified concurrently
+  - [ ] fix_applied: RequestUtil.java no longer uses bare ArrayList iterator on shared state
+  - [ ] thread_safety_approach: Fix uses a recognized thread-safe pattern (CopyOnWriteArrayList, Collections.unmodifiableList, toArray, synchronized, or stream)
+  - [ ] diagnosis_doc_exists: diagnosis.md exists with concurrency explanation
+  - [ ] red_line_no_suppress: Fix does NOT simply catch and swallow ConcurrentModificationException
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Root Cause Diagnosis (Weight: 30%)
+    - 1.0: Correctly identifies shared mutable state, explains Iterator fail-fast mechanism, and describes the race condition timing
+    - 0.75: Identifies shared state issue but explanation of fail-fast is superficial
+    - 0.5: Knows it is a concurrency issue but does not pinpoint the exact shared list
+    - 0.25: Generic "concurrency problem" without specific analysis
+    - 0.0: Misdiagnoses the issue entirely
+
+  ### Criterion 2: Fix Correctness (Weight: 30%)
+    - 1.0: Fix is thread-safe, preserves filter functionality, and handles edge cases (null values, empty lists)
+    - 0.75: Fix is thread-safe but misses an edge case
+    - 0.5: Fix reduces but does not eliminate the race condition
+    - 0.25: Fix changes code but introduces a different bug
+    - 0.0: No fix or fix makes the problem worse
+
+  ### Criterion 3: Java Concurrency Knowledge (Weight: 20%)
+    - 1.0: Demonstrates deep understanding of Java memory model, Iterator contract, and appropriate concurrent collection choice
+    - 0.75: Good understanding, mentions the right collection types but explanation is brief
+    - 0.5: Knows CopyOnWriteArrayList or synchronized but does not explain trade-offs
+    - 0.25: Mentions "thread safety" without demonstrating understanding
+    - 0.0: No concurrency awareness
+
+  ### Criterion 4: Documentation Quality (Weight: 20%)
+    - 1.0: diagnosis.md is clear, structured, explains the problem to a non-expert, includes before/after code snippets
+    - 0.75: Good explanation but missing code snippets or visual aids
+    - 0.5: Explanation is correct but hard to follow
+    - 0.25: Minimal documentation
+    - 0.0: No documentation
+primary_dimensions:
+- completion
+- robustness
+- communication

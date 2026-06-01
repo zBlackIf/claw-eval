@@ -1,0 +1,57 @@
+[
+  {
+    "ticket_id": "HD-3301",
+    "title": "TASK-004 与 TASK-006 循环依赖需拆解",
+    "description": "知识图谱查询接口(TASK-004)声明依赖安全审计(TASK-006)的接口定义，而安全审计又依赖 TASK-004 的接口才能审计。建议拆解：先产出安全接口规范文档（约8h），TASK-004 可据此开发，后续审计在接口完成后跟进。",
+    "reporter": "张伟",
+    "department": "项目管理",
+    "priority": "critical",
+    "status": "open",
+    "created_at": "2026-05-29T10:30:00Z",
+    "tags": ["dependency-conflict", "plan-blocker", "Q2-launch"]
+  },
+  {
+    "ticket_id": "HD-3302",
+    "title": "数据迁移 203 条异常记录 - 部分含敏感信息",
+    "description": "TASK-002 导入时跳过的 203 条中，有 17 条包含未脱敏的客户手机号和身份证后四位。这些记录不能直接导入新系统，需要先做脱敏处理再导入。",
+    "reporter": "李明",
+    "department": "数据工程",
+    "priority": "high",
+    "status": "open",
+    "created_at": "2026-05-29T14:15:00Z",
+    "tags": ["data-quality", "pii", "compliance"]
+  },
+  {
+    "ticket_id": "HD-3303",
+    "title": "压测环境预约冲突",
+    "description": "SRE 反馈 6/10-6/12 的压测环境已被支付团队预约占用。Q2-launch 压测如果排在 6/13 后面，和 6/15 deadline 只剩 2 天余量，风险较高。",
+    "reporter": "王芳",
+    "department": "SRE",
+    "priority": "high",
+    "status": "open",
+    "created_at": "2026-05-30T09:00:00Z",
+    "tags": ["resource-conflict", "schedule-risk", "Q2-launch"]
+  },
+  {
+    "ticket_id": "HD-3304",
+    "title": "韩语模型 staging 偶现超时",
+    "description": "TASK-001 部署到 staging 的韩语模型，在 batch size > 32 时偶现 P99 > 500ms（目标 < 200ms）。可能影响后续 TASK-005 压测结果。ML 团队确认是 GPU 内存碎片问题，需要调整 batch scheduler。",
+    "reporter": "陈强",
+    "department": "ML 平台",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-30T11:20:00Z",
+    "tags": ["performance", "model-serving", "Q2-launch"]
+  },
+  {
+    "ticket_id": "HD-3305",
+    "title": "文档团队人员调动通知",
+    "description": "技术写作团队的资深成员小周 6/1 起调至另一项目，剩余产能可能不足以支撑 TASK-008 的 Changelog + 用户手册同步更新。建议考虑精简范围或延期。",
+    "reporter": "刘洋",
+    "department": "技术写作",
+    "priority": "low",
+    "status": "open",
+    "created_at": "2026-05-30T13:40:00Z",
+    "tags": ["resource-change", "Q2-launch"]
+  }
+]

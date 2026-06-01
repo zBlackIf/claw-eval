@@ -1,0 +1,29 @@
+[
+  {
+    "article_id": "KB-LAB-RFC-DRAFT",
+    "title": "策略实验室 RFC（草稿 v0.2 - 待补全）",
+    "category": "rfc",
+    "tags": ["策略实验室", "RFC", "草稿"],
+    "content": "# 策略实验室 RFC v0.2\n\n## 背景\n零切检测交易系统跑了快两年，核心策略迭代主要靠手工调参 + 老带新经验。回测脚本散在各人本地，参数空间没有统一搜索，绩效指标口径不一致。\n\n## 目标\n搭一个内部用的策略实验室，沉淀回测能力 + 参数调优 + 多周期信号组合 + 绩效评估，让团队复用、对齐口径。\n\n## 现状盘点（待补充）\n- 已有 strategy_base.py（StrategyBase 抽象类 + Signal/MarketData/OrderSide）\n- 调度部分接的是生产盘口，没有独立的历史数据回放\n- 绩效指标各自实现，口径不一\n\n## 待定决策\n- 回测引擎自研还是基于 backtrader / vectorbt 改造？\n- 参数搜索：grid / random / bayesian / Optuna？\n- 多周期信号融合的接口规范？\n\n## 风险\n- 历史数据完整性：tick 数据有缺口\n- 计算资源：参数搜索如何不挤占生产策略 GPU\n- 团队接入成本：现有策略代码迁移工作量\n\n## TODO\n- [ ] 现状分析章节扩写\n- [ ] 功能清单按四块拆开（回测 / 参数优化 / 多周期 / 绩效）\n- [ ] 架构图（与 StrategyBase 的对接点）\n- [ ] 数据流（数据→信号→执行→绩效）\n- [ ] 分阶段实施 Phase 1/2/3\n- [ ] strategy_lab.py 骨架代码\n",
+    "last_updated": "2026-04-12",
+    "views": 87
+  },
+  {
+    "article_id": "KB-RISK-LOG-RETRO",
+    "title": "回测/策略实验踩坑复盘合集",
+    "category": "retrospective",
+    "tags": ["复盘", "踩坑", "回测"],
+    "content": "# 回测/策略实验踩坑复盘\n\n## Case 1：look-ahead bias（2025-11）\n用 t 时刻收盘价计算因子去预测 t 时刻方向 —— 实际生产无法获取。后续所有回测必须明确：信号 t 仅可用 t-1 及更早的数据。\n\n## Case 2：手续费/滑点缺失（2026-01）\n回测年化 45%，实盘 12%。复盘发现没有计入双边千一手续费 + 0.05% 滑点。绩效模块必须把交易成本作为可配置参数。\n\n## Case 3：过拟合（2026-02）\nIS Sharpe 3.2 / OOS Sharpe 0.4。参数空间过大、样本外集太小。参数优化模块要内置 walk-forward + train/val 划分。\n\n## Case 4：随机种子（2026-03）\n两次跑同一组参数得到 1% 差异 —— 随机数没固定。回测引擎必须固定 numpy/torch 种子，记录到 run metadata。\n\n## Case 5：绩效口径漂移（2026-03）\n策略 A 的 max_drawdown 算的是逐日收盘价回撤，策略 B 用了 intraday tick。绩效指标必须统一定义（参见 KB-METRIC-DEFS）。\n",
+    "last_updated": "2026-04-05",
+    "views": 142
+  },
+  {
+    "article_id": "KB-METRIC-DEFS",
+    "title": "绩效指标团队定义共识",
+    "category": "spec",
+    "tags": ["绩效", "指标", "定义"],
+    "content": "# 绩效指标定义（v1.0，团队共识）\n\n所有内部回测/实盘报表统一按本文档定义计算。\n\n- sharpe_ratio：annualized return / annualized std，无风险利率 = 0；用日频收益率序列\n- max_drawdown：基于日收盘 equity 序列的最大累计回撤百分比\n- win_rate：盈利交易数 / 总交易数（含手续费后 PnL > 0）\n- profit_factor：sum(profit of winning trades) / abs(sum(loss of losing trades))\n- 报表必须同时给出 IS（in-sample）与 OOS（out-of-sample）两套数值\n",
+    "last_updated": "2026-03-20",
+    "views": 215
+  }
+]

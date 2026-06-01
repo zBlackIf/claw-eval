@@ -1,0 +1,77 @@
+# provenance:
+#   source_session: 9214276646379791354
+#   scenario: "心理咨询 / 陪伴 / 角色扮演 / 情感" (mislabeled - actual: DevOps / Rails / DB schema fix)
+#   model: deepseek-v3-2-251201
+#   real_user_turns: 44
+task_id: CP124_rails_schema_circular_dependency_fix
+task_name: "Rails schema.rb 循环依赖修复 — view/function 顺序问题导致 db:schema:load 失败"
+version: "1.0"
+category: config_diagnosis
+difficulty: medium
+tags: [rails, postgresql, devops, database, schema]
+
+source_session_id: "9214276646379791354"
+source_description: "Real user session: Chemotion ELN deployment. db:schema:load fails with PG::UndefinedObject because create_function referencing compound_open_data_locals view is placed before the create_view definition. Agent must diagnose ordering bug and reorder schema.rb."
+
+services: []
+
+prompt:
+  text: |
+    我在部署 Chemotion ELN 项目时，执行 `rails db:schema:load` 报错：
+
+    ```
+    ActiveRecord::StatementInvalid: PG::UndefinedObject: ERROR:
+      type "compound_open_data_locals" does not exist
+    /app/db/schema.rb:1762:in `block in <main>'
+    ```
+
+    项目代码在 /workspace/fixtures/chemotion-eln/。帮我诊断问题原因并修复
+    schema.rb，让 db:schema:load 能正常执行。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/chemotion-eln/db/schema.rb
+  - fixtures/chemotion-eln/db/seeds.rb
+  - fixtures/chemotion-eln/db/seeds/development.rb
+  - fixtures/chemotion-eln/db/seeds/production.rb
+  - fixtures/chemotion-eln/db/seeds/shared/admin.seed.rb
+  - fixtures/chemotion-eln/db/migrate/20201027170400_create_compound_open_data_locals.rb
+  - fixtures/chemotion-eln/config/database.yml
+  - fixtures/chemotion-eln/docker-compose.dev.yml
+  - fixtures/chemotion-eln/README.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct diagnosis of ordering dependency: compound_open_data_locals view must be defined before create_function :com_xvial / :com_xvial_count that RETURNS SETOF compound_open_data_locals. The fix must move create_view before create_function calls while preserving all content. Partial credit for identifying the problem without a complete fix."
+
+reference_solution: |
+  The bug is a topological ordering issue in schema.rb: two create_function
+  definitions (com_xvial, com_xvial_count) have return type
+  `SETOF compound_open_data_locals`, but the create_view for
+  compound_open_data_locals is defined AFTER these functions.
+
+  Fix: Move the `create_view "compound_open_data_locals"` block to appear
+  BEFORE the two `create_function` definitions. This ensures PostgreSQL
+  knows about the view type before the functions reference it.
+
+  Alternative fix: Use `db:migrate` instead of `db:schema:load` (the
+  migration creates the view first). But the proper fix is correcting
+  the ordering in schema.rb.
+
+primary_dimensions: [completion, communication, safety]

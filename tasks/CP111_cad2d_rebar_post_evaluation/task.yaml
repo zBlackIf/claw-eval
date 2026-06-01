@@ -1,0 +1,81 @@
+# provenance:
+#   source_session: 14021778888608995020
+#   scenario: cad_2d_rebar_post_evaluation
+#   agent_loop_task: agent-loop-260530-180327-225668
+task_id: CP111_cad2d_rebar_post_evaluation
+task_name: "2D CAD 配筋图后评价系统实现"
+version: "1.0"
+category: engineering
+difficulty: hard
+tags: [cad, geometry, validation, python]
+
+source_task_id: "14021778888608995020"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "Real session: implement post-evaluation (后评价) checks for a 2D CAD rebar drawing library. Key checks: rebar inside contour, anchor angle >= 90 deg, anchor-body clearance >= 16mm, spacing uniformity."
+
+services: []
+
+prompt:
+  text: |
+    cad2d_base 库（/workspace/fixtures/cad2d_base/）已有基本的 Entity、Polyline、
+    LineRebar 和 geometry 模块。现在需要实现一个后评价（post-evaluation）模块，
+    用来校验配筋图绘制结果是否满足工程规范。
+
+    请在 cad2d_base/entities/ 下新建 evaluation.py，实现 evaluate_rebar_layout
+    函数，接收参数：contour (Wire2D), dist_rebar_positions (list of (x,y) tuples),
+    stirrups (list of LineRebar), config (dict)。
+
+    需要实现以下检查项：
+    1. 钢筋在轮廓内检查（考虑保护层 cover 内缩）
+    2. 锚固段弯折角度检查（不小于 90 度）
+    3. 锚固段与主体段净距检查（不小于 config 中的 min_anchor_clearance）
+    4. 分布筋间距检查（不超过 config 中的 spacing）
+
+    返回格式：{'passed': bool, 'checks': [{'name': str, 'passed': bool, 'detail': str}]}
+
+    test_layout.py 里有测试数据可以验证：stirrup_0 有锚固贴近主体的问题，
+    stirrup_2 有锚固角度问题，你的检查应该能识别出来。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/cad2d_base/__init__.py
+  - fixtures/cad2d_base/geometry/__init__.py
+  - fixtures/cad2d_base/geometry/point.py
+  - fixtures/cad2d_base/geometry/wire.py
+  - fixtures/cad2d_base/entities/__init__.py
+  - fixtures/cad2d_base/entities/base.py
+  - fixtures/cad2d_base/entities/polyline.py
+  - fixtures/cad2d_base/entities/rebar.py
+  - fixtures/cad2d_base/test_layout.py
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete post-evaluation implementation: evaluate_rebar_layout function with (1) point-in-polygon check with cover offset for rebar containment, (2) vector angle computation at anchor bends >= 90 degrees, (3) anchor-to-body segment distance/clearance check >= 16mm, (4) distribution rebar spacing check. Must return structured dict with 'passed' bool and 'checks' list. Must correctly identify violations in test_layout stirrup_0 (clearance) and stirrup_2 (angle)."
+
+reference_solution: |
+  In cad2d_base/entities/evaluation.py:
+  - evaluate_rebar_layout(contour, dist_rebar_positions, stirrups, config) -> dict
+  - _check_rebars_inside_contour(): point-in-polygon with cover offset
+  - _check_anchor_angles(): vector angle at each bend point >= 90 deg
+  - _check_anchor_clearance(): point-to-segment distance between anchor and body
+  - _check_spacing(): consecutive rebar distance <= max spacing
+  - Returns {'passed': bool, 'checks': [{'name': str, 'passed': bool, 'detail': str}]}
+  - Correctly identifies stirrup_0 clearance violation and stirrup_2 angle violation
+
+primary_dimensions: [completion, communication, safety]

@@ -14,9 +14,13 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
+import hashlib
+import secrets
 
 from ..config import SandboxConfig
+from .sandbox_errors import SandboxInfraError
 
 
 @dataclass
@@ -26,7 +30,9 @@ class ContainerHandle:
     container: Any  # docker Container object
     host_port: int  # sandbox service's mapped host port
     run_id: str
-    sandbox_url: str  # "http://localhost:{host_port}"
+    task_id: str
+    token: str
+    sandbox_url: str  # "http://127.0.0.1:{host_port}"
 
 
 class SandboxRunner:
@@ -120,41 +126,183 @@ class SandboxRunner:
                 env[key] = val
         return env
 
-    def start_container(self, *, run_id: str) -> ContainerHandle:
+    @staticmethod
+    def _token_sha256(token: str) -> str:
+        return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def identity_headers(handle: ContainerHandle) -> dict[str, str]:
+        return {
+            "X-Claw-Sandbox-Run-Id": handle.run_id,
+            "X-Claw-Sandbox-Task-Id": handle.task_id,
+            "X-Claw-Sandbox-Token": handle.token,
+        }
+
+    @staticmethod
+    def identity_payload(handle: ContainerHandle) -> dict[str, str]:
+        return {
+            "run_id": handle.run_id,
+            "task_id": handle.task_id,
+            "token": handle.token,
+        }
+
+    @staticmethod
+    def _public_identity(handle: ContainerHandle) -> dict[str, str]:
+        return {
+            "run_id": handle.run_id,
+            "task_id": handle.task_id,
+            "token_sha256": SandboxRunner._token_sha256(handle.token),
+        }
+
+    @staticmethod
+    def _container_diagnostics(container: Any) -> dict[str, Any]:
+        diagnostics: dict[str, Any] = {
+            "container_id": getattr(container, "short_id", None) or getattr(container, "id", None),
+            "container_name": getattr(container, "name", None),
+        }
+        try:
+            container.reload()
+        except Exception as exc:
+            diagnostics["container_inspect_error"] = str(exc)
+
+        attrs = getattr(container, "attrs", None) or {}
+        state = attrs.get("State", {}) if isinstance(attrs, dict) else {}
+        diagnostics["container_status"] = state.get("Status") or getattr(container, "status", None)
+        diagnostics["exit_code"] = state.get("ExitCode")
+        diagnostics["oom_killed"] = state.get("OOMKilled")
+        diagnostics["state_error"] = state.get("Error")
+        return diagnostics
+
+    @staticmethod
+    def _format_diagnostics(fields: dict[str, Any]) -> str:
+        return " ".join(
+            f"{key}={value}"
+            for key, value in fields.items()
+            if value is not None
+        )
+
+    @staticmethod
+    def _handle_diagnostics(handle: ContainerHandle) -> dict[str, Any]:
+        diagnostics = {
+            "run_id": handle.run_id,
+            "task_id": handle.task_id,
+            "host_port": handle.host_port,
+            "sandbox_url": handle.sandbox_url,
+            "identity": SandboxRunner._public_identity(handle),
+        }
+        diagnostics.update(SandboxRunner._container_diagnostics(handle.container))
+        return diagnostics
+
+    def describe_handle(self, handle: ContainerHandle) -> dict[str, Any]:
+        """Return current sandbox/container diagnostics for result metadata."""
+        diagnostics = self._handle_diagnostics(handle)
+        try:
+            import httpx
+
+            with httpx.Client(timeout=2.0, headers=self.identity_headers(handle)) as client:
+                health = client.get(f"{handle.sandbox_url}/health")
+                diagnostics["health_status"] = health.status_code
+                diagnostics["health"] = health.json()
+                diag = client.get(f"{handle.sandbox_url}/diagnostics")
+                diagnostics["server_diagnostics_status"] = diag.status_code
+                diagnostics["server_diagnostics"] = diag.json()
+        except Exception as exc:
+            diagnostics["server_diagnostics_error"] = str(exc)
+        try:
+            raw_logs = handle.container.logs(tail=200)
+            if isinstance(raw_logs, bytes):
+                raw_logs = raw_logs.decode("utf-8", errors="replace")
+            tail_bytes = max(1024, int(getattr(self._config, "log_tail_bytes", 65536) or 65536))
+            diagnostics["docker_log_tail"] = str(raw_logs)[-tail_bytes:]
+        except Exception as exc:
+            diagnostics["docker_log_error"] = str(exc)
+        return diagnostics
+
+    @staticmethod
+    def _log_stage(
+        stage: str,
+        *,
+        run_id: str | None = None,
+        handle: ContainerHandle | None = None,
+        container: Any | None = None,
+        exc: Exception | None = None,
+    ) -> None:
+        fields: dict[str, Any] = {"stage": stage, "run_id": run_id}
+        if handle is not None:
+            fields.update(SandboxRunner._handle_diagnostics(handle))
+        elif container is not None:
+            fields.update(SandboxRunner._container_diagnostics(container))
+        if exc is not None:
+            fields["exc_type"] = type(exc).__name__
+            fields["exc"] = str(exc)
+        prefix = "[sandbox-stage-error]" if exc is not None else "[sandbox-stage]"
+        print(f"{prefix} {SandboxRunner._format_diagnostics(fields)}")
+
+    def start_container(self, *, run_id: str, task_id: str | None = None) -> ContainerHandle:
         """Launch an agent container and wait for the sandbox service.
 
         Returns a *ContainerHandle* with the sandbox HTTP URL that the
         host-side dispatcher should send ``sandbox_*`` tool calls to.
         """
-        container = self._docker.containers.run(
-            image=self._image,
-            detach=True,
-            name=f"claw-agent-{run_id}",
-            mem_limit=self._config.memory_limit,
-            nano_cpus=int(self._config.cpu_limit * 1e9),
-            ports={f"{self._config.sandbox_port}/tcp": None},  # random host port
-            labels={"app": "claw-eval", "role": "agent", "run_id": run_id},
-            environment=self._proxy_env(),
-        )
+        container = None
+        handle = None
+        resolved_task_id = task_id or run_id
+        token = secrets.token_urlsafe(32)
+        self._log_stage("start_container", run_id=run_id)
+        try:
+            env = self._proxy_env()
+            env.update({
+                "CLAW_EVAL_SANDBOX_RUN_ID": run_id,
+                "CLAW_EVAL_SANDBOX_TASK_ID": resolved_task_id,
+                "CLAW_EVAL_SANDBOX_TOKEN": token,
+            })
+            container = self._docker.containers.run(
+                image=self._image,
+                detach=True,
+                name=f"claw-agent-{run_id}",
+                mem_limit=self._config.memory_limit,
+                nano_cpus=int(self._config.cpu_limit * 1e9),
+                ports={f"{self._config.sandbox_port}/tcp": ("127.0.0.1", None)},  # IPv4-only, avoids IPv6 port collision
+                labels={
+                    "app": "claw-eval",
+                    "role": "agent",
+                    "run_id": run_id,
+                    "task_id": resolved_task_id,
+                },
+                environment=env,
+            )
 
-        host_port = self._get_mapped_port(container)
-        sandbox_url = f"http://localhost:{host_port}"
-        self._wait_healthy(f"{sandbox_url}/health")
+            host_port = self._get_mapped_port(container)
+            sandbox_url = f"http://127.0.0.1:{host_port}"
+            handle = ContainerHandle(
+                container=container,
+                host_port=host_port,
+                run_id=run_id,
+                task_id=resolved_task_id,
+                token=token,
+                sandbox_url=sandbox_url,
+            )
+            self._log_stage("wait_healthy", handle=handle)
+            self._wait_healthy(f"{sandbox_url}/health")
+        except Exception as exc:
+            self._log_stage("start_container", run_id=run_id, handle=handle, container=container, exc=exc)
+            raise
 
         print(f"[sandbox] Container claw-agent-{run_id} started at {sandbox_url}")
-        return ContainerHandle(
-            container=container,
-            host_port=host_port,
-            run_id=run_id,
-            sandbox_url=sandbox_url,
-        )
+        self._log_stage("ready", handle=handle)
+        return handle
 
-    def stop_container(self, handle: ContainerHandle) -> None:
+    def stop_container(self, handle: ContainerHandle, *, preserve: bool = False) -> None:
         """Stop and remove a running agent container."""
+        self._log_stage("stop_container", handle=handle)
+        if preserve:
+            print(f"[sandbox] Preserving container claw-agent-{handle.run_id} for diagnostics")
+            return
         try:
             handle.container.remove(force=True)
             print(f"[sandbox] Container claw-agent-{handle.run_id} removed")
         except Exception as exc:
+            self._log_stage("stop_container", handle=handle, exc=exc)
             print(f"[sandbox] Warning: failed to remove container: {exc}")
 
     def cleanup_all(self) -> int:
@@ -169,6 +317,92 @@ class SandboxRunner:
     # ------------------------------------------------------------------
     # File injection
     # ------------------------------------------------------------------
+
+    @staticmethod
+    def _is_infra_response(status_code: int, body: Any) -> bool:
+        if status_code >= 500:
+            return True
+        return isinstance(body, dict) and (
+            body.get("infra_error") is True
+            or str(body.get("error_code") or "").startswith("sandbox_")
+        )
+
+    @staticmethod
+    def _raise_for_infra_response(
+        *,
+        label: str,
+        rel_path: str,
+        status_code: int,
+        body: Any,
+        handle: ContainerHandle,
+    ) -> None:
+        if not SandboxRunner._is_infra_response(status_code, body):
+            return
+        if isinstance(body, dict):
+            error_code = str(body.get("error_code") or "sandbox_transport")
+            message = str(body.get("message") or body.get("error") or body)
+            diagnostics = dict(body.get("diagnostics") or {})
+        else:
+            error_code = "sandbox_transport"
+            message = str(body)
+            diagnostics = {}
+        diagnostics.update({
+            "label": label,
+            "rel_path": rel_path,
+            "status_code": status_code,
+            "sandbox_url": handle.sandbox_url,
+        })
+        raise SandboxInfraError(error_code, message, diagnostics=diagnostics)
+
+    @staticmethod
+    def _required_roots(file_list: list[str]) -> list[str]:
+        roots: set[str] = set()
+        for rel_path in file_list:
+            parts = Path(rel_path).parts
+            if not parts:
+                continue
+            if parts[0] == "fixtures" and len(parts) >= 2:
+                roots.add(f"/workspace/fixtures/{parts[1]}")
+            elif len(parts) >= 1:
+                roots.add(f"/workspace/{parts[0]}")
+        return sorted(roots)
+
+    @staticmethod
+    def _bootstrap_identity(handle: ContainerHandle, required_roots: list[str], injected: int) -> None:
+        import httpx
+
+        try:
+            resp = httpx.post(
+                f"{handle.sandbox_url}/identity/bootstrap",
+                json={"required_roots": required_roots, "injected_files": injected},
+                headers=SandboxRunner.identity_headers(handle),
+                timeout=30.0,
+            )
+            try:
+                body = resp.json()
+            except Exception:
+                body = {"error": resp.text[:1000]}
+            SandboxRunner._raise_for_infra_response(
+                label="identity-bootstrap",
+                rel_path="<identity>",
+                status_code=resp.status_code,
+                body=body,
+                handle=handle,
+            )
+            if resp.status_code >= 400:
+                raise SandboxInfraError(
+                    "sandbox_transport",
+                    f"identity bootstrap failed: {resp.status_code} {str(body)[:500]}",
+                    diagnostics={"status_code": resp.status_code, "body": body},
+                )
+        except SandboxInfraError:
+            raise
+        except Exception as exc:
+            raise SandboxInfraError(
+                "sandbox_transport",
+                f"identity bootstrap failed: {exc}",
+                diagnostics={"sandbox_url": handle.sandbox_url, "exc_type": type(exc).__name__},
+            ) from exc
 
     @staticmethod
     def _inject_file_list(
@@ -194,7 +428,7 @@ class SandboxRunner:
         if not file_list:
             return 0
 
-        client = httpx.Client(timeout=30.0)
+        client = httpx.Client(timeout=30.0, headers=SandboxRunner.identity_headers(handle))
         injected = 0
 
         _TEXT_MIMES = {
@@ -218,6 +452,7 @@ class SandboxRunner:
                 break
             _pr = _pr.parent
 
+        SandboxRunner._log_stage(label, handle=handle)
         try:
             for rel_path in file_list:
                 src = root / rel_path
@@ -252,10 +487,25 @@ class SandboxRunner:
                         json={"path": container_path, "content_b64": b64},
                     )
 
+                try:
+                    body = resp.json()
+                except Exception:
+                    body = {"error": resp.text[:1000]}
+                SandboxRunner._raise_for_infra_response(
+                    label=label,
+                    rel_path=rel_path,
+                    status_code=resp.status_code,
+                    body=body,
+                    handle=handle,
+                )
+
                 if resp.status_code < 400:
                     injected += 1
                 else:
                     print(f"[sandbox] {label}: failed {rel_path} — {resp.status_code} {resp.text[:100]}")
+        except Exception as exc:
+            SandboxRunner._log_stage(label, handle=handle, exc=exc)
+            raise
         finally:
             client.close()
 
@@ -303,7 +553,9 @@ class SandboxRunner:
             return 0
 
         root = SandboxRunner._resolve_task_root(task, task_dir)
-        return SandboxRunner._inject_file_list(handle, file_list, root, label="inject")
+        injected = SandboxRunner._inject_file_list(handle, file_list, root, label="inject")
+        SandboxRunner._bootstrap_identity(handle, SandboxRunner._required_roots(file_list), injected)
+        return injected
 
     @staticmethod
     def inject_grader_files(

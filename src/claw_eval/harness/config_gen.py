@@ -15,6 +15,7 @@ def mcp_server_args(
     dispatch_log: Path,
     sandbox_url: str | None,
     port_offset: int,
+    sandbox_identity: dict[str, str] | None = None,
 ) -> list[str]:
     args = [
         "-m",
@@ -28,6 +29,13 @@ def mcp_server_args(
     ]
     if sandbox_url:
         args.extend(["--sandbox-url", sandbox_url])
+    if sandbox_identity:
+        if sandbox_identity.get("run_id"):
+            args.extend(["--sandbox-run-id", sandbox_identity["run_id"]])
+        if sandbox_identity.get("task_id"):
+            args.extend(["--sandbox-task-id", sandbox_identity["task_id"]])
+        if sandbox_identity.get("token"):
+            args.extend(["--sandbox-token", sandbox_identity["token"]])
     if port_offset:
         args.extend(["--port-offset", str(port_offset)])
     return args

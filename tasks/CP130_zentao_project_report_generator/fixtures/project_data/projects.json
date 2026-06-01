@@ -1,0 +1,55 @@
+[
+  {
+    "id": 891,
+    "name": "直播需求v2.2.8",
+    "status": "testing",
+    "tasks": [
+      {"task_id": 29001, "title": "直播间商品卡片优化", "deadline": "2026-04-18", "assignee": "张明", "status": "done", "estimated_hours": 8.0, "consumed_hours": 7.5},
+      {"task_id": 29002, "title": "弹幕互动功能联调", "deadline": "2026-04-19", "assignee": "张明", "status": "done", "estimated_hours": 6.0, "consumed_hours": 6.5},
+      {"task_id": 29003, "title": "礼物动效渲染优化", "deadline": "2026-04-20", "assignee": "李伟", "status": "done", "estimated_hours": 12.0, "consumed_hours": 11.0},
+      {"task_id": 29004, "title": "直播回放切片功能", "deadline": "2026-04-21", "assignee": "李伟", "status": "doing", "estimated_hours": 16.0, "consumed_hours": 10.0},
+      {"task_id": 29005, "title": "PK连麦音视频同步", "deadline": "2026-04-22", "assignee": "王芳", "status": "doing", "estimated_hours": 14.0, "consumed_hours": 8.0},
+      {"task_id": 29006, "title": "观众端低延迟播放器", "deadline": "2026-04-23", "assignee": "王芳", "status": "wait", "estimated_hours": 10.0, "consumed_hours": 0.0},
+      {"task_id": 29007, "title": "直播间数据埋点", "deadline": "2026-04-20", "assignee": "赵强", "status": "done", "estimated_hours": 4.0, "consumed_hours": 4.5},
+      {"task_id": 29008, "title": "推流质量监控面板", "deadline": "2026-04-22", "assignee": "赵强", "status": "doing", "estimated_hours": 8.0, "consumed_hours": 5.0}
+    ]
+  },
+  {
+    "id": 897,
+    "name": "中台2.2.3",
+    "status": "developing",
+    "tasks": [
+      {"task_id": 28911, "title": "V1测试阶段", "deadline": "2026-04-20", "assignee": "李丽琼", "status": "wait", "estimated_hours": 16.0, "consumed_hours": 0.0},
+      {"task_id": 28861, "title": "售后维权确认退款支持退运费接口兼容改造", "deadline": "2026-04-21", "assignee": "肖功钦", "status": "wait", "estimated_hours": 12.0, "consumed_hours": 0.0},
+      {"task_id": 28860, "title": "C端用户申请退款支持退运费功能开发", "deadline": "2026-04-21", "assignee": "肖功钦", "status": "wait", "estimated_hours": 14.0, "consumed_hours": 0.0},
+      {"task_id": 28859, "title": "订单确认接口有运费订单支持运费展示及入库", "deadline": "2026-04-20", "assignee": "肖功钦", "status": "wait", "estimated_hours": 8.0, "consumed_hours": 0.0},
+      {"task_id": 28858, "title": "下单前填写地址改造", "deadline": "2026-04-20", "assignee": "肖功钦", "status": "wait", "estimated_hours": 10.0, "consumed_hours": 0.0},
+      {"task_id": 28854, "title": "平台自营订单下单接口改造", "deadline": "2026-04-17", "assignee": "肖功钦", "status": "wait", "estimated_hours": 16.0, "consumed_hours": 0.0},
+      {"task_id": 28853, "title": "新增专栏直播课发货地址填写", "deadline": "2026-04-17", "assignee": "肖功钦", "status": "wait", "estimated_hours": 12.0, "consumed_hours": 0.0},
+      {"task_id": 28852, "title": "平台自营渠道订单支持运费开发准备", "deadline": "2026-04-16", "assignee": "肖功钦", "status": "wait", "estimated_hours": 8.0, "consumed_hours": 0.0},
+      {"task_id": 28483, "title": "beta环境测试", "deadline": "2026-04-20", "assignee": "何涵", "status": "wait", "estimated_hours": 8.0, "consumed_hours": 0.0},
+      {"task_id": 28482, "title": "测试环境测试", "deadline": "2026-04-17", "assignee": "何涵", "status": "wait", "estimated_hours": 6.0, "consumed_hours": 0.0},
+      {"task_id": 28900, "title": "订单列表接口优化", "deadline": "2026-04-25", "assignee": "刘洋", "status": "doing", "estimated_hours": 10.0, "consumed_hours": 6.0},
+      {"task_id": 28901, "title": "退款流程状态机重构", "deadline": "2026-04-26", "assignee": "刘洋", "status": "doing", "estimated_hours": 14.0, "consumed_hours": 8.0},
+      {"task_id": 28902, "title": "支付回调幂等性改造", "deadline": "2026-04-24", "assignee": "陈磊", "status": "done", "estimated_hours": 6.0, "consumed_hours": 5.5},
+      {"task_id": 28903, "title": "商品SKU批量导入", "deadline": "2026-04-23", "assignee": "陈磊", "status": "done", "estimated_hours": 8.0, "consumed_hours": 9.0}
+    ]
+  },
+  {
+    "id": 910,
+    "name": "智能销售前沿获客v2.2.9",
+    "status": "testing",
+    "tasks": [
+      {"task_id": 29101, "title": "客户画像标签聚合", "deadline": "2026-04-18", "assignee": "周敏", "status": "done", "estimated_hours": 12.0, "consumed_hours": 13.0},
+      {"task_id": 29102, "title": "线索评分模型V2上线", "deadline": "2026-04-19", "assignee": "周敏", "status": "done", "estimated_hours": 16.0, "consumed_hours": 18.0},
+      {"task_id": 29103, "title": "智能分配规则引擎", "deadline": "2026-04-20", "assignee": "吴涛", "status": "wait", "estimated_hours": 14.0, "consumed_hours": 0.0},
+      {"task_id": 29104, "title": "企微侧边栏客户动态", "deadline": "2026-04-19", "assignee": "吴涛", "status": "wait", "estimated_hours": 10.0, "consumed_hours": 0.0},
+      {"task_id": 29105, "title": "外呼任务队列优化", "deadline": "2026-04-18", "assignee": "吴涛", "status": "wait", "estimated_hours": 8.0, "consumed_hours": 0.0},
+      {"task_id": 29106, "title": "跟进提醒推送服务", "deadline": "2026-04-21", "assignee": "黄磊", "status": "wait", "estimated_hours": 6.0, "consumed_hours": 0.0},
+      {"task_id": 29107, "title": "销售漏斗可视化", "deadline": "2026-04-20", "assignee": "黄磊", "status": "wait", "estimated_hours": 10.0, "consumed_hours": 0.0},
+      {"task_id": 29108, "title": "客户流失预警模型", "deadline": "2026-04-19", "assignee": "黄磊", "status": "wait", "estimated_hours": 12.0, "consumed_hours": 0.0},
+      {"task_id": 29109, "title": "数据看板权限改造", "deadline": "2026-04-22", "assignee": "孙丽", "status": "doing", "estimated_hours": 8.0, "consumed_hours": 4.0},
+      {"task_id": 29110, "title": "报表导出功能", "deadline": "2026-04-23", "assignee": "孙丽", "status": "doing", "estimated_hours": 6.0, "consumed_hours": 2.0}
+    ]
+  }
+]

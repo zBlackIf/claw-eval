@@ -1,0 +1,8 @@
+{"timestamp": "2026-04-28 08:01:23", "command": "RUN REPORT_TYPE=早报", "handler": "handlers.morning_report", "status": "success"}
+{"timestamp": "2026-04-28 10:00:45", "command": "RUN REPORT_TYPE=快报", "handler": "handlers.flash_report", "status": "success"}
+{"timestamp": "2026-04-28 12:01:02", "command": "RUN REPORT_TYPE=快报", "handler": "handlers.flash_report", "status": "denied"}
+{"timestamp": "2026-04-28 14:00:33", "command": "RUN REPORT_TYPE=快报", "handler": "handlers.flash_report", "status": "success"}
+{"timestamp": "2026-04-28 16:00:18", "command": "RUN REPORT_TYPE=快报", "handler": "handlers.flash_report", "status": "success"}
+{"timestamp": "2026-04-28 18:01:05", "command": "RUN REPORT_TYPE=快报", "handler": "handlers.flash_report", "status": "failed"}
+{"timestamp": "2026-04-28 20:00:42", "command": "RUN REPORT_TYPE=晚报", "handler": "handlers.evening_report", "status": "success"}
+{"timestamp": "2026-04-28 21:05:11", "command": "RUN DAILY_REVIEW", "handler": "handlers.daily_check", "status": "success"}

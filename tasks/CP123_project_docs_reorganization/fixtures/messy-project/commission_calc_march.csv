@@ -1,0 +1,4 @@
+partner_id,partner_name,vendor,period,revenue,commission_rate,commission_amount
+P001,Acme Corp,aws,2024-03,26496.34,0.12,3179.56
+P001,Acme Corp,gcp,2024-03,15440.50,0.15,2316.08
+P002,Beta Inc,azure,2024-03,14400.00,0.15,2160.00

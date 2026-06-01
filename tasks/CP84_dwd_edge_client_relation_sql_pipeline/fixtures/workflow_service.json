@@ -1,0 +1,196 @@
+[
+  {
+    "record_id": "brief:task-context",
+    "kind": "brief",
+    "title": "DWD edge-client SQL with auxiliary catalog service for schemas, lineage, timestamp, and json/unx field traps.",
+    "content": "Task CP73_dwd_edge_client_relation_sql_pipeline: DWD edge-client SQL with auxiliary catalog service for schemas, lineage, timestamp, and json/unx field traps. Use list/search/get/cross_check before submit/confirm; workspace artifact remains required.",
+    "tags": [
+      "brief",
+      "auxiliary"
+    ],
+    "metadata": {
+      "task_id": "CP73_dwd_edge_client_relation_sql_pipeline",
+      "service": "warehouse_catalog",
+      "mode": "auxiliary"
+    }
+  },
+  {
+    "record_id": "source:requirements.md",
+    "kind": "source",
+    "title": "Workspace fixture export: requirements.md",
+    "content": "# Edge-PP Client to PP Client Relation Requirements\n\n## Background\n\nIn our graph database, we model relationships between \"edge-PP clients\" (peripheral/upstream clients) and \"PP clients\" (core platform clients). The data warehouse needs a DWD-layer processing script to materialize these relationships from raw ODS data.\n\n## Source Tables\n\n### ods_gu_user_gdb_edge (ODS layer - raw edge data)\n| Column | Type | Description |\n|--------|------|-------------|\n| edge_id | STRING | Unique edge identifier |\n| source_node | STRING | Source client node ID |\n| target_node | STRING | Target client node ID |\n| edge_type | STRING | Relation type (e.g. 'supply', 'purchase', 'affiliate') |\n| weight | DOUBLE | Relation strength (0-1) |\n| create_time | STRING | Edge creation timestamp (yyyy-MM-dd HH:mm:ss) |\n| update_time | STRING | Last update timestamp |\n| ds | STRING | Partition date (yyyyMMdd) |\n\n### ods_gu_user_gdb_node (ODS layer - raw node data)\n| Column | Type | Description |\n|--------|------|-------------|\n| node_id | STRING | Unique node identifier |\n| node_type | STRING | 'pp_client' or 'edge_pp_client' |\n| client_name | STRING | Display name |\n| client_code | STRING | Business code |\n| status | INT | 1=active, 0=inactive |\n| region | STRING | Geographic region |\n| json_value | STRING | Extended attributes (JSON string) |\n| unx_value | BIGINT | Unix timestamp of last activity |\n| ds | STRING | Partition date |\n\n## Target Table\n\n### dwd_gu_user_gdb_edge_client_to_meta (DWD layer)\n| Column | Type | Description |\n|--------|------|-------------|\n| edge_id | STRING | FK to edge |\n| source_client_code | STRING | Source client business code |\n| source_client_name | STRING | Source client name |\n| target_client_code | STRING | Target client business code |\n| target_client_name | STRING | Target client name |\n| edge_type | STRING | Relation type |\n| weight | DOUBLE | Relation strength |\n| source_region | STRING | Source client region |\n| target_region | STRING | Target client region |\n| source_status | INT | Source client status |\n| target_status | INT | Target client status |\n| recent_time | TIMESTAMP | Most recent of (edge update_time, source unx_value, target unx_value) |\n| json_value | STRING | Merged JSON from both source and target nodes |\n| unx_value | BIGINT | MAX of source and target unx_value |\n| create_time | TIMESTAMP | Edge creation time |\n| ds | STRING | Partition date |\n\n## Processing Rules\n\n1. JOIN edges with nodes on source_node = node_id AND target_node = node_id\n2. Only include edges where BOTH source and target nodes exist\n3. Filter: only edges where source node_type = 'edge_pp_client' AND target node_type = 'pp_client'\n4. recent_time = MAX(edge.update_time, FROM_UNIXTIME(source.unx_value), FROM_UNIXTIME(target.unx_value))\n5. json_value = merge of source.json_value and target.json_value (CONCAT as JSON array if both non-null)\n6. unx_value = MAX(source.unx_value, target.unx_value)\n7. Partition by ds, INSERT OVERWRITE\n\n## Notes\n- Use the latest partition (ds = '${bizdate}') for both source tables\n- Handle NULL values in json_value and unx_value gracefully\n- The recentTime field must be a proper TIMESTAMP, not a string\n",
+    "tags": [
+      "source",
+      "md",
+      "requirements"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/requirements.md",
+      "bytes": 3176
+    }
+  },
+  {
+    "record_id": "trap:join-direction",
+    "kind": "trap",
+    "title": "边表 source/target 方向不能反",
+    "content": "source_node 应 join edge_pp_client，target_node 应 join pp_client；反过来会通过字段名但业务方向错误。",
+    "tags": [
+      "trap",
+      "join"
+    ],
+    "metadata": {
+      "source_type": "edge_pp_client",
+      "target_type": "pp_client"
+    }
+  },
+  {
+    "record_id": "trap:three-timestamps",
+    "kind": "trap",
+    "title": "recent_time 取三方最大更新时间",
+    "content": "recent_time 要综合 edge、source node、target node 三个 update_ts，用 GREATEST/MAX 后 FROM_UNIXTIME。",
+    "tags": [
+      "trap",
+      "timestamp"
+    ],
+    "metadata": {
+      "required_inputs": 3
+    }
+  },
+  {
+    "record_id": "trap:json-unx-fields",
+    "kind": "trap",
+    "title": "json_value 与 unx_value 口径不同",
+    "content": "json_value 是两端属性合并，unx_value 是可比较值取最大；不要把两个字段写成同一表达式。",
+    "tags": [
+      "trap",
+      "field"
+    ],
+    "metadata": {
+      "fields": [
+        "json_value",
+        "unx_value"
+      ]
+    }
+  },
+  {
+    "record_id": "warehouse:schema:edge_table",
+    "kind": "schema",
+    "title": "edge relation table schema",
+    "content": "edge_table contains source_node, target_node, update_ts, json_attr, unx_value. It represents directed graph edges.",
+    "tags": [
+      "warehouse",
+      "schema",
+      "edge"
+    ],
+    "metadata": {
+      "table_role": "edge"
+    }
+  },
+  {
+    "record_id": "warehouse:schema:node_table",
+    "kind": "schema",
+    "title": "node table schema",
+    "content": "node_table contains node_id, node_type, update_ts, json_attr, unx_value. source node must be edge_pp_client; target node must be pp_client.",
+    "tags": [
+      "warehouse",
+      "schema",
+      "node"
+    ],
+    "metadata": {
+      "table_role": "node"
+    }
+  },
+  {
+    "record_id": "warehouse:lineage:dwd_relation",
+    "kind": "lineage",
+    "title": "DWD edge-client relation lineage",
+    "content": "Build DWD relation by joining edge source_node to source node and target_node to target node, filtering both node types before deriving recent_time/json_value/unx_value.",
+    "tags": [
+      "warehouse",
+      "lineage"
+    ],
+    "metadata": {
+      "layer": "DWD"
+    }
+  },
+  {
+    "record_id": "workflow:required-sequence",
+    "kind": "workflow_contract",
+    "title": "Required service workflow sequence",
+    "content": "Use list/search, fetch targeted records, cross-check traps, submit a report, then confirm it.",
+    "tags": [
+      "workflow",
+      "contract"
+    ],
+    "metadata": {
+      "required_sequence": [
+        "list",
+        "search",
+        "get",
+        "cross_check",
+        "submit",
+        "confirm"
+      ]
+    }
+  },
+  {
+    "record_id": "cross_check:check:source-vs-trap",
+    "kind": "cross_check",
+    "title": "Cross-check source facts against known traps before final decision",
+    "content": "Use service traps as cautionary evidence, then verify final artifact against workspace fixtures.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "check:source-vs-trap",
+        "title": "Cross-check source facts against known traps before final decision",
+        "primary_ids": [
+          "source:requirements.md",
+          "warehouse:schema:edge_table",
+          "warehouse:schema:node_table"
+        ],
+        "comparison_ids": [],
+        "trap_ids": [
+          "trap:join-direction",
+          "trap:three-timestamps",
+          "trap:json-unx-fields"
+        ],
+        "expected_resolution": "Use service traps as cautionary evidence, then verify final artifact against workspace fixtures."
+      }
+    }
+  },
+  {
+    "record_id": "cross_check:check:submit-readiness",
+    "kind": "cross_check",
+    "title": "Submission readiness checklist",
+    "content": "Final answer should cite concrete source_ids and confirm the service submission after workspace artifact is written.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "check:submit-readiness",
+        "title": "Submission readiness checklist",
+        "primary_ids": [
+          "source:requirements.md",
+          "warehouse:schema:edge_table",
+          "warehouse:schema:node_table"
+        ],
+        "comparison_ids": [
+          "trap:join-direction",
+          "trap:three-timestamps",
+          "trap:json-unx-fields"
+        ],
+        "trap_ids": [
+          "trap:join-direction",
+          "trap:three-timestamps",
+          "trap:json-unx-fields"
+        ],
+        "expected_resolution": "Final answer should cite concrete source_ids and confirm the service submission after workspace artifact is written."
+      }
+    }
+  }
+]

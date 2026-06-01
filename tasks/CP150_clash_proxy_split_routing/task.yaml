@@ -1,0 +1,74 @@
+# provenance:
+#   source_session: "6859234540437111904"
+#   scenario: "Vue / React / 前端 (中文)"
+#   session_topic: "小米路由器 Docker Clash 分流配置"
+task_id: CP150_clash_proxy_split_routing
+task_name: "Clash 代理分流配置（路由器级透明代理 + 国内外分流规则）"
+version: "1.0"
+category: ops
+difficulty: medium
+tags: [networking, docker, proxy, clash, openwrt]
+
+source_session_id: "6859234540437111904"
+source_description: "用户在小米 BE7000 路由器上通过 Docker 部署 Clash，需要配置国内外分流：国内网站直连，Google/YouTube 等外网走代理节点。涉及 DNS 防污染、proxy-groups 结构、rules 规则编写、iptables 透明代理。"
+
+services: []
+
+prompt:
+  text: |
+    我在路由器上用 Docker 跑了 Clash 做透明代理，现在需要配置国内外自动分流：
+    - 国内网站（baidu, bilibili, taobao 等）直连
+    - 国外网站（google, youtube, twitter, telegram 等）走代理
+    - DNS 要防污染，国内域名用国内 DNS 解析，其他走 fallback
+
+    现有配置在 /workspace/fixtures/clash-config/config.yaml，问题是：
+    1. DNS 只配了 Google DNS，国内访问会很慢且可能被污染
+    2. proxy-groups 只有一个简单的 select 组，没有 url-test 自动选择
+    3. rules 只有一条 MATCH,DIRECT，外网根本走不了代理
+    4. 没有配置 redir-port/tproxy-port 做透明代理
+
+    请帮我完善配置，同时更新 setup-tproxy.sh 脚本配置 iptables 透明代理规则。
+    所有文件都在 /workspace/fixtures/clash-config/ 目录下。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/clash-config/config.yaml
+  - fixtures/clash-config/docker-compose.yml
+  - fixtures/clash-config/setup-tproxy.sh
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete Clash split-routing configuration: (1) DNS with Chinese nameservers (114.114.114.114/223.5.5.5) + fallback + enhanced-mode fake-ip/redir-host, (2) Structured proxy-groups with url-test auto-selection + selector + direct groups, (3) China domain/GEOIP rules routing to DIRECT, (4) Foreign domain rules (google/youtube/twitter/telegram) routing to Proxy group, (5) MATCH final rule pointing to proxy (not DIRECT), (6) redir-port/tproxy-port configured + iptables script with NAT/REDIRECT rules."
+
+reference_solution: |
+  config.yaml should have:
+  - DNS: nameserver with 223.5.5.5, 114.114.114.114; fallback with 8.8.8.8, 1.1.1.1;
+    fallback-filter with geoip: true; enhanced-mode: fake-ip or redir-host
+  - redir-port: 7892 (or tproxy-port)
+  - proxy-groups: url-test group (auto latency test), select group, direct group
+  - rules: DOMAIN-SUFFIX for cn sites -> DIRECT, DOMAIN-KEYWORD google/youtube -> Proxy,
+    GEOIP,CN,DIRECT, MATCH -> Proxy (or selector group)
+
+  setup-tproxy.sh should have:
+  - iptables -t nat chain for CLASH
+  - RETURN rules for local/private IPs
+  - REDIRECT to redir-port for remaining TCP traffic
+  - Proper DNS redirect to Clash DNS port
+
+primary_dimensions: [completion, communication, safety]

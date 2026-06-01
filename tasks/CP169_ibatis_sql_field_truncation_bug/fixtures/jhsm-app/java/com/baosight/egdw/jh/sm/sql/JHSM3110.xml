@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+	<!--      table information
+		Generate time : 2026-05-15 10:39:10
+   		Version :  6.0.731.201709180824
+		table comment : 主原料明细成本标准（可手工）用于全流程
+		tableName :EGJHSU.SA_JH00_WA0001
+		 REC_ID  VARCHAR(32),
+		 ACCOUNT  VARCHAR(4)   NOT NULL,
+		 YEAR  VARCHAR(4),
+		 EDITION  VARCHAR(2),
+		 COST_CENTER  VARCHAR(4),
+		 PRODUCT_CODE_4  VARCHAR(100),
+		 WCE  VARCHAR(5),
+		 PLUNGE_WEIGHT_1  DECIMAL,
+		 PLUNGE_WEIGHT_2  DECIMAL,
+		 LAST_YEAR_PLUNGE  DECIMAL,
+		 STD_PLUNGE  DECIMAL,
+		 PLUNGE_PRDT_CODE  VARCHAR(20),
+		 MODIFY_NAME  VARCHAR(30),
+		 MODIFY_DATE  VARCHAR(10),
+		 KEY  VARCHAR(50)
+	-->
+<sqlMap namespace="JHSM3110">
+
+	<select id="query" parameterClass="java.util.HashMap"
+        resultClass="com.baosight.egdw.jh.sm.domain.JHSM3110">
+
+			SELECT *
+			FROM (
+			    SELECT
+
+			        A.REC_ID as recId,
+			        A.ACCOUNT as account,
+			        A.YEAR as year,
+			        A.EDITION as edition,
+
+			        A.COST_CENTER || '-' || COALESCE(B.COST_CENTER_DSCR,'') as costCenter,
+
+			        A.PRODUCT_CODE_4 as productCode4,
+
+					substr(A.PRODUCT_CODE_4,1,5)  as productCode,
+			        substr(A.PRODUCT_CODE_4,6,8) || '-' || COALESCE(C.ST_NO_DESC,'') as stNo,
+			        substr(A.PRODUCT_CODE_4,14,7) as thickChr,
+			        substr(A.PRODUCT_CODE_4,21,8) as widthChr,
+			        substr(A.PRODUCT_CODE_4,29,6) as coatingType,
+			        substr(A.PRODUCT_CODE_4,35,6) as ctrlRollCode,
+			        substr(A.PRODUCT_CODE_4,41,6) as heatProcLog,
+			        substr(A.PRODUCT_CODE_4,47) as sgSign,
+
+			        A.WCE || '-' || COALESCE(D.WCE_DESCRIPTION,'') as wce,
+
+			        A.PLUNGE_WEIGHT_1 as plungeWeight1,
+			        A.PLUNGE_WEIGHT_2 as plungeWeight2,
+			        A.LAST_YEAR_PLUNGE as lastYearPlunge,
+			        A.STD_PLUNGE as stdPlunge,
+			        A.PLUNGE_PRDT_CODE as plungePrdtCode,
+
+			        A.MODIFY_NAME as modifyName,
+			        A.MODIFY_DATE as modifyDate,
+			        A.KEY as key,
+
+			        A.YEAR || VARCHAR(A.EDITION) as yEdition
+
+			    FROM EGJHSU.SA_JH00_WA0001 A
+
+			    LEFT JOIN (
+			        SELECT COST_CENTER, MAX(COST_CENTER_DSCR) COST_CENTER_DSCR
+			        FROM EGGMM1.TACACT6
+			        GROUP BY COST_CENTER
+			    ) B ON A.COST_CENTER = B.COST_CENTER
+
+			    LEFT JOIN (
+			        SELECT ST_NO, MAX(ST_NO_DESC) ST_NO_DESC
+			        FROM EGGMM1.TQMTS0X
+			        GROUP BY ST_NO
+			    ) C ON SUBSTR(A.PRODUCT_CODE_4,6,8) = C.ST_NO
+
+			    LEFT JOIN (
+			        SELECT WCE, MAX(WCE_DESCRIPTION) WCE_DESCRIPTION
+			        FROM EGGMM1.TACACT7
+			        GROUP BY WCE
+			    ) D ON A.WCE = D.WCE
+
+			    WHERE 1=1
+
+			    <dynamic prepend=" AND ">
+			        <isNotEmpty property="version">
+			            (A.YEAR || A.EDITION) = #version#
+			        </isNotEmpty>
+			    </dynamic>
+
+			    <dynamic prepend=" AND ">
+			        <isNotEmpty property="costCenter">
+			            A.COST_CENTER = #costCenter#
+			        </isNotEmpty>
+			    </dynamic>
+
+			    <dynamic prepend=" AND ">
+			        <isNotEmpty property="steelMark">
+			            substr(A.PRODUCT_CODE_4,6,8) = #steelMark#
+			        </isNotEmpty>
+			    </dynamic>
+
+			    <dynamic prepend=" AND ">
+			        <isNotEmpty property="wce">
+			            A.WCE = #wce#
+			        </isNotEmpty>
+			    </dynamic>
+
+			) T
+			<dynamic prepend="ORDER BY">
+         <isNotEmpty property="orderBy">
+    		  $orderBy$
+   		 </isNotEmpty>
+  		</dynamic>
+
+	</select>
+
+
+	<insert id="insert">
+	    INSERT INTO EGJHSU.SA_JH00_WA0001 (
+	        REC_ID,
+	        ACCOUNT,
+	        YEAR,
+	        EDITION,
+	        COST_CENTER,
+	        PRODUCT_CODE_4,
+	        WCE,
+	        PLUNGE_WEIGHT_1,
+	        PLUNGE_WEIGHT_2,
+	        LAST_YEAR_PLUNGE,
+	        STD_PLUNGE,
+	        PLUNGE_PRDT_CODE,
+	        MODIFY_NAME,
+	        MODIFY_DATE,
+	        KEY
+	    )
+	    VALUES (
+	        #recId:VARCHAR#,
+	        #account:VARCHAR#,
+	        #year:VARCHAR#,
+	        #edition:VARCHAR#,
+	        #costCenter:VARCHAR#,
+
+	        COALESCE(LEFT(#productCode:VARCHAR#, 5), '') ||
+	        COALESCE(LEFT(#stNo:VARCHAR#, 8), '') ||
+	        COALESCE(LEFT(#thickChr:VARCHAR#, 7), '') ||
+	        COALESCE(LEFT(#widthChr:VARCHAR#, 8), '') ||
+	        COALESCE(LEFT(#coatingType:VARCHAR#, 6), '') ||
+	        COALESCE(LEFT(#ctrlRollCode:VARCHAR#, 6), '') ||
+	        COALESCE(LEFT(#heatProcLog:VARCHAR#, 6), '') ||
+	        COALESCE(LEFT(#sgSign:VARCHAR#, 20), ''),
+
+	        #wce:VARCHAR#,
+	        #plungeWeight1:NUMERIC#,
+	        #plungeWeight2:NUMERIC#,
+	        #lastYearPlunge:NUMERIC#,
+	        #stdPlunge:NUMERIC#,
+	        #plungePrdtCode:VARCHAR#,
+	        #modifyName:VARCHAR#,
+	        #modifyDate:VARCHAR#,
+	        #key:VARCHAR#
+	    )
+	</insert>
+
+	<delete id="delete">
+		DELETE FROM EGJHSU.SA_JH00_WA0001 WHERE REC_ID = #recId#
+	</delete>
+
+	<update id="update">
+	    UPDATE EGJHSU.SA_JH00_WA0001
+	    SET
+	        ACCOUNT = #account:VARCHAR#,
+	        YEAR = #year:VARCHAR#,
+	        EDITION = #edition:VARCHAR#,
+	        COST_CENTER = #costCenter:VARCHAR#,
+
+	        PRODUCT_CODE_4 =
+	        COALESCE(LEFT(#productCode:VARCHAR#, 5), '') ||
+	        COALESCE(LEFT(#stNo:VARCHAR#, 8), '') ||
+	        COALESCE(LEFT(#thickChr:VARCHAR#, 7), '') ||
+	        COALESCE(LEFT(#widthChr:VARCHAR#, 8), '') ||
+	        COALESCE(LEFT(#coatingType:VARCHAR#, 6), '') ||
+	        COALESCE(LEFT(#ctrlRollCode:VARCHAR#, 6), '') ||
+	        COALESCE(LEFT(#heatProcLog:VARCHAR#, 6), '') ||
+	        COALESCE(LEFT(#sgSign:VARCHAR#, 20), ''),
+
+	        WCE = #wce:VARCHAR#,
+	        PLUNGE_WEIGHT_1 = #plungeWeight1:NUMERIC#,
+	        PLUNGE_WEIGHT_2 = #plungeWeight2:NUMERIC#,
+	        LAST_YEAR_PLUNGE = #lastYearPlunge:NUMERIC#,
+	        STD_PLUNGE = #stdPlunge:NUMERIC#,
+	        PLUNGE_PRDT_CODE = #plungePrdtCode:VARCHAR#,
+	        MODIFY_NAME = #modifyName:VARCHAR#,
+	        MODIFY_DATE = #modifyDate:VARCHAR#,
+	        KEY = #key:VARCHAR#
+	    WHERE REC_ID = #recId:VARCHAR#
+	</update>
+
+</sqlMap>

@@ -1,0 +1,69 @@
+# provenance:
+#   themis_dataset: taskset-260427-121234
+#   themis_task_id: task_96_webflux_to_webmvc_refactor
+#   themis_rank_original: 68
+#   themis_metrics: { std_trim: 0.345, range_trim: 0.889, mean_trim: 0.620 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP99_spring_boot_webflux_to_webmvc_refactoring
+task_name: "Spring Boot WebFlux → WebMVC 重构（CP99 / 源 taskset-260427-121234:task_96_webflux_to_webmvc_refactor）"
+version: "1.0"
+category: coding
+difficulty: hard
+tags: [general]
+
+source_task_id: "task_96_webflux_to_webmvc_refactor"
+source_dataset: "taskset-260427-121234"
+source_description: "PinchBench top100 rank 68（std_trim 0.345）。Workspace WS2 大型重构：两个 Provider 从 WebFlux 反应式 API 改成 WebMVC 同步 API。verifier 8 个隐藏锚点（无 reactor 引用 / RestTemplate 字段+导入+用法 / 无 WebClient / while+Thread.sleep 轮询替换 Mono.defer+repeatWhenEmpty / 接口不动）。"
+
+services: []
+
+prompt:
+  text: |
+    项目从 WebFlux 迁到 WebMVC，剩下 /workspace/fixtures/src/ 这两个 Provider
+    （SeeDance / Wanxiang）还在用反应式 API。按 VideoProvider 接口的同步签名
+    重构它们——WebClient 换 RestTemplate、Mono/Flux 拆开、轮询改 while+sleep。
+    改后放到 /workspace/src/，业务逻辑保持一致。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/src/main/java/live/os/godspace/service/VideoProvider.java
+  - fixtures/src/main/java/live/os/godspace/service/SeeDanceProvider.java
+  - fixtures/src/main/java/live/os/godspace/service/WanxiangVideoProvider.java
+
+sandbox_grader_files:
+  - fixtures/verify_webflux_refactor.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_webflux_refactor.py
+
+env_snapshot_files:
+  - /workspace/src/main/java/live/os/godspace/service/VideoProvider.java
+  - /workspace/src/main/java/live/os/godspace/service/SeeDanceProvider.java
+  - /workspace/src/main/java/live/os/godspace/service/WanxiangVideoProvider.java
+
+environment:
+  timeout_seconds: 720
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward both Providers refactored: no reactor/webflux/WebClient imports remain, RestTemplate field declared + imported + used (restTemplate.exchange/getForObject etc.), polling loops converted from Mono.defer+repeatWhenEmpty to while(true)+Thread.sleep, methods return T/List<T> directly (no Mono<T>/Flux<T>), VideoProvider interface untouched."
+
+reference_solution: |
+  In each Provider: drop reactor/* and reactive WebClient imports. Inject
+  RestTemplate via constructor. Replace WebClient.create().get()
+  .uri(...).retrieve().bodyToMono(X.class).block() with
+  restTemplate.exchange(url, GET, null, X.class).getBody(). Replace
+  Mono.defer(() -> fetch().flatMap(...)).repeatWhenEmpty(...) polling
+  with while(!done) { result = fetch(); if (result.complete) break;
+  Thread.sleep(POLL_MS); }. Method return types: Mono<X> → X, Flux<X> →
+  List<X>. Keep VideoProvider interface as is.
+
+primary_dimensions: [completion, communication, safety]

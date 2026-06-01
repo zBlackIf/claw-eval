@@ -1,0 +1,81 @@
+task_id: CP129_project_report_generator
+task_name: "项目进度批量汇报脚本（CP129 / 源 session 2289808252831223203）"
+version: "1.0"
+category: data_processing
+difficulty: medium
+tags: [general]
+
+source_session_id: "2289808252831223203"
+source_description: "真实用户 session：用户在 HokClaw 中通过 skill 脚本批量读取禅道项目数据 + Excel 排期，生成结构化的项目进度汇报。任务抽象为：给定 JSON 项目数据和 Excel 排期文件，编写 Python 脚本生成带风险评估的项目周报。"
+
+services: []
+
+prompt:
+  text: |
+    我有一组项目进度数据（/workspace/fixtures/project-reporter/projects_data.json）
+    和一个排期 Excel（/workspace/fixtures/project-reporter/schedule.xlsx），
+    还有一个配置文件（/workspace/fixtures/project-reporter/config.json）指定了
+    生成日期和标题。
+
+    帮我写一个 Python 脚本 /workspace/fixtures/project-reporter/generate_report.py，
+    实现以下功能：
+
+    1. 读取 projects_data.json 中所有项目的数据
+    2. 读取 schedule.xlsx 中的排期信息（按执行ID匹配）
+    3. 读取 config.json 获取报告日期和标题
+    4. 对每个项目计算：
+       - 实际进度 = completed_tasks / total_tasks（百分比取整）
+       - 预期进度 = 根据当前日期和排期推算（简单按时间比例即可，或直接用 90% 作为预期）
+       - 逾期任务 = 截止日期早于 report_date 且 status 不是"已完成"的任务
+       - 滞后率 = 预期进度 - 实际进度（负数则为0）
+       - 风险等级：滞后率>=30% 为高风险，>=10% 为中风险，<10% 为低风险
+    5. 输出 Markdown 格式的报告到 /workspace/fixtures/project-reporter/output_report.md，包含：
+       - 标题和生成日期
+       - 整体汇总统计表（总项目数、总任务数、总逾期任务数、各风险等级项目数）
+       - 每个项目的详细报告，包含：项目阶段、进度、滞后率、风险等级、逾期任务数、排期
+       - 逾期任务明细表（任务ID、任务名称、截止日期、负责人、状态、逾期天数）
+       - 风险预警建议
+
+    需要用到 openpyxl 读 Excel。脚本要能直接 python generate_report.py 运行。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/project-reporter/projects_data.json
+  - fixtures/project-reporter/schedule.xlsx
+  - fixtures/project-reporter/config.json
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 60
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a working Python script that: (1) reads JSON project data and Excel schedule, (2) calculates progress/overdue/risk correctly, (3) outputs a well-structured Markdown report with summary table + per-project details + overdue task tables + risk ratings. Hidden checks: script runs without error, output file exists, correct overdue count calculation, risk level classification matches thresholds, schedule data merged from Excel, summary statistics correct."
+
+reference_solution: |
+  generate_report.py that:
+  - Reads projects_data.json with json module
+  - Reads schedule.xlsx with openpyxl, maps execution_id to schedule text
+  - Reads config.json for report_date and title
+  - For each project: calculates actual progress (completed/total), identifies
+    overdue tasks (deadline < report_date and status != '已完成'), computes
+    lag rate and risk level
+  - Writes output_report.md with:
+    - Header with title and date
+    - Summary table (totals, risk distribution)
+    - Per-project section with stats + overdue task detail table + schedule
+    - Risk warnings for high-risk projects
+
+primary_dimensions: [completion, communication, safety]

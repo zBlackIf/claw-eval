@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}实验室预约系统{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">🔬 实验室预约</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/readme/"
+                   data-bs-toggle="tooltip" data-bs-placement="bottom" title="使用说明">📖</a>
+                <a class="nav-link" href="/stats/"
+                   data-bs-toggle="tooltip" data-bs-placement="bottom" title="统计面板">📊</a>
+                <a class="nav-link" href="/settings/"
+                   data-bs-toggle="tooltip" data-bs-placement="bottom" title="系统设置">⚙️</a>
+                <a class="nav-link" href="/admin/"
+                   data-bs-toggle="tooltip" data-bs-placement="bottom" title="管理后台">🔧</a>
+                <a class="nav-link" href="/login/"
+                   data-bs-toggle="tooltip" data-bs-placement="bottom" title="登录">🔑</a>
+                <a class="nav-link" href="/logout/"
+                   data-bs-toggle="tooltip" data-bs-placement="bottom" title="退出">🚪</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="container mt-4 mb-3 text-center text-muted">
+        <small>实验室预约系统 v2.1 | 💡 提示：点击日历格子即可预约</small>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

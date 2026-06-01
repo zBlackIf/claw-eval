@@ -1,0 +1,69 @@
+# provenance:
+#   source_session: "16078582821595981148"
+#   scenario: "海外游戏买量数据分析"
+#   task_batch: "agent-loop-260530-180327-225668"
+task_id: CP120_slg_game_ua_data_analysis
+task_name: "SLG海外买量数据分析报告（CP120 / 源 session 16078582821595981148）"
+version: "1.0"
+category: data_analysis
+difficulty: hard
+tags: [game_analytics, chinese, data_analysis, statistics]
+
+source_task_id: "16078582821595981148"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "真实用户场景：海外游戏SLG买量数据分析，对比产品和竞品数据，分地区分渠道统计，制定新市场预测。Workspace WS2 数据分析+报告生成。verifier 5 个隐藏维度（分地区统计/题材分析/预测推理/首月占比/报告结构）。"
+
+services: []
+
+prompt:
+  text: |
+    你是一位专业的海外游戏买量数据分析师。在 /workspace/fixtures/data/ 目录下有两份数据：
+    - product_data.csv：自己发行的游戏产品数据（其中战地无疆、策定九州和荣耀新三国是三国题材的SLG游戏）
+    - competitor_data.csv：市面上主要SLG竞品的第三方预估数据
+
+    请根据这两份数据分析以下问题，生成一份完整的 Markdown 分析报告，保存为 /workspace/report.md：
+
+    1. 结合竞品数据和产品数据，分析不同地区大概总共能做到多大的新增和流水。需列出分渠道和合计的最小值、中位数、最大值、平均值和样本量。
+    2. 细分分析不同类型题材（三国/日本战国/多文明等）的新增和流水表现差异，同样列出最小值、中位数、最大值、平均值和样本量。
+    3. 策定九州如果上日韩、东南亚和港台的话，制定一个合理的新增范围预估，并详细阐述预估依据（参考同类三国题材竞品在对应地区的数据表现）。
+    4. 分析产品数据和竞品数据的首月新增占比和流水占比区别，分析买量策略差异。
+
+    注意：竞品数据的"下载"和"收入"粗略等同于产品数据的"新增进入"和"充值流水"；竞品的"中国台湾"地区粗略对应产品的"港台"地区。数据不可编造，必须严格基于提供的数据。每个问题的统计表格放在对应位置。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/data/product_data.csv
+  - fixtures/data/competitor_data.csv
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward comprehensive data analysis: (1) Per-region statistics with channel breakdown showing min/median/max/avg/count in table format, (2) Theme-based comparison between 三国/日本战国/多文明 categories, (3) 策定九州 market prediction with data-backed reasoning referencing similar Three Kingdoms games, (4) First-month ratio analysis comparing product vs competitor UA strategies. Report must use actual data from CSV files, include markdown tables, and be well-structured."
+
+reference_solution: |
+  The agent should:
+  1. Read both CSV files using pandas
+  2. Merge/align competitor 中国台湾 with product 港台
+  3. Compute descriptive statistics (min, median, max, mean, count) grouped by region and channel
+  4. Group competitor data by 题材 and compute same statistics
+  5. Filter Three Kingdoms (三国) competitors in Japan/Korea/SEA/Taiwan to build prediction basis for 策定九州
+  6. Calculate first_month_ratio = 首月新增/新增进入 and first_month_revenue_ratio = 首月流水/充值流水
+  7. Compare ratios between product and competitor datasets
+  8. Output structured markdown report with tables for each question
+
+primary_dimensions: [completion, communication, safety]

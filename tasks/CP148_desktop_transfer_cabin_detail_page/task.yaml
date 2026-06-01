@@ -1,0 +1,124 @@
+# provenance:
+#   source_session: 6999089723858752644
+#   scenario: "Vue / React / 前端 (中文)"
+#   task_number: 148
+task_id: CP148_desktop_transfer_cabin_detail_page
+task_name: "桌面式交接舱二级详情页面（React/TypeScript 前端组件开发）"
+version: "1.0"
+category: frontend
+difficulty: medium
+tags: [react, typescript, frontend, chinese]
+
+source_session_id: "6999089723858752644"
+source_description: "从真实用户会话提取：为医疗血液设备监控系统中的桌面式交接舱创建设备详情二级页面，展示血液信息、设备状态、操作者、接驳批次等数据，需与现有设备页面保持UI风格一致。"
+
+services: []
+
+prompt:
+  text: |
+    桌面式交接舱需要一个二级页面展示该节点相关数据。现有项目在
+    /workspace/fixtures/blood-device-monitor/ 下，其他设备（自动分拣机、速冻机、
+    离心机）的详情页已经实现好了，参考 DeviceDetailPage.tsx 的模式。
+
+    桌面式交接舱的二级页面需要展示以下信息：
+    - 血液详细信息：献血码、血型、规格、品类
+    - 设备编号
+    - 设备工作状态
+    - 日期时间
+    - 操作者
+    - 物料的接驳热合时间
+
+    请实现这个二级页面，要求：
+    1. 与现有设备页面的交互和UI样式保持一致
+    2. 有批次的概念，展示接驳批次信息
+    3. 需要在 types 中补充相应的 TypeScript 类型定义
+    4. 确保页面能从主路由正确渲染
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/blood-device-monitor/package.json
+  - fixtures/blood-device-monitor/tsconfig.json
+  - fixtures/blood-device-monitor/src/types/index.ts
+  - fixtures/blood-device-monitor/src/lib/mock-data.ts
+  - fixtures/blood-device-monitor/src/store/use-app-store.ts
+  - fixtures/blood-device-monitor/src/app/page.tsx
+  - fixtures/blood-device-monitor/src/components/pages/DeviceDetailPage.tsx
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components:
+  # EASY tier (0.35 total) — all agents should pass
+  - id: page_component_exists
+    weight: 0.08
+    description: "Cabin page component file or section exists"
+  - id: blood_info_keywords
+    weight: 0.08
+    description: "Blood-related keywords present (donation code, blood type, spec, category)"
+  - id: device_info_keywords
+    weight: 0.08
+    description: "Device-related keywords present (device code, status, time, operator)"
+  - id: batch_keywords
+    weight: 0.06
+    description: "Batch/heat-seal/docking keywords present"
+  - id: type_exists
+    weight: 0.05
+    description: "Any TypeScript interface/type for cabin exists"
+  # MEDIUM tier (0.30 total) — reasonable implementations pass
+  - id: ui_consistency
+    weight: 0.10
+    description: "Uses GlassCard, InfoRow, table, cyan/slate color scheme"
+  - id: type_quality
+    weight: 0.10
+    description: "Type definition has proper fields (heatSeal, batch items, batchId)"
+  - id: routing_basic
+    weight: 0.10
+    description: "Cabin is referenced/imported in DeviceDetailPage"
+  # HARD tier (0.35 total) — hidden discriminating, only strong pass
+  - id: dual_panel_architecture
+    weight: 0.12
+    description: "Implements BOTH LeftPanel and RightPanel matching exact naming pattern (hidden)"
+  - id: routing_dual_panel
+    weight: 0.10
+    description: "Conditional rendering in BOTH aside and section blocks (hidden)"
+  - id: mock_data_structure
+    weight: 0.08
+    description: "Exported mock data with batch array, multiple entries, heatSeal fields (hidden)"
+  - id: heat_seal_per_batch
+    weight: 0.05
+    description: "Heat seal time rendered per-batch inside .map() iteration (hidden)"
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a complete desktop transfer cabin detail page that: (1) creates a dedicated component or extends DeviceDetailPage with desktop_transfer_cabin support, (2) displays all blood info fields (donation code, blood type, specification, category), (3) shows device code, status, datetime, operator, (4) includes batch/docking/heat-sealing concepts, (5) adds TypeScript interface for the cabin detail data, (6) integrates into the routing so the page can be reached, (7) maintains UI consistency with existing device pages (GlassCard, InfoRow, table patterns, cyan/slate color scheme)."
+
+reference_solution: |
+  Option A: Create a new file src/components/pages/DesktopTransferCabinPage.tsx with:
+  - Left panel: GlassCard showing device info (code, status), current batch info
+  - Right panel: Table of blood items (donation code, blood type, spec, category)
+  - Operation records with operator, timestamp
+  - Heat seal time display per batch
+  - Integrate in DeviceDetailPage routing for desktop_transfer_cabin type
+
+  Option B: Extend DeviceDetailPage.tsx by adding:
+  - DesktopTransferCabinLeftPanel component
+  - DesktopTransferCabinRightPanel component
+  - Routing case for desktop_transfer_cabin in the main render
+
+  Both require:
+  - New interface DesktopTransferCabinDetail in types/index.ts
+  - Mock data for cabin batches in mock-data.ts
+  - UI consistent with AutoSorter/QuickFreezer patterns
+
+primary_dimensions: [completion, communication, safety]

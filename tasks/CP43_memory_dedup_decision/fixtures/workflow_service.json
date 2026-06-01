@@ -1,0 +1,265 @@
+[
+  {
+    "record_id": "brief:task-context",
+    "kind": "brief",
+    "title": "Long-term memory dedup decision with similarity, semantic-overlap, merge-history, and false-positive traps.",
+    "content": "Task CP45_memory_dedup_decision: Long-term memory dedup decision with similarity, semantic-overlap, merge-history, and false-positive traps. Use list/search/get/cross_check before submit/confirm; workspace artifact remains required.",
+    "tags": [
+      "brief",
+      "workflow"
+    ],
+    "metadata": {
+      "task_id": "CP45_memory_dedup_decision",
+      "service": "memory_workflow",
+      "mode": "workflow"
+    }
+  },
+  {
+    "record_id": "source:candidate_memory.json",
+    "kind": "source",
+    "title": "Workspace fixture export: candidate_memory.json",
+    "content": "{\n  \"abstract\": \"激励视频广告后效衡量：用户级净广告价值NAV四层净值模型\",\n  \"overview\": \"NAV = 即时广告收入 + 中短期后效收益 - 用户打扰成本 - 风险折损\",\n  \"content\": \"业界评估激励视频广告后效时，不应仅看广告收入，推荐使用面向用户级的净广告价值NAV四层净值模型。各维度具体构成：1.即时收入：通过eCPM、展示量、完成率、填充率计算单次触发的预期广告收入；2.后效收益：包括留存变化、内容消费变化、会员转化变化、品牌价值变化带来的长期收益；3.打扰成本：包括用户退出率提升、内容消费下滑、主链路体验受损、用户投诉、高价值用户被过度商业化的机会成本；4.风险折损：包括异常刷量、无效流量、作弊带来的收益折损，以及对未来广告单价的负面影响。\"\n}\n",
+    "tags": [
+      "source",
+      "json",
+      "candidate_memory"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/candidate_memory.json",
+      "bytes": 893
+    }
+  },
+  {
+    "record_id": "item:candidate_memory.json:1",
+    "kind": "item",
+    "title": "candidate_memory.json:1",
+    "content": "{\n  \"abstract\": \"激励视频广告后效衡量：用户级净广告价值NAV四层净值模型\",\n  \"overview\": \"NAV = 即时广告收入 + 中短期后效收益 - 用户打扰成本 - 风险折损\",\n  \"content\": \"业界评估激励视频广告后效时，不应仅看广告收入，推荐使用面向用户级的净广告价值NAV四层净值模型。各维度具体构成：1.即时收入：通过eCPM、展示量、完成率、填充率计算单次触发的预期广告收入；2.后效收益：包括留存变化、内容消费变化、会员转化变化、品牌价值变化带来的长期收益；3.打扰成本：包括用户退出率提升、内容消费下滑、主链路体验受损、用户投诉、高价值用户被过度商业化的机会成本；4.风险折损：包括异常刷量、无效流量、作弊带来的收益折损，以及对未来广告单价的负面影响。\"\n}",
+    "tags": [
+      "item",
+      "candidate_memory.json",
+      "candidate_memory"
+    ],
+    "metadata": {
+      "source_file": "candidate_memory.json",
+      "source_index": 1
+    }
+  },
+  {
+    "record_id": "source:dedup_rules.txt",
+    "kind": "source",
+    "title": "Workspace fixture export: dedup_rules.txt",
+    "content": "# 记忆去重与合并规则\n\n## 相似度阈值\n- score >= 0.7: 高度相似，考虑合并或跳过\n- 0.5 <= score < 0.7: 中度相似，检查语义重叠后决定\n- score < 0.5: 低相似度，通常新增\n\n## 决策逻辑\n1. 如果候选记忆与某条已有记忆的核心知识点完全重叠 -> SKIP（跳过）\n2. 如果候选记忆是某条已有记忆的扩展/深化版本 -> MERGE（合并，更新已有记忆）\n3. 如果候选记忆包含独特的新知识点 -> ADD（新增）\n4. 合并时需保留两者的独特信息，生成合并后的content\n\n## 输出格式\n决策结果保存为 JSON：\n{\n  \"decision\": \"ADD|MERGE|SKIP\",\n  \"reason\": \"决策原因\",\n  \"merge_target\": \"如果MERGE，目标记忆URI\",\n  \"merged_content\": \"如果MERGE，合并后的内容\",\n  \"unique_points\": [\"候选记忆中的独特知识点列表\"]\n}\n",
+    "tags": [
+      "source",
+      "txt",
+      "dedup_rules"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/dedup_rules.txt",
+      "bytes": 848
+    }
+  },
+  {
+    "record_id": "source:existing_memories.json",
+    "kind": "source",
+    "title": "Workspace fixture export: existing_memories.json",
+    "content": "[\n  {\n    \"uri\": \"mem_889ae446\",\n    \"score\": 0.4348,\n    \"facet\": \"华为音乐AB实验PRD撰写\",\n    \"abstract\": \"AB实验方案设计：实验分组、指标定义与效果评估流程\",\n    \"content\": \"AB实验PRD需包含实验目的、分组策略、核心指标（留存、时长、转化率）、实验周期和置信度要求。\"\n  },\n  {\n    \"uri\": \"mem_22bc1a03\",\n    \"score\": 0.5124,\n    \"facet\": \"广告变现策略\",\n    \"abstract\": \"激励视频广告eCPM优化策略与填充率提升\",\n    \"content\": \"激励视频广告优化重点关注eCPM提升（创意优化、定向策略）和填充率（多SDK瀑布流），同时监控完成率和用户体验指标。\"\n  },\n  {\n    \"uri\": \"mem_f3a87b12\",\n    \"score\": 0.3891,\n    \"facet\": \"用户增长模型\",\n    \"abstract\": \"用户生命周期价值LTV计算与留存归因\",\n    \"content\": \"LTV计算基于ARPU和留存曲线，需要区分自然留存与活动拉回留存，避免归因污染。\"\n  },\n  {\n    \"uri\": \"mem_71cd9e45\",\n    \"score\": 0.6203,\n    \"facet\": \"广告商业化评估\",\n    \"abstract\": \"激励视频广告效果综合评估框架\",\n    \"content\": \"评估激励视频广告需从收入、用户体验、留存三个维度综合考量，不应仅看eCPM。建议用净收益模型衡量。\"\n  }\n]\n",
+    "tags": [
+      "source",
+      "json",
+      "existing_memories"
+    ],
+    "metadata": {
+      "workspace_path": "/workspace/fixtures/existing_memories.json",
+      "bytes": 1286
+    }
+  },
+  {
+    "record_id": "item:mem_889ae446",
+    "kind": "item",
+    "title": "华为音乐AB实验PRD撰写",
+    "content": "{\n  \"uri\": \"mem_889ae446\",\n  \"score\": 0.4348,\n  \"facet\": \"华为音乐AB实验PRD撰写\",\n  \"abstract\": \"AB实验方案设计：实验分组、指标定义与效果评估流程\",\n  \"content\": \"AB实验PRD需包含实验目的、分组策略、核心指标（留存、时长、转化率）、实验周期和置信度要求。\"\n}",
+    "tags": [
+      "item",
+      "existing_memories.json",
+      "existing_memories"
+    ],
+    "metadata": {
+      "source_file": "existing_memories.json",
+      "source_index": 1
+    }
+  },
+  {
+    "record_id": "item:mem_22bc1a03",
+    "kind": "item",
+    "title": "广告变现策略",
+    "content": "{\n  \"uri\": \"mem_22bc1a03\",\n  \"score\": 0.5124,\n  \"facet\": \"广告变现策略\",\n  \"abstract\": \"激励视频广告eCPM优化策略与填充率提升\",\n  \"content\": \"激励视频广告优化重点关注eCPM提升（创意优化、定向策略）和填充率（多SDK瀑布流），同时监控完成率和用户体验指标。\"\n}",
+    "tags": [
+      "item",
+      "existing_memories.json",
+      "existing_memories"
+    ],
+    "metadata": {
+      "source_file": "existing_memories.json",
+      "source_index": 2
+    }
+  },
+  {
+    "record_id": "item:mem_f3a87b12",
+    "kind": "item",
+    "title": "用户增长模型",
+    "content": "{\n  \"uri\": \"mem_f3a87b12\",\n  \"score\": 0.3891,\n  \"facet\": \"用户增长模型\",\n  \"abstract\": \"用户生命周期价值LTV计算与留存归因\",\n  \"content\": \"LTV计算基于ARPU和留存曲线，需要区分自然留存与活动拉回留存，避免归因污染。\"\n}",
+    "tags": [
+      "item",
+      "existing_memories.json",
+      "existing_memories"
+    ],
+    "metadata": {
+      "source_file": "existing_memories.json",
+      "source_index": 3
+    }
+  },
+  {
+    "record_id": "item:mem_71cd9e45",
+    "kind": "item",
+    "title": "广告商业化评估",
+    "content": "{\n  \"uri\": \"mem_71cd9e45\",\n  \"score\": 0.6203,\n  \"facet\": \"广告商业化评估\",\n  \"abstract\": \"激励视频广告效果综合评估框架\",\n  \"content\": \"评估激励视频广告需从收入、用户体验、留存三个维度综合考量，不应仅看eCPM。建议用净收益模型衡量。\"\n}",
+    "tags": [
+      "item",
+      "existing_memories.json",
+      "existing_memories"
+    ],
+    "metadata": {
+      "source_file": "existing_memories.json",
+      "source_index": 4
+    }
+  },
+  {
+    "record_id": "trap:keyword-overlap-low-semantic",
+    "kind": "trap",
+    "title": "关键词重合但语义弱相关",
+    "content": "mem_22bc1a03 同有激励视频广告/eCPM，但聚焦变现策略，不是候选 NAV 四层评估模型的直接深化。",
+    "tags": [
+      "trap",
+      "semantic_overlap"
+    ],
+    "metadata": {
+      "memory_id": "mem_22bc1a03"
+    }
+  },
+  {
+    "record_id": "trap:score-threshold-not-enough",
+    "kind": "trap",
+    "title": "相似度分数不能单独决定",
+    "content": "mem_71cd9e45 分数0.6203只是候选，仍需比对候选是否扩展了收入、体验、留存之外的完整框架后再 MERGE。",
+    "tags": [
+      "trap",
+      "threshold"
+    ],
+    "metadata": {
+      "memory_id": "mem_71cd9e45"
+    }
+  },
+  {
+    "record_id": "trap:add-vs-merge",
+    "kind": "trap",
+    "title": "新增与合并边界",
+    "content": "候选如果只是更细的同一评估框架，应 MERGE；只有主题不同或无法保留旧知识时才 ADD。",
+    "tags": [
+      "trap",
+      "decision"
+    ],
+    "metadata": {
+      "expected": "MERGE"
+    }
+  },
+  {
+    "record_id": "workflow:required-sequence",
+    "kind": "workflow_contract",
+    "title": "Required service workflow sequence",
+    "content": "Use list/search, fetch targeted records, cross-check traps, submit a report, then confirm it.",
+    "tags": [
+      "workflow",
+      "contract"
+    ],
+    "metadata": {
+      "required_sequence": [
+        "list",
+        "search",
+        "get",
+        "cross_check",
+        "submit",
+        "confirm"
+      ]
+    }
+  },
+  {
+    "record_id": "cross_check:check:source-vs-trap",
+    "kind": "cross_check",
+    "title": "Cross-check source facts against known traps before final decision",
+    "content": "Use service traps as cautionary evidence, then verify final artifact against workspace fixtures.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "check:source-vs-trap",
+        "title": "Cross-check source facts against known traps before final decision",
+        "primary_ids": [
+          "source:candidate_memory.json",
+          "item:candidate_memory.json:1",
+          "source:dedup_rules.txt",
+          "source:existing_memories.json"
+        ],
+        "comparison_ids": [
+          "item:mem_889ae446",
+          "item:mem_22bc1a03",
+          "item:mem_f3a87b12",
+          "item:mem_71cd9e45"
+        ],
+        "trap_ids": [
+          "trap:keyword-overlap-low-semantic",
+          "trap:score-threshold-not-enough",
+          "trap:add-vs-merge"
+        ],
+        "expected_resolution": "Use service traps as cautionary evidence, then verify final artifact against workspace fixtures."
+      }
+    }
+  },
+  {
+    "record_id": "cross_check:check:submit-readiness",
+    "kind": "cross_check",
+    "title": "Submission readiness checklist",
+    "content": "Final answer should cite concrete source_ids and confirm the service submission after workspace artifact is written.",
+    "tags": [
+      "cross_check",
+      "workflow"
+    ],
+    "metadata": {
+      "check": {
+        "check_id": "check:submit-readiness",
+        "title": "Submission readiness checklist",
+        "primary_ids": [
+          "source:candidate_memory.json",
+          "item:candidate_memory.json:1",
+          "source:dedup_rules.txt",
+          "source:existing_memories.json",
+          "item:mem_889ae446",
+          "item:mem_22bc1a03"
+        ],
+        "comparison_ids": [
+          "trap:keyword-overlap-low-semantic",
+          "trap:score-threshold-not-enough",
+          "trap:add-vs-merge"
+        ],
+        "trap_ids": [
+          "trap:keyword-overlap-low-semantic",
+          "trap:score-threshold-not-enough",
+          "trap:add-vs-merge"
+        ],
+        "expected_resolution": "Final answer should cite concrete source_ids and confirm the service submission after workspace artifact is written."
+      }
+    }
+  }
+]

@@ -1,0 +1,80 @@
+# provenance:
+#   source_session: "4737138300078266527"
+#   scenario: "Stock / Quant / A-Share (Chinese)"
+#   session_model: kimi-k2-5-260127
+#   task_number: 121
+task_id: CP121_ts_adaptor_permission_filter_refactor
+task_name: "TypeScript adaptor function permission-based filtering refactor"
+version: "1.0"
+category: refactor
+difficulty: medium
+tags: [typescript, refactor, permission, frontend]
+
+source_session_id: "4737138300078266527"
+source_description: "Real session where user asked to add optional permission-based filtering to a shared TypeScript adaptor function (imagesQueryAdaptor), propagate the permission field through wrapper (viewImagesDialog), and update callers to pass permission keys selectively."
+
+services: []
+
+prompt:
+  text: |
+    The file `/workspace/fixtures/emp-app/src/pages/merchInfo/merchInfoSearch/components/viewImagesDialog.ts`
+    has a function `imagesQueryAdaptor(payload, response, permissFeild)` that currently ignores
+    the `permissFeild` parameter. I need you to:
+
+    1. Import `btnPermission` from `src/assets/js/common` in this file.
+    2. Make `permissFeild` optional. When it is provided and the user does NOT have that
+       permission (i.e., `btnPermission(permissFeild)` returns false), filter out items
+       whose `pic_type === 'A10'` from the result list.
+    3. Update `viewImagesDialog` to accept an optional `permissFeild` parameter and pass it
+       through to `imagesQueryAdaptor` in the adaptor callback.
+    4. In the caller file `basicInfo/detail.ts`, the settlement panel's adaptor should
+       pass `'viewCustomerSettleInfo'` as the permission field, while the general panel
+       should NOT apply any permission filtering (keep existing behavior).
+
+    All files are under `/workspace/fixtures/emp-app/`.
+  language: en
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/emp-app/src/assets/js/common.ts
+  - fixtures/emp-app/src/assets/js/api.ts
+  - fixtures/emp-app/src/pages/merchInfo/merchInfoSearch/components/viewImagesDialog.ts
+  - fixtures/emp-app/src/pages/merchInfo/merchInfoSearch/basicInfo/detail.ts
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct implementation of permission-based filtering in the adaptor: (1) btnPermission imported from common, (2) conditional filtering using btnPermission(permissFeild) check, (3) list filtered by pic_type !== 'A10' when permission denied, (4) permissFeild made optional, (5) viewImagesDialog updated to accept and forward permissFeild, (6) settlement panel caller passes 'viewCustomerSettleInfo', (7) general panel does not pass permission (preserves original behavior)."
+
+reference_solution: |
+  In viewImagesDialog.ts:
+  - Add: import { btnPermission } from 'src/assets/js/common'
+  - Make permissFeild optional: (payload, response, permissFeild?) =>
+  - Add filtering logic:
+      let filterList = newList
+      if (permissFeild && !btnPermission(permissFeild)) {
+        filterList = newList.filter(item => item.pic_type !== 'A10')
+      }
+  - Return filterList instead of newList in the data
+  - Update viewImagesDialog signature: (url, params, title = '', permissFeild = '')
+  - Update adaptor in viewImagesDialog: adaptor: payload => imagesQueryAdaptor(payload, null, permissFeild)
+
+  In detail.ts:
+  - Settlement panel adaptor: payload => imagesQueryAdaptor(payload, null, 'viewCustomerSettleInfo')
+  - General panel adaptor: unchanged (no permission field)
+
+primary_dimensions: [completion, communication, safety]

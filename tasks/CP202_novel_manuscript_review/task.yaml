@@ -1,0 +1,63 @@
+# provenance:
+#   source_session: 15031746230998037560
+#   scenario: "小说 / 写作 / 创作"
+#   session_model: glm-5-1-260408
+#   real_user_turns: 16
+task_id: CP202_novel_manuscript_review
+task_name: "女频网文终稿审查（CP202 / 源 session 15031746230998037560）"
+version: "1.0"
+category: writing
+difficulty: hard
+tags: [chinese, creative_writing, review, analysis]
+
+source_task_id: "15031746230998037560"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "用户让 agent 对一篇番茄女频短篇小说进行四维审查（剧情逻辑/写作表现/合规风控/AI痕迹），产出结构化审查报告。Workspace WS2 模式，verifier 8 个隐藏锚点（报告存在/剧情逻辑/写作质量/AI痕迹/占位符/建议/评级/合规）。"
+
+services: []
+
+prompt:
+  text: |
+    帮我看下这篇短篇小说终稿，/workspace/fixtures/manuscript/ 里有稿件和我们组的审查标准。
+    按标准出一份完整审查报告，重点问题标出来，给修改建议。报告写到 /workspace/ 下面就行。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/manuscript/重生千金复仇记-第三稿.md
+  - fixtures/manuscript/审查标准-女频爽文v2.1.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 15
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward thorough manuscript review: identifies 'that color' placeholder issue (~8 occurrences), catches AI writing traces (repeated '嘴角弯起一个温和的弧度' 4 times, three-sentence progressive ending), analyzes plot logic flaws (too-convenient coincidences, weak antagonist resistance), flags compliance issues (forged evidence for defamation post, questionable stock manipulation legality), provides concrete revision suggestions with examples."
+
+reference_solution: |
+  A comprehensive review report covering:
+  1. Plot logic: identifies coincidence chain (lawyer contact too easy, timeline too compressed),
+     weak antagonist (Lin Zhengbang has no counter-moves), anonymous defamation post subplot
+  2. Writing quality: repetitive phrase "嘴角弯起一个温和的弧度" (4 times), monotonous short
+     sentence patterns, functional but flat dialogue
+  3. AI traces: three-sentence progressive ending pattern, repeated formulaic phrases,
+     overly structured plot progression
+  4. Placeholder issue: "那种颜色" appears 8 times as unresolved placeholder, must be
+     replaced with specific color (e.g., 月白色/淡水蓝)
+  5. Compliance: protagonist forges evidence (P'd surveillance screenshot), anonymous
+     defamation post, insider trading implications in stock timing
+  6. Rating: approximately B/B+ with 3-5 high-priority fixes
+
+primary_dimensions: [completion, communication, safety]

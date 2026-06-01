@@ -13,6 +13,7 @@ import base64
 import hashlib
 import io
 import json
+from json import JSONDecodeError
 import os
 import re
 import subprocess
@@ -22,6 +23,7 @@ from pathlib import Path
 from ..models.content import ImageBlock, TextBlock, ToolResultBlock, ToolUseBlock
 from ..models.trace import ToolDispatch
 from .dispatcher import ToolDispatcher
+from .sandbox_errors import SandboxInfraError
 from .sandbox_tools import SANDBOX_TOOL_NAMES
 
 # Tools whose responses always contain extractable image frames
@@ -133,12 +135,14 @@ class SandboxToolDispatcher:
         http_dispatcher: ToolDispatcher,
         *,
         sandbox_url: str | None = None,
+        sandbox_identity: dict[str, str] | None = None,
         max_images_per_turn: int = 64,
         tool_image_max_dimension: int = 1280,
         tool_image_quality: int = 60,
     ) -> None:
         self._http = http_dispatcher
         self._sandbox_url = sandbox_url
+        self._sandbox_identity = sandbox_identity or {}
         self._client = None  # lazy-init httpx client for remote mode
         self._max_per_turn = max_images_per_turn
         self._max_dimension = tool_image_max_dimension
@@ -191,6 +195,32 @@ class SandboxToolDispatcher:
             self._client = httpx.Client(timeout=120.0)
         return self._client
 
+    def _identity_headers(self) -> dict[str, str]:
+        if not self._sandbox_identity:
+            return {}
+        headers: dict[str, str] = {}
+        run_id = self._sandbox_identity.get("run_id")
+        task_id = self._sandbox_identity.get("task_id")
+        token = self._sandbox_identity.get("token")
+        if run_id:
+            headers["X-Claw-Sandbox-Run-Id"] = run_id
+        if task_id:
+            headers["X-Claw-Sandbox-Task-Id"] = task_id
+        if token:
+            headers["X-Claw-Sandbox-Token"] = token
+        return headers
+
+    @staticmethod
+    def _is_infra_body(status_code: int, body) -> bool:
+        if not isinstance(body, dict):
+            return status_code >= 500
+        error_code = str(body.get("error_code") or "")
+        return (
+            bool(body.get("infra_error"))
+            or error_code.startswith("sandbox_")
+            or status_code >= 500
+        )
+
     @staticmethod
     def _translate_payload(tool_use: ToolUseBlock) -> dict:
         """Translate client-facing param names to server-side param names."""
@@ -235,16 +265,59 @@ class SandboxToolDispatcher:
         t0 = time.monotonic()
         try:
             client = self._get_client()
-            resp = client.post(endpoint_url, json=payload)
+            resp = client.post(endpoint_url, json=payload, headers=self._identity_headers())
             latency_ms = (time.monotonic() - t0) * 1000
             body = resp.json()
             is_error = resp.status_code >= 400
         except Exception as exc:
             latency_ms = (time.monotonic() - t0) * 1000
-            return self._error_result(
-                tool_use, trace_id, str(exc),
-                status=500, latency_ms=latency_ms,
+            status = 500 if isinstance(exc, JSONDecodeError) else 599
+            dispatch_event = ToolDispatch(
+                trace_id=trace_id,
+                tool_use_id=tool_use.id,
+                tool_name=tool_use.name,
                 endpoint_url=endpoint_url,
+                request_body=tool_use.input,
+                response_status=status,
+                response_body={
+                    "infra_error": True,
+                    "error_code": "sandbox_transport",
+                    "message": str(exc),
+                    "exc_type": type(exc).__name__,
+                },
+                latency_ms=latency_ms,
+            )
+            raise SandboxInfraError(
+                "sandbox_transport",
+                str(exc),
+                diagnostics={"endpoint_url": endpoint_url, "exc_type": type(exc).__name__},
+                dispatch_event=dispatch_event,
+            )
+
+        dispatch_event = ToolDispatch(
+            trace_id=trace_id,
+            tool_use_id=tool_use.id,
+            tool_name=tool_use.name,
+            endpoint_url=endpoint_url,
+            request_body=tool_use.input,
+            response_status=resp.status_code,
+            response_body=body,
+            latency_ms=latency_ms,
+        )
+        if self._is_infra_body(resp.status_code, body):
+            if isinstance(body, dict):
+                error_code = str(body.get("error_code") or "sandbox_transport")
+                message = str(body.get("message") or body.get("error") or body)
+                diagnostics = dict(body.get("diagnostics") or {})
+            else:
+                error_code = "sandbox_transport"
+                message = str(body)
+                diagnostics = {}
+            raise SandboxInfraError(
+                error_code,
+                message,
+                diagnostics=diagnostics,
+                dispatch_event=dispatch_event,
             )
 
         # Extract images from media tool responses
@@ -287,22 +360,13 @@ class SandboxToolDispatcher:
                 extra_images = None
         else:
             body = self._apply_output_policy(tool_use, trace_id, body, remote=True)
+            dispatch_event.response_body = body
             text_content = json.dumps(body, ensure_ascii=False)
 
         result = ToolResultBlock(
             tool_use_id=tool_use.id,
             content=[TextBlock(text=text_content)],
             is_error=is_error,
-        )
-        dispatch_event = ToolDispatch(
-            trace_id=trace_id,
-            tool_use_id=tool_use.id,
-            tool_name=tool_use.name,
-            endpoint_url=endpoint_url,
-            request_body=tool_use.input,
-            response_status=resp.status_code,
-            response_body=body,
-            latency_ms=latency_ms,
         )
         return result, dispatch_event, extra_images
 
@@ -596,11 +660,23 @@ class SandboxToolDispatcher:
         if remote:
             try:
                 client = self._get_client()
-                resp = client.post(f"{self._sandbox_url}/write", json={"path": path, "content": content})
+                resp = client.post(
+                    f"{self._sandbox_url}/write",
+                    json={"path": path, "content": content},
+                    headers=self._identity_headers(),
+                )
                 body = resp.json()
+                if self._is_infra_body(resp.status_code, body):
+                    raise SandboxInfraError(
+                        str(body.get("error_code") or "sandbox_transport"),
+                        str(body.get("message") or body.get("error") or body),
+                        diagnostics=dict(body.get("diagnostics") or {}),
+                    )
                 if resp.status_code >= 400 or isinstance(body, dict) and body.get("error"):
                     return {"ok": False, "error": body}
                 return {"ok": True, "response": body}
+            except SandboxInfraError:
+                raise
             except Exception as exc:
                 return {"ok": False, "error": str(exc)}
 

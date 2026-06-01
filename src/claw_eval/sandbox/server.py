@@ -8,13 +8,22 @@ from __future__ import annotations
 
 import base64
 import glob as _glob
+import hashlib
+import json
 import logging
 import mimetypes
+import os
+import signal
 import subprocess
+import threading
+import time
 from pathlib import Path
+from typing import Any
+from uuid import uuid4
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 logger = logging.getLogger("sandbox")
@@ -22,6 +31,189 @@ logger = logging.getLogger("sandbox")
 app = FastAPI(title="claw-eval sandbox")
 
 WORKSPACE_ROOT = Path("/workspace")
+IDENTITY_DIR = Path("/var/run/claw_eval")
+IDENTITY_MANIFEST_PATH = IDENTITY_DIR / "sandbox_identity.json"
+SERVER_STARTED_AT = time.time()
+MAX_EXEC_OUTPUT_CHARS = 256_000
+
+_IDENTITY = {
+    "run_id": os.environ.get("CLAW_EVAL_SANDBOX_RUN_ID", ""),
+    "task_id": os.environ.get("CLAW_EVAL_SANDBOX_TASK_ID", ""),
+    "token": os.environ.get("CLAW_EVAL_SANDBOX_TOKEN", ""),
+}
+_identity_lock = threading.Lock()
+_required_roots: list[str] = []
+_recent_errors: list[dict[str, Any]] = []
+
+
+def _token_sha256(token: str | None = None) -> str:
+    raw = token if token is not None else _IDENTITY.get("token", "")
+    if not raw:
+        return ""
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _identity_enabled() -> bool:
+    return bool(_IDENTITY.get("token"))
+
+
+def _public_identity() -> dict[str, Any]:
+    return {
+        "run_id": _IDENTITY.get("run_id") or None,
+        "task_id": _IDENTITY.get("task_id") or None,
+        "token_sha256": _token_sha256() or None,
+    }
+
+
+def _record_error(error_code: str, message: str, *, path: str | None = None, diagnostics: dict[str, Any] | None = None) -> None:
+    item = {
+        "timestamp": time.time(),
+        "error_code": error_code,
+        "message": message,
+        "path": path,
+        "diagnostics": diagnostics or {},
+    }
+    with _identity_lock:
+        _recent_errors.append(item)
+        del _recent_errors[:-20]
+
+
+def _infra_response(
+    error_code: str,
+    message: str,
+    *,
+    status_code: int = 409,
+    diagnostics: dict[str, Any] | None = None,
+) -> JSONResponse:
+    _record_error(error_code, message, diagnostics=diagnostics)
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "infra_error": True,
+            "error_code": error_code,
+            "message": message,
+            "diagnostics": diagnostics or {},
+            "identity": _public_identity(),
+        },
+    )
+
+
+def _identity_mismatch(request: Request) -> JSONResponse | None:
+    if not _identity_enabled():
+        return None
+    expected = {
+        "run_id": _IDENTITY.get("run_id") or "",
+        "task_id": _IDENTITY.get("task_id") or "",
+        "token": _IDENTITY.get("token") or "",
+    }
+    actual = {
+        "run_id": request.headers.get("X-Claw-Sandbox-Run-Id", ""),
+        "task_id": request.headers.get("X-Claw-Sandbox-Task-Id", ""),
+        "token": request.headers.get("X-Claw-Sandbox-Token", ""),
+    }
+    mismatched = [
+        key
+        for key in ("run_id", "task_id", "token")
+        if expected[key] and actual[key] != expected[key]
+    ]
+    if not mismatched:
+        return None
+    diagnostics = {
+        "mismatched_fields": mismatched,
+        "expected_run_id": expected["run_id"],
+        "expected_task_id": expected["task_id"],
+        "actual_run_id": actual["run_id"] or None,
+        "actual_task_id": actual["task_id"] or None,
+        "actual_token_sha256": _token_sha256(actual["token"]) or None,
+    }
+    return _infra_response(
+        "sandbox_identity_mismatch",
+        "sandbox request identity did not match this container",
+        diagnostics=diagnostics,
+    )
+
+
+def _workspace_mismatch() -> JSONResponse | None:
+    with _identity_lock:
+        roots = list(_required_roots)
+    missing = [root for root in roots if not Path(root).exists()]
+    if not missing:
+        return None
+    return _infra_response(
+        "sandbox_workspace_mismatch",
+        "required workspace root is missing",
+        diagnostics={"missing_roots": missing, "required_roots": roots},
+    )
+
+
+def _workspace_summary() -> dict[str, Any]:
+    fixtures = WORKSPACE_ROOT / "fixtures"
+    try:
+        fixture_children = sorted(p.name for p in fixtures.iterdir()) if fixtures.exists() else []
+    except OSError as exc:
+        fixture_children = [f"<error: {exc}>"]
+    with _identity_lock:
+        roots = list(_required_roots)
+    return {
+        "workspace_root": str(WORKSPACE_ROOT),
+        "fixtures": fixture_children[:50],
+        "required_roots": roots,
+        "missing_required_roots": [root for root in roots if not Path(root).exists()],
+    }
+
+
+def _write_manifest(extra: dict[str, Any] | None = None) -> None:
+    payload = {
+        "identity": _public_identity(),
+        "workspace": _workspace_summary(),
+        "updated_at": time.time(),
+    }
+    if extra:
+        payload.update(extra)
+    try:
+        IDENTITY_DIR.mkdir(parents=True, exist_ok=True)
+        IDENTITY_MANIFEST_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    except OSError as exc:
+        logger.warning("failed to write sandbox identity manifest: %s", exc)
+
+
+@app.middleware("http")
+async def sandbox_identity_guard(request: Request, call_next):
+    request_id = request.headers.get("X-Claw-Request-Id") or uuid4().hex
+    guarded = request.url.path not in {"/health"}
+    try:
+        if guarded:
+            mismatch = _identity_mismatch(request)
+            if mismatch is not None:
+                mismatch.headers["X-Claw-Request-Id"] = request_id
+                return mismatch
+        if guarded and request.url.path != "/identity/bootstrap":
+            workspace_error = _workspace_mismatch()
+            if workspace_error is not None:
+                workspace_error.headers["X-Claw-Request-Id"] = request_id
+                return workspace_error
+        response = await call_next(request)
+        response.headers["X-Claw-Request-Id"] = request_id
+        return response
+    except Exception as exc:
+        logger.exception("sandbox server exception path=%s request_id=%s", request.url.path, request_id)
+        _record_error(
+            "sandbox_server_exception",
+            str(exc),
+            path=request.url.path,
+            diagnostics={"request_id": request_id, "exc_type": type(exc).__name__},
+        )
+        return JSONResponse(
+            status_code=500,
+            headers={"X-Claw-Request-Id": request_id},
+            content={
+                "infra_error": True,
+                "error_code": "sandbox_server_exception",
+                "message": str(exc),
+                "diagnostics": {"request_id": request_id, "path": request.url.path},
+                "identity": _public_identity(),
+            },
+        )
 
 # ---------------------------------------------------------------------------
 # Request models
@@ -30,6 +222,11 @@ WORKSPACE_ROOT = Path("/workspace")
 class ExecRequest(BaseModel):
     command: str
     timeout_seconds: int = 30
+
+
+class IdentityBootstrapRequest(BaseModel):
+    required_roots: list[str] = []
+    injected_files: int = 0
 
 
 class FileReadRequest(BaseModel):
@@ -111,25 +308,104 @@ class GrepRequest(BaseModel):
 
 @app.post("/exec")
 def exec_command(req: ExecRequest):
+    req.timeout_seconds = max(1, min(int(req.timeout_seconds or 30), 900))
     try:
-        proc = subprocess.run(
+        proc = subprocess.Popen(
             req.command,
             shell=True,
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
-            timeout=req.timeout_seconds,
+            start_new_session=True,
         )
+        stdout, stderr = proc.communicate(timeout=req.timeout_seconds)
         return {
             "exit_code": proc.returncode,
-            "stdout": proc.stdout,
-            "stderr": proc.stderr,
+            "stdout": _truncate_text(stdout),
+            "stderr": _truncate_text(stderr),
         }
     except subprocess.TimeoutExpired:
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)  # type: ignore[possibly-undefined]
+        except Exception:
+            try:
+                proc.kill()  # type: ignore[possibly-undefined]
+            except Exception:
+                pass
         return {
             "exit_code": -1,
             "stdout": "",
             "stderr": f"Timed out after {req.timeout_seconds}s",
         }
+    except Exception as exc:
+        _record_error(
+            "sandbox_exec_failed",
+            str(exc),
+            path="/exec",
+            diagnostics={"command": req.command[:500], "exc_type": type(exc).__name__},
+        )
+        return {
+            "infra_error": True,
+            "error_code": "sandbox_exec_failed",
+            "exit_code": -1,
+            "stdout": "",
+            "stderr": str(exc),
+        }
+
+
+def _truncate_text(value: str) -> str:
+    if len(value) <= MAX_EXEC_OUTPUT_CHARS:
+        return value
+    return (
+        value[:MAX_EXEC_OUTPUT_CHARS]
+        + f"\n[claw-eval sandbox truncated {len(value) - MAX_EXEC_OUTPUT_CHARS} chars]"
+    )
+
+
+@app.post("/identity/bootstrap")
+def identity_bootstrap(req: IdentityBootstrapRequest):
+    roots: list[str] = []
+    for raw in req.required_roots:
+        if not raw:
+            continue
+        p = Path(raw)
+        try:
+            resolved = p.resolve()
+            resolved.relative_to(WORKSPACE_ROOT.resolve())
+        except ValueError:
+            return JSONResponse(
+                status_code=409,
+                content={
+                    "infra_error": True,
+                    "error_code": "sandbox_workspace_mismatch",
+                    "message": f"required root is outside workspace: {raw}",
+                    "diagnostics": {"required_root": raw},
+                },
+            )
+        roots.append(str(resolved))
+
+    missing = [root for root in roots if not Path(root).exists()]
+    if missing:
+        return JSONResponse(
+            status_code=409,
+            content={
+                "infra_error": True,
+                "error_code": "sandbox_workspace_mismatch",
+                "message": "required workspace root missing during bootstrap",
+                "diagnostics": {"missing_roots": missing, "required_roots": roots},
+            },
+        )
+
+    with _identity_lock:
+        _required_roots.clear()
+        _required_roots.extend(sorted(set(roots)))
+    _write_manifest({"injected_files": req.injected_files})
+    return {
+        "ok": True,
+        "identity": _public_identity(),
+        "workspace": _workspace_summary(),
+        "manifest_path": str(IDENTITY_MANIFEST_PATH),
+    }
 
 
 _TEXT_MIMES = {
@@ -643,7 +919,25 @@ def download_file(req: DownloadRequest):
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+        "identity": _public_identity(),
+        "workspace": _workspace_summary(),
+    }
+
+
+@app.get("/diagnostics")
+def diagnostics():
+    with _identity_lock:
+        recent_errors = list(_recent_errors)
+    return {
+        "status": "ok",
+        "pid": os.getpid(),
+        "uptime_s": round(time.time() - SERVER_STARTED_AT, 3),
+        "identity": _public_identity(),
+        "workspace": _workspace_summary(),
+        "recent_errors": recent_errors,
+    }
 
 
 # ---------------------------------------------------------------------------

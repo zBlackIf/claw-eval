@@ -1,0 +1,8 @@
+category,item,amount,currency,period
+revenue,aws_billing,26496.34,USD,2024-Q1
+revenue,gcp_billing,15440.50,USD,2024-Q1
+revenue,azure_billing,14400.00,USD,2024-Q1
+cost,infrastructure,8500.00,USD,2024-Q1
+cost,partner_commissions,7655.64,USD,2024-Q1
+cost,overhead,3200.00,USD,2024-Q1
+profit,net_margin,36981.20,USD,2024-Q1

@@ -1,0 +1,13 @@
+{
+  "name": "llm-gateway-client",
+  "version": "1.0.0",
+  "description": "LLM Gateway API client with streaming support",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node test/run_tests.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.0"
+  }
+}

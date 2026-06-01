@@ -1,0 +1,69 @@
+task_id: CP104_game_buyout_competitive_analysis
+task_name: "海外SLG游戏买量竞品分析（CP104 / 源 session 16078582821595981148）"
+version: "1.0"
+category: data_analysis
+difficulty: hard
+tags: [general]
+
+source_task_id: "16078582821595981148"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "真实用户场景：海外游戏买量数据分析师需要结合自有产品和竞品数据，分地区分渠道做统计分析，为新产品上线预估新增范围。Workspace WS2 数据分析 + Markdown 报告产出。"
+
+services: []
+
+prompt:
+  text: |
+    我们海外发行团队要开周会，老板想看 SLG 品类各地区的买量大盘情况。两份表都在
+    /workspace/fixtures/ 下面——产品数据是自家游戏的实际数据，竞品数据是第三方预估。
+    其中战地无疆、策定九州、荣耀新三国是三国题材 SLG。竞品那张表全是 SLG。
+
+    帮我出一份分析报告（Markdown 格式，保存到 /workspace/report.md），核心要回答：
+    1. 各地区分渠道和合计能做到多大新增和流水（统计值要全）
+    2. 不同题材之间表现差异
+    3. 策定九州如果上日韩、东南亚，新增大概能做到什么范围，依据是什么
+    4. 自家和竞品在首月占比上有什么差异，买量节奏有何不同
+
+    注意竞品的"下载/收入"和产品的"新增/流水"是一回事，竞品的"中国台湾"对应产品的"港台"。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/产品数据.xlsx
+  - fixtures/竞品数据.xlsx
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+env_snapshot_files:
+  - /workspace/report.md
+
+environment:
+  timeout_seconds: 600
+  max_turns: 22
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: |
+  Reward thorough quantitative analysis: correct statistical aggregation (min/median/max/mean/count)
+  across regions and channels, proper handling of region mapping (竞品中国台湾=产品港台), theme-based
+  segmentation, data-grounded prediction for 策定九州 expansion with clear methodology, and
+  first-month ratio analysis revealing buying strategy differences.
+
+reference_solution: |
+  1. Read both Excel files with pandas
+  2. Map competitor "中国台湾" → "港台", "日本"+"韩国" → "日韩" for cross-comparison
+  3. Merge/concat both datasets, compute per-region per-channel stats (min/median/max/mean/count)
+  4. Segment by theme (三国SLG/军事SLG/科幻SLG/文明SLG/末日SLG/欧美历史SLG)
+  5. For 策定九州 prediction: use same-theme (三国SLG) comparable products in target regions
+  6. Compute first-month ratios (首月新增/总新增, 首月流水/总流水) and compare own vs competitor
+  7. Output structured Markdown with tables and strategic insights
+
+primary_dimensions: [completion, communication, safety]

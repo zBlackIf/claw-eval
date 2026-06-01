@@ -1,0 +1,76 @@
+# provenance:
+#   source_session_id: "17943662771689747473"
+#   scenario: "AI framework / deep learning architecture upgrade"
+#   task_number: 157
+task_id: CP157_dccrn_complex_lstm_upgrade
+task_name: "DCCRN-ANC Complex LSTM + Complex FiLM + 5-layer Upgrade"
+version: "1.0"
+category: code
+difficulty: hard
+tags: [deep-learning, pytorch, signal-processing, complex-numbers]
+
+source_task_id: "session_17943662771689747473"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "Real user session upgrading DCCRN-ANC from 4-layer Real LSTM to 5-layer Complex LSTM + Complex FiLM for active noise control. Tests deep learning architecture modification with complex-valued neural network math."
+
+services: []
+
+prompt:
+  text: |
+    我们的 DCCRN-ANC 项目当前使用 4 层编码器 + Real LSTM + Real FiLM。
+    需要升级为方案A：Complex LSTM + Complex FiLM + 5 层编解码器。
+
+    具体要求：
+    1. 新建 core/complex_lstm.py，实现 ComplexLSTM（复数域 LSTM，门控机制在复数域运算）
+    2. 在 core/dccrn.py 中实现 ComplexFiLM（复数域仿射调制：(γ_r+iγ_i)*(h_r+ih_i)+(β_r+iβ_i)）
+    3. 编码器从 4 层扩展到 5 层（通道：1→16→32→64→128→256），解码器对应 5 层
+    4. ComplexFiLM 初始化为恒等变换（γ_r=1, γ_i=0, β_r=0, β_i=0）
+    5. DCCRN 的 lstm_type 参数设为 'complex' 时使用新的 Complex LSTM
+
+    项目代码在 /workspace/fixtures/dccrn_anc/，确保修改后 test_model.py 能通过。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/dccrn_anc/core/__init__.py
+  - fixtures/dccrn_anc/core/dccrn.py
+  - fixtures/dccrn_anc/conf/config.yaml
+  - fixtures/dccrn_anc/test_model.py
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 900
+  max_turns: 25
+  env_snapshot_timeout: 60
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete Complex LSTM + Complex FiLM + 5-layer upgrade: (1) ComplexLSTM class with proper complex-valued gate operations (not just concatenating real/imag), (2) ComplexFiLM with correct complex multiplication (gamma_r*h_r - gamma_i*h_i, gamma_r*h_i + gamma_i*h_r) + complex beta, (3) 5-layer encoder (channels up to 256), (4) identity initialization for FiLM, (5) working forward pass with correct output shapes."
+
+reference_solution: |
+  1. core/complex_lstm.py:
+     - ComplexLinear: W_r*x_r - W_i*x_i, W_r*x_i + W_i*x_r
+     - ComplexLSTMCell: 4 complex gates (input/forget/cell/output), complex tanh/sigmoid
+     - ComplexLSTM: wraps cells, returns (h_r, c_r, h_i, c_i) state
+
+  2. core/dccrn.py modifications:
+     - ComplexFiLM class: gamma/beta projections for both real and imaginary
+       forward: out_r = gamma_r*h_r - gamma_i*h_i + beta_r
+               out_i = gamma_r*h_i + gamma_i*h_r + beta_i
+       init: gamma_r=1, gamma_i=0, beta_r=0, beta_i=0
+     - encoder_channels = [1, 16, 32, 64, 128, 256], 5 encoder/decoder layers
+     - LSTM input size recalculated for freq_bins=6 (161->81->41->21->11->6)
+     - When lstm_type='complex', use ComplexLSTM with split real/imag input
+
+  3. Forward pass verified: output shape (B,1,161,T), non-zero imaginary output
+
+primary_dimensions: [completion, communication, safety]

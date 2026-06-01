@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>用户管理系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>用户管理</h1>
+        <div class="toolbar">
+            <a href="/users/new" class="btn btn-primary">新增用户</a>
+        </div>
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>用户名</th>
+                    <th>显示名称</th>
+                    <th>部门</th>
+                    <th>角色</th>
+                    <th>工号</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.display_name }}</td>
+                    <td>{{ user.department or '-' }}</td>
+                    <td>{{ user.role }}</td>
+                    <td>{{ user.badge_number or '-' }}</td>
+                    <td>{{ '启用' if user.is_active else '停用' }}</td>
+                    <td>
+                        <a href="/users/{{ user.id }}/edit" class="btn btn-sm">编辑</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

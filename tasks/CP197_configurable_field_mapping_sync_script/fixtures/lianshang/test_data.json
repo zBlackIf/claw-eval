@@ -1,0 +1,89 @@
+{
+    "suppliers": [
+        {
+            "code": "SUP001",
+            "fullName": "Beijing Tech Materials Co., Ltd.",
+            "shortName": "BJ Tech",
+            "type": "raw_materials",
+            "receiptAccount": "6222021234567890",
+            "receiptBank": "ICBC Beijing Branch",
+            "receiptCompany": "Beijing Tech Materials",
+            "banks": [
+                {
+                    "account": "6222021234567890",
+                    "accountName": "Beijing Tech Materials",
+                    "bankName": "ICBC Beijing Haidian Sub-branch",
+                    "bankAccountProperty": "corporate"
+                },
+                {
+                    "account": "6228481234567891",
+                    "accountName": "Beijing Tech Materials",
+                    "bankName": "ABC Beijing Branch",
+                    "bankAccountProperty": "corporate"
+                }
+            ]
+        },
+        {
+            "code": "SUP002",
+            "fullName": "Shanghai Components Factory",
+            "shortName": "SH Components",
+            "type": "components",
+            "receiptAccount": "6228489876543210",
+            "receiptBank": "CMB Shanghai Branch",
+            "receiptCompany": "Shanghai Components Factory",
+            "banks": [
+                {
+                    "account": "6228489876543210",
+                    "accountName": "Shanghai Components",
+                    "bankName": "CMB Shanghai Pudong Sub-branch",
+                    "bankAccountProperty": "corporate"
+                }
+            ]
+        },
+        {
+            "code": "SUP003",
+            "fullName": "Guangzhou Packaging Ltd.",
+            "shortName": "GZ Pack",
+            "type": "packaging",
+            "receiptAccount": "6222031111111111",
+            "receiptBank": "BOC Guangzhou Branch",
+            "receiptCompany": "Guangzhou Packaging Ltd.",
+            "banks": []
+        }
+    ],
+    "existing_downstream": {
+        "SUP001": {
+            "id": "rec_abc123",
+            "data": {
+                "supplier_code": {"value": "SUP001"},
+                "supplier_full_name": {"value": "Beijing Tech Materials Co., Ltd."},
+                "supplier_short_name": {"value": "BJ Tech OLD NAME"},
+                "supplier_type": {"value": "raw_materials"},
+                "receipt_account": {"value": "6222021234567890"},
+                "receipt_bank": {"value": "ICBC Beijing Branch"},
+                "receipt_company": {"value": "Beijing Tech Materials"},
+                "gyszhxx_items": {"value": [
+                    {
+                        "gyszhxx_receiving_account_number": {"value": "6222021234567890"},
+                        "gyszhxx_account_name": {"value": "Beijing Tech Materials"},
+                        "gyszhxx_bank_name": {"value": "ICBC Beijing Haidian Sub-branch"},
+                        "gyszhxx_bank_property": {"value": "corporate"}
+                    }
+                ]}
+            }
+        },
+        "SUP003": {
+            "id": "rec_xyz789",
+            "data": {
+                "supplier_code": {"value": "SUP003"},
+                "supplier_full_name": {"value": "Guangzhou Packaging Ltd."},
+                "supplier_short_name": {"value": "GZ Pack"},
+                "supplier_type": {"value": "packaging"},
+                "receipt_account": {"value": "6222031111111111"},
+                "receipt_bank": {"value": "BOC Guangzhou Branch"},
+                "receipt_company": {"value": "Guangzhou Packaging Ltd."},
+                "gyszhxx_items": {"value": []}
+            }
+        }
+    }
+}

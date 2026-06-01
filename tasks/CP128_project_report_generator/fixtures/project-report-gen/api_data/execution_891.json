@@ -1,0 +1,27 @@
+{
+  "execution_id": 891,
+  "name": "直播需求v2.2.8",
+  "status": "doing",
+  "begin": "2026-04-01",
+  "end": "2026-04-28",
+  "tasks": {
+    "total": 30,
+    "done": 25,
+    "doing": 3,
+    "wait": 2,
+    "overdue": 1,
+    "overdue_details": [
+      {
+        "id": 4501,
+        "name": "直播间礼物动画优化",
+        "assignedTo": "张三",
+        "deadline": "2026-04-20",
+        "status": "doing"
+      }
+    ]
+  },
+  "progress": {
+    "actual": 83,
+    "expected": 90
+  }
+}

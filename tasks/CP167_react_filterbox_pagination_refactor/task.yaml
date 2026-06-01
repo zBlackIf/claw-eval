@@ -1,0 +1,75 @@
+# provenance:
+#   source_session: 11310038893547772309
+#   scenario: 企业 / SaaS 业务系统
+#   pattern: WS2 (Full-Repair React refactor)
+task_id: CP167_react_filterbox_pagination_refactor
+task_name: "SalesPlan 页面筛选区和分页器标准化重构（FilterBox + MyPaginationV2 + 动态高度）"
+version: "1.0"
+category: design
+difficulty: medium
+tags: [react, refactor, component-migration, frontend]
+
+source_task_id: "11310038893547772309"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "Real user session: refactor SalesPlan page from Form+Row+Col filter pattern to standardized FilterBox component, replace MyPagination with MyPaginationV2, add useResizeHeight for dynamic table scroll, set table size to small. Follow existing insideApproval page as reference pattern."
+
+services: []
+
+prompt:
+  text: |
+    项目里 SalesPlan 页面（/workspace/fixtures/salestable/src/pages/SalesPlan/index.tsx）
+    还在用老式的 Form + Row + Col 做筛选，MyPagination 做分页。参照同项目已完成的
+    insideApproval 页面（/workspace/fixtures/salestable/src/pages/createdApproval/insideApproval/index.tsx）
+    的模式，把 SalesPlan 页面改成：
+    1. 筛选区用 FilterBox 组件
+    2. 分页器换成 MyPaginationV2
+    3. 用 useResizeHeight hook 动态计算表格高度
+    4. ResizableTable 加 size="small"
+    "导出"和"新建销售方案"按钮放到 FilterBox 的 extraActions 里。
+    FilterBox 设置默认展开行数为 2（collapsedRows=2），并启用展开收起（collapsible）。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/salestable/src/pages/SalesPlan/index.tsx
+  - fixtures/salestable/src/pages/SalesPlan/index.less
+  - fixtures/salestable/src/pages/createdApproval/insideApproval/index.tsx
+  - fixtures/salestable/src/components/commonTools/FilterBox/index.tsx
+  - fixtures/salestable/src/components/commonTools/MyPagination/index.tsx
+  - fixtures/salestable/src/components/commonTools/MyPagination/MyPaginationV2.tsx
+  - fixtures/salestable/src/components/commonTools/MyPagination/index.css
+  - fixtures/salestable/src/components/commonTools/ResizableTable/index.tsx
+  - fixtures/salestable/src/hooks/useResizeHeight.ts
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete refactoring: FilterBox imported and used with filterItems config, MyPaginationV2 replaces old MyPagination with correct props (current/total/pageSize/onChange), useResizeHeight hook connected for dynamic table scroll.y, ResizableTable size=small, Export+Create buttons in extraActions, collapsible=true with collapsedRows=2, old Form+Row+Col pattern and moreFilter state removed."
+
+reference_solution: |
+  In SalesPlan/index.tsx:
+  - Remove: Form/Row/Col imports, MyPagination import, moreFilter state, old handleSearch/handleReset with inline form values
+  - Add imports: FilterBox (+ FilterItemConfig), MyPaginationV2, useResizeHeight
+  - Add state: filterH, formActions, filterValues
+  - Add: useResizeHeight('sales-plan-filter', setFilterH)
+  - Define filterItems array with customer/sales/dateRange/firstFormat/secondFormat/mainPart configs
+  - JSX: <FilterBox compId="sales-plan-filter" filterItems={filterItems} onSearch={handleSearch}
+    onReset={handleReset} collapsible={true} collapsedRows={2} extraActions={<>Export+Create</>} />
+  - JSX: <ResizableTable ... size="small" scroll={{ x: 1200, y: calc(100vh - filterH - offset) }} />
+  - JSX: <MyPaginationV2 current={pagination.currPage} total={pagination.total} pageSize={pagination.limit} onChange={changePage} />
+
+primary_dimensions: [completion, communication, safety]

@@ -1,0 +1,62 @@
+# provenance:
+#   source_session: 4727173528721810800
+#   scenario: 小说 / 写作 / 创作
+#   original_request: "重写109章，去掉AI味，加强人类化写作感"
+task_id: CP201_novel_chapter_humanize_rewrite
+task_name: "网文章节去AI味重写（CP201 / 源 session 4727173528721810800）"
+version: "1.0"
+category: creative_writing
+difficulty: hard
+tags: [chinese, novel, humanization, rewrite]
+
+source_task_id: "4727173528721810800"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "真实用户 session：用户反复要求 agent 重写小说章节，去除 AI 写作痕迹（过度修饰、公式化描写、告诉而非展示等），加强人类化创作感。Workspace WS2 创意写作重写。verifier 5 个隐藏锚点（AI模式减少率/情节保留/实质性重写/篇幅控制/结构多样性）。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/novel/chapters/chapter_042.md 这章被反馈说AI味太重，
+    读起来像模板生成的。参考 chapter_041.md 的风格和 writing_guide.md 里的原则，
+    重写第42章。保留核心情节（苏铭单骑赴会、亮城主令逼退王家护卫），但把那些
+    公式化的描写、堆砌的形容词、"空气凝固""瞳孔一缩"之类的套路全换掉。
+    重写后直接覆盖原文件。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/novel/chapters/chapter_042.md
+  - fixtures/novel/chapters/chapter_041.md
+  - fixtures/novel/writing_guide.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 15
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward substantial rewrite that eliminates AI-writing patterns (adjective stacking, cliche actions like '瞳孔一缩'/'空气凝固', telling-not-showing) while preserving plot (苏铭, 王家, 长街对峙, 城主令, 护卫收刀). Penalize: unchanged text, adding more AI fluff, breaking plot coherence, excessive bloat. Best rewrites are shorter than the original with more vivid specific details."
+
+reference_solution: |
+  Rewrite chapter_042.md with:
+  - Remove 80%+ AI cliches (adjective stacking, formulaic reactions)
+  - Use 'show don't tell' - replace emotion labels with actions/details
+  - Vary paragraph lengths for rhythm
+  - Add scene-specific sensory details (not generic ones)
+  - Keep 60-95% of original length (trimming fat)
+  - Preserve all plot beats: 苏铭 alone on horseback, 赵严 with 200 guards,
+    城主令 reveal, guards stand down
+
+primary_dimensions: [completion, communication, safety]

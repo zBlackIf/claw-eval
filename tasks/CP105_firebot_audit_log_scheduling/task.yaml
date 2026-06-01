@@ -1,0 +1,73 @@
+task_id: CP105_firebot_audit_log_scheduling
+task_name: "FireBot 审计日志系统实现（CP105 / 源 session 9277750237308684259）"
+version: "1.0"
+category: engineering
+difficulty: hard
+tags: [general]
+
+source_task_id: "9277750237308684259"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "Real user session implementing audit logging for FireBot fire safety system. User asked for daily audit logs with tamper detection (hash chain), covering alarm events, device controls, and task dispatches. Workspace WS2 pattern."
+
+services: []
+
+prompt:
+  text: |
+    FireBot 消防系统要加审计功能——在 files/ 下建一个 audit/ 目录，按日期生成审计
+    日志。报警来了记一条、控制设备记一条、下发任务也记一条，时间戳要精确。日志写
+    完之后只能看不能改，要是被人动过能查得出来。
+
+    代码在 /workspace/fixtures/firebot/，你看看现有的 service 结构然后加上去。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/firebot/package.json
+  - fixtures/firebot/config.yaml
+  - fixtures/firebot/src/app.js
+  - fixtures/firebot/src/services/DeviceService.js
+  - fixtures/firebot/src/services/AlarmService.js
+  - fixtures/firebot/src/services/TaskDispatcher.js
+  - fixtures/firebot/src/services/LoggerService.js
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a complete audit service that: creates an AuditService class as a dedicated service, implements hash-chain integrity (each record hashes with previous), uses date-based daily file rotation under files/audit/, covers all three event types (alarm, device control, task dispatch), provides tamper verification capability, and integrates cleanly with existing services via event listeners or direct wiring."
+
+reference_solution: |
+  Create src/services/AuditService.js:
+  - Singleton class with log(eventType, data) method
+  - Uses crypto.createHash('sha256') for hash chain
+  - Each entry: {timestamp, eventType, data, prevHash, hash}
+  - Daily file rotation: files/audit/YYYY-MM-DD.audit (JSON Lines)
+  - Companion .chain file or inline verification
+  - verify() method to validate chain integrity
+  - Read-only enforcement via fs.chmodSync after write or O_APPEND flag
+
+  Update src/app.js:
+  - Import and instantiate AuditService
+  - Wire event listeners: alarmService.on('alarm:triggered', ...)
+  - Wire: deviceService.on('device:controlled', ...)
+  - Wire: taskDispatcher events or wrap dispatch method
+
+  Optional but strong:
+  - Cron job (node-schedule) for daily rotation/archive
+  - HTML/text report generation
+  - Integrity check on startup
+
+primary_dimensions: [completion, communication, safety]

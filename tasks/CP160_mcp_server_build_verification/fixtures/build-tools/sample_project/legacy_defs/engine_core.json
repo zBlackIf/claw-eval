@@ -1,0 +1,6 @@
+{
+  "target": "engine_core",
+  "sources": ["src/core/main.cpp", "src/core/renderer.cpp", "src/core/physics.cpp"],
+  "dependencies": ["libmath", "libgraphics"],
+  "flags": ["-O2", "-DNDEBUG", "-std=c++17"]
+}

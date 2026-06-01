@@ -1,0 +1,79 @@
+# provenance:
+#   source_session: 3538832443228946327
+#   scenario: Agent 协议 / 元操作
+#   model: doubao-seed-2-0-pro-dyad-260415
+#   client_type: openclaw
+task_id: CP113_agent_notification_log_processor
+task_name: "Agent 通知流处理与日志生成（CP113 / 源 session 3538832443228946327）"
+version: "1.0"
+category: design
+difficulty: medium
+tags: [general, agent-protocol]
+
+source_task_id: "3538832443228946327"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "从真实 Agent PM 会话提取：agent 处理团队通知流（超时/反馈/巡检/升级），需实现去重/节流、结构化日志生成、可行动摘要输出。Workspace WS2 模式，verifier 5 个隐藏锚点。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/project-notifications/ 下有一个团队项目的通知流
+    (notifications.json) 和项目配置 (project_config.json)。里面有个
+    processor.py 的骨架。
+
+    帮我把 processor.py 实现完整，要求：
+    1. 读取 notifications.json，按 project_config.json 里的 throttle_config
+       做去重 — 同一个 task 的 system_timeout 在 30 分钟窗口内只保留首次
+    2. 生成结构化日志 output/daily_log.md — 按时间线记录有效事件，
+       对升级/阻塞事件要单独标注优先级
+    3. 生成 output/summary.json — 包含 blockers（哪些任务有阻塞）、
+       throttled（被去重的通知列表）、action_items（需要关注的事项）
+
+    把输出文件写到 /workspace/fixtures/project-notifications/output/ 下面。
+    跑一下确认产出正确。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/project-notifications/notifications.json
+  - fixtures/project-notifications/project_config.json
+  - fixtures/project-notifications/processor.py
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete notification processor: reads JSON input, implements time-window dedup for system_timeout (30-min window), generates structured daily_log.md with timeline and escalation sections, generates summary.json with blockers/throttled/action_items fields. Penalize if all 7 timeout events appear unfiltered in log, or if task-15 escalation+resolution is missed."
+
+reference_solution: |
+  processor.py should:
+  1. Load notifications.json and project_config.json
+  2. Sort events by timestamp
+  3. Apply dedup: for system_timeout events with same task_id, keep only
+     first occurrence within 30-min sliding window (reduces 7 task-11
+     timeouts to ~3)
+  4. Output daily_log.md with:
+     - Header with date and project name
+     - Timeline sections grouped by hour
+     - Escalation/blocker callout for task-15
+     - Resolution tracking (task-15 resolved at 06:45)
+  5. Output summary.json with:
+     - blockers: [{task_id, description, resolved, resolution_time}]
+     - throttled: [{task_id, original_count, kept_count}]
+     - action_items: prioritized list of things needing attention
+
+primary_dimensions: [completion, communication, safety]

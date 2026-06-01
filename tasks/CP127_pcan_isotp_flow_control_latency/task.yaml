@@ -1,0 +1,69 @@
+# provenance:
+#   source_session: 7845693907965725529
+#   scenario: "心理咨询 / 陪伴 / 角色扮演 / 情感" (misclassified — actual: CAN bus driver optimization)
+#   real_scenario: "PCAN driver ISO-TP latency optimization"
+#   pattern: WS2 (Full-Repair workspace)
+task_id: CP127_pcan_isotp_flow_control_latency
+task_name: "PCAN ISO-TP Flow Control 响应延迟优化（CP127 / 源 session 7845693907965725529）"
+version: "1.0"
+category: performance
+difficulty: hard
+tags: [embedded, can-bus, real-time, optimization, windows]
+
+source_session_id: "7845693907965725529"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "Real user session: PCAN diagnostic tool has ~100-150ms latency between receiving ISO-TP First Frame and sending Flow Control response, causing ECU timeouts. Root causes: 100ms sleep in driver poll loop, full GUI table rebuild every 5ms, no driver-level fast FC path."
+
+services: []
+
+prompt:
+  text: |
+    我的 PCAN 诊断工具（/workspace/fixtures/pcan_testtool/）有严重的延迟问题。
+    用示波器测量发现，ECU 发多帧响应时，从收到 First Frame 到我们回复
+    Flow Control 帧的时间约 100-150ms，很多 ECU 的 N_BS 超时才 50ms，
+    导致通信失败。
+
+    帮我优化这个延迟，目标是 FF→FC 的响应时间降到 10ms 以内。代码在
+    pcan_driver.py 和 isotp.py 里，GUI 是 gui_app.py。平台是 Windows，
+    用的 PCAN-Basic API。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/pcan_testtool/README.md
+  - fixtures/pcan_testtool/gui_app.py
+  - fixtures/pcan_testtool/src/__init__.py
+  - fixtures/pcan_testtool/src/pcan_driver.py
+  - fixtures/pcan_testtool/src/isotp.py
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 25
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward comprehensive latency optimization: (1) Remove/reduce the 100ms sleep in pcan_driver._loop() to <=5ms or use event-driven WaitForSingleObject; (2) Implement event-driven or very tight polling for CAN message reception; (3) Fix gui_app.py display_messages() to use incremental updates instead of clearing/rebuilding entire QTableWidget; (4) Add fast-path FC sending from the driver thread to bypass GUI delays; (5) Optional: set thread priority, use timeBeginPeriod for timer resolution. Agent must identify root causes and apply targeted fixes."
+
+reference_solution: |
+  Key optimizations:
+  1. pcan_driver.py _loop(): Replace time.sleep(0.1) with event-driven
+     WaitForSingleObject(PCAN_RECEIVE_EVENT) or Sleep(1)/sleep(0.001)
+  2. pcan_driver.py: Add timeBeginPeriod(1) for Windows timer resolution
+  3. pcan_driver.py: Detect FF in driver thread, send FC immediately
+     (fast-path), set flag to prevent duplicate FC from isotp layer
+  4. gui_app.py: Change display_messages() from full rebuild to incremental
+     row insertion (track _display_index, only append new rows)
+  5. Optional: SetThreadPriority(TIME_CRITICAL) on reception thread
+
+primary_dimensions: [completion, communication, safety]

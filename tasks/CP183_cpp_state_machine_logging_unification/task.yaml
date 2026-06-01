@@ -1,0 +1,81 @@
+# provenance:
+#   source_session: "10606366371173541379"
+#   scenario: "个人事务 / 待办 / 任务管理"
+#   real_scenario: "C++ state machine project logging system unification"
+task_id: CP183_cpp_state_machine_logging_unification
+task_name: "C++ 状态机日志系统统一化重构"
+version: "1.0"
+category: design
+difficulty: medium
+tags: [general]
+
+source_session_id: "10606366371173541379"
+source_description: "Workspace WS2 C++ refactor. Agent must unify custom logging in htvstartsequence module to match htvclone's shared logger.h pattern: remove custom log methods, create unified types header with DEV_ENV conditional, fix CMake includes, and add TAG macros in .cpp files."
+
+services: []
+
+prompt:
+  text: |
+    htvstartsequence 这个模块自己写了一套 log 方法（BaseState::log / logError / logDebug，
+    SequenceManager 里也有），跟 htvclone 用的 logger.h 完全不统一。现在要把
+    htvstartsequence 的日志全部切到 lib/loglib/logger.h 那套宏上去，参考 htvclone 的
+    clone_types.h 和 clone_manager.cpp 的做法。
+
+    代码在 /workspace/fixtures/ 下面，改完要能用 CMake 编译过（DEV_ENV 模式）。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/CMakeLists.txt
+  - fixtures/main.cpp
+  - fixtures/lib/loglib/logger.h
+  - fixtures/htvclone/include/clone_types.h
+  - fixtures/htvclone/src/clone_manager.cpp
+  - fixtures/htvstartsequence/bean/hsm_state.h
+  - fixtures/htvstartsequence/bean/hsm_state_machine.h
+  - fixtures/htvstartsequence/event/state_event.h
+  - fixtures/htvstartsequence/states/base_state.h
+  - fixtures/htvstartsequence/states/base_state.cpp
+  - fixtures/htvstartsequence/states/state_goto_off.h
+  - fixtures/htvstartsequence/states/state_goto_off.cpp
+  - fixtures/htvstartsequence/states/state_screen_saver.h
+  - fixtures/htvstartsequence/states/state_screen_saver.cpp
+  - fixtures/htvstartsequence/states/state_boot_sequence.h
+  - fixtures/htvstartsequence/states/state_boot_sequence.cpp
+  - fixtures/htvstartsequence/manager/sequence_manager.h
+  - fixtures/htvstartsequence/manager/sequence_manager.cpp
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete logging unification: BaseState custom log/logError/logDebug methods removed, unified types header with DEV_ENV ifdef (logger.h in dev, SocMwLog.h in prod), CMakeLists.txt adds lib/loglib include path for htvstartsequence target, TAG macros defined in .cpp files following htvclone pattern, state implementations use LOG_INFO/LOG_ERROR/LOG_DEBUG macros instead of member function calls."
+
+reference_solution: |
+  1. Create htvstartsequence/include/htvstartsequence_types.h:
+     - #ifdef DEV_ENV -> #include "logger.h"
+     - #else -> #include "SocMwLog.h" + define LOG_* as SOC_MW_LOG_*
+     - Optional: STATE_LOG_* convenience macros
+  2. Remove BaseState::log/logError/logDebug declarations from base_state.h
+  3. Remove BaseState::log/logError/logDebug implementations from base_state.cpp
+  4. Remove SequenceManager::log/logError declarations and implementations
+  5. Update CMakeLists.txt: add lib/loglib to htvstartsequence include dirs
+  6. In each .cpp file: #include "htvstartsequence_types.h" + #define TAG "StateName"
+  7. Replace log("msg") calls with LOG_INFO(TAG, "msg") pattern
+  8. Replace logError("msg") with LOG_ERROR(TAG, "msg")
+  9. Replace logDebug("msg") with LOG_DEBUG(TAG, "msg")
+
+primary_dimensions: [completion, communication, safety]

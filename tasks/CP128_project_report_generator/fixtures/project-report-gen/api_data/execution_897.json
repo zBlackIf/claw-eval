@@ -1,0 +1,90 @@
+{
+  "execution_id": 897,
+  "name": "中台2.2.3",
+  "status": "doing",
+  "begin": "2026-04-01",
+  "end": "2026-04-27",
+  "tasks": {
+    "total": 62,
+    "done": 38,
+    "doing": 14,
+    "wait": 10,
+    "overdue": 10,
+    "overdue_details": [
+      {
+        "id": 4801,
+        "name": "用户权限中心重构",
+        "assignedTo": "赵六",
+        "deadline": "2026-04-10",
+        "status": "doing"
+      },
+      {
+        "id": 4802,
+        "name": "消息中间件迁移",
+        "assignedTo": "赵六",
+        "deadline": "2026-04-12",
+        "status": "doing"
+      },
+      {
+        "id": 4803,
+        "name": "配置中心升级",
+        "assignedTo": "孙八",
+        "deadline": "2026-04-13",
+        "status": "doing"
+      },
+      {
+        "id": 4804,
+        "name": "API网关限流策略",
+        "assignedTo": "周九",
+        "deadline": "2026-04-14",
+        "status": "doing"
+      },
+      {
+        "id": 4805,
+        "name": "服务注册发现优化",
+        "assignedTo": "赵六",
+        "deadline": "2026-04-15",
+        "status": "wait"
+      },
+      {
+        "id": 4806,
+        "name": "链路追踪接入",
+        "assignedTo": "孙八",
+        "deadline": "2026-04-16",
+        "status": "doing"
+      },
+      {
+        "id": 4807,
+        "name": "数据库连接池调优",
+        "assignedTo": "周九",
+        "deadline": "2026-04-17",
+        "status": "doing"
+      },
+      {
+        "id": 4808,
+        "name": "缓存层一致性保障",
+        "assignedTo": "赵六",
+        "deadline": "2026-04-18",
+        "status": "wait"
+      },
+      {
+        "id": 4809,
+        "name": "日志聚合系统升级",
+        "assignedTo": "孙八",
+        "deadline": "2026-04-19",
+        "status": "doing"
+      },
+      {
+        "id": 4810,
+        "name": "监控告警规则配置",
+        "assignedTo": "周九",
+        "deadline": "2026-04-20",
+        "status": "doing"
+      }
+    ]
+  },
+  "progress": {
+    "actual": 61,
+    "expected": 93
+  }
+}

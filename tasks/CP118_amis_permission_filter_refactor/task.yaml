@@ -1,0 +1,73 @@
+# provenance:
+#   source_session: 7274396751385698533
+#   scenario: "AMIS低代码/商户管理/权限过滤+visibleOn调试"
+#   session_model: kimi-k2-5-modelhub
+#   value_score: 54.7
+task_id: CP118_amis_permission_filter_refactor
+task_name: "AMIS 商户详情页权限过滤重构 + visibleOn 作用域 Bug 修复"
+version: "1.0"
+category: bugfix
+difficulty: medium
+tags: [frontend, typescript, amis, low-code, refactoring]
+
+source_session_id: "7274396751385698533"
+source_description: "Real user session: AMIS low-code merchant info page. Three tasks: (1) imagesQueryAdaptor ignores permissField param — needs filtering by pic_type when permission denied; (2) settlement protocol button invisible due to wrong data scope in input-table visibleOn; (3) duplicated onClick handlers need refactoring."
+
+services: []
+
+prompt:
+  text: |
+    商户详情页有两个问题要修，代码在 /workspace/fixtures/merch-info-app/src/ 下面：
+
+    1. viewImagesDialog.ts 里的 imagesQueryAdaptor 函数已经接收了 permissField 参数，
+       但完全没用。需求：如果传了 permissField，就用 btnPermission 判断是否有权限，
+       没权限就按 PERMISSION_FILTER_MAP 过滤掉对应 pic_type 的图片。没传 permissField
+       则向后兼容显示全部。
+
+    2. basicInfo/detail.ts 里的子商户表格（input-table），结算协议按钮
+       有 agreement_type 为 "2" 的数据但按钮不显示，收单协议（agreement_type "1"）
+       却正常。帮忙排查修复。
+
+    3. detail.ts 里收单协议和结算协议的 onClick handler 有大量重复代码，
+       把 click 逻辑封装成可复用函数。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/merch-info-app/package.json
+  - fixtures/merch-info-app/tsconfig.json
+  - fixtures/merch-info-app/src/utils/permission.ts
+  - fixtures/merch-info-app/src/utils/attachment.ts
+  - fixtures/merch-info-app/src/pages/merchInfo/merchInfoSearch/components/viewImagesDialog.ts
+  - fixtures/merch-info-app/src/pages/merchInfo/merchInfoSearch/basicInfo/detail.ts
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward: (1) imagesQueryAdaptor actually uses permissField to call btnPermission and filters newList by pic_type via PERMISSION_FILTER_MAP when permission denied, with backward compat when no permissField; (2) detail.ts settlement protocol visibleOn fixed from data.sign_info to sign_info (row scope in input-table); (3) onClick handlers extracted into named reusable functions reducing duplication."
+
+reference_solution: |
+  viewImagesDialog.ts:
+  - Add: if (permissField) { if (!btnPermission(permissField)) { filterList = newList.filter(item => !PERMISSION_FILTER_MAP[permissField]?.includes(item.pic_type)) } }
+  - Return filterList instead of newList when filtered
+
+  detail.ts:
+  - Fix visibleOn: change all 'data.sign_info' to 'sign_info' in settlement protocol section
+  - Extract: openElectronicProtocol(signInfo, agreementType, merchId) and openEsignProtocol(signInfo, agreementType, merchId) functions
+  - Replace inline script blocks with calls to extracted functions
+
+primary_dimensions: [completion, communication, safety]

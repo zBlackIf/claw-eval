@@ -1,0 +1,61 @@
+# provenance:
+#   themis_dataset: taskset-260411-144323
+#   themis_task_id: task_05_feishu_cli_capability_doc
+#   themis_rank_original: 5
+#   themis_metrics: { std_trim: 0.457, range_trim: 1.000, mean_trim: 0.644 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP54_feishu_cli_capability_introduction_document
+task_name: "飞书 CLI 能力介绍云文档（CP54 / 源 taskset-260411-144323:task_05_feishu_cli_capability_doc）"
+version: "1.0"
+category: writing
+difficulty: medium
+tags: [general]
+
+source_task_id: "task_05_feishu_cli_capability_doc"
+source_dataset: "taskset-260411-144323"
+source_description: "从 Themis PinchBench top100（2026-05-27 二次筛选，killer bucket，CP51-CP100 批次）中按跨模型 std_trim 排名第 5 的高区分度题（std_trim 0.457 / range_trim 1.000 / mean_trim 0.644）。改编为 Claw-Eval sandbox 写作任务：agent 读 SOUL.md + 4 个 lark-* skill 摘录，写 /workspace/lark-cli-intro.md。grader 检查结构（章节数、字数）+ 真实 skill 名命中（防瞎编）+ 不出现幻觉 skill 名（lark-travel / lark-crm 等）+ judge 评写作质量。"
+
+services: []
+
+prompt:
+  text: |
+    我装了几个 lark-* 的 skill 但一直没整理，每次想用都得翻一遍。帮我写
+    一篇飞书 CLI 能力介绍，自己当参考手册用，写到 /workspace/lark-cli-intro.md。
+    别给我写那种"测试文档"。我的资料都在 /workspace/fixtures/。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/SOUL.md
+  - fixtures/skills/lark-doc.md
+  - fixtures/skills/lark-im.md
+  - fixtures/skills/lark-calendar.md
+  - fixtures/skills/lark-task.md
+
+env_snapshot_files:
+  - /workspace/lark-cli-intro.md
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a concrete reference handbook that (a) cites the four real skill names lark-doc / lark-im / lark-calendar / lark-task — and only those, no invented skills like lark-travel/crm/sales — (b) keeps each skill section grounded in the SKILL.md descriptions provided, (c) has a top-N priority recommendation tied to the SOUL.md persona scenarios (客户现场 / 出差 / 写方案 / 跨部门), and (d) reads like a usable handbook, not a placeholder."
+
+reference_solution: |
+  Read /workspace/fixtures/SOUL.md + four skills/*.md files. Write
+  /workspace/lark-cli-intro.md with: intro paragraph; four skill sections
+  (lark-doc, lark-im, lark-calendar, lark-task) faithful to each SKILL.md;
+  a "先用这 2-3 个" priority block tied to 客户现场 / 出差 / 内部沟通; a
+  "后续" section for the unrecommended skill(s) with command examples drawn
+  from each file's '主要命令' list. Avoid inventing lark-travel / lark-crm /
+  lark-sales / lark-meeting / lark-helpdesk. Final reply: brief which skills
+  covered, priority pick, any deferred sections.
+
+primary_dimensions: [completion, communication, safety]

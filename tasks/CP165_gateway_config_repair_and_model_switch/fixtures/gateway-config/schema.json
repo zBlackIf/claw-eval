@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AI Gateway Configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agents": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "defaults": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace": { "type": "string" },
+            "models": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object"
+              }
+            },
+            "model": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "primary": { "type": "string" },
+                "fallback": { "type": "string" }
+              },
+              "required": ["primary"]
+            },
+            "compaction": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "mode": {
+                  "type": "string",
+                  "enum": ["safeguard", "aggressive", "disabled"]
+                }
+              }
+            },
+            "identity": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": { "type": "string" },
+                "persona": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "gateway": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["local", "cloud", "hybrid"]
+        },
+        "auth": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": ["token", "oauth", "none"]
+            },
+            "token": { "type": "string" }
+          },
+          "required": ["mode"]
+        },
+        "controlUi": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "port": { "type": "integer", "minimum": 1024, "maximum": 65535 },
+            "bind": { "type": "string" }
+          }
+        },
+        "channels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["wechat", "feishu", "telegram", "slack", "discord"]
+              },
+              "mode": { "type": "string" },
+              "enabled": { "type": "boolean" },
+              "credentials": {
+                "type": "object",
+                "properties": {
+                  "app_id": { "type": "string" },
+                  "app_secret": { "type": "string" },
+                  "webhook_token": { "type": "string" }
+                }
+              }
+            },
+            "required": ["type", "enabled"]
+          }
+        }
+      }
+    },
+    "plugins": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "enabled": { "type": "boolean" },
+          "config": { "type": "object" }
+        },
+        "required": ["enabled"]
+      }
+    }
+  },
+  "required": ["agents", "gateway"]
+}

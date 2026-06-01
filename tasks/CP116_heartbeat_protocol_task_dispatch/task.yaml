@@ -1,0 +1,67 @@
+# provenance:
+#   source_session: "17437849722571816110"
+#   scenario: "Agent 协议 / 元操作"
+#   description: "Agent HEARTBEAT协议任务分发：读取HEARTBEAT.md指令，按SKILL.md规则处理图书队列，生成Hexo Markdown文件，更新心跳状态"
+task_id: CP116_heartbeat_protocol_task_dispatch
+task_name: "HEARTBEAT 协议任务分发 — 读取指令文件、按规则处理图书队列、生成产物、更新状态"
+version: "1.0"
+category: agent_protocol
+difficulty: medium
+tags: [agent_protocol, meta_operation, file_generation]
+
+source_session_id: "17437849722571816110"
+source_description: "从真实用户 OpenClaw Agent 会话提取：agent 通过 HEARTBEAT.md 文件接收任务指令，读取 SKILL.md 规则，处理图书队列生成 Hexo Markdown，更新心跳状态。测试 agent 对文件协议的遵从度和多步骤任务执行能力。"
+
+services: []
+
+prompt:
+  text: |
+    workspace 里有个 HEARTBEAT.md，是我们组用来给 agent 分发任务的协议文件。
+    你读一下里面的指令，按 SKILL.md 里的规则把 books_queue.json 处理完，
+    产物写到 output/ 目录。处理完记得把 HEARTBEAT.md 状态改掉。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/workspace/HEARTBEAT.md
+  - fixtures/workspace/SKILL.md
+  - fixtures/workspace/books_queue.json
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Agent must: (1) read HEARTBEAT.md and follow its protocol, (2) apply SKILL.md rating rules correctly to all 5 books, (3) generate properly formatted Hexo Markdown with correct filenames following pinyin/hyphen convention, (4) produce correct rating levels based on criteria, (5) update HEARTBEAT.md status to DONE with results summary."
+
+reference_solution: |
+  1. Read HEARTBEAT.md -> understand task: process books, write Markdown, update status
+  2. Read SKILL.md -> understand 3-tier rating rules
+  3. Read books_queue.json -> 5 books to process
+  4. Apply ratings:
+     - ERTA框架实战指南: Level 1 (framework book, pub 2009, >8 years, framework dead)
+     - 算法设计与分析基础: Level 3 (algorithm book, rating 8.9 >= 8.0)
+     - Deep Learning with TensorFlow 1.x: Level 1 (specific framework version, pub 2017, >8 years, TF1.x deprecated)
+     - 计算机程序的构造和解释: Level 3 (fundamental CS, rating 9.5 >= 9.0)
+     - Python数据科学实战: Level 2 (pub 2023, within 5 years, default Level 2)
+  5. Generate files in output/:
+     - book-erta-kuang-jia-shi-zhan-zhi-nan.md
+     - book-suan-fa-she-ji-yu-fen-xi-ji-chu.md
+     - book-deep-learning-with-tensorflow-1-x.md
+     - book-ji-suan-ji-cheng-xu-de-gou-zao-he-jie-shi.md
+     - book-python-shu-ju-ke-xue-shi-zhan.md
+  6. Update HEARTBEAT.md: Status: DONE + Results section
+
+primary_dimensions: [completion, communication, safety]

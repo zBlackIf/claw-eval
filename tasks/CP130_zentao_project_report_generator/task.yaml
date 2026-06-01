@@ -1,0 +1,60 @@
+task_id: CP130_zentao_project_report_generator
+task_name: "禅道项目状态汇报生成器（CP130 / 源 session 10219614705081788845）"
+version: "1.0"
+category: data_processing
+difficulty: medium
+tags: [general, report, data]
+
+source_session_id: "10219614705081788845"
+source_description: "基于真实用户 session：从禅道项目数据(JSON)+排期表(CSV)自动生成结构化项目状态汇报。Workspace WS2 数据处理脚本。verifier 7 个隐藏锚点（脚本可运行/报告生成/逾期计算/风险评估/排期集成/工时准确/逾期明细）。"
+
+services: []
+
+prompt:
+  text: |
+    项目经理每周要给老板出禅道项目进展汇报，之前都是手动算的，太慢了。
+    /workspace/fixtures/project_data/ 下面有项目数据（projects.json）和排期表
+    （schedule.csv），还有一个半成品脚本 generate_reports.py 和格式说明 spec.txt。
+    把脚本补完，跑起来能在 output/ 目录下生成每个项目的 markdown 汇报就行。
+    逾期任务、风险等级这些要算对。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/project_data/projects.json
+  - fixtures/project_data/schedule.csv
+  - fixtures/project_data/spec.txt
+  - fixtures/project_data/generate_reports.py
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 45
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a working generate_reports.py that: (1) correctly parses projects.json and schedule.csv, (2) calculates overdue tasks as deadline < current_date AND status != done, (3) computes actual/expected progress percentages, (4) determines risk level per spec rules, (5) integrates schedule info from CSV prioritizing CSV phase over JSON status, (6) generates well-formatted markdown with all 3 sections, (7) produces output files for all 3 projects."
+
+reference_solution: |
+  Complete generate_reports.py implementation:
+  - load_schedule(): read CSV with csv.reader/DictReader, parse execution_id as int key
+  - calculate_metrics(): iterate tasks, count done (status=='done'), identify overdue
+    (parse deadline as date, compare < CURRENT_DATE, status != 'done'), compute
+    actual_progress=done/total*100, expected_progress=tasks_due/total*100,
+    lag_rate=expected-actual
+  - determine_risk_level(): high if overdue>7 or lag>25, medium if 3-7 or 10-25,
+    low if <=2 or <10, none if 0 and lag==0
+  - generate_report_markdown(): build 3-section markdown with tables
+  - Run produces report_891.md, report_897.md, report_910.md in output/
+
+primary_dimensions: [completion, communication, safety]

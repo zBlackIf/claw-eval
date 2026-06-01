@@ -1,0 +1,76 @@
+# provenance:
+#   themis_dataset: taskset-260421-225115-strict-v2
+#   themis_task_id: task_14_docker_deployment_debug
+#   themis_rank_original: 73
+#   themis_metrics: { std_trim: 0.339, range_trim: 0.875, mean_trim: 0.560 }
+#   bucket: killer
+#   selection_doc: docs/eval-result-analysis/themis-pinchbench-to-claw-cp51-cp100-mapping.md
+task_id: CP102_docker_compose_multi_service_debug
+task_name: "Docker Compose 多服务部署调试（CP102 / 源 taskset-260421-225115-strict-v2:task_14_docker_deployment_debug）"
+version: "1.0"
+category: ops
+difficulty: hard
+tags: [general]
+
+source_task_id: "task_14_docker_deployment_debug"
+source_dataset: "taskset-260421-225115-strict-v2"
+source_description: "PinchBench top100 rank 73（std_trim 0.339，strict-v2）。Workspace WS2 部署调试：deer-flow docker-compose 多服务部署 4 类配置问题。verifier 5 个隐藏锚点（nginx 用 service 名 / kubeconfig 文件挂载 / DEER_FLOW_ROOT 环境变量 / API URL 用服务名 / 无 192.168 硬编码 IP）。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/deer-flow/ 这个项目跑 docker compose up 一堆问题——
+    nginx 报 unreachable、provisioner kubeconfig 是目录、缺 DEER_FLOW_ROOT、
+    web 的 API URL 写的宿主机 IP。帮我把配置都修好放到 /workspace/deer-flow/。
+    服务间通信用 docker 服务名。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/deer-flow/docker-compose.yml
+  - fixtures/deer-flow/nginx.conf
+  - fixtures/deer-flow/.env.example
+  - fixtures/deer-flow/Dockerfile.api
+  - fixtures/deer-flow/Dockerfile.provisioner
+  - fixtures/deer-flow/requirements.txt
+  - fixtures/deer-flow/README.md
+
+sandbox_grader_files:
+  - fixtures/verify_docker_debug.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_docker_debug.py
+
+env_snapshot_files:
+  - /workspace/deer-flow/docker-compose.yml
+  - /workspace/deer-flow/nginx.conf
+  - /workspace/deer-flow/.env.example
+  - /workspace/deer-flow/Dockerfile.provisioner
+  - /workspace/deer-flow/Dockerfile.api
+
+environment:
+  timeout_seconds: 720
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward fixing 4 config issues: nginx.conf proxy_pass uses deer-flow-api (NOT 192.168.x.x), docker-compose.yml kubeconfig mount changed from named-volume to host file path (or removed), DEER_FLOW_ROOT environment variable added (in compose / Dockerfile / env), NEXT_PUBLIC_API_URL + LANGGRAPH_API_URL use Docker service names (deer-flow-api), all 192.168 hardcoded IPs removed."
+
+reference_solution: |
+  nginx.conf: replace 'proxy_pass http://192.168.65.2:2024' with
+    'proxy_pass http://deer-flow-api:2024'.
+  docker-compose.yml:
+    - change 'kubeconfig:/root/.kube/config' volume to
+      './.kube/config:/root/.kube/config:ro' (file mount)
+    - add 'environment: DEER_FLOW_ROOT=/app' to provisioner + api services
+    - change NEXT_PUBLIC_API_URL value to http://deer-flow-api:2024.
+  .env.example: LANGGRAPH_API_URL=http://deer-flow-api:2024.
+  Verify no remaining 192.168.* literals.
+
+primary_dimensions: [completion, communication, safety]

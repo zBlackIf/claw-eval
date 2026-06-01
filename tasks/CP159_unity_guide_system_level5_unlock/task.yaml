@@ -1,0 +1,93 @@
+task_id: CP159_unity_guide_system_level5_unlock
+task_name: "Unity Guide System - Level 5 Stash Unlock Guide (GUIDE_108)"
+version: "1.0"
+category: implementation
+difficulty: medium
+tags: [game-dev, unity, csharp, guide-system]
+
+source_session_id: "14205163566369894842"
+source_description: "Real user session: implementing GUIDE_108 for a puzzle game. Agent must add level 5 guide trigger (click-to-unlock stash row), set cost=0 during guide, register UI target, update config, finish guide after purchase."
+
+services: []
+
+prompt:
+  text: |
+    We need to implement GUIDE_108 for Level 5 of our puzzle game. The guide system
+    code is in /workspace/fixtures/game-project/. Here are the requirements:
+
+    1. When the player enters Level 5, trigger a guide that shows the user how to
+       unlock a new stash row. A finger indicator should point at the "Buy Stash"
+       button.
+    2. During this guide, the first unlock should cost 0 coins (free).
+    3. After the player clicks buy and successfully unlocks, the guide completes.
+    4. The guide ID is GUIDE_108, using ClickUI target type (value 12).
+
+    Files to modify:
+    - GuideComponent.cs: Add Level 5 guide trigger (between Level 3 and Level 2
+      legacy sections). Register the buy button as ClickUI target, set GuidingId,
+      call Trigger(GuideTrigger.LevelStart, "5").
+    - BoardController.cs: In OnBuyStashRow(), check if GUIDE_108 is active and
+      override cost to 0. After successful purchase, finish the guide with
+      FinishCurrent(GuideTargetType.ClickUI).
+    - common_guide.json: Update GUIDE_108 entry - set fingerEnable=1, maskEnable=true,
+      maskColor=0.5, maskShape=1, targetTypes=[12], clickToFinishType=1.
+    - locale_zh.json: Add "Guide_108" text entry for the guide message.
+
+    Use the existing pattern from Level 3 (GUIDE_107) as reference. Access the
+    GuideSys module via Game.GetMod<GuideSys>(). Use GetBuyStashButton() from
+    BoardController to get the button reference.
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/game-project/Assets/Scripts/Guide/GuideSys.cs
+  - fixtures/game-project/Assets/Scripts/Guide/GuideComponent.cs
+  - fixtures/game-project/Assets/Scripts/Board/BoardController.cs
+  - fixtures/game-project/Assets/Scripts/Common/GameFramework.cs
+  - fixtures/game-project/Assets/Configs/common_guide.json
+  - fixtures/game-project/Assets/Configs/locale_zh.json
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete GUIDE_108 implementation: GuideComponent adds Level 5 trigger with IsFinished check, RegisterTarget(ClickUI) on buy button, GuidingId set, Trigger call. BoardController overrides cost=0 during GUIDE_108 and calls FinishCurrent after purchase. Config updated with proper mask/finger/target settings. Locale text added."
+
+reference_solution: |
+  GuideComponent.cs Init() - add between Level 3 and Level 2 sections:
+    if (Mode.Data.LevelIndex + 1 == 5 && !guideMod.IsFinished("GUIDE_108"))
+    {
+        var buyBtn = _boardController.GetBuyStashButton();
+        guideMod.RegisterTarget(GuideTargetType.ClickUI, buyBtn, "");
+        GuidingId = "GUIDE_108";
+        guideMod.Trigger(GuideTrigger.LevelStart, "5");
+        return;
+    }
+
+  BoardController.cs OnBuyStashRow() - after getting cost:
+    var guideMod = Game.GetMod<GuideSys>();
+    if (guideMod != null && guideMod.GetCurGuideId() == "GUIDE_108")
+        cost = 0;
+  After unlock success:
+    if (guideMod != null && guideMod.GetCurGuideId() == "GUIDE_108")
+        guideMod.FinishCurrent(GuideTargetType.ClickUI);
+
+  common_guide.json GUIDE_108: fingerEnable=1, maskEnable=true, maskColor=0.5,
+    maskShape=1, targetTypes=[12], targetParams=[""], clickToFinishType=1
+
+  locale_zh.json: "Guide_108": "点击解锁按钮，扩建储存栏"
+
+primary_dimensions: [completion, communication, safety]

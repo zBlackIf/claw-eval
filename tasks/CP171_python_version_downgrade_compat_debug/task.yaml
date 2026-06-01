@@ -1,0 +1,77 @@
+# provenance:
+#   source_session_id: "12390747974164526496"
+#   scenario: "代码 debug / 诊断"
+#   real_user_context: "Python版本降级后(3.12→3.9)导致PyQt5+OpenCV标注工具项目多处报错"
+task_id: CP171_python_version_downgrade_compat_debug
+task_name: "Python版本降级兼容性修复（CP171 / 源 session 12390747974164526496）"
+version: "1.0"
+category: debug
+difficulty: hard
+tags: [python, compatibility, debug, pyqt5, opencv]
+
+source_session_id: "12390747974164526496"
+source_description: "真实用户场景：卸载 Python 3.12 后换回 3.9，PyQt5+OpenCV 标注工具项目各种报错。需修复 requirements.txt 版本约束、修复使用了 3.10+ 语法的代码（match-case/类型联合|）、修复错误的 DLL fallback 逻辑、修复配置文件路径。"
+
+services: []
+
+prompt:
+  text: |
+    我把 Python 3.12 卸载了换成 3.9，现在项目跑不起来各种报错。
+    项目在 /workspace/fixtures/traffic_annotator/，帮我把代码修好让它能在
+    Python 3.9 上正常 import 和运行。requirements.txt 里的版本约束也帮我调一下。
+    注意保持功能不变，只做兼容性修复。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/traffic_annotator/main.py
+  - fixtures/traffic_annotator/optical_flow.py
+  - fixtures/traffic_annotator/tracker.py
+  - fixtures/traffic_annotator/config.py
+  - fixtures/traffic_annotator/requirements.txt
+  - fixtures/traffic_annotator/utils/__init__.py
+  - fixtures/traffic_annotator/utils/image_ops.py
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward fixing all Python 3.9 compatibility issues: (1) replace match-case with if-elif, (2) replace X|Y type union syntax with Union[X,Y] or Optional, (3) fix requirements.txt version pins to 3.9-compatible ranges including scipy<1.14, (4) fix DLL/import fallback logic that uses 3.10+ importlib features, (5) remove @dataclass(slots=True) which is 3.10+, (6) remove @dataclass(kw_only=True) which is 3.10+, (7) fix TypeAlias from typing (3.10+) to typing_extensions or remove, (8) fix walrus operator in list comprehension to avoid 3.9 scoping issue. Penalize removing functionality or making changes unrelated to compatibility."
+
+reference_solution: |
+  1. main.py: Replace match-case statement with if-elif chain
+  2. main.py: Replace `int | str` type annotations with `Union[int, str]`
+  3. main.py: Rewrite walrus operator in list comprehension
+     (`[x for ... if (frame := ...) is not None]`) to explicit loop
+  4. optical_flow.py: Replace match-case with if-elif
+  5. optical_flow.py: Replace `importlib.resources.files()` (3.9+) with
+     `importlib.resources.path()` or try/except fallback
+  6. optical_flow.py: Fix `TypeAlias` import — use typing_extensions or
+     remove the annotation (TypeAlias is 3.10+)
+  7. optical_flow.py: Replace `np.ndarray | None` with Optional[np.ndarray]
+  8. tracker.py: Remove `slots=True` from @dataclass (3.10+ feature)
+  9. tracker.py: Fix walrus operator in nested scope
+  10. tracker.py: Remove zip(..., strict=True) — replace with length check
+  11. config.py: Remove `kw_only=True` from @dataclass (3.10+ feature)
+  12. config.py: Replace `tomllib` (3.11+) with tomli/tomli package +
+      update requirements.txt
+  13. config.py: Replace `Path | None` with Optional[Path]
+  14. requirements.txt: Remove tomllib entry, add tomli
+  15. requirements.txt: Pin numpy<2.0 (2.0+ drops 3.9)
+  16. requirements.txt: Pin scipy<1.14 (1.14+ drops 3.9)
+  17. utils/image_ops.py: Replace zip(..., strict=True) with manual check
+
+primary_dimensions: [completion, communication, safety]

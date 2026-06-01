@@ -1,0 +1,42 @@
+{
+  "agents": {
+    "defaults": {
+      "workspace": "/home/user/.aigateway/workspace",
+      "models": {
+        "volcengine/deepseek-v3-2-251201": {},
+        "openai/gpt-4o": {}
+      },
+      "model": {
+        "primary": "volcengine/deepseek-v3-2-251201",
+        "fallback": "openai/gpt-4o"
+      },
+      "compaction": {
+        "mode": "safeguard"
+      }
+    }
+  },
+  "locale": "zh-CN",
+  "gateway": {
+    "mode": "local",
+    "auth": {
+      "mode": "token",
+      "token": "abc123def456"
+    },
+    "controlUi": {
+      "port": 18789,
+      "locale": "zh-CN"
+    },
+    "channels": {
+      "weixin-personal": {
+        "type": "wechat",
+        "mode": "whatmeow",
+        "enabled": true
+      }
+    }
+  },
+  "plugins": {
+    "amazon-bedrock": {
+      "enabled": true
+    }
+  }
+}

@@ -1,0 +1,94 @@
+[
+  {
+    "isbn": "978-7-111-12345-6",
+    "title": "ERTA 框架实战指南",
+    "title_pinyin": "erta-kuang-jia-shi-zhan-zhi-nan",
+    "author": "张伟",
+    "publisher": "机械工业出版社",
+    "pub_year": 2009,
+    "douban_rating": 6.8,
+    "topic": "web框架",
+    "chapters": [
+      "第1章 ERTA框架概述",
+      "第2章 路由系统",
+      "第3章 模板引擎",
+      "第4章 数据库ORM",
+      "第5章 部署与运维"
+    ],
+    "description": "基于已停止维护的ERTA 2.x框架的实战教程，该框架最后更新于2012年。"
+  },
+  {
+    "isbn": "978-7-302-56789-0",
+    "title": "算法设计与分析基础",
+    "title_pinyin": "suan-fa-she-ji-yu-fen-xi-ji-chu",
+    "author": "王晓明",
+    "publisher": "清华大学出版社",
+    "pub_year": 2015,
+    "douban_rating": 8.9,
+    "topic": "算法",
+    "chapters": [
+      "第1章 算法复杂度分析",
+      "第2章 分治策略",
+      "第3章 动态规划",
+      "第4章 贪心算法",
+      "第5章 图论算法",
+      "第6章 NP完全性理论"
+    ],
+    "description": "系统介绍算法设计的基本方法与分析技术，涵盖经典算法范式。"
+  },
+  {
+    "isbn": "978-7-115-44321-2",
+    "title": "Deep Learning with TensorFlow 1.x",
+    "title_pinyin": null,
+    "author": "Li Wei",
+    "publisher": "人民邮电出版社",
+    "pub_year": 2017,
+    "douban_rating": 7.2,
+    "topic": "深度学习",
+    "chapters": [
+      "Chapter 1: TensorFlow 1.x Basics",
+      "Chapter 2: Neural Network Fundamentals",
+      "Chapter 3: CNNs for Image Recognition",
+      "Chapter 4: RNNs and Sequence Models",
+      "Chapter 5: Deployment with TF Serving 1.x"
+    ],
+    "description": "Practical guide to deep learning using TensorFlow 1.x API. TensorFlow 1.x was deprecated in 2019 and replaced by TensorFlow 2.x."
+  },
+  {
+    "isbn": "978-7-121-99876-5",
+    "title": "计算机程序的构造和解释",
+    "title_pinyin": "ji-suan-ji-cheng-xu-de-gou-zao-he-jie-shi",
+    "author": "Harold Abelson, Gerald Jay Sussman",
+    "publisher": "电子工业出版社",
+    "pub_year": 1996,
+    "douban_rating": 9.5,
+    "topic": "编程原理",
+    "chapters": [
+      "第1章 构造过程抽象",
+      "第2章 构造数据抽象",
+      "第3章 模块化、对象和状态",
+      "第4章 元语言抽象",
+      "第5章 寄存器机器里的计算"
+    ],
+    "description": "MIT经典教材SICP中文版，讲授程序设计的基本原理，被誉为计算机科学的圣经之一。"
+  },
+  {
+    "isbn": "978-7-302-11111-3",
+    "title": "Python数据科学实战",
+    "title_pinyin": "python-shu-ju-ke-xue-shi-zhan",
+    "author": "赵凯",
+    "publisher": "清华大学出版社",
+    "pub_year": 2023,
+    "douban_rating": 7.8,
+    "topic": "数据科学",
+    "chapters": [
+      "第1章 Python科学计算生态",
+      "第2章 NumPy与Pandas",
+      "第3章 数据可视化",
+      "第4章 机器学习基础",
+      "第5章 深度学习入门",
+      "第6章 实战项目"
+    ],
+    "description": "面向数据科学初学者的Python实战指南，使用最新的库版本。"
+  }
+]

@@ -1,0 +1,66 @@
+# provenance:
+#   source_session: 8446327307100140706
+#   scenario: "内容创作 / 短视频 / 公众号 / 营销"
+#   model: glm-5-1-modelhub
+task_id: CP139_short_video_script_batch_processor
+task_name: "短视频脚本批处理器（CP139 / 内容营销场景）"
+version: "1.0"
+category: implementation
+difficulty: hard
+tags: [content_creation, marketing, python]
+
+source_session_id: "8446327307100140706"
+source_description: "基于真实内容营销场景，要求实现短视频脚本批处理 CLI 工具。需要解析模板、处理变量替换、生成符合平台规范的多条脚本，含时长控制和标签系统。"
+
+services: []
+
+prompt:
+  text: |
+    运营组小陈之前写了个半成品脚本生成工具，模板和配置都在
+    /workspace/fixtures/content_pipeline/ 里。现在需要把 processor.py
+    补完——能读 templates.json 里的模板，按 campaigns.json 里的投放计划
+    批量生成短视频脚本文件（每条一个 .md），输出到 /workspace/output/。
+
+    生成规则他写在 rules.md 里了，你看一下照做。跑一遍验证没问题就行。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/content_pipeline/templates.json
+  - fixtures/content_pipeline/campaigns.json
+  - fixtures/content_pipeline/rules.md
+  - fixtures/content_pipeline/processor.py
+  - fixtures/content_pipeline/variables.json
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a working batch processor that: reads templates.json and campaigns.json correctly, applies variable substitution from variables.json, respects duration limits per platform (douyin<=60s, kuaishou<=90s, video_hao<=120s), generates correct number of output .md files with proper naming, includes required sections (hook/body/cta/tags), and handles edge cases like missing variables gracefully."
+
+reference_solution: |
+  processor.py should:
+  1. Load templates.json (list of script templates with placeholders)
+  2. Load campaigns.json (list of campaigns, each referencing template_id + platform + variables)
+  3. Load variables.json (variable pool for substitution)
+  4. For each campaign entry, find matching template, substitute variables,
+     validate duration constraint per platform, generate output .md file
+  5. Output files named: {campaign_id}_{platform}.md
+  6. Each output contains: # Hook, ## Body, ## CTA, ## Tags sections
+  7. Skip campaigns where duration exceeds platform limit (log warning)
+  8. Handle missing variable keys with fallback "[未填写]"
+
+primary_dimensions: [completion, communication, safety]

@@ -1,0 +1,71 @@
+# provenance:
+#   source_session: 10361954516729802319
+#   scenario: "Web / 浏览器自动化"
+#   description: "User builds a web scraper that converts HTML articles to Obsidian-compatible Markdown with downloaded images and structured naming"
+task_id: CP194_web_scraper_markdown_with_images
+task_name: "HTML文章转Obsidian Markdown工具（含图片下载与组织）"
+version: "1.0"
+category: automation
+difficulty: hard
+tags: [web, python, markdown, scraping]
+
+source_session_id: "10361954516729802319"
+source_description: "Real session where user iteratively builds a web scraper tool that: parses WeChat/web articles from HTML, converts to Markdown, downloads embedded images, organizes output with date-based naming conventions for Obsidian vault compatibility. Key challenges include image path relativity, per-article image folders, and proper metadata extraction."
+
+services: []
+
+prompt:
+  text: |
+    同事做了个知识库整理项目，需要把一批HTML文章转成Obsidian能用的Markdown。
+    样例文章在 /workspace/fixtures/scraper-project/sample_articles/ 里，需求文档
+    在 /workspace/fixtures/scraper-project/REQUIREMENTS.md。
+
+    帮忙写个Python脚本，把那些HTML文章批量转成Markdown，图片也要处理好——
+    在Obsidian里能正常显示图片路径。跑完之后 output 目录里应该能看到结果。
+
+    依赖只用 beautifulsoup4 和 markdownify 就行，sandbox里已经装好了。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/scraper-project/README.md
+  - fixtures/scraper-project/REQUIREMENTS.md
+  - fixtures/scraper-project/sample_articles/article_health_tech.html
+  - fixtures/scraper-project/sample_articles/article_market_report.html
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 25
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a complete Python scraper that: (1) parses HTML articles extracting content from js_content/rich_media_content divs, (2) extracts metadata (title, date, source) from specific HTML elements, (3) converts to well-structured Markdown preserving headings/lists/tables/code/blockquotes, (4) handles images with data-src extraction and local placeholder creation, (5) uses date_source_title naming convention for output files, (6) creates per-article image subdirectories with Obsidian-compatible relative paths, (7) adds YAML frontmatter with article metadata."
+
+reference_solution: |
+  A Python script (scrape.py or similar) that:
+  - Accepts --input-dir and --output-dir arguments
+  - Parses HTML using BeautifulSoup4, extracts from #js_content
+  - Extracts metadata: title from .rich_media_title/#activity-name,
+    date from #publish_time, source from .rich_media_meta_nickname
+  - Converts HTML to Markdown using markdownify or manual conversion
+  - Handles images: extracts data-src URLs, creates placeholder files,
+    uses naming like images/YYYYMMDD_Source_Hash/img_N.ext
+  - Output filenames: YYYYMMDD_Source_Title.md
+  - Inserts YAML frontmatter (title, source, date, url)
+  - Markdown preserves: ## headings, bullet/numbered lists, code blocks,
+    tables (pipe syntax), blockquotes
+  - Image references in MD use relative paths: ![alt](images/folder/img_N.ext)
+  - Outputs JSON summary to stdout after processing
+
+primary_dimensions: [completion, communication, safety]

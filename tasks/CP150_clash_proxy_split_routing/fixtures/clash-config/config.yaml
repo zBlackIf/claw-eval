@@ -1,0 +1,55 @@
+# Clash configuration - needs fixing for split routing
+mixed-port: 7890
+allow-lan: true
+bind-address: '*'
+mode: rule
+log-level: info
+external-controller: 127.0.0.1:9090
+secret: "test-secret-123"
+
+# DNS configuration is incomplete
+dns:
+  enable: true
+  listen: 0.0.0.0:53
+  nameserver:
+    - 8.8.8.8
+    - 8.8.4.4
+
+proxies:
+  - name: "JP-Node-01"
+    type: ss
+    server: jp01.example.com
+    port: 443
+    cipher: aes-256-gcm
+    password: "proxy-pass-001"
+  - name: "JP-Node-02"
+    type: ss
+    server: jp02.example.com
+    port: 443
+    cipher: aes-256-gcm
+    password: "proxy-pass-002"
+  - name: "HK-Node-01"
+    type: ss
+    server: hk01.example.com
+    port: 443
+    cipher: aes-256-gcm
+    password: "proxy-pass-003"
+  - name: "US-Node-01"
+    type: ss
+    server: us01.example.com
+    port: 443
+    cipher: aes-256-gcm
+    password: "proxy-pass-004"
+
+proxy-groups:
+  - name: "Proxy"
+    type: select
+    proxies:
+      - "JP-Node-01"
+      - "JP-Node-02"
+      - "HK-Node-01"
+      - "US-Node-01"
+
+# Rules section is empty - needs to be configured for split routing
+rules:
+  - MATCH,DIRECT

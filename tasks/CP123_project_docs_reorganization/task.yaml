@@ -1,0 +1,116 @@
+task_id: CP123_project_docs_reorganization
+task_name: "Project Documentation Reorganization (CP123 / source session 996755741291381941)"
+version: "1.0"
+category: engineering
+difficulty: medium
+tags: [general, file-organization, documentation]
+
+source_session_id: "996755741291381941"
+source_description: "Real user session: reorganize scattered project documentation (business specs, design drafts, raw data files, analysis docs) into a clean directory structure. Agent must categorize files by type, rename draft files to meaningful names, move data files to dedicated directory, create archive for historical files, and update README references."
+
+services: []
+
+prompt:
+  text: |
+    The project at /workspace/fixtures/messy-project/ has gotten messy over time.
+    Documentation files are scattered everywhere - business requirement specs are
+    in the root, design drafts with "draft2_" prefixes are in docs/, raw CSV data
+    files are in the root, and there's an analysis doc buried in code/docs/ that
+    should be with the other design docs.
+
+    Please reorganize the documentation:
+    1. Group business requirement .md files (vendor_invoice_field_mapping,
+       cloud_vendor_billing, partner_commission, profit_report, approval_ui_elements)
+       into a proper subdirectory
+    2. Move raw data CSV files into a dedicated data subdirectory
+    3. Move the design documents (docs/draft2_*) into a design directory and give
+       them cleaner names without the "draft2_" prefix
+    4. Move the design-related analysis from code/docs/ to be with other design docs
+    5. Archive the historical "project_background_original.md" file
+    6. Update README.md to reflect the new file locations
+  language: en
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/messy-project/README.md
+  - fixtures/messy-project/project_background.md
+  - fixtures/messy-project/project_background_original.md
+  - fixtures/messy-project/vendor_invoice_field_mapping.md
+  - fixtures/messy-project/cloud_vendor_billing.md
+  - fixtures/messy-project/partner_commission.md
+  - fixtures/messy-project/profit_report.md
+  - fixtures/messy-project/approval_ui_elements.md
+  - fixtures/messy-project/aws_billing_2024_03.csv
+  - fixtures/messy-project/gcp_billing_export.csv
+  - fixtures/messy-project/azure_costs_march.csv
+  - fixtures/messy-project/commission_calc_march.csv
+  - fixtures/messy-project/profit_loss_2024_q1.csv
+  - fixtures/messy-project/partner_uploads_march.csv
+  - fixtures/messy-project/docs/draft2_fact_table_precompute.md
+  - fixtures/messy-project/docs/draft2_e2e_pipeline_diagram.md
+  - fixtures/messy-project/docs/draft2_e2e_pipeline_detailed.md
+  - fixtures/messy-project/docs/draft2_layer_architecture.md
+  - fixtures/messy-project/docs/draft2_layer_architecture_detailed.md
+  - fixtures/messy-project/docs/draft2_technical_detailed.md
+  - fixtures/messy-project/docs/draft2_requirements_detailed.md
+  - fixtures/messy-project/docs/implementation/README.md
+  - fixtures/messy-project/code/docs/billing_sync_approval_dependency.md
+  - fixtures/messy-project/code/docs/data_ingestion_ops_manual.md
+  - fixtures/messy-project/code/app/__init__.py
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward structured reorganization: business requirement docs grouped in dedicated subdirectory, CSV data files moved to data directory, design docs moved and renamed (strip draft2_ prefix), code/docs analysis relocated to design directory, historical file archived, README updated with new paths. Partial credit for incomplete but directionally correct moves."
+
+reference_solution: |
+  Target structure:
+  messy-project/
+    README.md (updated paths)
+    project_background.md (stays - it's the active reference)
+    code/
+      app/__init__.py
+      docs/data_ingestion_ops_manual.md (ops manual stays in code/docs)
+    docs/
+      business/
+        vendor_invoice_field_mapping.md
+        cloud_vendor_billing.md
+        partner_commission.md
+        profit_report.md
+        approval_ui_elements.md
+        data/
+          aws_billing_2024_03.csv
+          gcp_billing_export.csv
+          azure_costs_march.csv
+          commission_calc_march.csv
+          profit_loss_2024_q1.csv
+          partner_uploads_march.csv
+      design/
+        fact_table_precompute.md (renamed from draft2_*)
+        e2e_pipeline_diagram.md
+        e2e_pipeline_detailed.md
+        layer_architecture.md
+        layer_architecture_detailed.md
+        technical_detailed.md
+        requirements_detailed.md
+        billing_sync_approval_dependency.md (moved from code/docs/)
+      archive/
+        project_background_original.md
+      implementation/
+        README.md
+
+primary_dimensions: [completion, communication, safety]

@@ -1,0 +1,77 @@
+# provenance:
+#   source_session: 16813017363337657253
+#   scenario: "Web / 浏览器自动化"
+#   original_task: "新建 dc-print-module-mobile 模块，独立可运行，MySQL + 多环境 + 多租户"
+task_id: CP193_spring_boot_module_scaffolding
+task_name: "Spring Boot 多模块项目新建可独立运行模块（CP193）"
+version: "1.0"
+category: engineering
+difficulty: medium
+tags: [java, spring-boot, maven, multi-module]
+
+source_session_id: "16813017363337657253"
+source_description: "从真实用户场景提取：在已有 Spring Boot 多模块 Maven 项目中新建 dc-print-module-mobile 子模块，要求可独立运行、使用 MySQL、多环境配置、多租户支持。Workspace WS2 模式，7 个隐藏校验点。"
+
+services: []
+
+prompt:
+  text: |
+    项目在 /workspace/fixtures/dc-print-api/，这是一个 Spring Boot 2.7 多模块 Maven
+    项目（groupId: com.docod.print）。请帮我新建一个 dc-print-module-mobile 模块，要求：
+
+    1. 有自己的启动类，可以独立运行
+    2. 使用 MySQL 数据库，参照 dc-print-server 的配置风格（Druid + dynamic-datasource）
+    3. 区分不同环境的配置文件（dev/test/prod），端口不要和 server 冲突
+    4. 把多租户（yudao.tenant）加进去
+
+    请参照现有的 dc-print-server 模块结构来做。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/dc-print-api/pom.xml
+  - fixtures/dc-print-api/dc-print-dependencies/pom.xml
+  - fixtures/dc-print-api/dc-print-server/pom.xml
+  - fixtures/dc-print-api/dc-print-server/src/main/java/cn/iocoder/yudao/server/YudaoServerApplication.java
+  - fixtures/dc-print-api/dc-print-server/src/main/resources/application.yaml
+  - fixtures/dc-print-api/dc-print-server/src/main/resources/application-dev.yaml
+  - fixtures/dc-print-api/dc-print-server/src/main/resources/application-test.yaml
+  - fixtures/dc-print-api/dc-print-server/src/main/resources/application-prod.yaml
+  - fixtures/dc-print-api/dc-print-module-system/pom.xml
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 25
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a complete independently-runnable Spring Boot module: pom.xml with correct parent/artifact/jar packaging and spring-boot-maven-plugin, module registered (uncommented) in parent pom.xml, Application class with @SpringBootApplication + main, multi-environment config files (application.yaml + dev/test/prod), MySQL + Druid + dynamic-datasource configuration (not H2), and multi-tenant (yudao.tenant) support enabled."
+
+reference_solution: |
+  Under dc-print-api/dc-print-module-mobile/:
+  - pom.xml (parent=dc-print-api, artifactId=dc-print-module-mobile, packaging=jar,
+    dependencies on spring-boot-starter-web/mybatis/tenant, spring-boot-maven-plugin
+    with repackage goal)
+  - src/main/java/com/docod/print/mobile/MobileApplication.java
+    (@SpringBootApplication with scanBasePackages covering tenant packages,
+    main method calling SpringApplication.run)
+  - src/main/resources/application.yaml (base config: app name, profiles.active,
+    mybatis-plus config, yudao.tenant.enable=true)
+  - src/main/resources/application-dev.yaml (port 48081, MySQL datasource with
+    Druid + dynamic-datasource, Redis)
+  - src/main/resources/application-test.yaml (similar, different port/db name)
+  - src/main/resources/application-prod.yaml (similar, different pool sizes, prod host)
+  Parent pom.xml updated: <module>dc-print-module-mobile</module> uncommented/added.
+
+primary_dimensions: [completion, communication, safety]

@@ -1,0 +1,76 @@
+{
+  "execution_id": 910,
+  "name": "智能销售前沿获客v2.2.9需求",
+  "status": "doing",
+  "begin": "2026-04-07",
+  "end": "2026-04-28",
+  "tasks": {
+    "total": 52,
+    "done": 22,
+    "doing": 18,
+    "wait": 12,
+    "overdue": 8,
+    "overdue_details": [
+      {
+        "id": 4701,
+        "name": "智能线索分配引擎",
+        "assignedTo": "王五",
+        "deadline": "2026-04-14",
+        "status": "doing"
+      },
+      {
+        "id": 4702,
+        "name": "客户意向预测模型集成",
+        "assignedTo": "王五",
+        "deadline": "2026-04-15",
+        "status": "doing"
+      },
+      {
+        "id": 4703,
+        "name": "销售助手对话流程",
+        "assignedTo": "张三",
+        "deadline": "2026-04-16",
+        "status": "doing"
+      },
+      {
+        "id": 4704,
+        "name": "CRM数据同步模块",
+        "assignedTo": "赵六",
+        "deadline": "2026-04-17",
+        "status": "wait"
+      },
+      {
+        "id": 4705,
+        "name": "获客漏斗分析页",
+        "assignedTo": "钱七",
+        "deadline": "2026-04-18",
+        "status": "doing"
+      },
+      {
+        "id": 4706,
+        "name": "智能外呼触达模块",
+        "assignedTo": "张三",
+        "deadline": "2026-04-19",
+        "status": "doing"
+      },
+      {
+        "id": 4707,
+        "name": "线索评分算法优化",
+        "assignedTo": "王五",
+        "deadline": "2026-04-20",
+        "status": "wait"
+      },
+      {
+        "id": 4708,
+        "name": "销售绩效看板",
+        "assignedTo": "钱七",
+        "deadline": "2026-04-21",
+        "status": "doing"
+      }
+    ]
+  },
+  "progress": {
+    "actual": 43,
+    "expected": 87
+  }
+}

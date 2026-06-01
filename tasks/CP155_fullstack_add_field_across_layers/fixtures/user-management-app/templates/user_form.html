@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>用户管理 - {{ '编辑用户' if user else '新增用户' }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>{{ '编辑用户' if user else '新增用户' }}</h1>
+        <form id="userForm" method="POST" action="/api/users{{ ('/' + user.id|string) if user else '' }}" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" value="{{ user.username if user else '' }}" {{ 'readonly' if user else '' }} required>
+            </div>
+
+            <div class="form-group">
+                <label for="display_name">显示名称</label>
+                <input type="text" id="display_name" name="display_name" value="{{ user.display_name if user else '' }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">邮箱</label>
+                <input type="email" id="email" name="email" value="{{ user.email if user else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="phone">电话</label>
+                <input type="text" id="phone" name="phone" value="{{ user.phone if user else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="department">部门</label>
+                <input type="text" id="department" name="department" value="{{ user.department if user else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="role">角色</label>
+                <select id="role" name="role">
+                    <option value="user" {{ 'selected' if not user or user.role == 'user' else '' }}>普通用户</option>
+                    <option value="admin" {{ 'selected' if user and user.role == 'admin' else '' }}>管理员</option>
+                    <option value="auditor" {{ 'selected' if user and user.role == 'auditor' else '' }}>审计员</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="badge_number">工号</label>
+                <input type="text" id="badge_number" name="badge_number" value="{{ user.badge_number if user else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="avatar_url">头像URL</label>
+                <input type="text" id="avatar_url" name="avatar_url" value="{{ user.avatar_url if user else '' }}">
+                {% if user and user.avatar_url %}
+                <img src="{{ user.avatar_url }}" alt="头像预览" class="preview-img">
+                {% endif %}
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">保存</button>
+                <a href="/" class="btn btn-secondary">取消</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('userForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            const isEdit = {{ 'true' if user else 'false' }};
+            const url = isEdit ? '/api/users/{{ user.id if user else "" }}' : '/api/users';
+            const method = isEdit ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/';
+                } else {
+                    return response.json().then(err => alert(err.error || '保存失败'));
+                }
+            })
+            .catch(err => alert('网络错误: ' + err.message));
+        });
+    </script>
+</body>
+</html>

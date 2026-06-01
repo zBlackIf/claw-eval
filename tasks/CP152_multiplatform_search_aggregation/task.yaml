@@ -1,0 +1,71 @@
+# provenance:
+#   source_session: 16841083775295253633
+#   scenario: Vue / UniApp / 前端 (中文)
+#   key_messages: [127, 136, 238, 242]
+task_id: CP152_multiplatform_search_aggregation
+task_name: "多平台搜索聚合页面（CP152 / 源 session 16841083775295253633）"
+version: "1.0"
+category: frontend
+difficulty: medium
+tags: [vue, uniapp, frontend, search, aggregation]
+
+source_session_id: "16841083775295253633"
+source_description: "用户要求在 UniApp 搜索页面添加平台切换（全部/淘宝/京东/拼多多），全部模式下同时请求三个平台每个取3条混合显示，单平台模式支持分页，上拉加载更多。"
+
+services: []
+
+prompt:
+  text: |
+    搜索页面需要加平台切换功能。具体需求：
+    1. 搜索栏下方添加平台切换 tab：全部、淘宝、京东、拼多多
+    2. 选"全部"时，同时请求三个平台的商品（platform 参数分别传 1、2、3），
+       每个平台取 3 个，合起来显示
+    3. 选单个平台时，只请求对应平台，每页 20 条，支持上拉加载下一页
+    4. 每个商品要显示平台标识（不同颜色区分）
+    5. 用 Promise.allSettled 处理并发请求，单个平台失败不影响其他
+
+    项目在 /workspace/fixtures/ecommerce-app/，搜索页面是
+    src/pages/search/index.vue，API 已封装好在 src/api/goods.ts。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/ecommerce-app/package.json
+  - fixtures/ecommerce-app/src/api/goods.ts
+  - fixtures/ecommerce-app/src/utils/request.ts
+  - fixtures/ecommerce-app/src/pages/search/index.vue
+  - fixtures/ecommerce-app/src/components/GoodsCard.vue
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete multi-platform search aggregation: platform tabs (全部/淘宝/京东/拼多多) with switch logic, concurrent Promise.allSettled for all-platform mode (3 items per platform), platform badge/indicator with distinct colors, infinite scroll with page increment for single-platform mode, correct merge logic branching on platform=0 vs specific platform."
+
+reference_solution: |
+  In src/pages/search/index.vue:
+  - Add platform tabs (全部/淘宝/京东/拼多多) with v-for and currentPlatform state
+  - handleSearch branches:
+    - If currentPlatform === 0 (全部): use Promise.allSettled to call searchGoods
+      3 times with platform=1,2,3 and size=3, merge results with spread/concat
+    - If currentPlatform === 1/2/3: call searchGoods with that platform, size=20, page state
+  - Add scroll-view with @scrolltolower or onReachBottom for infinite scroll
+  - page.value++ when loading more, hasMore computed from total vs loaded
+  - Platform badge in goods card template: v-if platform===1 shows "淘宝" in orange,
+    platform===2 shows "京东" in red, platform===3 shows "拼多多" in a different red/pink
+  - Loading state, empty state, error handling
+
+primary_dimensions: [completion, communication, safety]

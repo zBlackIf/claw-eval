@@ -1,0 +1,10 @@
+version: '3'
+services:
+  clash:
+    image: dreamacro/clash:latest
+    container_name: clash-router
+    restart: always
+    network_mode: host
+    volumes:
+      - ./config:/root/.config/clash
+    # TODO: need proper capability and environment settings

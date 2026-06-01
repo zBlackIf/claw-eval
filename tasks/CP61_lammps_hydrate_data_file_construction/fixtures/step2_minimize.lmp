@@ -1,0 +1,17 @@
+# Energy minimisation for sI methane hydrate.
+# Consumes input.data produced by build_correct_hydrate.py.
+units real
+atom_style full
+boundary p p p
+
+read_data input.data
+
+# TIP4P/Ice + OPLS-UA methane
+pair_style lj/cut/tip4p/long 1 2 1 1 0.1577 10.0
+bond_style harmonic
+angle_style harmonic
+
+# coeffs omitted — loaded from a ff_params.in include in CI
+
+minimize 1.0e-6 1.0e-8 10000 100000
+write_data minimized.data

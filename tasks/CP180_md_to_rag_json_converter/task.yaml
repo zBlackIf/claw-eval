@@ -1,0 +1,78 @@
+# provenance:
+#   source: agent-loop-260530-180327-225668/sessions/18367309854748122271
+#   scenario: IDE / 编辑器集成
+#   original_task: 将目录下的md文档转换为可供RAG检索的JSON文件
+task_id: CP180_md_to_rag_json_converter
+task_name: "Markdown文档批量转RAG JSON（CP180 / 源 session 18367309854748122271）"
+version: "1.0"
+category: data_processing
+difficulty: medium
+tags: [general, rag, nlp, file_processing]
+
+source_session_id: "18367309854748122271"
+source_description: "用户要求将目录下的网络设备文档(.md)批量转换为可供RAG向量检索的结构化JSON。需要处理多种文档类型（命令参考/告警/日志/MIB），提取标题、分类、关键词、章节结构、表格数量等元数据，处理编码异常。"
+
+services: []
+
+prompt:
+  text: |
+    /workspace/fixtures/docs_input/ 目录下有一批网络设备技术文档（Markdown格式），
+    分布在 commands/、alarms/、logs/、mib/ 四个子目录下。
+
+    请写一个 Python 脚本 /workspace/fixtures/md_to_rag_json.py，将所有 .md 文件
+    转换为一个可供 RAG 向量检索使用的 JSON 文件，输出到
+    /workspace/fixtures/docs_output.json。
+
+    要求：
+    1. 每个文档转为一个 JSON 对象，包含便于检索的元数据
+    2. 能根据文件路径自动归类文档类型（命令参考/告警/日志/MIB等）
+    3. 能从 Markdown 内容中提取标题、章节结构
+    4. 正确处理不同编码的文件（部分文件可能不是UTF-8）
+    5. 输出的 JSON 文件格式为数组，每个元素是一个文档对象
+
+    脚本要能直接用 python 运行，不要额外依赖。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/docs_input/commands/display_ip_routing-table.md
+  - fixtures/docs_input/commands/interface_vlanif.md
+  - fixtures/docs_input/commands/bgp_peer.md
+  - fixtures/docs_input/commands/display_arp.md
+  - fixtures/docs_input/alarms/OSPF_NBR_DOWN.md
+  - fixtures/docs_input/alarms/IFNET_LINK_DOWN.md
+  - fixtures/docs_input/logs/SECE_LOGIN_FAILED.md
+  - fixtures/docs_input/logs/NTP_SYNC_FAILED.md
+  - fixtures/docs_input/mib/hwEntityTemperatureThresholdNotification.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a complete MD-to-RAG-JSON conversion script that: (1) produces valid JSON array output, (2) correctly classifies document types from paths, (3) extracts titles from markdown headings, (4) extracts section/heading structure, (5) handles non-UTF-8 encoding gracefully, (6) includes unique document IDs or source path for traceability, (7) generates useful search keywords."
+
+reference_solution: |
+  Script /workspace/fixtures/md_to_rag_json.py that:
+  - Walks docs_input/ recursively finding all .md files
+  - For each file: reads content (with encoding fallback), extracts title from
+    first # heading, classifies type from path (commands->命令参考, alarms->告警,
+    logs->日志, mib->MIB), parses sections (## headings), counts tables,
+    extracts keywords, generates unique ID
+  - Outputs JSON array to docs_output.json with fields like:
+    id, title, doc_type, source_path, sections, keywords, content, tables_count
+  - Handles GBK/other encodings without crashing
+
+primary_dimensions: [completion, communication, safety]

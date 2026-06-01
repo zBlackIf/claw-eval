@@ -1,0 +1,181 @@
+task_id: CP31_zig_joya_interpreter_build_fix
+task_name: Zig 0.16 Joya语言解释器构建修复
+version: '2.0'
+category: debugging
+difficulty: hard
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_16_zig_joya_interpreter
+source_dataset: taskset-260427-121234
+source_description: Redesigned from taskset-260427-121234/task_16_zig_joya_interpreter with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
+services: []
+prompt:
+  text: |
+    我已经把原始项目素材放在容器的 `/workspace/fixtures/` 目录下，请把这些文件当作只读输入。
+
+    输入文件如下（右侧是它在原项目中的相对路径）：
+    - `/workspace/fixtures/joya.md` -> `joya.md`
+    - `/workspace/fixtures/build.zig` -> `build.zig`
+    - `/workspace/fixtures/src/main.zig` -> `src/main.zig`
+    - `/workspace/fixtures/src/lexer.zig` -> `src/lexer.zig`
+    - `/workspace/fixtures/src/parser.zig` -> `src/parser.zig`
+    - `/workspace/fixtures/src/ast.zig` -> `src/ast.zig`
+    - `/workspace/fixtures/examples/hello.joya` -> `examples/hello.joya`
+    - `/workspace/fixtures/zig_016_migration.md` -> `zig_016_migration.md`
+
+    请基于这些输入完成下面的原始需求：
+
+    D:\joya\joya.md 是我的任务，D:\joya 作为工作空间。
+
+    zig build 报错了：
+    ```
+    build.zig:9:10: error: no field named 'root_source_file' in struct 'Build.ExecutableOptions'
+    ```
+
+    我用的是 Zig 0.16.0。帮我修好 build.zig，然后把编译错误都修掉（lexer、parser里有unused variable之类的warning当error处理了），让整个项目能 zig build 成功并运行 examples/hello.joya。
+
+    交付要求：
+    - 需要修改已有文件时，请把修改后的版本写到 `/workspace/` 下对应的原项目相对路径。
+    - 需要新增文件时，请按需求中的文件名或上面列出的目标路径写到 `/workspace/` 下。
+    - 最终回复只需概述完成情况、关键改动和生成的文件；不要只在最终回复中贴代码或报告正文。
+  language: zh
+tools: []
+tool_endpoints: []
+sandbox_files:
+- fixtures/joya.md
+- fixtures/build.zig
+- fixtures/src/main.zig
+- fixtures/src/lexer.zig
+- fixtures/src/parser.zig
+- fixtures/src/ast.zig
+- fixtures/examples/hello.joya
+- fixtures/zig_016_migration.md
+sandbox_grader_files:
+- fixtures/verify.py
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+  env_snapshot_timeout: 30
+env_snapshot_commands:
+- python /workspace/fixtures/verify.py
+env_snapshot_files:
+- /workspace/build.zig
+- /workspace/src/main.zig
+- /workspace/src/lexer.zig
+- /workspace/src/parser.zig
+- /workspace/src/ast.zig
+- /workspace/**
+- /workspace/joya.md
+- /workspace/examples/hello.joya
+- /workspace/zig_016_migration.md
+scoring_components: []
+safety_checks: []
+expected_actions: []
+judge_rubric: |
+  ## Expected Behavior
+
+  1. Agent reads joya.md to understand the project structure
+  2. Agent fixes build.zig for Zig 0.16.0 API (root_module pattern instead of root_source_file)
+  3. Agent fixes lexer.zig unused local constant
+  4. Agent fixes parser.zig unused function parameter and var->const issues
+  5. Agent creates interpreter.zig if missing
+  6. Project should build and run the example
+
+  ## Grading Criteria
+
+  - [ ] build_zig_fixed: build.zig uses Zig 0.16.0 API (root_module or addExecutable new signature) (RED LINE)
+  - [ ] lexer_compiles: lexer.zig has no unused variable errors
+  - [ ] parser_compiles: parser.zig has no unused parameter or var-should-be-const errors
+  - [ ] interpreter_exists: interpreter.zig exists with basic tree-walking implementation
+  - [ ] example_structure: examples/hello.joya preserved and parseable by the implementation
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Zig 0.16.0 API Knowledge (Weight: 30%)
+    - 1.0: Correctly uses the Zig 0.16.0 Build API (root_module with .root_source_file sub-field, or correct addExecutable signature), build.zig compiles
+    - 0.75: Close but minor API detail wrong
+    - 0.5: Shows awareness of API change but wrong fix
+    - 0.25: Tries multiple approaches without success
+    - 0.0: Does not address the build.zig API issue
+
+  ### Criterion 2: Compiler Error Resolution (Weight: 25%)
+    - 1.0: Fixes all compiler errors (unused vars, unused params, var->const) correctly using Zig idioms (_ = self, const instead of var)
+    - 0.75: Fixes most errors but one remains
+    - 0.5: Fixes some but introduces new errors
+    - 0.25: Attempts fixes but breaks other things
+    - 0.0: Does not address compiler errors
+
+  ### Criterion 3: Interpreter Implementation (Weight: 25%)
+    - 1.0: Complete interpreter.zig with variable storage (HashMap), print support, arithmetic evaluation, and if/else execution
+    - 0.75: Handles print and variables but missing if/else
+    - 0.5: Basic skeleton that handles some cases
+    - 0.25: Stub only
+    - 0.0: No interpreter implementation
+
+  ### Criterion 4: Overall Project Coherence (Weight: 20%)
+    - 1.0: All files work together, AST types match between parser and interpreter, example can be parsed and executed
+    - 0.75: Most files coherent but one minor mismatch
+    - 0.5: Files exist but integration has issues
+    - 0.25: Significant mismatches between modules
+    - 0.0: Project does not cohere
+reference_solution: |
+  原始来源：taskset-260427-121234/task_16_zig_joya_interpreter
+
+  原始场景：zig_interpreter_build_api_migration
+
+  隐藏 verifier 主要检查项：build_zig_fixed, example_structure, interpreter_exists, lexer_compiles, parser_compiles
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. Agent reads joya.md to understand the project structure
+  2. Agent fixes build.zig for Zig 0.16.0 API (root_module pattern instead of root_source_file)
+  3. Agent fixes lexer.zig unused local constant
+  4. Agent fixes parser.zig unused function parameter and var->const issues
+  5. Agent creates interpreter.zig if missing
+  6. Project should build and run the example
+
+  ## Grading Criteria
+
+  - [ ] build_zig_fixed: build.zig uses Zig 0.16.0 API (root_module or addExecutable new signature) (RED LINE)
+  - [ ] lexer_compiles: lexer.zig has no unused variable errors
+  - [ ] parser_compiles: parser.zig has no unused parameter or var-should-be-const errors
+  - [ ] interpreter_exists: interpreter.zig exists with basic tree-walking implementation
+  - [ ] example_structure: examples/hello.joya preserved and parseable by the implementation
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Zig 0.16.0 API Knowledge (Weight: 30%)
+    - 1.0: Correctly uses the Zig 0.16.0 Build API (root_module with .root_source_file sub-field, or correct addExecutable signature), build.zig compiles
+    - 0.75: Close but minor API detail wrong
+    - 0.5: Shows awareness of API change but wrong fix
+    - 0.25: Tries multiple approaches without success
+    - 0.0: Does not address the build.zig API issue
+
+  ### Criterion 2: Compiler Error Resolution (Weight: 25%)
+    - 1.0: Fixes all compiler errors (unused vars, unused params, var->const) correctly using Zig idioms (_ = self, const instead of var)
+    - 0.75: Fixes most errors but one remains
+    - 0.5: Fixes some but introduces new errors
+    - 0.25: Attempts fixes but breaks other things
+    - 0.0: Does not address compiler errors
+
+  ### Criterion 3: Interpreter Implementation (Weight: 25%)
+    - 1.0: Complete interpreter.zig with variable storage (HashMap), print support, arithmetic evaluation, and if/else execution
+    - 0.75: Handles print and variables but missing if/else
+    - 0.5: Basic skeleton that handles some cases
+    - 0.25: Stub only
+    - 0.0: No interpreter implementation
+
+  ### Criterion 4: Overall Project Coherence (Weight: 20%)
+    - 1.0: All files work together, AST types match between parser and interpreter, example can be parsed and executed
+    - 0.75: Most files coherent but one minor mismatch
+    - 0.5: Files exist but integration has issues
+    - 0.25: Significant mismatches between modules
+    - 0.0: Project does not cohere
+primary_dimensions:
+- completion
+- robustness
+- communication

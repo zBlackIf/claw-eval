@@ -1,0 +1,64 @@
+task_id: CP187_mysql_query_refactor_modular_design
+task_name: "MySQL query_database 函数模块化重构（CP187 / 源 session 14852471795965562386）"
+version: "1.0"
+category: design
+difficulty: hard
+tags: [general]
+
+source_task_id: "14852471795965562386"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "Real user session: refactoring a monolithic MySQL query function in a railway inspection C++ project. User asked to change query_database return type from raw string to structured data, requiring column mapping, safe parsing, query builder separation, and row parser extraction."
+
+services: []
+
+prompt:
+  text: |
+    轨道检测系统的同事反馈 mysql_util.cpp 里的 query_database 函数太难维护了——
+    返回拼接的字符串，调用方还要自己切分；表结构稍微一改，里面的 row[26] 之类硬编码
+    全得跟着动。帮我重构一下，让它返回结构化的 defect 列表，列索引做成可配置的，
+    解析逻辑抽出来方便后续复用。代码在 /workspace/fixtures/railsurface/。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/railsurface/inc/mysql_util.h
+  - fixtures/railsurface/src/mysql_util.cpp
+  - fixtures/railsurface/inc/line_info.h
+  - fixtures/railsurface/inc/project_manage.h
+  - fixtures/railsurface/src/project_manage.cpp
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 900
+  max_turns: 22
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward modular refactoring: return type changed from std::string to std::vector<DefectInfo/defectInfo>, column indices extracted into configurable struct/map/constants, safe parse helpers (null-safe int/double/string extraction), query builder separated from execution logic, row parser extracted as reusable function. Penalize if original magic numbers remain or if function is still monolithic."
+
+reference_solution: |
+  In mysql_util.h:
+  - Add ColumnMapping struct with named fields for each column index
+  - Change query_database signature to return std::vector<defectInfo>
+  - Add private helper method declarations: buildDefectQueryCondition,
+    parseDefectFromRow, safeParseInt/Double/String
+
+  In mysql_util.cpp:
+  - Implement ColumnMapping with default values matching current schema
+  - Implement safe parse helpers with null checks and default values
+  - Extract buildDefectQueryCondition to build SQL WHERE clause
+  - Extract parseDefectFromRow to create defectInfo from MYSQL_ROW using ColumnMapping
+  - Rewrite query_database to use helpers, return vector<defectInfo>
+  - Update project_manage.cpp to use new structured return directly
+
+primary_dimensions: [completion, communication, safety]

@@ -1,0 +1,59 @@
+{
+  "total": 6,
+  "items": [
+    {
+      "id": "CAT-NLC-10234",
+      "title": "周易正义",
+      "author": "[魏]王弼 [晋]韩康伯 注 [唐]孔颖达 疏",
+      "edition": "宋刻本",
+      "edition_note": "南宋建阳刊本",
+      "collection": "国家图书馆",
+      "score": 0.95
+    },
+    {
+      "id": "CAT-PKU-20891",
+      "title": "周易正義",
+      "author": "[魏]王弼 [晋]韓康伯 注 [唐]孔穎達 疏",
+      "edition": "明嘉靖刻本",
+      "edition_note": "明嘉靖十年李元阳刻本",
+      "collection": "北京大学图书馆",
+      "score": 0.88
+    },
+    {
+      "id": "CAT-SH-30456",
+      "title": "周易正義",
+      "author": "[唐]孔穎達 疏",
+      "edition": "宋刻本",
+      "edition_note": "宋绍兴九年建康府学刊本",
+      "collection": "上海图书馆",
+      "score": 0.85
+    },
+    {
+      "id": "CAT-TW-40123",
+      "title": "周易注疏",
+      "author": "[魏]王弼 注 [唐]孔穎達 疏",
+      "edition": "清嘉庆刻本",
+      "edition_note": "清嘉庆二十年南昌府学重刊宋本十三经注疏",
+      "collection": "台湾中央图书馆",
+      "score": 0.78
+    },
+    {
+      "id": "CAT-NLC-10235",
+      "title": "周易正義 卷一至卷三",
+      "author": "[魏]王弼 [晋]韓康伯 注 [唐]孔穎達 疏",
+      "edition": "宋刻本",
+      "edition_note": "南宋初刊残本",
+      "collection": "国家图书馆",
+      "score": 0.82
+    },
+    {
+      "id": "CAT-JP-50789",
+      "title": "周易正義",
+      "author": "[魏]王弼 [晋]韓康伯 注 [唐]孔穎達 疏",
+      "edition": "元刻本",
+      "edition_note": "元至正年间刻本",
+      "collection": "日本宫内厅书陵部",
+      "score": 0.80
+    }
+  ]
+}

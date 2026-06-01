@@ -1,0 +1,69 @@
+# provenance:
+#   source_session_id: "1836297210358101437"
+#   scenario: "个人事务 / 待办 / 任务管理"
+#   real_task: "Redmine plugin rd_charts — add PDF export for chart dashboard panels"
+task_id: CP186_redmine_charts_plugin_pdf_export
+task_name: "Redmine 图表插件 PDF 导出功能（CP186 / 源 session 1836297210358101437）"
+version: "1.0"
+category: frontend
+difficulty: hard
+tags: [javascript, chart.js, pdf, redmine-plugin, frontend]
+
+source_task_id: "1836297210358101437"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "Real user session: adding PDF export to a Redmine 4.2 chart dashboard plugin. Key challenges include Chart.js canvas rendering in PDF, handling hidden tab panels, and implementing a modal with tab checkboxes."
+
+services: []
+
+prompt:
+  text: |
+    rd_charts 这个 Redmine 插件的项目统计面板已经能看了，现在需要在面板右上角加
+    一个导出按钮。点击后弹出对话框，里面把 tab 导航的五个面板列成复选框（默认
+    全选），用户可以勾选要导出哪些，点确定就把选中面板的图表和数据生成 PDF 下载。
+
+    插件代码在 /workspace/fixtures/rd_charts/，用的 Chart.js 2.9，注意 canvas
+    图表在 PDF 里要能正常显示。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/rd_charts/init.rb
+  - fixtures/rd_charts/config/routes.rb
+  - fixtures/rd_charts/config/locales/zh.yml
+  - fixtures/rd_charts/config/locales/en.yml
+  - fixtures/rd_charts/app/controllers/rd_charts_controller.rb
+  - fixtures/rd_charts/app/views/rd_charts/index.html.erb
+  - fixtures/rd_charts/assets/javascripts/rd_charts.js
+  - fixtures/rd_charts/assets/stylesheets/rd_charts.css
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 900
+  max_turns: 25
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a complete PDF export feature: export button positioned in header/toolbar area, modal dialog with checkboxes for each tab panel (default all checked), PDF generation using html2pdf.js or equivalent library, proper canvas-to-image conversion for Chart.js charts, handling of hidden (display:none) panels during capture, and async/sequential rendering to avoid blank output."
+
+reference_solution: |
+  Key implementation points:
+  1. Export button in view template, positioned near tabs/title area
+  2. Modal dialog with checkboxes per tab (overview, dimension, trend, overdue, efficiency)
+  3. Include html2pdf.js (or jsPDF + html2canvas) library
+  4. Before PDF capture: temporarily show hidden panels (remove display:none)
+  5. Convert Chart.js canvases to static images (canvas.toDataURL → img element)
+  6. Use html2pdf or equivalent to generate PDF from the visible DOM
+  7. Restore original panel visibility state after capture
+  8. Handle async rendering (Promise chain or async/await) to ensure charts render before capture
+
+primary_dimensions: [completion, communication, safety]

@@ -1,0 +1,87 @@
+# provenance:
+#   source_session: 14364033114165399284
+#   scenario: 定时任务 / 后台调度 / cron
+#   model: deepseek-v3-2-251201
+#   quality_tier: B
+task_id: CP144_spring_boot_cron_job_area_dep
+task_name: "Spring Boot 定时任务：按区域层级统计部门社区数（Jeecg-Boot Quartz Job）"
+version: "1.0"
+category: implementation
+difficulty: medium
+tags: [java, spring-boot, cron, quartz, mybatis, scheduled-job]
+
+source_session_id: "14364033114165399284"
+source_description: "基于真实用户会话：在 Jeecg-Boot 项目中，参照已有的 InstrumentPanelArchiveJob 模式，创建一个新的定时任务 AreaDepUpdateJob，用于定期清空并重建 t_area_dep 表（统计 sys_depart + t_area 三级行政区划的社区数量）。Workspace WS2 模式，7 个隐藏检查点。"
+
+services: []
+
+prompt:
+  text: |
+    项目是 Jeecg-Boot（Spring Boot + MyBatis + Quartz），现在需要新建一个定时任务
+    AreaDepUpdateJob，功能是定时清空 t_area_dep 表并重新写入统计数据。
+
+    SQL 逻辑如下：先 truncate t_area_dep，然后执行：
+    INSERT INTO t_area_dep
+    (SELECT s.depart_name, s.area_name, s.town, count(0) as community_sum
+     FROM (
+       SELECT s.depart_name, a.area_name, b.area_name as town, c.area_name as village
+       FROM sys_depart s
+       JOIN t_area a ON a.area_code = s.district
+       JOIN t_area b ON b.parent_id = a.id
+       JOIN t_area c ON c.parent_id = b.id
+       WHERE c.parent_id IS NOT NULL
+     ) s
+     GROUP BY s.depart_name, s.area_name, s.town)
+
+    请参照 /workspace/fixtures/jeecg-boot-module-family/ 下已有的
+    InstrumentPanelArchiveJob 的分层模式（Job → Service → Mapper + XML），
+    创建完整的 AreaDepUpdateJob 相关文件。代码放到
+    /workspace/jeecg-boot-module-family/src/ 下对应目录。
+
+    要求：
+    - Job 类实现 Quartz Job 接口
+    - Service 层接口 + 实现
+    - Mapper 接口 + XML（SQL 写在 XML 中）
+    - 合理的日志和异常处理
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/jeecg-boot-module-family/pom.xml
+  - fixtures/jeecg-boot-module-family/src/main/java/org/jeecg/modules/mobileHospital/job/InstrumentPanelArchiveJob.java
+  - fixtures/jeecg-boot-module-family/src/main/java/org/jeecg/modules/mobileHospital/service/InstrumentPanelArchiveService.java
+  - fixtures/jeecg-boot-module-family/src/main/java/org/jeecg/modules/mobileHospital/mapper/InstrumentPanelArchive1Mapper.java
+  - fixtures/jeecg-boot-module-family/src/main/resources/application.yml
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a complete layered Spring Boot scheduled job implementation: AreaDepUpdateJob (implements Job, @Component, execute method with logging + error handling), AreaDepUpdateService interface + ServiceImpl (@Service, @Transactional, truncate-then-insert logic), AreaDepUpdateMapper interface (@Mapper) + XML mapper (namespace, truncate statement, insert-select with 3-level t_area join and GROUP BY). Deduct for missing layers, incorrect SQL join logic, or absent error handling."
+
+reference_solution: |
+  Under mobileHospital/:
+  - job/AreaDepUpdateJob.java (implements Job, @Component, @Autowired service,
+    execute() with try-catch, logging start/end/error, throws JobExecutionException)
+  - service/AreaDepUpdateService.java (interface with truncateTable() + insertAreaDep())
+  - service/impl/AreaDepUpdateServiceImpl.java (@Service, @Transactional,
+    calls mapper.truncate then mapper.insertAreaDep)
+  - mapper/AreaDepUpdateMapper.java (@Mapper interface with void truncate() + int insertAreaDep())
+  - mapper/xml/AreaDepUpdateMapper.xml (namespace matches mapper, <delete> TRUNCATE TABLE t_area_dep,
+    <insert> with the full 3-level join SQL: sys_depart JOIN t_area a ON area_code=district
+    JOIN t_area b ON b.parent_id=a.id JOIN t_area c ON c.parent_id=b.id, GROUP BY)
+
+primary_dimensions: [completion, communication, safety]

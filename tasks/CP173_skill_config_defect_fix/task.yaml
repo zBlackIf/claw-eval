@@ -1,0 +1,81 @@
+# provenance:
+#   source_session: 13488922676111106186
+#   scenario: "飞书 / Lark 集成"
+#   description: "Agent modifies skill config files (SKILL.md + SOUL.md) to fix 3 reported defects: scene consistency, mandatory audio in video generation, progress reporting. Tests structured markdown editing with constraint preservation."
+task_id: CP173_skill_config_defect_fix
+task_name: "Skill Config Defect Fix - Comic Assistant Scene/Audio/Reporting (CP173)"
+version: "1.0"
+category: config
+difficulty: medium
+tags: [general, markdown, config-editing]
+
+source_session_id: "13488922676111106186"
+source_dataset: "agent-loop-260530-180327-225668"
+source_description: "Real user session: modifying EasyClaw skill package SOUL.md + SKILL.md to fix 3 defects (scene background inconsistency, missing default audio in video gen, no progress reporting). Workspace WS2 pattern."
+
+services: []
+
+prompt:
+  text: |
+    I have a comic creation assistant skill package at /workspace/fixtures/comic-assistant/.
+    It has 3 defects that need fixing:
+
+    1. Scene consistency problem: When generating multi-panel comics, the background
+       scene changes randomly between panels (day/night switching, objects appearing
+       and disappearing). The SKILL.md needs a "Scene Consistency" section similar to
+       the existing "Character Consistency Rules" that anchors the scene description
+       from the first panel of each scene and requires all subsequent panels in the
+       same scene to use that description.
+
+    2. Video generation audio: In SOUL.md Step 8 Path A, video generation currently
+       does NOT include --audio flag by default. Every single-panel video MUST have
+       audio/dubbing by default. Add a mandatory constraint that --audio flag is
+       always required and silent videos are forbidden.
+
+    3. Progress reporting: After each panel image is generated (Step 4 in SOUL.md),
+       the assistant must immediately report progress to the user (e.g., "Panel X/N
+       image generation complete"). Add this constraint to SOUL.md Step 4.
+
+    Important rules:
+    - Do NOT change the dialogue template wording or any existing functionality
+    - Do NOT modify the Boundary Defense section
+    - Update the quality checklist numbering if you add new check items
+    - Make minimal, surgical changes only
+  language: en
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/comic-assistant/SOUL.md
+  - fixtures/comic-assistant/skills/comic-creation/SKILL.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct implementation of all 3 defect fixes: (1) scene consistency section in SKILL.md with anchoring rules similar to character consistency, (2) mandatory --audio flag in SOUL.md Step 8 with explicit prohibition of silent videos, (3) progress reporting constraint in SOUL.md Step 4. Penalize modifications to existing dialogue templates, boundary defense section, or removal of existing functionality. Quality checklist should be updated if scene consistency check item is added."
+
+reference_solution: |
+  SKILL.md changes:
+  - Add "Scene Consistency Rules" section after "Character Consistency Rules"
+  - Include scene anchor method: first panel defines canonical scene, all subsequent panels reference it
+  - Add scene consistency check item to quality checklist (renumber subsequent items)
+  - Update total checklist count from 10 to 11
+
+  SOUL.md changes:
+  - Step 8 Path A: Add --audio to generate_video command, add constraint forbidding silent videos
+  - Step 4: Add progress reporting constraint after each panel generation
+
+primary_dimensions: [completion, communication, safety]

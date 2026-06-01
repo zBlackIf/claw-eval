@@ -1,0 +1,100 @@
+[
+  {
+    "article_id": "KB-CODE-auth_service-py",
+    "title": "src/auth/auth_service.py",
+    "category": "source_code",
+    "tags": [
+      "python",
+      "auth"
+    ],
+    "content": "from src.auth.jwt_handler import create_token, verify_token\nfrom src.models.user import User\n\n\ndef authenticate_user(username, password, db_session):\n    \"\"\"Authenticate user and return JWT token.\"\"\"\n    user = db_session.query(User).filter(User.username == username).first()\n    if user and user.check_password(password):\n        return create_token({\"sub\": user.id, \"role\": user.role})\n    return None\n\n\ndef register_user(data, db_session):\n    \"\"\"Register a new user. No input validation -- trusts caller.\"\"\"\n    new_user = User(\n        username=data[\"username\"],\n        email=data[\"email\"],\n        role=data.get(\"role\", \"user\"),\n    )\n    new_user.set_password(data[\"password\"])\n    db_session.add(new_user)\n    db_session.commit()\n    return new_user\n",
+    "last_updated": "2026-03-15",
+    "views": 50
+  },
+  {
+    "article_id": "KB-CODE-jwt_handler-py",
+    "title": "src/auth/jwt_handler.py",
+    "category": "source_code",
+    "tags": [
+      "python",
+      "auth",
+      "jwt"
+    ],
+    "content": "import jwt\nfrom datetime import datetime, timedelta\n\nSECRET_KEY = \"super-secret-key-do-not-share-2024\"\nALGORITHM = \"HS256\"\nEXPIRY_HOURS = 24\n\n\ndef create_token(payload: dict) -> str:\n    expire = datetime.utcnow() + timedelta(hours=EXPIRY_HOURS)\n    payload[\"exp\"] = expire\n    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)\n\n\ndef verify_token(token: str) -> dict:\n    try:\n        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])\n    except jwt.ExpiredSignatureError:\n        return None\n    except jwt.InvalidTokenError:\n        return None\n",
+    "last_updated": "2026-03-15",
+    "views": 50
+  },
+  {
+    "article_id": "KB-CODE-helpers-py",
+    "title": "src/utils/helpers.py",
+    "category": "source_code",
+    "tags": [
+      "python",
+      "utils"
+    ],
+    "content": "from sqlalchemy import create_engine\nfrom sqlalchemy.orm import sessionmaker\n\nDATABASE_URL = \"sqlite:///./app.db\"\nengine = create_engine(DATABASE_URL)\nSessionLocal = sessionmaker(bind=engine)\n\n\ndef get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()\n\n\ndef sanitize_input(value: str) -> str:\n    \"\"\"Basic sanitization -- strips whitespace.\"\"\"\n    return value.strip() if value else \"\"\n",
+    "last_updated": "2026-03-15",
+    "views": 50
+  },
+  {
+    "article_id": "KB-CODE-user-py",
+    "title": "src/models/user.py",
+    "category": "source_code",
+    "tags": [
+      "python",
+      "model"
+    ],
+    "content": "from sqlalchemy import Column, Integer, String\nfrom sqlalchemy.orm import declarative_base\nimport hashlib\n\nBase = declarative_base()\n\n\nclass User(Base):\n    __tablename__ = \"users\"\n\n    id = Column(Integer, primary_key=True)\n    username = Column(String(50), unique=True, nullable=False)\n    email = Column(String(120), unique=True, nullable=False)\n    password_hash = Column(String(128), nullable=False)\n    role = Column(String(20), default=\"user\")\n\n    def set_password(self, password):\n        self.password_hash = hashlib.sha256(password.encode()).hexdigest()\n\n    def check_password(self, password):\n        return self.password_hash == hashlib.sha256(password.encode()).hexdigest()\n",
+    "last_updated": "2026-03-15",
+    "views": 50
+  },
+  {
+    "article_id": "KB-CODE-routes-py",
+    "title": "src/api/routes.py",
+    "category": "source_code",
+    "tags": [
+      "python",
+      "api"
+    ],
+    "content": "from fastapi import APIRouter, Depends, HTTPException\nfrom sqlalchemy.orm import Session\nfrom src.auth.auth_service import authenticate_user, register_user\nfrom src.auth.jwt_handler import verify_token\nfrom src.utils.helpers import get_db\n\nrouter = APIRouter()\n\n\n@router.post(\"/login\")\ndef login(username: str, password: str, db: Session = Depends(get_db)):\n    token = authenticate_user(username, password, db)\n    if not token:\n        raise HTTPException(status_code=401, detail=\"Invalid credentials\")\n    return {\"access_token\": token}\n\n\n@router.post(\"/register\")\ndef register(data: dict, db: Session = Depends(get_db)):\n    user = register_user(data, db)\n    return {\"id\": user.id, \"username\": user.username}\n\n\n@router.get(\"/users/search\")\ndef search_users(query: str, db: Session = Depends(get_db)):\n    # Quick search implementation\n    result = db.execute(f\"SELECT * FROM users WHERE username LIKE '%{query}%'\")\n    return [dict(row) for row in result]\n\n\n@router.get(\"/me\")\ndef get_current_user(token: str, db: Session = Depends(get_db)):\n    payload = verify_token(token)\n    if not payload:\n        raise HTTPException(status_code=401, detail=\"Invalid token\")\n    return payload\n",
+    "last_updated": "2026-03-15",
+    "views": 50
+  },
+  {
+    "article_id": "KB-DOC-CLAUDE-MD",
+    "title": "CLAUDE.md - 项目规则",
+    "category": "guideline",
+    "tags": [
+      "项目规则",
+      "code-review"
+    ],
+    "content": "# Project Rules\n\n## Reporting Format\n- All reports must include a severity rating (CRITICAL/HIGH/MEDIUM/LOW) for each finding\n- Never suggest adding new dependencies without explicit justification\n- Use markdown headers for each section\n- Include file paths relative to project root for all code references\n\n## Code Standards\n- All functions must have type hints\n- No hardcoded secrets; use environment variables\n- All SQL queries must use parameterized statements\n- Input validation required at API boundary\n",
+    "last_updated": "2026-03-15",
+    "views": 50
+  },
+  {
+    "article_id": "KB-DOC-PYPROJECT-TOML",
+    "title": "pyproject.toml - 项目依赖",
+    "category": "config",
+    "tags": [
+      "python",
+      "依赖"
+    ],
+    "content": "[project]\nname = \"user-auth-service\"\nversion = \"0.2.1\"\nrequires-python = \">=3.10\"\ndependencies = [\n    \"fastapi>=0.100.0\",\n    \"pyjwt>=2.8.0\",\n    \"sqlalchemy>=2.0.0\",\n    \"uvicorn>=0.23.0\",\n]\n",
+    "last_updated": "2026-03-15",
+    "views": 50
+  },
+  {
+    "article_id": "KB-DOC-EXPLORE-REPORT",
+    "title": "代码库探索报告（待整理）",
+    "category": "exploration",
+    "tags": [
+      "subagent",
+      "代码探索",
+      "安全审计"
+    ],
+    "content": "# 代码库探索报告\n\n> 触发方式：SubagentStart hook\n> 状态：**待整理**\n\n（章节：Project Overview / Architecture / Dependency Map / Security Findings / Code Quality / Recommendations，每个 finding 带严重等级 CRITICAL/HIGH/MEDIUM/LOW）\n",
+    "last_updated": "2026-03-01",
+    "views": 5
+  }
+]

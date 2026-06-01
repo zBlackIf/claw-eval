@@ -1,0 +1,71 @@
+# provenance:
+#   session_id: "9426964129885015499"
+#   scenario: "IoT / 嵌入式 / 单片机 — Verilog RTL 文档生成"
+#   pattern: Workspace WS2
+task_id: CP136_verilog_module_documentation_generator
+task_name: "Verilog RTL 模块文档生成（CP136 / IoT 嵌入式场景）"
+version: "1.0"
+category: documentation
+difficulty: medium
+tags: [iot, embedded, verilog, rtl, documentation]
+
+source_session_id: "9426964129885015499"
+source_description: "用户有一批 RTL Verilog 源文件，需要为每个模块生成结构化 Markdown 文档，包含模块功能说明、端口表、参数表、时序/状态机描述等。Workspace WS2 模式，验证文档覆盖率和技术准确性。"
+
+services: []
+
+prompt:
+  text: |
+    rtl_project/src/ 下有 3 个 Verilog 模块文件（fifo_async.v、spi_master.v、
+    uart_tx.v），帮我为每个模块生成一份 Markdown 格式的技术文档。文档放到
+    rtl_project/docs/ 目录下，每个模块一个 .md 文件。
+
+    每份文档至少要包含：模块概述（功能说明）、参数列表、端口信号表（方向/
+    位宽/说明）、内部架构或状态机说明、关键设计要点。信号表最好用表格。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/rtl_project/src/fifo_async.v
+  - fixtures/rtl_project/src/spi_master.v
+  - fixtures/rtl_project/src/uart_tx.v
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward comprehensive Verilog documentation: each of the 3 modules (fifo_async, spi_master, uart_tx) gets a dedicated .md file in rtl_project/docs/. Each doc includes: module overview with functional description, parameter table, port signal table (direction, width, description), internal architecture or state machine description, and key design points. Docs should accurately reflect the RTL code (e.g. Gray code CDC for FIFO, CPOL/CPHA modes for SPI, baud rate generation for UART). Penalize missing modules, missing sections, or inaccurate technical descriptions."
+
+reference_solution: |
+  Under rtl_project/docs/:
+  - fifo_async.md: Overview (async FIFO with Gray code CDC), parameters
+    (DATA_WIDTH, ADDR_WIDTH, DEPTH), port table (wr_clk, rd_clk, wr_en,
+    rd_en, wr_data, rd_data, wr_full, rd_empty, almost_full, almost_empty,
+    overflow, underflow), architecture (dual-clock domains, 2-stage sync FFs,
+    Gray code pointer comparison for full/empty), design points (CDC safety,
+    metastability, almost-full/empty thresholds).
+  - spi_master.md: Overview (SPI master with 4 modes), parameters
+    (CLK_DIV_WIDTH, DATA_WIDTH), port table (clk, rst_n, cpol, cpha, start,
+    tx_data, rx_data, busy, done, sclk, mosi, miso, cs_n), state machine
+    (IDLE→SETUP→LEADING→TRAILING→DONE), design points (CPOL/CPHA mode
+    selection, MSB-first shift, clock divider).
+  - uart_tx.md: Overview (UART transmitter), parameters (CLK_FREQ,
+    BAUD_RATE, derived CLKS_PER_BIT), port table (clk, rst_n, tx_data,
+    tx_start, tx_out, tx_busy, tx_done), state machine
+    (IDLE→START→DATA→STOP→DONE), design points (LSB-first data, 1 start
+    bit + 8 data + 1 stop bit frame).
+
+primary_dimensions: [completion, communication, safety]

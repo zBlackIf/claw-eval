@@ -1,0 +1,50 @@
+[
+  {
+    "template_id": "T001",
+    "name": "产品种草-通用",
+    "platform_tags": ["douyin", "kuaishou", "video_hao"],
+    "estimated_duration_sec": 45,
+    "sections": {
+      "hook": "你还在为{{pain_point}}发愁吗？{{brand_name}}帮你一招搞定！",
+      "body": "今天给大家推荐一款{{product_category}}神器——{{product_name}}。{{feature_1}}，而且{{feature_2}}。我自己用了{{usage_period}}，效果真的肉眼可见。{{demo_description}}",
+      "cta": "点击下方链接，{{discount_info}}！限时{{time_limit}}，手慢无！",
+      "tags": ["{{product_category}}", "{{brand_name}}", "好物推荐", "种草"]
+    }
+  },
+  {
+    "template_id": "T002",
+    "name": "知识科普-深度",
+    "platform_tags": ["video_hao", "douyin"],
+    "estimated_duration_sec": 95,
+    "sections": {
+      "hook": "{{topic_question}}很多人都搞错了！",
+      "body": "关于{{topic_name}}，有{{misconception_count}}个常见误区。第一，{{myth_1}}——其实真相是{{truth_1}}。第二，{{myth_2}}——专业人士告诉你{{truth_2}}。最后一点最关键：{{key_insight}}。记住这个口诀：{{mnemonic}}。",
+      "cta": "关注我，每天带你涨知识。觉得有用{{interaction_prompt}}！",
+      "tags": ["{{topic_name}}", "知识科普", "涨知识", "{{extra_tag}}"]
+    }
+  },
+  {
+    "template_id": "T003",
+    "name": "促销活动-紧迫感",
+    "platform_tags": ["douyin", "kuaishou"],
+    "estimated_duration_sec": 30,
+    "sections": {
+      "hook": "{{urgency_opener}}！{{brand_name}}{{event_name}}最后{{remaining_time}}！",
+      "body": "这次活动力度真的史无前例：{{deal_1}}，{{deal_2}}。老粉都知道，{{brand_name}}平时从来不打折，这次{{reason}}。我自己囤了{{personal_quantity}}，你们看着办。",
+      "cta": "废话不多说，{{action_instruction}}。{{scarcity_info}}",
+      "tags": ["{{brand_name}}", "{{event_name}}", "限时优惠", "薅羊毛"]
+    }
+  },
+  {
+    "template_id": "T004",
+    "name": "教程实操-步骤型",
+    "platform_tags": ["douyin", "kuaishou", "video_hao"],
+    "estimated_duration_sec": 55,
+    "sections": {
+      "hook": "教你{{skill_duration}}学会{{skill_name}}，零基础也能上手！",
+      "body": "第一步，{{step_1}}。注意这里有个小技巧：{{tip_1}}。第二步，{{step_2}}。很多人在这一步会犯一个错误：{{common_mistake}}，正确做法是{{correction}}。第三步，{{step_3}}。完成之后你就能看到{{result_description}}。",
+      "cta": "学会了吗？{{save_prompt}}下次用得上！更多{{skill_category}}教程{{follow_prompt}}。",
+      "tags": ["{{skill_name}}", "教程", "{{skill_category}}", "干货"]
+    }
+  }
+]

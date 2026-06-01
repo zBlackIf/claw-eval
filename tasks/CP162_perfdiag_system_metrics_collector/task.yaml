@@ -1,0 +1,80 @@
+# provenance:
+#   source_session: 2251367855965369966
+#   scenario: 代码开发 / 实现
+#   task_number: 162
+task_id: CP162_perfdiag_system_metrics_collector
+task_name: "perfdiag 系统性能诊断引擎 MVP-1（Python psutil 采集 + JSON 输出）"
+version: "1.0"
+category: implementation
+difficulty: medium
+tags: [python, cli-tool, data-collection, mvp]
+
+source_session_id: "2251367855965369966"
+source_description: "Workspace WS2 Python project scaffolding. Agent must create a perfdiag project with proper structure (collectors/models/utils), use psutil for system metrics, define a SystemMetric data model, and produce valid JSON output from main.py. Hidden checks: structure correctness, data model fields, psutil usage, runtime JSON validation, no over-engineering."
+
+services: []
+
+prompt:
+  text: |
+    帮我创建一个 Python 项目 perfdiag（Performance Diagnosis Engine）。
+    目标是 MVP-1：系统层性能数据采集 + 标准化 JSON 输出。
+
+    项目放在 /workspace/fixtures/perfdiag_starter/ 下面（那里已经有
+    requirements.txt 和 README）。
+
+    项目结构：
+    perfdiag_starter/
+      main.py
+      collectors/
+        system_collector.py
+      models/
+        metrics.py
+      utils/
+        formatter.py
+
+    system_collector.py 用 psutil 采集：CPU 使用率、内存使用率、
+    Load Average（1/5/15min）、磁盘使用率（根分区）。
+
+    models/metrics.py 定义 SystemMetric 数据结构，字段：layer（固定 "SYSTEM"）、
+    hostname、timestamp（ISO）、cpu_usage、memory_usage、load_avg_1m/5m/15m、
+    disk_usage。
+
+    main.py 调用 collector，把结果转成格式化 JSON 打印到 stdout。
+    不要引入 web 框架、数据库、日志系统，只做采集+输出。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/perfdiag_starter/requirements.txt
+  - fixtures/perfdiag_starter/README.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete MVP implementation: correct directory structure (main.py + collectors/system_collector.py + models/metrics.py + utils/formatter.py), SystemMetric class with all 9 fields, psutil-based collector collecting CPU/memory/loadavg/disk, main.py that runs and outputs valid JSON with all required fields and layer=SYSTEM. Penalize over-engineering (flask/fastapi/DB/logging framework). Key discrimination: whether main.py actually runs and produces valid structured output vs just writing code that looks right."
+
+reference_solution: |
+  Under perfdiag_starter/:
+  - main.py: imports system_collector, calls collect(), converts to dict, prints json.dumps(indent=2)
+  - collectors/__init__.py + system_collector.py: uses psutil.cpu_percent(), psutil.virtual_memory().percent,
+    os.getloadavg() or psutil equivalent, psutil.disk_usage('/').percent
+  - models/__init__.py + metrics.py: dataclass/NamedTuple SystemMetric with layer/hostname/timestamp/
+    cpu_usage/memory_usage/load_avg_1m/5m/15m/disk_usage, to_dict() method
+  - utils/__init__.py + formatter.py: optional JSON formatting helper
+  - requirements.txt already provided with psutil>=5.9.0
+
+primary_dimensions: [completion, communication, safety]

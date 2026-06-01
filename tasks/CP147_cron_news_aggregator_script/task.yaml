@@ -1,0 +1,74 @@
+# provenance:
+#   source_session: 1028424128711119804
+#   scenario: "定时任务 / 后台调度 / cron"
+#   session_model: glm-5-1-modelhub
+#   generation_date: "2026-05-31"
+task_id: CP147_cron_news_aggregator_script
+task_name: "定时 AI 资讯聚合脚本开发（CP147 / cron 调度 + 多源抓取 + 结构化报告）"
+version: "1.0"
+category: scripting
+difficulty: medium
+tags: [cron, automation, data-pipeline, python]
+
+source_session_id: "1028424128711119804"
+source_description: "用户要求创建一个定时自动执行的 AI 资讯同步脚本：每天早8点和晚8点抓取 arXiv/HuggingFace/TechCrunch/OpenAI Blog 等来源，去重去噪后按指定格式（头条/技术突破/商业动态/速览）输出，并同步到 API。Workspace WS2 模式，8 个隐藏锚点。"
+
+services: []
+
+prompt:
+  text: |
+    我有个 AI 资讯站需要每天自动更新内容。项目骨架在 /workspace/fixtures/news_sync_project/
+    里，config.yaml 已经定义好了数据源和输出格式，sync_news.py 只有 argparse 壳子。
+
+    帮我把这个项目补完整：
+    1. 实现 sync_news.py 的完整逻辑 — 读配置、抓各个源的数据（arXiv 用 RSS/API，
+       HuggingFace 用 API，TechCrunch 和 OpenAI Blog 用 RSS）、去重去噪、
+       格式化成中文 Markdown 报告、POST 到配置的 API 端点
+    2. 设置 cron 定时任务 — 每天早上8点和晚上8点各执行一次，crontab 文件放项目里
+    3. --dry-run 模式只打印报告不调 API
+    4. requirements.txt 补上真实依赖
+
+    代码放在 /workspace/fixtures/news_sync_project/ 下面就行。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/news_sync_project/config.yaml
+  - fixtures/news_sync_project/sync_news.py
+  - fixtures/news_sync_project/README.md
+  - fixtures/news_sync_project/requirements.txt
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete implementation of automated news aggregation pipeline: valid cron schedule (0 8 * * * and 0 20 * * *), config.yaml parser, multi-source fetchers (arXiv RSS + HuggingFace API + others), deduplication/filtering logic, structured Chinese markdown report (headline/breakthroughs/business/quicklook), API sync with auth and retry, --dry-run mode, graceful error handling for source failures."
+
+reference_solution: |
+  Complete sync_news.py with:
+  - YAML config loading (PyYAML)
+  - Source fetchers: arXiv (xml.etree + urllib or feedparser), HuggingFace (requests to API),
+    TechCrunch (RSS feed), OpenAI Blog (RSS feed)
+  - Dedup by URL/title set, filter uncertain content via keyword matching
+  - Format into markdown with ## 头条, ## 技术突破, ## 商业动态, ## 速览 sections
+  - POST endpoint with Authorization Bearer header, JSON payload, retry logic
+  - argparse --dry-run skips POST, prints report to stdout
+  - try/except around each source fetch, continue on failure, log warnings
+  - crontab.txt with: 0 8 * * * cd /path && python sync_news.py
+    and: 0 20 * * * cd /path && python sync_news.py
+  - requirements.txt: pyyaml, requests, feedparser (or equivalent)
+
+primary_dimensions: [completion, communication, safety]

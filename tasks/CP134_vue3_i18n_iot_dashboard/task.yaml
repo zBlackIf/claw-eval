@@ -1,0 +1,75 @@
+task_id: CP134_vue3_i18n_iot_dashboard
+task_name: "Vue 3 IoT 仪表盘国际化集成（CP134 / 源 session 18114429288619224550）"
+version: "1.0"
+category: frontend
+difficulty: hard
+tags: [vue3, i18n, iot, typescript]
+
+source_session_id: "18114429288619224550"
+source_description: "Real user session: Adding vue-i18n internationalization to a Vue 3 + TypeScript smart fishery IoT dashboard. Workspace WS2. Verifier checks 9 hidden anchors: vue-i18n dependency, i18n module creation with Composition API, browser locale detection + localStorage persistence, Chinese IoT-domain messages, English messages, main.ts plugin integration, Element Plus locale sync, locale switching composable, and removal of hardcoded strings from templates."
+
+services: []
+
+prompt:
+  text: |
+    项目是智慧渔业物联网平台的前端（/workspace/fixtures/smartfishery-web/），
+    Vue 3 + TypeScript + Element Plus。产品那边说月底要给东南亚客户 demo，
+    需要支持中英文切换。现在界面全是写死的中文字符串。
+
+    帮我把 vue-i18n 集成进去——浏览器语言自动识别、用户手动切换后记住选择、
+    Element Plus 组件也要跟着切。侧栏菜单和 Dashboard 页面里的中文都换成
+    $t() 调用。代码在原目录结构上改就行。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/smartfishery-web/package.json
+  - fixtures/smartfishery-web/vite.config.ts
+  - fixtures/smartfishery-web/tsconfig.json
+  - fixtures/smartfishery-web/src/main.ts
+  - fixtures/smartfishery-web/src/App.vue
+  - fixtures/smartfishery-web/src/layouts/DefaultLayout.vue
+  - fixtures/smartfishery-web/src/stores/app.ts
+  - fixtures/smartfishery-web/src/views/dashboard/Dashboard.vue
+  - fixtures/smartfishery-web/src/router/index.ts
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 900
+  max_turns: 22
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete vue-i18n integration: createI18n with Composition API (legacy: false), browser language auto-detection with localStorage persistence, Chinese message pack with IoT-domain terms (dashboard/device/sensor/alert/monitor/control), English message pack, main.ts app.use(i18n) registration, Element Plus locale sync (el-config-provider or direct config), useLocale composable with switching + persistence, and template strings replaced with $t()."
+
+reference_solution: |
+  Under src/i18n/:
+  - index.ts (createI18n with legacy: false, messages: {zh-CN, en-US},
+    detectLocale() using navigator.language + localStorage fallback,
+    saveLocale() for persistence, globalInjection: true)
+  - locales/zh-CN.ts (nested keys for menu/dashboard/devices/alerts/etc)
+  - locales/en-US.ts (matching English translations)
+
+  Under src/hooks/:
+  - useLocale.ts (wraps useI18n, provides changeLocale with
+    localStorage persistence + dayjs sync, elementLocale computed
+    referencing element-plus/es/locale/lang/*, toggleLocale cycle)
+
+  Modified files:
+  - main.ts: import i18n, app.use(i18n)
+  - App.vue or DefaultLayout.vue: el-config-provider :locale="elementLocale"
+  - DefaultLayout.vue: menu titles use $t('menu.dashboard') etc
+  - Dashboard.vue: card labels use $t('dashboard.onlineDevices') etc
+  - package.json: add "vue-i18n": "^9.x" to dependencies
+
+primary_dimensions: [completion, communication, safety]

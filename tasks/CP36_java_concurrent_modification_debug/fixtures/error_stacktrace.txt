@@ -1,0 +1,16 @@
+2026-04-14 18:15:32.456 [http-nio-8080-exec-47] ERROR c.d.p1000.filter.ExceptionFilter - Unhandled exception in filter chain
+java.util.ConcurrentModificationException: null
+    at java.util.ArrayList$Itr.checkForComodification(ArrayList.java:911)
+    at java.util.ArrayList$Itr.next(ArrayList.java:861)
+    at cn.dreamit.p1000.util.RequestUtil.contains(RequestUtil.java:37)
+    at cn.dreamit.p1000.util.RequestUtil.contains(RequestUtil.java:23)
+    at cn.dreamit.p1000.filter.AntiSqlInjectionfilter.doFilter(AntiSqlInjectionfilter.java:125)
+    at com.tongweb.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:192)
+    at com.tongweb.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:165)
+    at cn.dreamit.p1000.filter.SecurityFilter.doFilter(SecurityFilter.java:511)
+    at com.tongweb.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:192)
+    at com.tongweb.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:165)
+    ... 39 more
+
+Note: This error occurs 3-5 times per day, always during peak usage hours (10:00-11:30, 14:00-16:00).
+The admin panel allows adding/removing SQL keywords at runtime via RequestUtil.addKeyword()/removeKeyword().

@@ -1,0 +1,87 @@
+# provenance:
+#   source_session: 14014402832266160367
+#   scenario: "嵌入式 Modem 固件 SCons 构建系统跨模块链接修复"
+#   session_meta: { model: glm-5-1-260408, client_type: claude_code, real_user_turns: 37 }
+task_id: CP192_scons_cross_module_linker_fix
+task_name: "SCons 跨模块 undefined reference 链接错误修复（嵌入式 Modem 构建系统）"
+version: "1.0"
+category: debug
+difficulty: hard
+tags: [embedded, build-system, scons, c-lang, linker]
+
+source_session_id: "14014402832266160367"
+source_description: "从真实嵌入式 Modem 固件开发会话提取：OEM 模块调用 core/storage/efs 模块的 fs_set_sync_timer 函数，链接阶段报 undefined reference。根因：(1) efs.scons 未编译 fs_rmts_pm.c，(2) OEM 模块 CPPPATH 缺少 efs/inc，(3) 源码缺少 #include。需修 SCons 构建配置 + 源码 include。"
+
+services: []
+
+prompt:
+  text: |
+    我在构建一个嵌入式 Modem 固件项目（SCons 构建系统），编译报错：
+
+    ```
+    libfibo_qmi_svc.a(qmi_fibo_svc.o): undefined reference to `fs_set_sync_timer'
+    ```
+
+    项目在 /workspace/fixtures/modem_project/，构建日志见 build_error.log。
+
+    `fs_set_sync_timer` 定义在 core/storage/efs/src/fs_rmts_pm.c，声明在
+    core/storage/efs/inc/fs_rmts_pm.h。OEM 模块 oem/fibo_qmi/ 需要调用这个
+    函数来在进入低功耗前触发 FS sync。
+
+    请帮我修复构建配置，让项目能正确编译链接。注意：
+    1. 不要把 fs_rmts_pm.c 复制到 OEM 目录（应该由 efs 模块自己编译）
+    2. 保持模块间的正确依赖关系
+    3. 修改完后确保 `make all` 能成功
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/modem_project/SConstruct
+  - fixtures/modem_project/Makefile
+  - fixtures/modem_project/build_error.log
+  - fixtures/modem_project/core/build/core.scons
+  - fixtures/modem_project/core/storage/efs/build/efs.scons
+  - fixtures/modem_project/core/storage/efs/src/efs_core.c
+  - fixtures/modem_project/core/storage/efs/src/fs_rmts_pm.c
+  - fixtures/modem_project/core/storage/efs/inc/fs_rmts_pm.h
+  - fixtures/modem_project/core/mproc/qmi/build/qmi_framework.scons
+  - fixtures/modem_project/core/mproc/qmi/src/qmi_csi_common.c
+  - fixtures/modem_project/core/mproc/qmi/inc/qmi_csi_common.h
+  - fixtures/modem_project/core/api/common/storage/fs_public.h
+  - fixtures/modem_project/oem/fibo_qmi/build/fibo_qmi.scons
+  - fixtures/modem_project/oem/fibo_qmi/src/qmi_fibo_svc.c
+  - fixtures/modem_project/oem/fibo_qmi/inc/qmi_fibo_svc.h
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 60
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct build-system fix: (1) fs_rmts_pm.c added to efs.scons source list so it compiles into libefs.a, (2) core/storage/efs/inc added to fibo_qmi.scons CPPPATH for header resolution, (3) #include fs_rmts_pm.h added to qmi_fibo_svc.c, (4) SConstruct/linker properly links efs with OEM module, (5) final build succeeds with make all. Penalize: copying source files across modules, commenting out the function call, or other workarounds that break module boundaries."
+
+reference_solution: |
+  Three changes needed:
+  1. core/storage/efs/build/efs.scons: Add '#/core/storage/efs/src/fs_rmts_pm.c'
+     to efs_sources list so it gets compiled into libefs.a
+  2. oem/fibo_qmi/build/fibo_qmi.scons: Add '#/core/storage/efs/inc' to CPPPATH
+     so the compiler can find fs_rmts_pm.h
+  3. oem/fibo_qmi/src/qmi_fibo_svc.c: Add #include "fs_rmts_pm.h" to resolve
+     the implicit function declaration warning
+  4. SConstruct: Ensure efs library is linked into the final oem_pd_img binary
+     (add core_libs['efs'] to LIBS list)
+  5. Makefile: Update to reflect the same changes (add fs_rmts_pm.o compilation,
+     add -Icore/storage/efs/inc to OEM CFLAGS, link fs_rmts_pm.o)
+
+primary_dimensions: [completion, communication, safety]

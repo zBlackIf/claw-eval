@@ -1,0 +1,85 @@
+# provenance:
+#   source_session_id: "4997902609790392878"
+#   scenario: "OpenClaw 框架 / Skill / Workspace"
+#   description: "从禅道项目管理数据(JSON) + Excel排期表生成结构化项目状态汇报脚本"
+task_id: CP128_project_report_generator
+task_name: "项目状态汇报生成器（从JSON数据+Excel排期生成Markdown报告）"
+version: "1.0"
+category: data_processing
+difficulty: medium
+tags: [general, python, excel, reporting]
+
+source_session_id: "4997902609790392878"
+source_description: "用户需要一个脚本，从项目管理系统API数据(JSON)和Excel排期表中读取信息，自动计算风险等级并生成结构化Markdown项目汇报。包含单项目和批量生成两种模式。"
+
+services: []
+
+prompt:
+  text: |
+    帮我写一个 Python 脚本 generate_report.py，放到
+    /workspace/fixtures/project-report-gen/ 目录下。
+
+    数据源在同目录：
+    - api_data/ 里有每个项目执行的 JSON 数据（execution_891.json 等）
+    - schedule.xlsx 有排期和项目阶段信息
+
+    功能：
+    1. --id <执行ID> 生成单个项目汇报
+    2. --all 生成所有项目的批量汇报（含整体汇总统计表）
+    3. 默认输出到 stdout
+
+    风险等级按滞后率（预期进度-实际进度）判定：
+    >= 20% 高风险，10%-20% 中风险，< 10% 低风险。
+
+    项目阶段优先用 Excel 里的值，Excel 无数据时再自动判断。
+    排期信息也从 Excel 读取输出到报告里。
+
+    批量汇报要有汇总统计表（总项目数、总任务数、逾期数、各风险等级项目数），
+    每个项目要显示：阶段、进度(实际/预期)、滞后率、风险等级、逾期任务数、排期。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/project-report-gen/README.md
+  - fixtures/project-report-gen/schedule.xlsx
+  - fixtures/project-report-gen/api_data/executions_index.json
+  - fixtures/project-report-gen/api_data/execution_891.json
+  - fixtures/project-report-gen/api_data/execution_897.json
+  - fixtures/project-report-gen/api_data/execution_898.json
+  - fixtures/project-report-gen/api_data/execution_910.json
+  - fixtures/project-report-gen/api_data/execution_952.json
+  - fixtures/project-report-gen/api_data/execution_972.json
+  - fixtures/project-report-gen/api_data/execution_974.json
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 480
+  max_turns: 15
+  env_snapshot_timeout: 60
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a working Python script that reads JSON project data and Excel schedule, correctly calculates risk levels (lag>=20% high, 10-20% medium, <10% low), integrates Excel phase/schedule overrides, and produces structured Markdown reports with summary statistics in batch mode."
+
+reference_solution: |
+  generate_report.py in /workspace/fixtures/project-report-gen/ that:
+  1. Uses argparse for --id/--all/--output flags
+  2. Reads execution JSON from api_data/ directory
+  3. Uses openpyxl to read schedule.xlsx for schedule text and phase overrides
+  4. Calculates lag_rate = expected - actual, maps to risk level
+  5. Excel project phase takes priority over any auto-detection
+  6. --all mode produces summary table (total projects, tasks, overdue, risk breakdown)
+     followed by per-project sections
+  7. --id mode produces single project report with all fields
+  8. Outputs Markdown to stdout by default
+
+primary_dimensions: [completion, communication, safety]

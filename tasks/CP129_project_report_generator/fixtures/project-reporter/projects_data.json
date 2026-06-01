@@ -1,0 +1,249 @@
+[
+  {
+    "execution_id": 301,
+    "name": "用户中心 v3.1.0",
+    "stage": "开发中",
+    "total_tasks": 28,
+    "completed_tasks": 18,
+    "estimated_hours": 120.0,
+    "consumed_hours": 78.5,
+    "tasks": [
+      {
+        "id": 5001,
+        "name": "用户登录接口重构",
+        "deadline": "2026-04-15",
+        "assignee": "张伟",
+        "status": "已完成"
+      },
+      {
+        "id": 5002,
+        "name": "OAuth2.0 接入",
+        "deadline": "2026-04-18",
+        "assignee": "张伟",
+        "status": "已完成"
+      },
+      {
+        "id": 5003,
+        "name": "用户权限模块升级",
+        "deadline": "2026-04-20",
+        "assignee": "李明",
+        "status": "进行中"
+      },
+      {
+        "id": 5004,
+        "name": "单点登录SSO适配",
+        "deadline": "2026-04-17",
+        "assignee": "李明",
+        "status": "待开始"
+      },
+      {
+        "id": 5005,
+        "name": "密码策略增强",
+        "deadline": "2026-04-19",
+        "assignee": "王芳",
+        "status": "待开始"
+      },
+      {
+        "id": 5006,
+        "name": "用户画像数据接口",
+        "deadline": "2026-04-16",
+        "assignee": "王芳",
+        "status": "进行中"
+      },
+      {
+        "id": 5007,
+        "name": "前端登录页改版",
+        "deadline": "2026-04-21",
+        "assignee": "赵强",
+        "status": "已完成"
+      },
+      {
+        "id": 5008,
+        "name": "接口联调测试",
+        "deadline": "2026-04-22",
+        "assignee": "赵强",
+        "status": "待开始"
+      }
+    ]
+  },
+  {
+    "execution_id": 302,
+    "name": "支付网关 v2.5",
+    "stage": "测试中",
+    "total_tasks": 35,
+    "completed_tasks": 30,
+    "estimated_hours": 156.0,
+    "consumed_hours": 148.0,
+    "tasks": [
+      {
+        "id": 6001,
+        "name": "微信支付V3接口升级",
+        "deadline": "2026-04-10",
+        "assignee": "陈静",
+        "status": "已完成"
+      },
+      {
+        "id": 6002,
+        "name": "支付宝当面付集成",
+        "deadline": "2026-04-12",
+        "assignee": "陈静",
+        "status": "已完成"
+      },
+      {
+        "id": 6003,
+        "name": "退款异步通知重构",
+        "deadline": "2026-04-14",
+        "assignee": "刘洋",
+        "status": "已完成"
+      },
+      {
+        "id": 6004,
+        "name": "对账单自动拉取",
+        "deadline": "2026-04-18",
+        "assignee": "刘洋",
+        "status": "进行中"
+      },
+      {
+        "id": 6005,
+        "name": "支付渠道路由优化",
+        "deadline": "2026-04-15",
+        "assignee": "黄磊",
+        "status": "待开始"
+      },
+      {
+        "id": 6006,
+        "name": "分账功能开发",
+        "deadline": "2026-04-13",
+        "assignee": "黄磊",
+        "status": "待开始"
+      },
+      {
+        "id": 6007,
+        "name": "压力测试报告",
+        "deadline": "2026-04-20",
+        "assignee": "周杰",
+        "status": "待开始"
+      }
+    ]
+  },
+  {
+    "execution_id": 303,
+    "name": "数据大屏 v1.2",
+    "stage": "验收中",
+    "total_tasks": 15,
+    "completed_tasks": 14,
+    "estimated_hours": 68.0,
+    "consumed_hours": 65.0,
+    "tasks": [
+      {
+        "id": 7001,
+        "name": "实时数据刷新优化",
+        "deadline": "2026-04-08",
+        "assignee": "孙丽",
+        "status": "已完成"
+      },
+      {
+        "id": 7002,
+        "name": "图表组件库升级",
+        "deadline": "2026-04-10",
+        "assignee": "孙丽",
+        "status": "已完成"
+      },
+      {
+        "id": 7003,
+        "name": "大屏适配不同分辨率",
+        "deadline": "2026-04-12",
+        "assignee": "吴伟",
+        "status": "已完成"
+      },
+      {
+        "id": 7004,
+        "name": "数据源切换功能",
+        "deadline": "2026-04-19",
+        "assignee": "吴伟",
+        "status": "进行中"
+      }
+    ]
+  },
+  {
+    "execution_id": 304,
+    "name": "商城小程序 v4.0",
+    "stage": "开发中",
+    "total_tasks": 52,
+    "completed_tasks": 20,
+    "estimated_hours": 240.0,
+    "consumed_hours": 95.0,
+    "tasks": [
+      {
+        "id": 8001,
+        "name": "商品详情页重构",
+        "deadline": "2026-04-10",
+        "assignee": "马超",
+        "status": "待开始"
+      },
+      {
+        "id": 8002,
+        "name": "购物车逻辑优化",
+        "deadline": "2026-04-12",
+        "assignee": "马超",
+        "status": "待开始"
+      },
+      {
+        "id": 8003,
+        "name": "订单流程改造",
+        "deadline": "2026-04-14",
+        "assignee": "钱涛",
+        "status": "待开始"
+      },
+      {
+        "id": 8004,
+        "name": "优惠券系统对接",
+        "deadline": "2026-04-16",
+        "assignee": "钱涛",
+        "status": "进行中"
+      },
+      {
+        "id": 8005,
+        "name": "直播带货功能集成",
+        "deadline": "2026-04-11",
+        "assignee": "郑浩",
+        "status": "待开始"
+      },
+      {
+        "id": 8006,
+        "name": "分销模块开发",
+        "deadline": "2026-04-13",
+        "assignee": "郑浩",
+        "status": "待开始"
+      },
+      {
+        "id": 8007,
+        "name": "物流跟踪接口对接",
+        "deadline": "2026-04-18",
+        "assignee": "孙丽",
+        "status": "待开始"
+      },
+      {
+        "id": 8008,
+        "name": "售后服务流程开发",
+        "deadline": "2026-04-15",
+        "assignee": "周杰",
+        "status": "待开始"
+      },
+      {
+        "id": 8009,
+        "name": "会员积分系统",
+        "deadline": "2026-04-20",
+        "assignee": "周杰",
+        "status": "进行中"
+      },
+      {
+        "id": 8010,
+        "name": "性能优化首屏加载",
+        "deadline": "2026-04-22",
+        "assignee": "马超",
+        "status": "待开始"
+      }
+    ]
+  }
+]

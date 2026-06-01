@@ -1,0 +1,71 @@
+# provenance:
+#   source_session: "2734527323849194421"
+#   scenario: "IDE / 编辑器集成"
+#   session_description: "User asks agent to orchestrate multiple skill templates (.claude/skills/01-05) to generate a structured RSDD document from a voc.md requirement input."
+task_id: CP181_rsdd_multi_skill_doc_generation
+task_name: "RSDD Multi-Skill Template Document Generation (CP181 / source session 2734527323849194421)"
+version: "1.0"
+category: design
+difficulty: hard
+tags: [general, document-generation, skill-orchestration]
+
+source_session_id: "2734527323849194421"
+source_description: "Agent orchestrates 5 skill templates to generate a structured RSDD (Solution Design Document) from requirements input. Tests skill discovery, template compliance, multi-chapter document assembly, and domain-accurate content generation."
+
+services: []
+
+prompt:
+  text: |
+    Use the skills in .claude/skills/ to generate rsdd.md for the requirement
+    in workspace/REQ-20250301/. Follow each skill (01 through 05) in order.
+    The voc.md file has all the input you need. Output the final rsdd.md into
+    workspace/REQ-20250301/rsdd.md.
+  language: en
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/project/.claude/skills/01-rsdd-requirement/SKILL.md
+  - fixtures/project/.claude/skills/01-rsdd-requirement/template-chapter.md
+  - fixtures/project/.claude/skills/02-rsdd-environment/SKILL.md
+  - fixtures/project/.claude/skills/02-rsdd-environment/template-chapter.md
+  - fixtures/project/.claude/skills/03-rsdd-scenario/SKILL.md
+  - fixtures/project/.claude/skills/03-rsdd-scenario/template-chapter.md
+  - fixtures/project/.claude/skills/04-rsdd-architecture/SKILL.md
+  - fixtures/project/.claude/skills/04-rsdd-architecture/template-chapter.md
+  - fixtures/project/.claude/skills/05-rsdd-interface/SKILL.md
+  - fixtures/project/.claude/skills/05-rsdd-interface/template-chapter.md
+  - fixtures/project/workspace/REQ-20250301/voc.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 900
+  max_turns: 30
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete 5-chapter RSDD document: Ch1 must contain verbatim VoC from voc.md (WANT-20250301, MegaCorp incident, noisy-neighbor). Ch2 must describe topology (API Gateway, Redis, Kubernetes) and environment factors table. Ch3 must enumerate scenarios with IDs, value/complexity assessment. Ch4 must have architecture diagram and component list. Ch5 must list interfaces with REST methods, paths, and cover rate-limiting, metrics, quota management. Document must follow skill template structure (proper heading hierarchy, tables, no unfilled placeholders) and be domain-accurate (token bucket, 3 tiers, burst 2x/30s, Redis counters, Prometheus metrics, zero-downtime migration)."
+
+reference_solution: |
+  Agent reads all 5 skills in order, reads voc.md, then generates rsdd.md with:
+  - Chapter 1: Verbatim copy of VoC content (WANT, NEED, key info)
+  - Chapter 2: Network topology (Gateway -> Redis -> Metrics), environment
+    factors table (Kubernetes, Redis, REST, JDK)
+  - Chapter 3: Scenario inventory (S1: per-tenant limiting, S2: burst handling,
+    S3: metrics reporting, S4: quota management), value and complexity tables
+  - Chapter 4: Architecture diagram showing API Gateway, Rate Limiter module,
+    Redis cluster, Metrics service, Management portal; applicable systems table
+  - Chapter 5: Interface protocol (REST, JSON, /api/v1), interface list
+    covering rate-limit config CRUD, metrics query, webhook registration,
+    tenant quota endpoints
+
+primary_dimensions: [completion, communication, safety]

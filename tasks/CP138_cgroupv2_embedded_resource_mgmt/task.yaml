@@ -1,0 +1,77 @@
+task_id: CP138_cgroupv2_embedded_resource_mgmt
+task_name: "cgroup v2 嵌入式系统资源管理（3D打印机 / SysV init / cpuset+memory+IRQ）"
+version: "1.0"
+category: systems
+difficulty: hard
+tags: [linux, embedded, cgroup, resource-management, shell-scripting]
+
+source_session_id: "2724939533641674727"
+source_description: "Real user session: configuring cgroup v2 resource isolation for a Buildroot-based 3D printer system (RK3562, Linux 6.1, BusyBox SysV init). Agent must create init scripts that set up cgroup hierarchy, configure resource limits, handle IRQ affinity, integrate with existing service scripts, and deal with a late-appearing WiFi kernel thread."
+
+services: []
+
+prompt:
+  text: |
+    我有一个基于 Buildroot 的嵌入式 Linux 系统（4核 ARM, Linux 6.1, BusyBox SysV init），
+    用于运行 3D 打印机。系统服务启动脚本在 /workspace/fixtures/buildroot-project/ 下面。
+
+    关键进程 klippy（由 S60klipper 启动）通过 UART 和 USB 与 MCU 通讯，必须保证充足的
+    CPU 和内存资源。我需要用 cgroup v2 做资源隔离：
+
+    1. klippy 和系统进程留在 root cgroup，不限制
+    2. 以下进程放到 business 组，限制只能跑在 CPU0-1，内存最多 300MB：
+       - moonraker（S61moonraker）
+       - gui（S99screen）
+       - nginx（S50nginx）
+       - unisrv（S91unisrv）
+       - dhd_dpc（WiFi 驱动内核线程，在 WiFi 驱动加载后才出现）
+    3. UART 和 USB 的中断要绑定到 CPU2+CPU3，确保及时处理
+    4. 进程被脚本重启时仍然会被划入对应的 cgroup 组
+
+    请在项目目录下实现完整方案：
+    - 创建一个早期启动的 init 脚本来初始化 cgroup 结构和资源限制
+    - 创建 helper 库让其他启动脚本能方便地把进程移入 business cgroup
+    - 修改现有的 4 个服务脚本（moonraker/gui/nginx/unisrv）集成 cgroup 管理
+    - 处理 dhd_dpc 内核线程的延迟出现问题
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/buildroot-project/package/snapmaker/klipper/S60klipper
+  - fixtures/buildroot-project/package/snapmaker/moonraker/S61moonraker
+  - fixtures/buildroot-project/package/snapmaker/lava_gui/S99screen
+  - fixtures/buildroot-project/package/snapmaker/unisrv/S91unisrv
+  - fixtures/buildroot-project/package/nginx/S50nginx
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 900
+  max_turns: 25
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward a complete cgroup v2 resource management solution: (1) early-boot SysV init script that verifies cgroup2 mount, enables controllers via subtree_control, creates business cgroup with cpuset+memory limits; (2) helper library with reusable functions for moving processes to cgroups; (3) proper resource limits - cpuset.cpus=0-1, memory.max~300MB, ideally memory.high soft limit and swap disabled; (4) IRQ affinity setup binding UART/USB interrupts to CPU2+3 via smp_affinity; (5) modification of 4 service scripts to integrate cgroup placement on start/restart; (6) background watcher/polling mechanism for the dhd_dpc WiFi kernel thread that appears after driver load."
+
+reference_solution: |
+  Create package/snapmaker/cgroup_mgmt/ with:
+  - S05cgroup_setup: SysV init script (priority 05) that checks cgroup v2 mount,
+    enables cpuset+cpu+memory controllers, creates /sys/fs/cgroup/business with
+    cpuset.cpus=0-1, cpuset.mems=0, memory.high=256MB, memory.max=300MB,
+    memory.swap.max=0; sets IRQ affinity for UART/USB to 0x0c (CPU2+3);
+    starts background watcher polling for dhd_dpc thread.
+  - cgroup_helper.sh: Sourceable library with cgroup_add_proc(),
+    cgroup_add_proc_by_name(), cgroup_add_from_pidfile() functions.
+  - Modify S61moonraker, S99screen, S50nginx, S91unisrv to source
+    cgroup_helper.sh and call cgroup placement after process start.
+
+primary_dimensions: [completion, communication, safety]

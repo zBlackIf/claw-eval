@@ -1,0 +1,32 @@
+{% extends "core/base.html" %}
+{% block title %}预约统计{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h4 class="mb-0">📊 预约统计</h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <h6>📈 本周预约</h6>
+                    <span class="stat-value">{{ weekly_count|default:"12" }}</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <h6>👤 活跃用户</h6>
+                    <span class="stat-value">{{ active_users|default:"5" }}</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <h6>🏆 使用率</h6>
+                    <span class="stat-value">{{ usage_rate|default:"78%" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

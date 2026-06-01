@@ -1,0 +1,50 @@
+{
+  "total": 5,
+  "items": [
+    {
+      "id": "CAT-NLC-50001",
+      "title": "毛诗正义",
+      "author": "[汉]毛亨 传 [汉]郑玄 笺 [唐]孔颖达 疏",
+      "edition": "宋刻本",
+      "edition_note": "南宋绍兴国子监刊本",
+      "collection": "国家图书馆",
+      "score": 0.96
+    },
+    {
+      "id": "CAT-BJ-60234",
+      "title": "毛詩正義",
+      "author": "[漢]毛亨 傳 [漢]鄭玄 箋 [唐]孔穎達 疏",
+      "edition": "明萬曆刻本",
+      "edition_note": "明萬曆北京國子監刊本",
+      "collection": "北京大学图书馆",
+      "score": 0.89
+    },
+    {
+      "id": "CAT-SH-70345",
+      "title": "毛詩正義",
+      "author": "[唐]孔穎達 疏",
+      "edition": "宋刻本",
+      "edition_note": "宋建陽坊刻本",
+      "collection": "上海图书馆",
+      "score": 0.84
+    },
+    {
+      "id": "CAT-NLC-50002",
+      "title": "毛詩正義 卷一至卷十",
+      "author": "[漢]毛亨 傳 [漢]鄭玄 箋 [唐]孔穎達 疏",
+      "edition": "宋刻本",
+      "edition_note": "南宋初刊殘本",
+      "collection": "国家图书馆",
+      "score": 0.81
+    },
+    {
+      "id": "CAT-JP-80456",
+      "title": "毛詩注疏",
+      "author": "[漢]毛亨 傳 [漢]鄭玄 箋 [唐]孔穎達 疏",
+      "edition": "清嘉慶刻本",
+      "edition_note": "清嘉慶二十年南昌府學重刊宋本十三經注疏",
+      "collection": "日本宮內廳書陵部",
+      "score": 0.77
+    }
+  ]
+}

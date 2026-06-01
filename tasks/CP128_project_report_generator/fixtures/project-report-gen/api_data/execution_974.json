@@ -1,0 +1,62 @@
+{
+  "execution_id": 974,
+  "name": "出海1.1.0",
+  "status": "doing",
+  "begin": "2026-04-14",
+  "end": "2026-04-27",
+  "tasks": {
+    "total": 48,
+    "done": 2,
+    "doing": 20,
+    "wait": 26,
+    "overdue": 6,
+    "overdue_details": [
+      {
+        "id": 5101,
+        "name": "多语言国际化框架",
+        "assignedTo": "周九",
+        "deadline": "2026-04-18",
+        "status": "doing"
+      },
+      {
+        "id": 5102,
+        "name": "支付渠道对接(Stripe)",
+        "assignedTo": "赵六",
+        "deadline": "2026-04-19",
+        "status": "doing"
+      },
+      {
+        "id": 5103,
+        "name": "海外CDN部署方案",
+        "assignedTo": "周九",
+        "deadline": "2026-04-20",
+        "status": "doing"
+      },
+      {
+        "id": 5104,
+        "name": "合规数据隔离",
+        "assignedTo": "赵六",
+        "deadline": "2026-04-21",
+        "status": "wait"
+      },
+      {
+        "id": 5105,
+        "name": "海外用户注册流程",
+        "assignedTo": "张三",
+        "deadline": "2026-04-22",
+        "status": "wait"
+      },
+      {
+        "id": 5106,
+        "name": "时区处理模块",
+        "assignedTo": "周九",
+        "deadline": "2026-04-22",
+        "status": "doing"
+      }
+    ]
+  },
+  "progress": {
+    "actual": 4,
+    "expected": 54
+  }
+}

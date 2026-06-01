@@ -1,0 +1,69 @@
+task_id: CP182_vue3_form_change_runner_conversion
+task_name: "Vue 3 表单 change-runner 模块转换（CP182 / 源 session 10044535632787514181）"
+version: "1.0"
+category: refactor
+difficulty: medium
+tags: [vue3, javascript, migration, form-framework]
+
+source_session_id: "10044535632787514181"
+source_description: "Real IDE session: user converting a Vue 2 / uni-app form designer mixin (change-runner with eval, WeakMap bug, no error handling) to standalone Vue 3 ES module. Key challenges: WeakMap cannot hold string keys, eval replacement with new Function, cache management, this-to-context rewriting."
+
+services: []
+
+prompt:
+  text: |
+    项目 cm-form-designer-h5 是一个 Vue 3 + Vite 的表单设计器。
+    /workspace/fixtures/cm-form-designer-h5/plugin/utils/change-runner-legacy.js 是从
+    旧的 Vue 2 / uni-app 项目迁移过来的表单 change 事件处理模块（mixin 写法）。
+
+    请帮我把它转换成 Vue 3 的独立 ES 模块，输出到：
+    /workspace/fixtures/cm-form-designer-h5/plugin/utils/change-runner.js
+
+    要求：
+    - 不再用 mixin，改为纯函数导出（composable 风格也行）
+    - 修复里面的已知 bug（文件注释里标注了的）
+    - 去掉 uni-app 的条件编译指令
+    - 导出 createChangeContext、resolveChangeHandler、runFieldChange 三个函数
+    - object.js 里的 findObject 已经独立出来了可以直接 import
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/cm-form-designer-h5/package.json
+  - fixtures/cm-form-designer-h5/plugin/utils/change-runner-legacy.js
+  - fixtures/cm-form-designer-h5/plugin/utils/object.js
+  - fixtures/cm-form-designer-h5/src/App.vue
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward correct conversion: (1) eval() completely removed, replaced with new Function(); (2) separate Map for string cache + WeakMap for function cache (the key bug); (3) cache size limit to prevent unbounded growth; (4) explicit context object parameter replacing mixin this; (5) try/catch error boundaries with console.warn; (6) no #ifdef/#endif directives; (7) exports createChangeContext, resolveChangeHandler, runFieldChange."
+
+reference_solution: |
+  plugin/utils/change-runner.js should export:
+  - createChangeContext({ form, option, globalOptions }) → context object
+    with { form, option, findObject, axios }
+  - resolveChangeHandler(change, context) → function or undefined
+    - String branch: normalize source, check stringFactoryCache (Map, size-limited),
+      rewrite this→context via regex, compile with new Function('context', ...),
+      cache result, call factory(context), wrap in try/catch
+    - Function branch: check functionFactoryCache (WeakMap), if source has this,
+      rewrite and compile, cache in WeakMap, else return directly
+  - runFieldChange(prop, { form, option, globalOptions }) → void
+    - finds field via findObject, resolves handler, calls it with { value, column, form }
+
+primary_dimensions: [completion, communication, safety]

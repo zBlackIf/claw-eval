@@ -1,0 +1,6 @@
+{
+  "target": "network_module",
+  "sources": ["src/net/socket.cpp", "src/net/http_client.cpp"],
+  "dependencies": ["libssl", "libcurl"],
+  "flags": ["-O2", "-DUSE_OPENSSL"]
+}

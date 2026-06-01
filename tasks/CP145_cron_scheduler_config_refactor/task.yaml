@@ -1,0 +1,61 @@
+# provenance:
+#   source_session: 12316679623421770021
+#   scenario: "定时任务 / 后台调度 / cron"
+#   session_model: doubao-seed-2-0-pro-dyad-260415
+task_id: CP145_cron_scheduler_config_refactor
+task_name: "定时任务调度器配置修复与功能补全（CP145 / 源 session 12316679623421770021）"
+version: "1.0"
+category: engineering
+difficulty: medium
+tags: [cron, scheduler, python, config]
+
+source_session_id: "12316679623421770021"
+source_description: "用户使用 AI 助理管理每日定时提醒（快手打卡、Agent World 学习），发现提醒在确认后仍反复触发，时区不对，且无法通过命令行添加新任务。需修复调度器的 ack 抑制逻辑、时区配置、并实现 add_task 功能。"
+
+services: []
+
+prompt:
+  text: |
+    我有一个 Python 定时任务调度器在 /workspace/fixtures/scheduler/ 里，现在有几个
+    问题需要修：
+    1. 时区不对，我在中国（Asia/Shanghai），但它用的 UTC
+    2. 我说"已打卡"之后（调用 acknowledge_task），后面的重复提醒还是会触发，应该当天
+       不再提醒了
+    3. add_task 功能没实现，我想能通过命令行加新任务，自动写入 config.yaml
+
+    帮我把这三个问题都修好，config.yaml 也一起改对。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/scheduler/config.yaml
+  - fixtures/scheduler/scheduler.py
+  - fixtures/scheduler/requirements.txt
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 18
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete fix: (1) timezone changed to Asia/Shanghai in both config.yaml and scheduler.py get_now(); (2) should_fire() checks ack_date and returns False if already acked today; (3) should_retry() also suppresses after ack; (4) add_task() implemented to write new entries to config.yaml; (5) config.yaml updated with correct timezone and suppress_after_ack: true."
+
+reference_solution: |
+  1. config.yaml: timezone changed from UTC to Asia/Shanghai, suppress_after_ack: true
+  2. scheduler.py get_now(): use zoneinfo.ZoneInfo("Asia/Shanghai") or equivalent
+  3. scheduler.py should_fire(): add check — if state.tasks[task_id].ack_date == today, return False
+  4. scheduler.py should_retry(): add check — if ack_date == today, return False (or honor suppress_after_ack from config)
+  5. scheduler.py add_task(): load config, append new task dict, yaml.dump back to CONFIG_PATH
+
+primary_dimensions: [completion, communication, safety]

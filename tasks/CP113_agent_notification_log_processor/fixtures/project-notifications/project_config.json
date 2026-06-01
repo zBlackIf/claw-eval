@@ -1,0 +1,35 @@
+{
+  "project_id": "teaching-platform",
+  "project_name": "教研平台体系建设",
+  "tasks": [
+    {
+      "id": "task-8",
+      "name": "教研资料格式自动校验工具开发",
+      "status": "InProgress",
+      "agent": "lancer",
+      "priority": "medium"
+    },
+    {
+      "id": "task-11",
+      "name": "课程PPT课件制作",
+      "status": "InProgress",
+      "agent": "baiyuekui",
+      "priority": "medium",
+      "notes": "等待5月19日教案评审会议结果"
+    },
+    {
+      "id": "task-15",
+      "name": "视频录制脚本审核",
+      "status": "InProgress",
+      "agent": "rider",
+      "priority": "high",
+      "notes": "脚本审核依赖教研确认"
+    }
+  ],
+  "team_members": ["baiyuekui", "lancer", "rider", "archer"],
+  "throttle_config": {
+    "system_timeout_dedup_window_minutes": 30,
+    "patrol_min_interval_minutes": 20,
+    "max_identical_log_entries": 3
+  }
+}

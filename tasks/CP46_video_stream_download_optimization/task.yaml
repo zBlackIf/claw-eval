@@ -1,0 +1,160 @@
+task_id: CP46_video_stream_download_optimization
+task_name: Video Stream Download Optimization
+version: '2.0'
+category: code_generation
+difficulty: medium
+tags:
+- general
+- single_turn
+- coding_plan
+- sandbox
+source_task_id: task_04_video_stream_download
+source_dataset: taskset-260427-121234
+source_description: Redesigned from taskset-260427-121234/task_04_video_stream_download with claw-eval-task-designer-v2. Primary delivery channel is sandbox files under /workspace; grading reads the hidden verifier output for the same channel.
+services: []
+prompt:
+  text: |
+    我已经把原始项目素材放在容器的 `/workspace/fixtures/` 目录下，请把这些文件当作只读输入。
+
+    输入文件如下（右侧是它在原项目中的相对路径）：
+    - `/workspace/fixtures/app/services/video_loader.py` -> `app/services/video_loader.py`
+    - `/workspace/fixtures/app/config.py` -> `app/config.py`
+    - `/workspace/fixtures/app/core/video_processor.py` -> `app/core/video_processor.py`
+
+    请基于这些输入完成下面的原始需求：
+
+    当前项目是一个视频封面推荐服务。视频较大时下载时间很长，但实际只需要视频前100帧来做封面推荐。整个视频下载下来浪费时间和带宽。
+
+    请修改 video_loader.py，实现流式下载 + 提前终止的方案：下载视频时使用 httpx 流式请求，边下载边用临时文件给 OpenCV 提取帧，提取到足够帧数后立即停止下载。如果流式方式失败，需要回退到原来的完整下载方式。
+
+    交付要求：
+    - 需要修改已有文件时，请把修改后的版本写到 `/workspace/` 下对应的原项目相对路径。
+    - 需要新增文件时，请按需求中的文件名或上面列出的目标路径写到 `/workspace/` 下。
+    - 最终回复只需概述完成情况、关键改动和生成的文件；不要只在最终回复中贴代码或报告正文。
+  language: zh
+tools: []
+tool_endpoints: []
+sandbox_files:
+- fixtures/app/services/video_loader.py
+- fixtures/app/config.py
+- fixtures/app/core/video_processor.py
+sandbox_grader_files:
+- fixtures/verify.py
+environment:
+  timeout_seconds: 600
+  max_turns: 30
+  env_snapshot_timeout: 30
+env_snapshot_commands:
+- python /workspace/fixtures/verify.py
+env_snapshot_files:
+- /workspace/app/services/video_loader.py
+- /workspace/app/config.py
+- /workspace/app/core/video_processor.py
+scoring_components: []
+safety_checks: []
+expected_actions: []
+judge_rubric: |
+  ## Expected Behavior
+
+  1. 新增流式下载方法，使用 httpx 的 stream 模式
+  2. 边下载边写入临时文件，周期性尝试用 OpenCV 提取帧
+  3. 达到 MAX_FRAMES 后立即停止下载
+  4. 流式失败时自动回退到完整下载
+  5. 在 config.py 中添加相关配置项
+  6. 保持原有接口兼容
+
+  ## Grading Criteria
+
+  - [ ] criterion_stream_mode: Uses httpx streaming (client.stream or response.aiter_bytes)
+  - [ ] criterion_early_stop: Stops downloading after extracting enough frames
+  - [ ] criterion_fallback: Has fallback to full download on stream failure
+  - [ ] criterion_config: Adds configuration for stream-related parameters
+  - [ ] criterion_interface_compat: load_video method signature unchanged
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Streaming Implementation (Weight: 35%)
+    - 1.0: Correctly uses httpx async streaming with aiter_bytes/aiter_raw, writes chunks to temp file, extracts frames periodically
+    - 0.75: Streaming implemented but with minor issues
+    - 0.5: Partial streaming (e.g., uses Range headers but not true streaming)
+    - 0.25: Claims streaming but actually downloads full file
+    - 0.0: No streaming implementation
+
+  ### Criterion 2: Early Termination Logic (Weight: 30%)
+    - 1.0: Correctly stops download after MAX_FRAMES extracted, with proper OpenCV VideoCapture handling on partial file
+    - 0.75: Early termination works but has edge cases
+    - 0.5: Terminates but may miss frames or have race conditions
+    - 0.25: Termination logic present but broken
+    - 0.0: Downloads full file regardless
+
+  ### Criterion 3: Error Handling and Fallback (Weight: 20%)
+    - 1.0: Graceful fallback to full download on any stream error, proper cleanup of temp files
+    - 0.75: Fallback exists but incomplete cleanup
+    - 0.5: Partial error handling
+    - 0.25: No fallback
+    - 0.0: Errors crash the service
+
+  ### Criterion 4: API Compatibility (Weight: 15%)
+    - 1.0: load_video signature and return type unchanged, existing callers unaffected
+    - 0.75: Minor signature changes but backward compatible
+    - 0.5: Breaking changes that require caller updates
+    - 0.25: Interface significantly changed
+    - 0.0: Existing functionality broken
+reference_solution: |
+  原始来源：taskset-260427-121234/task_04_video_stream_download
+
+  原始场景：Modify a FastAPI video cover recommendation service to stream-download only the portion of video needed for first 100 frames instead of downloading the entire file
+
+  隐藏 verifier 主要检查项：criterion_config, criterion_early_stop, criterion_fallback, criterion_interface_compat, criterion_stream_mode
+
+  源题 judge 说明：
+  ## Expected Behavior
+
+  1. 新增流式下载方法，使用 httpx 的 stream 模式
+  2. 边下载边写入临时文件，周期性尝试用 OpenCV 提取帧
+  3. 达到 MAX_FRAMES 后立即停止下载
+  4. 流式失败时自动回退到完整下载
+  5. 在 config.py 中添加相关配置项
+  6. 保持原有接口兼容
+
+  ## Grading Criteria
+
+  - [ ] criterion_stream_mode: Uses httpx streaming (client.stream or response.aiter_bytes)
+  - [ ] criterion_early_stop: Stops downloading after extracting enough frames
+  - [ ] criterion_fallback: Has fallback to full download on stream failure
+  - [ ] criterion_config: Adds configuration for stream-related parameters
+  - [ ] criterion_interface_compat: load_video method signature unchanged
+
+  ## LLM Judge Rubric
+
+  ### Criterion 1: Streaming Implementation (Weight: 35%)
+    - 1.0: Correctly uses httpx async streaming with aiter_bytes/aiter_raw, writes chunks to temp file, extracts frames periodically
+    - 0.75: Streaming implemented but with minor issues
+    - 0.5: Partial streaming (e.g., uses Range headers but not true streaming)
+    - 0.25: Claims streaming but actually downloads full file
+    - 0.0: No streaming implementation
+
+  ### Criterion 2: Early Termination Logic (Weight: 30%)
+    - 1.0: Correctly stops download after MAX_FRAMES extracted, with proper OpenCV VideoCapture handling on partial file
+    - 0.75: Early termination works but has edge cases
+    - 0.5: Terminates but may miss frames or have race conditions
+    - 0.25: Termination logic present but broken
+    - 0.0: Downloads full file regardless
+
+  ### Criterion 3: Error Handling and Fallback (Weight: 20%)
+    - 1.0: Graceful fallback to full download on any stream error, proper cleanup of temp files
+    - 0.75: Fallback exists but incomplete cleanup
+    - 0.5: Partial error handling
+    - 0.25: No fallback
+    - 0.0: Errors crash the service
+
+  ### Criterion 4: API Compatibility (Weight: 15%)
+    - 1.0: load_video signature and return type unchanged, existing callers unaffected
+    - 0.75: Minor signature changes but backward compatible
+    - 0.5: Breaking changes that require caller updates
+    - 0.25: Interface significantly changed
+    - 0.0: Existing functionality broken
+primary_dimensions:
+- completion
+- robustness
+- communication

@@ -1,0 +1,12 @@
+[project]
+name = "feishu-bot"
+version = "0.1.0"
+description = "Personal assistant bot for Feishu"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.25.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]

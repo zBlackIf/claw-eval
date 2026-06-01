@@ -1,0 +1,71 @@
+# provenance:
+#   source_session: 13691163604470723974
+#   scenario: Agent 协议 / 元操作
+#   description: Multi-agent hub config migration - routing rules consolidation,
+#     new source/agent addition, AGENT.md updates, session management config.
+task_id: CP114_agent_message_routing_config
+task_name: "Agent Hub 消息路由配置迁移（CP114 / 源 session 13691163604470723974）"
+version: "1.0"
+category: design
+difficulty: hard
+tags: [general]
+
+source_session_id: "13691163604470723974"
+source_description: "Multi-agent system (D-Pi) message routing config migration. Agent reads migration checklist, consolidates POC routing rules into hub_config.yaml, adds new webhook source (GitLab), creates new agent config, updates existing agent AGENT.md, and adds session compaction recovery settings."
+
+services: []
+
+prompt:
+  text: |
+    我们 agent hub 的路由配置拖了两个 sprint 了，现在 POC 验证完毕需要正式收敛。
+    /workspace/fixtures/agent-hub/ 里有现有配置和 MIGRATION_v2.2.md 里列的 6 项改动，
+    你按那个清单把配置整理好——改完直接跑就行的那种，别留半成品。
+  language: zh
+
+tools: []
+tool_endpoints: []
+
+sandbox_files:
+  - fixtures/agent-hub/hub_config.yaml
+  - fixtures/agent-hub/routing_rules_poc.json
+  - fixtures/agent-hub/MIGRATION_v2.2.md
+  - fixtures/agent-hub/.pi/agents/lark/AGENT.md
+  - fixtures/agent-hub/.pi/agents/obsidian/AGENT.md
+  - fixtures/agent-hub/.pi/agents/rd/AGENT.md
+  - fixtures/agent-hub/.pi/agents/devops/AGENT.md
+
+sandbox_grader_files:
+  - fixtures/verify_solution.py
+
+env_snapshot_commands:
+  - python /workspace/fixtures/verify_solution.py
+
+environment:
+  timeout_seconds: 600
+  max_turns: 20
+  env_snapshot_timeout: 30
+
+scoring_components: []
+safety_checks: []
+expected_actions: []
+
+judge_rubric: "Reward complete migration: all 5 POC routing rules consolidated into hub_config.yaml routing.rules section, routing_rules_poc.json deleted, gitlab-events webhook source added with correct events/port/auth, 3 gitlab routing rules with proper agent targets and priorities, poc-frontend agent registered with React/CSS/a11y capabilities, poc-frontend AGENT.md created, lark AGENT.md updated with frontend delegation and skill-check tool, session_management section with compaction threshold and recovery actions."
+
+reference_solution: |
+  1. hub_config.yaml routing.rules: migrate all 5 rules from POC JSON
+     (private-chat-to-lark, group-mention-to-lark, doc-comment-to-obsidian,
+      meego-issue-to-rd, daily-sync-to-lark) + conflict_resolution + unmatched_behavior
+  2. Delete routing_rules_poc.json
+  3. Add gitlab-events source: type webhook, endpoint /hooks/gitlab, port 7892,
+     events [merge_request.open, merge_request.merge, pipeline.failed],
+     auth bearer GITLAB_HOOK_TOKEN
+  4. Add 3 gitlab routing rules: MR open->rd(35), MR merge->devops(36),
+     pipeline.failed->devops(15)
+  5. Add poc-frontend agent: role frontend-specialist, capabilities [react-dev,
+     css-review, a11y-audit], config_path .pi/agents/poc-frontend/AGENT.md
+  6. Create .pi/agents/poc-frontend/AGENT.md with React/CSS/a11y content
+  7. Update .pi/agents/lark/AGENT.md: add frontend delegation rule + skill-check tool
+  8. Add session_management: compaction_threshold_tokens 80000,
+     on_compaction {reload_skills: true, re_fetch_context_window: 5, notify_user: false}
+
+primary_dimensions: [completion, communication, safety]
