@@ -25,6 +25,38 @@ from ...models.tool import ToolSpec
 from ...models.trace import TokenUsage
 
 _MALFORMED_TOOL_INPUT_KEY = "__ark_malformed_tool_input__"
+DEFAULT_MAX_RETRIES = 20
+
+
+def _normalize_max_retries(value: int | None, default: int = DEFAULT_MAX_RETRIES) -> int:
+    if value is None:
+        return default
+    retries = int(value)
+    if retries < 0:
+        raise ValueError("max_retries must be >= 0")
+    return retries
+
+
+def _pop_required_positive_int(values: dict[str, Any], field: str) -> int:
+    if field not in values:
+        raise ValueError(
+            f"Claw-Eval openai-responses provider requires extra_body.{field}; "
+            "configure maxTokens / Max Output Tokens in the model config."
+        )
+    raw_value = values.pop(field)
+    try:
+        value = int(raw_value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"Claw-Eval openai-responses provider requires positive integer extra_body.{field}; "
+            "configure maxTokens / Max Output Tokens in the model config."
+        ) from exc
+    if value <= 0:
+        raise ValueError(
+            f"Claw-Eval openai-responses provider requires positive integer extra_body.{field}; "
+            "configure maxTokens / Max Output Tokens in the model config."
+        )
+    return value
 
 
 def _tool_spec_to_responses(spec: ToolSpec) -> dict[str, Any]:
@@ -197,11 +229,13 @@ class OpenAIResponsesProvider:
         extra_body: dict | None = None,
         temperature: float | None = 0.0,
         reasoning_effort: str | None = None,
+        max_retries: int | None = None,
     ) -> None:
         self.model_id = model_id
         self.extra_body = extra_body or {}
         self.temperature = temperature
         self.reasoning_effort = reasoning_effort
+        self.max_retries = _normalize_max_retries(max_retries)
         resolved_key = api_key or os.environ.get("OPENAI_API_KEY") or "unused"
         self.client = OpenAI(api_key=resolved_key, base_url=base_url)
 
@@ -213,7 +247,7 @@ class OpenAIResponsesProvider:
         input_items = _messages_to_responses_input(messages)
         responses_tools = [_tool_spec_to_responses(t) for t in (tools or [])]
         request_extra_body = dict(self.extra_body or {})
-        max_output_tokens = request_extra_body.pop("max_output_tokens", 8192)
+        max_output_tokens = _pop_required_positive_int(request_extra_body, "max_output_tokens")
 
         kwargs: dict[str, Any] = {
             "model": self.model_id,
@@ -229,7 +263,7 @@ class OpenAIResponsesProvider:
         if request_extra_body:
             kwargs["extra_body"] = request_extra_body
 
-        max_retries = 20
+        max_retries = _normalize_max_retries(getattr(self, "max_retries", None))
         last_exc: Exception | None = None
         for attempt in range(max_retries + 1):
             try:

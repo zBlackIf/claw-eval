@@ -30,6 +30,38 @@ from ...models.tool import ToolSpec
 from ...models.trace import TokenUsage
 
 _MALFORMED_TOOL_INPUT_KEY = "__ark_malformed_tool_input__"
+DEFAULT_MAX_RETRIES = 20
+
+
+def _normalize_max_retries(value: int | None, default: int = DEFAULT_MAX_RETRIES) -> int:
+    if value is None:
+        return default
+    retries = int(value)
+    if retries < 0:
+        raise ValueError("max_retries must be >= 0")
+    return retries
+
+
+def _pop_required_positive_int(values: dict[str, Any], field: str) -> int:
+    if field not in values:
+        raise ValueError(
+            f"Claw-Eval anthropic-messages provider requires extra_body.{field}; "
+            "configure maxTokens / Max Output Tokens in the model config."
+        )
+    raw_value = values.pop(field)
+    try:
+        value = int(raw_value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"Claw-Eval anthropic-messages provider requires positive integer extra_body.{field}; "
+            "configure maxTokens / Max Output Tokens in the model config."
+        ) from exc
+    if value <= 0:
+        raise ValueError(
+            f"Claw-Eval anthropic-messages provider requires positive integer extra_body.{field}; "
+            "configure maxTokens / Max Output Tokens in the model config."
+        )
+    return value
 
 
 def _normalize_anthropic_base_url(base_url: str | None) -> str | None:
@@ -246,6 +278,7 @@ class AnthropicMessagesProvider:
         extra_body: dict | None = None,
         temperature: float | None = 0.0,
         reasoning_effort: str | None = None,
+        max_retries: int | None = None,
     ) -> None:
         from anthropic import Anthropic
 
@@ -253,6 +286,7 @@ class AnthropicMessagesProvider:
         self.extra_body = extra_body or {}
         self.temperature = temperature
         self.reasoning_effort = reasoning_effort
+        self.max_retries = _normalize_max_retries(max_retries)
         normalized = _normalize_anthropic_base_url(base_url)
         self.client = Anthropic(api_key=api_key or "dummy", base_url=normalized)
 
@@ -264,10 +298,12 @@ class AnthropicMessagesProvider:
         system_msg, conv = _split_system(messages)
         anth_messages = [_message_to_anthropic(m) for m in conv]
         anth_tools = [_tool_spec_to_anthropic(t) for t in (tools or [])]
+        request_extra_body = dict(self.extra_body or {})
+        max_tokens = _pop_required_positive_int(request_extra_body, "max_tokens")
 
         kwargs: dict[str, Any] = {
             "model": self.model_id,
-            "max_tokens": 8192,
+            "max_tokens": max_tokens,
             "messages": anth_messages,
         }
         if system_msg:
@@ -276,11 +312,11 @@ class AnthropicMessagesProvider:
             kwargs["tools"] = anth_tools
         if self.temperature is not None:
             kwargs["temperature"] = self.temperature
-        if self.extra_body:
+        if request_extra_body:
             # Pass-through extra body fields (e.g., thinking, anthropic_beta)
-            kwargs.update(self.extra_body)
+            kwargs.update(request_extra_body)
 
-        max_retries = 20
+        max_retries = _normalize_max_retries(getattr(self, "max_retries", None))
         max_attempts = max_retries + 1
         last_exc: Exception | None = None
         for attempt in range(max_attempts):
