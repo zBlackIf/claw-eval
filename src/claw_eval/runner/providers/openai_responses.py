@@ -212,11 +212,13 @@ class OpenAIResponsesProvider:
     ) -> tuple[Message, TokenUsage]:
         input_items = _messages_to_responses_input(messages)
         responses_tools = [_tool_spec_to_responses(t) for t in (tools or [])]
+        request_extra_body = dict(self.extra_body or {})
+        max_output_tokens = request_extra_body.pop("max_output_tokens", 8192)
 
         kwargs: dict[str, Any] = {
             "model": self.model_id,
             "input": input_items,
-            "max_output_tokens": 8192,
+            "max_output_tokens": max_output_tokens,
         }
         if responses_tools:
             kwargs["tools"] = responses_tools
@@ -224,8 +226,8 @@ class OpenAIResponsesProvider:
             kwargs["temperature"] = self.temperature
         if self.reasoning_effort:
             kwargs["reasoning"] = {"effort": self.reasoning_effort}
-        if self.extra_body:
-            kwargs["extra_body"] = dict(self.extra_body)
+        if request_extra_body:
+            kwargs["extra_body"] = request_extra_body
 
         max_retries = 20
         last_exc: Exception | None = None
