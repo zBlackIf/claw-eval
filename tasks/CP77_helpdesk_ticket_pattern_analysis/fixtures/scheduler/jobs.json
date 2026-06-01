@@ -1,0 +1,43 @@
+[
+  {
+    "job_id": "SYS-SCH-01",
+    "name": "api-gateway-config-update",
+    "cron_expression": "0 3 12 5 *",
+    "enabled": true,
+    "last_run": "2026-05-12T03:00:00",
+    "next_run": "2026-06-12T03:00:00",
+    "last_status": "success",
+    "action": "update_gateway_config",
+    "tags": [
+      "infrastructure",
+      "change"
+    ]
+  },
+  {
+    "job_id": "SYS-SCH-02",
+    "name": "notification-queue-worker",
+    "cron_expression": "*/5 * * * *",
+    "enabled": true,
+    "last_run": "2026-05-12T00:00:00",
+    "next_run": "2026-05-26T12:05:00",
+    "last_status": "failed",
+    "action": "process_notifications",
+    "tags": [
+      "notification",
+      "critical"
+    ]
+  },
+  {
+    "job_id": "SYS-SCH-03",
+    "name": "search-index-update",
+    "cron_expression": "0 * * * *",
+    "enabled": true,
+    "last_run": "2026-05-26T11:00:00",
+    "next_run": "2026-05-26T12:00:00",
+    "last_status": "success",
+    "action": "update_index",
+    "tags": [
+      "search"
+    ]
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "contact_id": "CT-001",
+    "name": "周明",
+    "department": "客户成功部",
+    "title": "VP of Customer Success",
+    "email": "zhou.ming@company.com",
+    "phone": "021-8800-1001"
+  },
+  {
+    "contact_id": "CT-002",
+    "name": "林芳",
+    "department": "客户成功部",
+    "title": "Customer Success Director",
+    "email": "lin.fang@company.com",
+    "phone": "021-8800-1002"
+  },
+  {
+    "contact_id": "CT-003",
+    "name": "陈刚",
+    "department": "销售部",
+    "title": "Sales VP",
+    "email": "chen.gang@company.com",
+    "phone": "021-8800-2001"
+  },
+  {
+    "contact_id": "CT-004",
+    "name": "刘伟",
+    "department": "客户管理部",
+    "title": "客户经理",
+    "email": "liu.wei@company.com",
+    "phone": "021-8800-3001"
+  },
+  {
+    "contact_id": "CT-005",
+    "name": "赵静",
+    "department": "客户成功部",
+    "title": "客户成功经理",
+    "email": "zhao.jing@company.com",
+    "phone": "021-8800-1003"
+  },
+  {
+    "contact_id": "CT-006",
+    "name": "孙磊",
+    "department": "客户管理部",
+    "title": "客户经理",
+    "email": "sun.lei@company.com",
+    "phone": "021-8800-3002"
+  }
+]

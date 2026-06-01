@@ -21,7 +21,7 @@ services:
     ready_timeout: 10
     reset_endpoint: http://localhost:9349/strategy_review/reset
     env:
-      WORKFLOW_SERVICE_FIXTURES: tasks/CP49_quant_atr_ma_strategy_optimization/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP47_quant_atr_ma_strategy_optimization/fixtures/workflow_service.json
       WORKFLOW_SERVICE_NAME: strategy_review
 prompt:
   text: |

@@ -1,0 +1,81 @@
+[
+  {
+    "customer_id": "CUS-001",
+    "name": "天宏科技",
+    "status": "active",
+    "tier": "VIP",
+    "industry": "IT",
+    "annual_revenue": 1440000,
+    "contact_person": "王建国",
+    "email": "wang.jianguo@tianhong-tech.com",
+    "phone": "021-8876-5501",
+    "last_contact_date": "2026-04-16",
+    "notes": "核心IT服务客户，年合同144万。近期反馈产品迭代速度慢，CTO多次提及竞品功能。"
+  },
+  {
+    "customer_id": "CUS-002",
+    "name": "锐达电子",
+    "status": "active",
+    "tier": "standard",
+    "industry": "电子制造",
+    "annual_revenue": 480000,
+    "contact_person": "李明辉",
+    "email": "li.minghui@ruida-elec.com",
+    "phone": "0755-2233-4401",
+    "last_contact_date": "2026-05-01",
+    "notes": "电子制造行业标准客户，年合同48万。近两月付款出现延迟，客户抱怨工单响应慢。"
+  },
+  {
+    "customer_id": "CUS-003",
+    "name": "华盛制造",
+    "status": "active",
+    "tier": "VIP",
+    "industry": "制造",
+    "annual_revenue": 960000,
+    "contact_person": "张伟",
+    "email": "zhang.wei@huasheng-mfg.com",
+    "phone": "0512-6677-8801",
+    "last_contact_date": "2026-05-16",
+    "contract_expiry_date": "2026-06-25",
+    "notes": "VIP制造业客户，年合同96万。合同30天后到期，需主动对接续签事宜。"
+  },
+  {
+    "customer_id": "CUS-004",
+    "name": "明远教育",
+    "status": "active",
+    "tier": "standard",
+    "industry": "教育",
+    "annual_revenue": 240000,
+    "contact_person": "陈晓红",
+    "email": "chen.xiaohong@mingyuan-edu.com",
+    "phone": "010-5566-7701",
+    "last_contact_date": "2026-05-21",
+    "notes": "教育行业客户，年合同24万。使用满意度高，近期表达升级意愿。"
+  },
+  {
+    "customer_id": "CUS-005",
+    "name": "星辉物流",
+    "status": "active",
+    "tier": "standard",
+    "industry": "物流",
+    "annual_revenue": 360000,
+    "contact_person": "赵大鹏",
+    "email": "zhao.dapeng@xinghui-logistics.com",
+    "phone": "0571-8899-0012",
+    "last_contact_date": "2026-05-11",
+    "notes": "物流行业标准客户，年合同36万。使用稳定，无异常。"
+  },
+  {
+    "customer_id": "CUS-006",
+    "name": "泰和医药",
+    "status": "active",
+    "tier": "VIP",
+    "industry": "医药",
+    "annual_revenue": 1200000,
+    "contact_person": "刘芳芳",
+    "email": "liu.fangfang@taihe-pharma.com",
+    "phone": "020-3344-5501",
+    "last_contact_date": "2026-05-18",
+    "notes": "医药行业VIP客户，年合同120万。对数据安全合规要求高，整体合作稳定。"
+  }
+]

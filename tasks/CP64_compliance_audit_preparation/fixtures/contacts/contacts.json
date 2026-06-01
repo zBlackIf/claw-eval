@@ -1,0 +1,26 @@
+[
+  {
+    "contact_id": "CT-001",
+    "name": "黄建国",
+    "department": "安全部",
+    "title": "CISO",
+    "email": "huang.jianguo@company.com",
+    "phone": "13200001001"
+  },
+  {
+    "contact_id": "CT-002",
+    "name": "钱伟",
+    "department": "技术部",
+    "title": "DevOps负责人",
+    "email": "qian.wei@company.com",
+    "phone": "13200001002"
+  },
+  {
+    "contact_id": "CT-003",
+    "name": "孙丽",
+    "department": "法务部",
+    "title": "法务总监",
+    "email": "sun.li@company.com",
+    "phone": "13200001003"
+  }
+]

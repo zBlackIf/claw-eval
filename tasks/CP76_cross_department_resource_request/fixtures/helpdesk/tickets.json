@@ -1,0 +1,250 @@
+[
+  {
+    "ticket_id": "ENG-001",
+    "title": "工程任务-API重构",
+    "description": "技术开发任务-API重构",
+    "reporter": "PM",
+    "department": "工程部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "engineering"
+    ]
+  },
+  {
+    "ticket_id": "ENG-002",
+    "title": "工程任务-性能优化",
+    "description": "技术开发任务-性能优化",
+    "reporter": "PM",
+    "department": "工程部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "engineering"
+    ]
+  },
+  {
+    "ticket_id": "ENG-003",
+    "title": "工程任务-安全修复",
+    "description": "技术开发任务-安全修复",
+    "reporter": "PM",
+    "department": "工程部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "engineering"
+    ]
+  },
+  {
+    "ticket_id": "ENG-004",
+    "title": "工程任务-数据迁移",
+    "description": "技术开发任务-数据迁移",
+    "reporter": "PM",
+    "department": "工程部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "engineering"
+    ]
+  },
+  {
+    "ticket_id": "ENG-005",
+    "title": "工程任务-监控告警",
+    "description": "技术开发任务-监控告警",
+    "reporter": "PM",
+    "department": "工程部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "engineering"
+    ]
+  },
+  {
+    "ticket_id": "ENG-006",
+    "title": "工程任务-CI/CD升级",
+    "description": "技术开发任务-CI/CD升级",
+    "reporter": "PM",
+    "department": "工程部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "engineering"
+    ]
+  },
+  {
+    "ticket_id": "ENG-007",
+    "title": "工程任务-代码审查",
+    "description": "技术开发任务-代码审查",
+    "reporter": "PM",
+    "department": "工程部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "engineering"
+    ]
+  },
+  {
+    "ticket_id": "ENG-008",
+    "title": "工程任务-技术债清理",
+    "description": "技术开发任务-技术债清理",
+    "reporter": "PM",
+    "department": "工程部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "engineering"
+    ]
+  },
+  {
+    "ticket_id": "ENG-009",
+    "title": "工程任务-文档更新",
+    "description": "技术开发任务-文档更新",
+    "reporter": "PM",
+    "department": "工程部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "engineering"
+    ]
+  },
+  {
+    "ticket_id": "ENG-010",
+    "title": "工程任务-微服务拆分",
+    "description": "技术开发任务-微服务拆分",
+    "reporter": "PM",
+    "department": "工程部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "engineering"
+    ]
+  },
+  {
+    "ticket_id": "ENG-011",
+    "title": "工程任务-缓存优化",
+    "description": "技术开发任务-缓存优化",
+    "reporter": "PM",
+    "department": "工程部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "engineering"
+    ]
+  },
+  {
+    "ticket_id": "ENG-012",
+    "title": "工程任务-日志治理",
+    "description": "技术开发任务-日志治理",
+    "reporter": "PM",
+    "department": "工程部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "engineering"
+    ]
+  },
+  {
+    "ticket_id": "ENG-013",
+    "title": "工程任务-SDK升级",
+    "description": "技术开发任务-SDK升级",
+    "reporter": "PM",
+    "department": "工程部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "engineering"
+    ]
+  },
+  {
+    "ticket_id": "ENG-014",
+    "title": "工程任务-依赖更新",
+    "description": "技术开发任务-依赖更新",
+    "reporter": "PM",
+    "department": "工程部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "engineering"
+    ]
+  },
+  {
+    "ticket_id": "ENG-015",
+    "title": "工程任务-测试补充",
+    "description": "技术开发任务-测试补充",
+    "reporter": "PM",
+    "department": "工程部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "engineering"
+    ]
+  },
+  {
+    "ticket_id": "DES-001",
+    "title": "设计任务-新功能原型",
+    "description": "UI/UX设计-新功能原型",
+    "reporter": "PM",
+    "department": "设计部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "design"
+    ]
+  },
+  {
+    "ticket_id": "DES-002",
+    "title": "设计任务-图标优化",
+    "description": "UI/UX设计-图标优化",
+    "reporter": "PM",
+    "department": "设计部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "design"
+    ]
+  },
+  {
+    "ticket_id": "DES-003",
+    "title": "设计任务-配色升级",
+    "description": "UI/UX设计-配色升级",
+    "reporter": "PM",
+    "department": "设计部",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "design"
+    ]
+  },
+  {
+    "ticket_id": "DATA-001",
+    "title": "数据管道阻塞-P0",
+    "description": "ETL pipeline从5月20日起阻塞，上游数据无法进入数仓",
+    "reporter": "数据组",
+    "department": "数据部",
+    "priority": "critical",
+    "status": "open",
+    "created_at": "2026-05-20",
+    "tags": [
+      "data",
+      "blocked"
+    ]
+  }
+]

@@ -1,0 +1,142 @@
+[
+  {
+    "ticket_id": "QBR-H01",
+    "title": "API响应超时-高峰期",
+    "description": "每天上午10-11点API响应时间超过3秒",
+    "reporter": "华锐制造",
+    "department": "技术支持",
+    "priority": "high",
+    "status": "open",
+    "created_at": "2026-04-10",
+    "tags": [
+      "performance",
+      "customer"
+    ]
+  },
+  {
+    "ticket_id": "QBR-H02",
+    "title": "数据导出格式异常",
+    "description": "导出的Excel文件部分数据丢失",
+    "reporter": "信达金融",
+    "department": "技术支持",
+    "priority": "medium",
+    "status": "resolved",
+    "created_at": "2026-04-15",
+    "tags": [
+      "bug",
+      "export"
+    ]
+  },
+  {
+    "ticket_id": "QBR-H03",
+    "title": "新功能培训需求",
+    "description": "AI助手功能上线后需要培训",
+    "reporter": "明远教育",
+    "department": "客户成功",
+    "priority": "low",
+    "status": "closed",
+    "created_at": "2026-04-20",
+    "tags": [
+      "training",
+      "onboarding"
+    ]
+  },
+  {
+    "ticket_id": "QBR-H04",
+    "title": "数据迁移后报表异常",
+    "description": "4月底数据迁移后部分历史报表数据不对",
+    "reporter": "鼎盛机械",
+    "department": "技术支持",
+    "priority": "high",
+    "status": "resolved",
+    "created_at": "2026-05-02",
+    "tags": [
+      "migration",
+      "data"
+    ]
+  },
+  {
+    "ticket_id": "QBR-H05",
+    "title": "移动端闪退",
+    "description": "iOS端打开大数据量看板闪退",
+    "reporter": "天宏科技",
+    "department": "技术支持",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-05",
+    "tags": [
+      "mobile",
+      "crash"
+    ]
+  },
+  {
+    "ticket_id": "QBR-H06",
+    "title": "SSO集成配置问题",
+    "description": "SAML配置后偶发登录失败",
+    "reporter": "仁和医疗",
+    "department": "技术支持",
+    "priority": "medium",
+    "status": "resolved",
+    "created_at": "2026-05-08",
+    "tags": [
+      "sso",
+      "integration"
+    ]
+  },
+  {
+    "ticket_id": "QBR-H07",
+    "title": "权限管理增强建议",
+    "description": "希望支持更细粒度的数据权限",
+    "reporter": "信达金融",
+    "department": "产品反馈",
+    "priority": "low",
+    "status": "open",
+    "created_at": "2026-05-10",
+    "tags": [
+      "feature_request",
+      "permission"
+    ]
+  },
+  {
+    "ticket_id": "QBR-H08",
+    "title": "API文档不准确",
+    "description": "v3 API多个endpoint参数说明过时",
+    "reporter": "启航物流",
+    "department": "开发者支持",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-12",
+    "tags": [
+      "documentation",
+      "api"
+    ]
+  },
+  {
+    "ticket_id": "QBR-H09",
+    "title": "批量导入性能慢",
+    "description": "导入5000条数据需要10分钟",
+    "reporter": "华锐制造",
+    "department": "技术支持",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-15",
+    "tags": [
+      "performance",
+      "import"
+    ]
+  },
+  {
+    "ticket_id": "QBR-H10",
+    "title": "数据看板加载优化",
+    "description": "复杂看板首次加载超过8秒",
+    "reporter": "鼎盛机械",
+    "department": "技术支持",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-18",
+    "tags": [
+      "performance",
+      "dashboard"
+    ]
+  }
+]

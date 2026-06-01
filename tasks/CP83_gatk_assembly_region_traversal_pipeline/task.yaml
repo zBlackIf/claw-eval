@@ -25,7 +25,7 @@ services:
     ready_timeout: 10
     reset_endpoint: http://localhost:9106/kb/reset
     env:
-      KB_FIXTURES: tasks/CP72_gatk_assembly_region_traversal_pipeline/fixtures/kb/articles.json
+      KB_FIXTURES: tasks/CP83_gatk_assembly_region_traversal_pipeline/fixtures/kb/articles.json
 
 prompt:
   text: |

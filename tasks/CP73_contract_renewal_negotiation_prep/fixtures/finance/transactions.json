@@ -1,0 +1,52 @@
+[
+  {
+    "transaction_id": "RN-001",
+    "date": "2026-01-15",
+    "amount": 120000,
+    "currency": "CNY",
+    "merchant": "天宏科技",
+    "category": "subscription",
+    "description": "天宏-1月订阅费",
+    "receipt_url": ""
+  },
+  {
+    "transaction_id": "RN-002",
+    "date": "2026-02-15",
+    "amount": 110000,
+    "currency": "CNY",
+    "merchant": "天宏科技",
+    "category": "subscription",
+    "description": "天宏-2月订阅费(缩减模块)",
+    "receipt_url": ""
+  },
+  {
+    "transaction_id": "RN-003",
+    "date": "2026-03-15",
+    "amount": 95000,
+    "currency": "CNY",
+    "merchant": "天宏科技",
+    "category": "subscription",
+    "description": "天宏-3月订阅费(再缩减)",
+    "receipt_url": ""
+  },
+  {
+    "transaction_id": "RN-004",
+    "date": "2026-04-15",
+    "amount": 85000,
+    "currency": "CNY",
+    "merchant": "天宏科技",
+    "category": "subscription",
+    "description": "天宏-4月订阅费",
+    "receipt_url": ""
+  },
+  {
+    "transaction_id": "RN-005",
+    "date": "2026-05-15",
+    "amount": 80000,
+    "currency": "CNY",
+    "merchant": "天宏科技",
+    "category": "subscription",
+    "description": "天宏-5月订阅费(最低套餐)",
+    "receipt_url": ""
+  }
+]

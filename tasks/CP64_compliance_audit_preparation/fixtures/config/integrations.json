@@ -1,0 +1,74 @@
+[
+  {
+    "integration_id": "INT-C01",
+    "name": "user-auth-service",
+    "service": "okta",
+    "status": "active",
+    "last_verified": "2026-05-20",
+    "monthly_calls": 500000,
+    "error_rate": 0.1
+  },
+  {
+    "integration_id": "INT-C02",
+    "name": "data-warehouse",
+    "service": "snowflake",
+    "status": "active",
+    "last_verified": "2026-05-15",
+    "monthly_calls": 80000,
+    "error_rate": 0.2
+  },
+  {
+    "integration_id": "INT-C03",
+    "name": "payment-processor",
+    "service": "stripe",
+    "status": "active",
+    "last_verified": "2026-05-22",
+    "monthly_calls": 120000,
+    "error_rate": 0.3
+  },
+  {
+    "integration_id": "INT-C04",
+    "name": "file-storage",
+    "service": "minio",
+    "status": "active",
+    "last_verified": "2026-03-01",
+    "monthly_calls": 200000,
+    "error_rate": 0.1
+  },
+  {
+    "integration_id": "INT-C05",
+    "name": "email-relay",
+    "service": "postfix",
+    "status": "active",
+    "last_verified": "2026-05-10",
+    "monthly_calls": 30000,
+    "error_rate": 1.5
+  },
+  {
+    "integration_id": "INT-C06",
+    "name": "log-aggregation",
+    "service": "elasticsearch",
+    "status": "active",
+    "last_verified": "2026-05-18",
+    "monthly_calls": 1000000,
+    "error_rate": 0.0
+  },
+  {
+    "integration_id": "INT-C07",
+    "name": "cdn-service",
+    "service": "cloudflare",
+    "status": "active",
+    "last_verified": "2026-05-25",
+    "monthly_calls": 5000000,
+    "error_rate": 0.0
+  },
+  {
+    "integration_id": "INT-C08",
+    "name": "internal-api-gateway",
+    "service": "kong",
+    "status": "degraded",
+    "last_verified": "2026-05-26",
+    "monthly_calls": 300000,
+    "error_rate": 3.2
+  }
+]

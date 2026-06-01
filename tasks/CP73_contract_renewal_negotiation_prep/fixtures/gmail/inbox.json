@@ -1,0 +1,15 @@
+[
+  {
+    "message_id": "msg_01",
+    "from": "sales-vp@company.com",
+    "to": "account-manager@company.com",
+    "subject": "天宏科技续约准备",
+    "body": "天宏合同7月到期，他们月费一直在降。请准备续约谈判资料：\n1. 他们的历史消费趋势\n2. 竞品动态（特别是价格变化）\n3. 我们能给的最大优惠方案\n4. 谈判策略建议\n\n整理好发个草稿给我看。",
+    "date": "2026-05-24",
+    "is_read": false,
+    "labels": [
+      "urgent",
+      "renewal"
+    ]
+  }
+]

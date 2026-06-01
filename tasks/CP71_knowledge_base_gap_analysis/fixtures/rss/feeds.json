@@ -1,0 +1,56 @@
+[
+  {
+    "article_id": "RSS-GAP-01",
+    "title": "OAuth 2.1规范正式发布：企业SSO集成指南",
+    "source": "InfoQ",
+    "category": "security",
+    "published_at": "2026-05-15",
+    "summary": "OAuth 2.1正式发布，推荐PKCE+OIDC组合作为企业SSO最佳实践。SAML逐步被替代。",
+    "word_count": 2000
+  },
+  {
+    "article_id": "RSS-GAP-02",
+    "title": "API设计最佳实践2026：Rate Limiting策略",
+    "source": "API Magazine",
+    "category": "engineering",
+    "published_at": "2026-05-18",
+    "summary": "Token bucket + sliding window组合策略成为主流。建议在文档中清晰标注限额。",
+    "word_count": 1500
+  },
+  {
+    "article_id": "RSS-GAP-03",
+    "title": "SaaS产品自助文档的7个关键要素",
+    "source": "Product School",
+    "category": "product",
+    "published_at": "2026-05-20",
+    "summary": "优秀的产品文档应包含：快速入门、API参考、错误码说明、最佳实践、变更日志、社区论坛、视频教程。",
+    "word_count": 1800
+  },
+  {
+    "article_id": "RSS-GAP-04",
+    "title": "Webhook设计模式与安全最佳实践",
+    "source": "Engineering Blog",
+    "category": "engineering",
+    "published_at": "2026-05-22",
+    "summary": "Webhook应支持事件过滤、签名验证、重试机制。文档必须列明所有事件类型。",
+    "word_count": 1200
+  },
+  {
+    "article_id": "RSS-GAP-05",
+    "title": "量子计算最新进展",
+    "source": "Science Daily",
+    "category": "quantum",
+    "published_at": "2026-05-19",
+    "summary": "不相关内容",
+    "word_count": 800
+  },
+  {
+    "article_id": "RSS-GAP-06",
+    "title": "电动车销量再创新高",
+    "source": "Auto News",
+    "category": "automotive",
+    "published_at": "2026-05-21",
+    "summary": "不相关内容",
+    "word_count": 600
+  }
+]

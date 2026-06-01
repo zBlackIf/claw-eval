@@ -1,0 +1,50 @@
+[
+  {
+    "contact_id": "CT-601",
+    "name": "张伟",
+    "department": "技术部",
+    "title": "前端负责人",
+    "email": "zhang.wei@company.com",
+    "phone": "13100001001"
+  },
+  {
+    "contact_id": "CT-602",
+    "name": "李丽",
+    "department": "技术部",
+    "title": "后端负责人",
+    "email": "li.li@company.com",
+    "phone": "13100001002"
+  },
+  {
+    "contact_id": "CT-603",
+    "name": "王强",
+    "department": "技术部",
+    "title": "后端负责人",
+    "email": "wang.qiang@company.com",
+    "phone": "13100001003"
+  },
+  {
+    "contact_id": "CT-604",
+    "name": "刘建",
+    "department": "技术部",
+    "title": "架构师",
+    "email": "liu.jian@company.com",
+    "phone": "13100001004"
+  },
+  {
+    "contact_id": "CT-605",
+    "name": "何明",
+    "department": "产品部",
+    "title": "产品经理",
+    "email": "he.ming@company.com",
+    "phone": "13100001005"
+  },
+  {
+    "contact_id": "CT-606",
+    "name": "孙浩",
+    "department": "客户成功",
+    "title": "客户经理",
+    "email": "sun.hao@company.com",
+    "phone": "13100001006"
+  }
+]

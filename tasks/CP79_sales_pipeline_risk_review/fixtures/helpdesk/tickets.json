@@ -1,0 +1,68 @@
+[
+  {
+    "ticket_id": "HD-4001",
+    "title": "API response times exceeding SLA",
+    "description": "Our trading API calls are consistently taking 3-5 seconds to respond. SLA states under 200ms. This is causing real financial losses during high-volume trading windows. We need immediate resolution or we will need to evaluate alternatives.",
+    "reporter": "David Chen",
+    "department": "Engineering",
+    "priority": "critical",
+    "status": "open",
+    "created_at": "2026-05-22T10:30:00Z",
+    "tags": ["sla-breach", "api-latency", "nextera-solutions"]
+  },
+  {
+    "ticket_id": "HD-4002",
+    "title": "HIPAA compliance audit finding - data residency concern",
+    "description": "During our annual HIPAA audit, the auditors flagged that some patient data may be temporarily stored in non-compliant regions during the migration process you initiated last month. We need documentation proving data residency compliance within 5 business days or we face regulatory penalties.",
+    "reporter": "Sarah Martinez",
+    "department": "Compliance",
+    "priority": "critical",
+    "status": "open",
+    "created_at": "2026-05-20T08:15:00Z",
+    "tags": ["hipaa", "compliance", "data-residency", "pinnacle-health"]
+  },
+  {
+    "ticket_id": "HD-4003",
+    "title": "Data migration causing duplicate records",
+    "description": "The data migration that was supposed to improve our system has introduced duplicate patient records. We've found 47 duplicates so far. This is a patient safety issue.",
+    "reporter": "Sarah Martinez",
+    "department": "Clinical Operations",
+    "priority": "high",
+    "status": "in_progress",
+    "created_at": "2026-05-19T14:20:00Z",
+    "tags": ["data-migration", "duplicates", "pinnacle-health"]
+  },
+  {
+    "ticket_id": "HD-4004",
+    "title": "Report export formatting broken after last update",
+    "description": "Since the platform update 2 weeks ago, our monthly financial reports export with garbled formatting. This affects our board reporting timeline. Not urgent but annoying.",
+    "reporter": "Amanda Torres",
+    "department": "Finance",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-18T11:00:00Z",
+    "tags": ["export", "formatting", "crestwave-media"]
+  },
+  {
+    "ticket_id": "HD-4005",
+    "title": "Request for bulk user import feature",
+    "description": "We are onboarding 200 new students next semester and need a bulk import feature. Currently adding users one by one is too slow. This would be a great enhancement.",
+    "reporter": "Robert Kim",
+    "department": "IT Admin",
+    "priority": "low",
+    "status": "open",
+    "created_at": "2026-05-15T09:45:00Z",
+    "tags": ["feature-request", "brightstar-education"]
+  },
+  {
+    "ticket_id": "HD-4006",
+    "title": "Fleet tracking GPS data intermittent gaps",
+    "description": "We're seeing 5-10 minute gaps in GPS tracking data for about 15% of our fleet vehicles. Not critical yet but could become a compliance issue if it worsens.",
+    "reporter": "Carlos Mendez",
+    "department": "Operations",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2026-05-12T16:30:00Z",
+    "tags": ["gps", "tracking", "oceanbridge-shipping"]
+  }
+]

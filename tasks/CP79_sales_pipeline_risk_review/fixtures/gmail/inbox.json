@@ -1,0 +1,52 @@
+[
+  {
+    "message_id": "msg_6801",
+    "from": "Lisa Park <l.park@company.com>",
+    "to": "me@company.com",
+    "subject": "Nextera Solutions - renewal risk flag",
+    "body": "Hi,\n\nHeads up on Nextera Solutions. David Chen mentioned in our last QBR that they're getting pressure from their board to reduce vendor costs by 15%. They're comparing us to two competitors. Their renewal is August 15.\n\nThe good news: their CTO told me privately that they love our platform's reliability and would prefer to stay. But they need us to be more competitive on price, or at minimum show an ROI improvement roadmap.\n\nI'd recommend we prepare a custom ROI deck before their renewal discussion.\n\nBest,\nLisa Park\nAccount Executive",
+    "date": "2026-05-23T09:00:00Z",
+    "is_read": true,
+    "labels": ["renewal", "risk"]
+  },
+  {
+    "message_id": "msg_6802",
+    "from": "Tom Baker <t.baker@company.com>",
+    "to": "me@company.com",
+    "subject": "URGENT: Pinnacle Health renewal at risk",
+    "body": "Team,\n\nPinnacle Health Systems is in trouble. Sarah Martinez (their VP of Clinical Ops) called me directly to escalate two issues:\n\n1. The HIPAA compliance audit found a data residency gap from our migration last month\n2. They discovered 47 duplicate patient records from the same migration\n\nShe said, and I quote: 'If these issues aren't resolved before our July 1 renewal decision meeting, we will be forced to look at alternatives regardless of switching costs.'\n\nThis is a $2.4M account. We need all hands on deck.\n\nTom Baker\nVP Customer Success",
+    "date": "2026-05-21T14:30:00Z",
+    "is_read": false,
+    "labels": ["urgent", "renewal", "escalation"]
+  },
+  {
+    "message_id": "msg_6803",
+    "from": "Rachel Green <r.green@company.com>",
+    "to": "me@company.com",
+    "subject": "TerraFirm Industries - good news actually",
+    "body": "Hi,\n\nI know TerraFirm looks concerning because we haven't had contact in 60+ days, but I wanted to share context:\n\nMike Patterson signed a 2-year prepaid deal on March 20th through our partner channel (Acme Resellers). The deal was processed outside our normal CRM flow which is why it shows no recent contact. He prepaid $1.1M for 2 years.\n\nThey slightly reduced their plan (dropped the analytics add-on they weren't using), but the multi-year commitment is actually a very strong signal. No action needed here.\n\nLet me know if you need the partner agreement reference.\n\nRachel Green\nPartner Channel Manager",
+    "date": "2026-05-24T11:00:00Z",
+    "is_read": true,
+    "labels": ["partner-channel", "terrafirm"]
+  },
+  {
+    "message_id": "msg_6804",
+    "from": "Marcus Johnson <m.johnson@company.com>",
+    "to": "me@company.com",
+    "subject": "Velocity Logistics monthly check-in notes",
+    "body": "Quick update from my call with Jennifer Wu at Velocity Logistics:\n\nThey're going through a restructuring - laid off 30% of their operations team last month. Jennifer said they 'need to right-size all vendor contracts to match new headcount.' They've already removed the route optimization module and reduced licenses.\n\nShe was non-committal about future plans but did mention they're evaluating whether to keep the platform at all vs building something lightweight in-house.\n\nPayment trend is concerning - declining every month. I'd flag this for pipeline risk.\n\nMarcus Johnson\nAccount Manager",
+    "date": "2026-05-22T16:00:00Z",
+    "is_read": true,
+    "labels": ["velocity-logistics", "risk"]
+  },
+  {
+    "message_id": "msg_6805",
+    "from": "Lisa Park <l.park@company.com>",
+    "to": "me@company.com",
+    "subject": "Brightstar Education expansion opportunity",
+    "body": "Great news - Robert Kim from Brightstar Education wants to discuss expanding to 3 more campuses next fall. They're adding 200 students and want bulk import capabilities.\n\nThis could push their contract from $360K to $520K+ annually. He's very enthusiastic about the platform.\n\nNo risk here, just upside potential.\n\nLisa",
+    "date": "2026-05-16T10:30:00Z",
+    "is_read": true,
+    "labels": ["expansion", "brightstar"]
+  }
+]

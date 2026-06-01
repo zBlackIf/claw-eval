@@ -1,0 +1,52 @@
+[
+  {
+    "article_id": "KB-C01",
+    "title": "2026 Q1内容营销效果复盘",
+    "category": "marketing",
+    "tags": [
+      "content",
+      "review"
+    ],
+    "content": "# Q1内容复盘\n\n## 表现最好的内容\n1. 《AI Agent如何改变企业工作流》- 阅读量12K，转化率3.2%\n2. 《SaaS选型避坑指南》- 阅读量8K，转化率2.8%\n3. 《数据安全合规实战手册》- 下载量5K\n\n## 表现较差\n1. 《量子计算科普》- 阅读量800，与我司业务相关性低\n2. 《ESG报告撰写工具对比》- 阅读量1200，受众太窄\n\n## 目标受众\n- 制造业CIO/CTO\n- SaaS企业产品负责人\n- 企业IT决策者"
+  },
+  {
+    "article_id": "KB-C02",
+    "title": "公司产品定位与目标行业",
+    "category": "strategy",
+    "tags": [
+      "product",
+      "positioning"
+    ],
+    "content": "# 产品定位\n\n## 核心产品：企业级AI+SaaS平台\n\n## 目标行业（按优先级）\n1. 制造业 - 数字化转型需求大\n2. 医疗 - 政策利好，AI诊断需求\n3. 金融 - 合规+智能化需求\n4. 教育 - 预算有限但体量大\n\n## 不做的方向\n- 消费级产品\n- 纯硬件\n- 游戏"
+  },
+  {
+    "article_id": "KB-C03",
+    "title": "内容日历模板与发布节奏",
+    "category": "marketing",
+    "tags": [
+      "content",
+      "calendar"
+    ],
+    "content": "# 内容发布节奏\n\n## 频率要求\n- 深度文章：2篇/周\n- 短视频/图文：3篇/周\n- 客户案例：1篇/月\n\n## 分发渠道\n- 微信公众号（主阵地）\n- 知乎专栏\n- LinkedIn（英文）\n\n## 内容类别配比\n- 行业洞察：40%\n- 产品能力：30%\n- 客户案例：20%\n- 企业文化：10%"
+  },
+  {
+    "article_id": "KB-C04",
+    "title": "竞品内容策略分析",
+    "category": "marketing",
+    "tags": [
+      "competitor",
+      "content"
+    ],
+    "content": "# 竞品内容分析\n\n## A公司（钉钉）\n- 高频短视频，强调易用性\n- 制造业案例较多\n\n## B公司（飞书）\n- 深度长文，强调协作效率\n- 技术博客质量高\n\n## 差异化机会\n- AI落地实操（竞品少涉及）\n- 数据安全合规（刚需内容）\n- 行业定制化方案（更垂直）"
+  },
+  {
+    "article_id": "KB-C05",
+    "title": "Q2营销重点主题",
+    "category": "marketing",
+    "tags": [
+      "q2",
+      "focus"
+    ],
+    "content": "# Q2重点主题方向\n\n1. AI Agent在企业中的实际应用（对标RSS热点）\n2. 数据安全合规（新规落地窗口期）\n3. 制造业数字化（与销售团队配合获客）\n4. 客户成功故事（提升品牌信任）"
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "integration_id": "SYS-001",
+    "name": "api-gateway",
+    "service": "kong",
+    "status": "active",
+    "last_verified": "2026-05-26",
+    "monthly_calls": 2000000,
+    "error_rate": 4.5
+  },
+  {
+    "integration_id": "SYS-002",
+    "name": "notification-service",
+    "service": "internal",
+    "status": "active",
+    "last_verified": "2026-05-26",
+    "monthly_calls": 100000,
+    "error_rate": 8.2
+  },
+  {
+    "integration_id": "SYS-003",
+    "name": "search-service",
+    "service": "elasticsearch",
+    "status": "active",
+    "last_verified": "2026-05-26",
+    "monthly_calls": 500000,
+    "error_rate": 2.1
+  },
+  {
+    "integration_id": "SYS-004",
+    "name": "auth-service",
+    "service": "okta",
+    "status": "active",
+    "last_verified": "2026-05-25",
+    "monthly_calls": 300000,
+    "error_rate": 0.1
+  }
+]

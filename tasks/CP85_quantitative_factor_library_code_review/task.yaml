@@ -25,7 +25,7 @@ services:
     ready_timeout: 10
     reset_endpoint: http://localhost:9106/kb/reset
     env:
-      KB_FIXTURES: tasks/CP74_quantitative_factor_library_code_review/fixtures/kb/articles.json
+      KB_FIXTURES: tasks/CP85_quantitative_factor_library_code_review/fixtures/kb/articles.json
 
 prompt:
   text: |

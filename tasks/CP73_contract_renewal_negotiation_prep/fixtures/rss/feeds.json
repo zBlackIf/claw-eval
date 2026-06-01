@@ -1,0 +1,20 @@
+[
+  {
+    "article_id": "RSS-RN01",
+    "title": "竞品A公司宣布提价20%",
+    "source": "行业观察",
+    "category": "competitor",
+    "published_at": "2026-05-20",
+    "summary": "A公司（我司主要竞品）宣布从7月起全线产品提价20%，理由是AI功能升级。多家客户表示不满。",
+    "word_count": 1500
+  },
+  {
+    "article_id": "RSS-RN02",
+    "title": "企业SaaS续约市场趋势2026",
+    "source": "SaaS研究院",
+    "category": "market",
+    "published_at": "2026-05-22",
+    "summary": "2026年企业SaaS续约率均值降至88%，价格敏感度上升。但提供AI增值服务的厂商续约率仍达95%。",
+    "word_count": 2000
+  }
+]

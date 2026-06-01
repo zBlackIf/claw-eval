@@ -1,0 +1,18 @@
+[
+  {
+    "contact_id": "CT-001",
+    "name": "周航",
+    "department": "销售部",
+    "title": "销售VP",
+    "email": "zhou.hang@company.com",
+    "phone": "13800006001"
+  },
+  {
+    "contact_id": "CT-002",
+    "name": "林青",
+    "department": "产品部",
+    "title": "产品VP",
+    "email": "lin.qing@company.com",
+    "phone": "13800006002"
+  }
+]

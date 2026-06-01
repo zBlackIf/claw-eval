@@ -21,7 +21,7 @@ services:
     ready_timeout: 10
     reset_endpoint: http://localhost:9345/memory_workflow/reset
     env:
-      WORKFLOW_SERVICE_FIXTURES: tasks/CP45_memory_dedup_decision/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP43_memory_dedup_decision/fixtures/workflow_service.json
       WORKFLOW_SERVICE_NAME: memory_workflow
 prompt:
   text: |

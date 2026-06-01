@@ -25,7 +25,7 @@ services:
     ready_timeout: 10
     reset_endpoint: http://localhost:9106/kb/reset
     env:
-      KB_FIXTURES: tasks/CP65_java_codebase_reverse_engineer_requirements/fixtures/kb/articles.json
+      KB_FIXTURES: tasks/CP74_java_codebase_reverse_engineer_requirements/fixtures/kb/articles.json
 
 prompt:
   text: |

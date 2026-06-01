@@ -1,0 +1,42 @@
+[
+  {
+    "job_id": "RES-01",
+    "name": "engineering-sprint-sync",
+    "cron_expression": "0 10 * * 1",
+    "enabled": true,
+    "last_run": "2026-05-20T10:00:00",
+    "next_run": "2026-05-27T10:00:00",
+    "last_status": "success",
+    "action": "sync_sprint",
+    "tags": [
+      "engineering"
+    ]
+  },
+  {
+    "job_id": "RES-02",
+    "name": "data-pipeline-etl",
+    "cron_expression": "0 1 * * *",
+    "enabled": true,
+    "last_run": "2026-05-20T01:00:00",
+    "next_run": "2026-05-27T01:00:00",
+    "last_status": "failed",
+    "action": "run_etl",
+    "tags": [
+      "data",
+      "critical"
+    ]
+  },
+  {
+    "job_id": "RES-03",
+    "name": "design-review-reminder",
+    "cron_expression": "0 14 * * 3",
+    "enabled": true,
+    "last_run": "2026-05-22T14:00:00",
+    "next_run": "2026-05-29T14:00:00",
+    "last_status": "success",
+    "action": "send_reminder",
+    "tags": [
+      "design"
+    ]
+  }
+]

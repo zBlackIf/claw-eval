@@ -21,7 +21,7 @@ services:
     ready_timeout: 10
     reset_endpoint: http://localhost:9339/market_data/reset
     env:
-      WORKFLOW_SERVICE_FIXTURES: tasks/CP39_stock_volume_price_analysis/fixtures/workflow_service.json
+      WORKFLOW_SERVICE_FIXTURES: tasks/CP37_stock_volume_price_analysis/fixtures/workflow_service.json
       WORKFLOW_SERVICE_NAME: market_data
 prompt:
   text: |

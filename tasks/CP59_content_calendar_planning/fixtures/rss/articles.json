@@ -1,0 +1,122 @@
+[
+  {
+    "article_id": "RSS-056-001",
+    "title": "Enterprise AI Adoption Surges in Manufacturing Sector",
+    "source": "TechInsider Weekly",
+    "category": "industry_trends",
+    "published_at": "2026-05-24T08:00:00Z",
+    "summary": "A new survey shows 67% of manufacturing firms plan to increase AI spending by 30% in 2026, focusing on predictive maintenance and quality control automation.",
+    "word_count": 850,
+    "content": "A new survey shows 67% of manufacturing firms plan to increase AI spending by 30% in 2026, focusing on predictive maintenance and quality control automation. Key drivers include labor shortages, rising raw material costs, and competitive pressure from early adopters who report 15-25% efficiency gains."
+  },
+  {
+    "article_id": "RSS-056-002",
+    "title": "Cloud Security Breaches Hit Record High in Q1 2026",
+    "source": "CyberWatch Daily",
+    "category": "cybersecurity",
+    "published_at": "2026-05-23T10:30:00Z",
+    "summary": "Cloud security incidents rose 42% year-over-year in Q1 2026, with SaaS misconfiguration being the top attack vector. Healthcare and finance sectors most affected.",
+    "word_count": 1200,
+    "content": "Cloud security incidents rose 42% year-over-year in Q1 2026, with SaaS misconfiguration being the top attack vector. Healthcare and finance sectors most affected. Experts recommend zero-trust architectures and regular configuration audits as primary defenses."
+  },
+  {
+    "article_id": "RSS-056-003",
+    "title": "Top 10 Celebrity Chef Restaurants Opening This Summer",
+    "source": "FoodieNation",
+    "category": "lifestyle",
+    "published_at": "2026-05-25T07:00:00Z",
+    "summary": "From Gordon Ramsay's new Tokyo outpost to local farm-to-table concepts, here are the most anticipated restaurant openings of summer 2026.",
+    "word_count": 600,
+    "content": "From Gordon Ramsay's new Tokyo outpost to local farm-to-table concepts, here are the most anticipated restaurant openings of summer 2026."
+  },
+  {
+    "article_id": "RSS-056-004",
+    "title": "Healthcare Digital Transformation: From EHR to AI Diagnostics",
+    "source": "HealthTech Review",
+    "category": "digital_health",
+    "published_at": "2026-05-22T14:00:00Z",
+    "summary": "Hospitals investing in AI-powered diagnostics report 35% faster diagnosis times. Integration challenges with legacy EHR systems remain the top barrier.",
+    "word_count": 950,
+    "content": "Hospitals investing in AI-powered diagnostics report 35% faster diagnosis times. Integration challenges with legacy EHR systems remain the top barrier. Leading health systems are adopting FHIR-based interoperability frameworks to bridge the gap between modern AI tools and existing clinical workflows."
+  },
+  {
+    "article_id": "RSS-056-005",
+    "title": "Olympic 2028 Venue Construction Ahead of Schedule",
+    "source": "Sports Daily",
+    "category": "sports",
+    "published_at": "2026-05-24T16:00:00Z",
+    "summary": "Los Angeles 2028 Olympic venue construction is 18 months ahead of schedule, with 60% of facilities already complete.",
+    "word_count": 400,
+    "content": "Los Angeles 2028 Olympic venue construction is 18 months ahead of schedule, with 60% of facilities already complete."
+  },
+  {
+    "article_id": "RSS-056-006",
+    "title": "Supply Chain Resilience: Lessons from the 2025 Semiconductor Shortage",
+    "source": "Supply Chain Quarterly",
+    "category": "supply_chain",
+    "published_at": "2026-05-21T09:00:00Z",
+    "summary": "Companies that invested in supply chain visibility platforms recovered 40% faster from the 2025 chip shortage. Multi-sourcing and nearshoring emerge as key strategies for manufacturing and tech firms.",
+    "word_count": 1100,
+    "content": "Companies that invested in supply chain visibility platforms recovered 40% faster from the 2025 chip shortage. Multi-sourcing and nearshoring emerge as key strategies for manufacturing and tech firms. The report highlights how real-time inventory tracking and AI-driven demand forecasting prevented $2.3B in potential losses across surveyed companies."
+  },
+  {
+    "article_id": "RSS-056-007",
+    "title": "FinTech Regulations Tighten: What SaaS Providers Need to Know",
+    "source": "Compliance Today",
+    "category": "fintech_regulation",
+    "published_at": "2026-05-23T11:00:00Z",
+    "summary": "New CFPB regulations require SaaS platforms handling financial data to implement enhanced encryption and audit logging by Q3 2026. Affects all financial services technology vendors.",
+    "word_count": 780,
+    "content": "New CFPB regulations require SaaS platforms handling financial data to implement enhanced encryption and audit logging by Q3 2026. Affects all financial services technology vendors. Non-compliance penalties can reach $5M per incident. Key requirements include end-to-end encryption, 90-day audit log retention, and annual third-party security assessments."
+  },
+  {
+    "article_id": "RSS-056-008",
+    "title": "Remote Work Productivity Tools Market Reaches $45B",
+    "source": "Enterprise Software Weekly",
+    "category": "enterprise_software",
+    "published_at": "2026-05-20T13:00:00Z",
+    "summary": "The remote work tools market hit $45B in 2025, with AI-powered project management and async communication tools seeing 80% year-over-year growth.",
+    "word_count": 700,
+    "content": "The remote work tools market hit $45B in 2025, with AI-powered project management and async communication tools seeing 80% year-over-year growth. Enterprise buyers prioritize integration capabilities, security certifications, and AI-native features when selecting new productivity platforms."
+  },
+  {
+    "article_id": "RSS-056-009",
+    "title": "Electric Vehicle Battery Recycling Breakthrough",
+    "source": "GreenTech Digest",
+    "category": "sustainability",
+    "published_at": "2026-05-22T08:30:00Z",
+    "summary": "A Stanford research team achieves 95% lithium recovery rate from spent EV batteries, potentially reducing new mining demand by 60%.",
+    "word_count": 550,
+    "content": "A Stanford research team achieves 95% lithium recovery rate from spent EV batteries, potentially reducing new mining demand by 60%."
+  },
+  {
+    "article_id": "RSS-056-010",
+    "title": "Data Governance Frameworks for Multi-Cloud Environments",
+    "source": "Cloud Architecture Journal",
+    "category": "data_governance",
+    "published_at": "2026-05-25T10:00:00Z",
+    "summary": "As enterprises adopt 3+ cloud providers on average, data governance becomes critical. New frameworks emphasize data lineage tracking, cross-cloud access policies, and automated compliance monitoring.",
+    "word_count": 900,
+    "content": "As enterprises adopt 3+ cloud providers on average, data governance becomes critical. New frameworks emphasize data lineage tracking, cross-cloud access policies, and automated compliance monitoring. Healthcare and financial services organizations lead adoption due to regulatory pressure, with manufacturing firms close behind due to IP protection concerns."
+  },
+  {
+    "article_id": "RSS-056-011",
+    "title": "Best Hiking Trails in the Pacific Northwest for 2026",
+    "source": "Outdoor Adventures",
+    "category": "lifestyle",
+    "published_at": "2026-05-24T06:00:00Z",
+    "summary": "From Mount Rainier's Wonderland Trail to Oregon's Eagle Creek, these 15 trails offer stunning views and challenging terrain for all skill levels.",
+    "word_count": 450,
+    "content": "From Mount Rainier's Wonderland Trail to Oregon's Eagle Creek, these 15 trails offer stunning views and challenging terrain for all skill levels."
+  },
+  {
+    "article_id": "RSS-056-012",
+    "title": "Customer Success Metrics That Actually Predict Retention",
+    "source": "SaaS Growth Review",
+    "category": "customer_success",
+    "published_at": "2026-05-21T15:00:00Z",
+    "summary": "Analysis of 500+ B2B SaaS companies reveals that product usage depth (not breadth), support ticket sentiment, and expansion revenue velocity are the top 3 predictors of renewal. NPS alone correlates weakly with actual churn.",
+    "word_count": 1050,
+    "content": "Analysis of 500+ B2B SaaS companies reveals that product usage depth (not breadth), support ticket sentiment, and expansion revenue velocity are the top 3 predictors of renewal. NPS alone correlates weakly with actual churn. Companies implementing health-score models combining these metrics achieve 92% prediction accuracy for 90-day churn risk."
+  }
+]

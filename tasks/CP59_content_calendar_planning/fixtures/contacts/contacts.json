@@ -1,0 +1,26 @@
+[
+  {
+    "contact_id": "CT-001",
+    "name": "周丽",
+    "department": "市场部",
+    "title": "市场总监",
+    "email": "zhou.li@company.com",
+    "phone": "13500001001"
+  },
+  {
+    "contact_id": "CT-002",
+    "name": "张涛",
+    "department": "市场部",
+    "title": "内容主管",
+    "email": "zhang.tao@company.com",
+    "phone": "13500001002"
+  },
+  {
+    "contact_id": "CT-003",
+    "name": "陈雪",
+    "department": "销售部",
+    "title": "销售VP",
+    "email": "chen.xue@company.com",
+    "phone": "13500001003"
+  }
+]

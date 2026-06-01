@@ -1,0 +1,15 @@
+[
+  {
+    "message_id": "msg_01",
+    "from": "marketing-director@company.com",
+    "to": "content-manager@company.com",
+    "subject": "6月内容日历规划",
+    "body": "请基于当前市场热点和我们的目标行业规划6月的内容日历。重点要求：\n1. 紧跟AI Agent和数据安全热点\n2. 内容要能辅助销售获客（制造业和医疗是重点）\n3. 避免重复Q1已发过的主题\n4. 参考竞品动态做差异化\n\n邮件草稿发给我审核。",
+    "date": "2026-05-25",
+    "is_read": false,
+    "labels": [
+      "urgent",
+      "marketing"
+    ]
+  }
+]
