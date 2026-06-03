@@ -23,8 +23,9 @@ from claw_eval.runner.sandbox_tools import SANDBOX_TOOLS
 
 def _load_task(task_yaml: Path, port_offset: int) -> TaskDefinition:
     task = TaskDefinition.from_yaml(task_yaml)
-    if port_offset:
-        task.apply_port_offset(port_offset)
+    # 动态端口（v0.50.11 §3.3）：OS 分配空闲端口，取代固定端口 + offset/lease。
+    # port_offset 入参保留兼容（不再使用）。
+    task.assign_dynamic_ports()
     return task
 
 

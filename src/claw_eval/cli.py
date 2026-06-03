@@ -16,6 +16,12 @@ from pathlib import Path
 os.environ.setdefault("no_proxy", "localhost,127.0.0.1")
 os.environ.setdefault("NO_PROXY", "localhost,127.0.0.1")
 
+# 与 backend/benchmarks/claweval/claw_eval_ports.py 保持一致（vendored cli 无法 import backend.*）。
+# 一致性由 tests/test_claw_eval_ports_stride.py::test_cli_constants_in_sync_with_ports_module 守护。
+# 步长须覆盖真实服务端口跨度 9100-9415，避免 parallel>1 时相邻 worker 槽位端口窗口重叠。
+_CLAW_SLOT_STRIDE = 500        # == WORKER_PORT_STRIDE
+_CLAW_MAX_SERVICE_PORT = 9415  # == MAX_CLAW_SERVICE_PORT
+
 
 def _resolve_task_yaml(task_arg: str) -> Path:
     """Resolve --task to a YAML file path.
@@ -418,6 +424,38 @@ def _sandbox_handle_diagnostics(sandbox_runner, handle) -> dict:
     return diagnostics
 
 
+def _retag_oom_as_model_failure(exc, diagnostics, stage):
+    """Re-tag a sandbox failure as a model failure when the container was OOM-killed.
+
+    v0.50.11: a memory-heavy *model* command (e.g. ``ocrmypdf`` on a multi-hundred-page
+    PDF, instead of the provided ``ocr_extract_text`` tool) OOM-kills the 1g sandbox,
+    which surfaces as a transport disconnect and is otherwise classified
+    ``sandbox_transport`` → INFRA_TAINT → the whole run marked untrusted. The intended
+    task path fits well within 1g, so the OOM is the model's own doing: re-tag it as
+    ``sandbox_oom`` (kept out of INFRA_TAINT_CATEGORIES → scored 0, not excluded).
+    Returns the original exception unchanged when there was no OOM.
+    """
+    try:
+        oom = bool((diagnostics or {}).get("oom_killed"))
+    except Exception:
+        oom = False
+    if not oom or "sandbox_oom" in str(exc).lower():
+        return exc
+    from .runner.sandbox_errors import SandboxInfraError
+
+    diag = dict(getattr(exc, "diagnostics", None) or {})
+    diag["oom_killed"] = True
+    diag["original_error"] = str(exc)[:500]
+    return SandboxInfraError(
+        "sandbox_oom",
+        f"container OOM-killed (oom_killed=True) at stage={stage}; a memory-heavy "
+        f"model command exceeded the sandbox memory limit (the intended task path "
+        f"fits the limit). original: {str(exc)[:200]}",
+        diagnostics=diag,
+        dispatch_event=getattr(exc, "dispatch_event", None),
+    )
+
+
 def _log_sandbox_stage(
     stage: str,
     task_id: str,
@@ -458,9 +496,9 @@ def cmd_run(args: argparse.Namespace) -> None:
     task = TaskDefinition.from_yaml(task_yaml)
     tasks_dir = _resolve_tasks_dir(task_yaml)
 
-    port_offset = getattr(args, "port_offset", 0) or 0
-    if port_offset:
-        task.apply_port_offset(port_offset)
+    # 动态端口（v0.50.11 §3.3）：每道题由 OS 分配空闲端口，取代固定端口 + offset/lease。
+    # 旧的 port_offset 入参保留兼容（不再使用）。
+    task.assign_dynamic_ports()
 
     # Resolve model_id early (used for trace dir naming)
     model_id = args.model or cfg.model.model_id
@@ -945,8 +983,8 @@ def _run_single_task(
     task = TaskDefinition.from_yaml(task_yaml)
     tasks_dir = _resolve_tasks_dir(task_yaml)
 
-    if port_offset:
-        task.apply_port_offset(port_offset)
+    # 动态端口（v0.50.11 §3.3）：OS 分配空闲端口，取代固定端口 + offset/lease。
+    task.assign_dynamic_ports()
 
     cfg = load_config(config_path)
     provider = OpenAICompatProvider(
@@ -1097,6 +1135,9 @@ def _run_single_task(
                                 preserve_container = _is_sandbox_infra_exception(stage_exc)
                                 if handle is not None:
                                     sandbox_diagnostics = _sandbox_handle_diagnostics(sandbox_runner, handle)
+                                    stage_exc = _retag_oom_as_model_failure(
+                                        stage_exc, sandbox_diagnostics, current_stage
+                                    )
                                 _log_sandbox_stage(
                                     current_stage,
                                     task.task_id,
@@ -1105,7 +1146,7 @@ def _run_single_task(
                                     handle=handle,
                                     exc=stage_exc,
                                 )
-                                raise
+                                raise stage_exc
                             finally:
                                 current_stage = "stop_container"
                                 _log_sandbox_stage(
@@ -1502,8 +1543,8 @@ def cmd_batch(args: argparse.Namespace) -> None:
     score_sum = 0.0
     finished_tasks = 0
 
-    # Each worker slot gets a unique port offset: slot 0 → 0, slot 1 → 50, ...
-    # Tasks use ports 9100-9129 (span=30); stride of 50 leaves headroom.
+    # Each worker slot gets a unique port offset: slot 0 → 0, slot 1 → _CLAW_SLOT_STRIDE, ...
+    # Tasks use ports 9100-9415（含 CP 自定义 service）；步长须覆盖整个跨度避免槽位重叠。
     # We map futures to their assigned slot so we can recycle offsets.
     with ProcessPoolExecutor(max_workers=workers) as pool:
         # Slot pool: available port offsets
@@ -1515,17 +1556,10 @@ def cmd_batch(args: argparse.Namespace) -> None:
 
         port_base_offset = getattr(args, "port_base_offset", 0)
 
-        # Sanity check: max port must stay below ephemeral range (32768)
-        _STRIDE = 50  # port gap between adjacent worker slots
-        max_port = 9129 + port_base_offset + (workers - 1) * _STRIDE
-        if max_port >= 32768:
-            max_safe = (32767 - 9129 - port_base_offset) // _STRIDE + 1
-            print(
-                f"[ERROR] --port-base-offset {port_base_offset} with {workers} workers "
-                f"would use port {max_port} (>=32768, collides with ephemeral range). "
-                f"Max workers for this offset: {max_safe}"
-            )
-            return
+        # 动态端口（v0.50.11 §3.3）：slot offset 不再映射真实端口（端口由 OS 分配，见
+        # TaskDefinition.assign_dynamic_ports），仅用于拼 run_id / 容器名做槽位区分。
+        # 因此移除原“max_port < 32768”上限校验——它会把 workers≥48 的高并发误判为越界。
+        _STRIDE = _CLAW_SLOT_STRIDE  # 仅作槽位标号间距（命名用）
 
         def _submit(td: str) -> None:
             slot = available_slots.pop(0)
@@ -1808,7 +1842,7 @@ def cmd_harness(args: argparse.Namespace) -> None:
             model_id=model_id,
             cfg=cfg,
             trace_dir=trace_dir,
-            port_offset=(getattr(args, "port_offset", 0) or 0) + trial_index * 50,
+            port_offset=(getattr(args, "port_offset", 0) or 0) + trial_index * _CLAW_SLOT_STRIDE,
             sandbox=getattr(args, "sandbox", False) or cfg.sandbox.enabled,
             sandbox_image=getattr(args, "sandbox_image", None),
             no_judge=getattr(args, "no_judge", False),
@@ -1949,7 +1983,7 @@ def cmd_harness_batch(args: argparse.Namespace) -> None:
     trials = max(1, int(getattr(args, "trials", 1) or 1))
     workers = getattr(args, "parallel", 4) or 4
     port_base_offset = getattr(args, "port_base_offset", 0) or 0
-    _STRIDE = 50
+    _STRIDE = _CLAW_SLOT_STRIDE
 
     results: list[dict] = []
     start_time = time.monotonic()

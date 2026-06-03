@@ -37,11 +37,24 @@ RUN pip install -r /tmp/requirements.txt \
 # Only copy the sandbox server (not the full claw_eval framework)
 COPY src/claw_eval/sandbox/ /opt/sandbox/
 
-# Playwright + Chromium for browser screenshot/recording support
+# Playwright + Chromium for browser screenshot/recording support.
+# v0.50.11 ark overlay: the chromium binary download is gated behind a build arg.
+# Some deploy hosts (e.g. kris) cannot reach the cdn.playwright.dev download
+# redirect target over IPv4 *or* IPv6 (`connect EADDRNOTAVAIL <ipv6>:443`,
+# IPv4 redirect times out), which loops the browser download forever. Default
+# stays 1 (install chromium) so canonical builds are unchanged; pass
+# --build-arg INSTALL_PLAYWRIGHT_BROWSER=0 on network-restricted hosts to ship
+# the playwright python package without the browser binary (PDF/OCR/media tasks
+# are unaffected; browser-screenshot tasks need the binary added separately).
+ARG INSTALL_PLAYWRIGHT_BROWSER=1
 RUN pip install playwright --no-cache-dir \
         -i "${PIP_INDEX_URL}" \
         $(if [ -n "${PIP_TRUSTED_HOST}" ]; then printf '%s' "--trusted-host ${PIP_TRUSTED_HOST}"; fi) \
-    && playwright install --with-deps chromium
+    && if [ "${INSTALL_PLAYWRIGHT_BROWSER}" = "1" ]; then \
+           NODE_OPTIONS="--dns-result-order=ipv4first" playwright install --with-deps chromium; \
+       else \
+           echo "[ark v0.50.11] Skipping chromium browser download (INSTALL_PLAYWRIGHT_BROWSER=0)"; \
+       fi
 
 EXPOSE 8080
 ENTRYPOINT ["python", "/opt/sandbox/server.py", "--port", "8080"]

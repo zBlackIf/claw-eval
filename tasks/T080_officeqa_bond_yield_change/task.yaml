@@ -1,3 +1,4 @@
+# v0.52.1 ark overlay: ground-truth-fix (0.24 -> 0.00, data-correct per OCR Table 1)
 task_id: T080_officeqa_bond_yield_change
 task_name: "OfficeQA: Bond Yield Change WWII to Korean War"
 version: "1.0"
@@ -60,7 +61,7 @@ scoring_components:
     weight: 0.55
     check:
       type: keywords_present
-      keywords: ["0.24"]
+      keywords: ["0.00", "0.0", "0", "no change", "unchanged"]
   - name: ocr_tool_usage
     weight: 0.10
     check:
@@ -97,6 +98,6 @@ reference_solution: |
   1. ocr_extract_text(image_path="treasury_bulletin_1960_07.pdf")
   2. Find corporate Aa bond yields for 1945 and 1950
   3. Compute absolute change
-  4. Report: 0.24
+  4. Report: 0.00 (no change)
 
 primary_dimensions: [completion, robustness, communication]

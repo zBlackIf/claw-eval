@@ -9,3 +9,11 @@ pydantic>=2.0
 Pillow>=10.0
 pdf2image>=1.16
 opencv-python-headless>=4.8
+
+# v0.50.14 ark overlay: declare playwright here so this requirements file fully
+# captures the standard sandbox image's pip dependencies. Upstream installs it
+# in a separate Dockerfile.agent step; declaring it here means a clean rebuild
+# from requirements alone reproduces the complete image. The chromium *browser
+# binary* remains gated by Dockerfile.agent's INSTALL_PLAYWRIGHT_BROWSER arg
+# (built with =0 on hosts mirroring Kris), so this only adds the python package.
+playwright>=1.60

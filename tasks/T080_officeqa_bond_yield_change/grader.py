@@ -12,7 +12,7 @@ from claw_eval.models.trace import DimensionScores, MediaLoad, ToolDispatch, Tra
 
 log = logging.getLogger(__name__)
 
-GROUND_TRUTH = "0.24"
+GROUND_TRUTH = "0.00"
 TOLERANCE = 0.05
 
 
@@ -21,7 +21,7 @@ class OfficeQABondYieldChangeGrader(AbstractGrader):
 
     The agent must OCR a Treasury Bulletin (July 1960), identify the highest
     quality corporate bond yields (Aa grade) for 1945 and 1950, compute the
-    absolute change, and report 0.24 percentage points.
+    absolute change, and report 0.00 percentage points (no change: Moody Aaa corporate 2.62 pct in both 1945 and 1950, per Treasury Bulletin July 1960 Table 1).
 
     Scoring: rule-based for numerical accuracy and OCR tool usage;
     LLM judge for historical reasoning and computation quality.
@@ -34,7 +34,7 @@ class OfficeQABondYieldChangeGrader(AbstractGrader):
     _REASONING_RUBRIC = """\
 Evaluate the agent's reasoning in computing the absolute change in highest quality \
 corporate bond yield from the end of WWII (1945) to the start of the Korean War (1950).
-The correct answer is 0.24 percentage points.
+The correct answer is 0.00 percentage points (no change: Moody Aaa corporate 2.62 pct in both 1945 and 1950, per Treasury Bulletin July 1960 Table 1).
 Score each of the three parts separately, then compute a weighted final score (0-1).
 
 === Part 1: Historical Period Identification (weight 30%) ===

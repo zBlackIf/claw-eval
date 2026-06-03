@@ -5,7 +5,7 @@
     "to": "ea@company.com",
     "subject": "帮我整理本周会议action items",
     "body": "请帮我把本周（5/19-5/23）所有会议的action items整理出来：\n1. 去重（同一个item在多个会议出现的只保留一次）\n2. 标注是否已过deadline\n3. 安排下周的跟进提醒\n4. 汇总邮件发给各负责人的主管（不要直接发，先给我看）",
-    "date": "2026-05-26",
+    "date": "2026-05-26T00:00:00Z",
     "is_read": false,
     "labels": [
       "urgent",

@@ -25,6 +25,19 @@ from ...models.trace import TokenUsage
 _MALFORMED_TOOL_INPUT_KEY = "__ark_malformed_tool_input__"
 DEFAULT_MAX_RETRIES = 20
 
+# v0.50.14: capture the provider response ``id`` (== ARK ``x-request-id``) onto
+# the returned assistant Message so it lands in the JSONL trace, letting us
+# cross-reference a task's turns against ARK's request logs. Gated to an explicit
+# model_id allow-list (default: the doubao-seed-2-1-code-60b endpoint) so other
+# models' traces stay byte-identical. Phase 2 replaces this env gate with a
+# per-model config flag — see docs/v0.50/v0.50.14-save-provider-request-id-plan.md.
+_DEFAULT_REQUEST_ID_CAPTURE_MODELS = "ep-20260601005726-9nqvs"
+
+
+def _request_id_capture_models() -> set[str]:
+    raw = os.environ.get("ARK_CAPTURE_REQUEST_ID_MODELS", _DEFAULT_REQUEST_ID_CAPTURE_MODELS)
+    return {m.strip() for m in raw.split(",") if m.strip()}
+
 
 def _normalize_max_retries(value: int | None, default: int = DEFAULT_MAX_RETRIES) -> int:
     if value is None:
@@ -330,6 +343,8 @@ class OpenAICompatProvider:
     ) -> None:
         self.model_id = model_id
         self.base_url = base_url
+        # v0.50.14: only stamp provider_response_id for allow-listed models.
+        self._capture_request_id = model_id in _request_id_capture_models()
         self.reasoning_replay_field = _resolve_reasoning_replay_field(model_id, base_url)
         self.extra_body = extra_body or {}
         self.temperature = temperature
@@ -466,8 +481,11 @@ class OpenAICompatProvider:
         tool_calls_by_index: dict[int, dict[str, Any]] = {}
         usage_info = None
         has_any_choice = False
+        response_id = None  # v0.50.14: same id on every chunk of one request
 
         for chunk in stream:
+            if response_id is None:
+                response_id = getattr(chunk, "id", None)
             if chunk.usage:
                 usage_info = chunk.usage
             if not chunk.choices:
@@ -546,6 +564,7 @@ class OpenAICompatProvider:
         resp = _Resp()
         resp.choices = [choice]
         resp.usage = usage_info
+        resp.id = response_id  # v0.50.14: preserve request id through stream assembly
         return resp
 
     # ------------------------------------------------------------------
@@ -620,4 +639,17 @@ class OpenAICompatProvider:
         # OpenRouter returns "reasoning" instead of "reasoning_content"
         reasoning = getattr(choice.message, "reasoning_content", None) or getattr(choice.message, "reasoning", None)
 
-        return Message(role="assistant", content=content_blocks, reasoning_content=reasoning), usage
+        msg_kwargs: dict[str, Any] = {
+            "role": "assistant",
+            "content": content_blocks,
+            "reasoning_content": reasoning,
+        }
+        # v0.50.14: stamp the request id (== ARK x-request-id) for allow-listed
+        # models only; relies on Message(extra="allow") so other models' messages
+        # serialize without the key.
+        if getattr(self, "_capture_request_id", False):
+            request_id = getattr(response, "id", None)
+            if request_id:
+                msg_kwargs["provider_response_id"] = request_id
+
+        return Message(**msg_kwargs), usage

@@ -167,6 +167,7 @@ class SandboxToolDispatcher:
         if tool_use.name in SANDBOX_TOOL_NAMES:
             return self._dispatch_sandbox(tool_use, trace_id)
         result, event = self._http.dispatch(tool_use, trace_id)
+        result = self._apply_generic_output_policy(tool_use, trace_id, result)
         return result, event, None
 
     def close(self) -> None:
@@ -202,6 +203,27 @@ class SandboxToolDispatcher:
             import httpx
             self._client = httpx.Client(timeout=120.0)
         return self._client
+
+    # v0.50.11：host→容器 transport 超时必须 ≥ 容器内命令超时(min(req,900))+缓冲。否则模型跑的
+    # 长命令(build/test >120s)会被 host 固定 120s ReadTimeout 截断 → 误判 sandbox_transport infra
+    # 污染(把模型正常行为当评测故障，还提前掐断了可能成功的命令)。放宽后容器内"优雅命令超时"先触发，
+    # 把"Timed out after Ns"作为正常 tool 结果回给模型，正常计入评分。真正的 transport 故障(连接
+    # 重置/断开)走连接错误、不受此影响仍会 taint。见 v0.50.11 acceptance issues（R2-E2/R3-E2）。
+    _SANDBOX_CMD_TIMEOUT_CAP_S = 900   # 容器 sandbox_server shell exec 上限 min(timeout,900)
+    _SANDBOX_TRANSPORT_BUFFER_S = 60
+
+    def _request_timeout_for(self, tool_use, payload: dict) -> float:
+        """命令类工具(Bash/shell)：host 等到容器自身命令超时之后再放弃；其余工具保留 120s。"""
+        is_cmd = getattr(tool_use, "name", "") == "Bash" or "command" in (payload or {})
+        if not is_cmd:
+            return 120.0
+        raw = (payload or {}).get("timeout_seconds")
+        try:
+            cmd_to = int(raw) if raw is not None else 30
+        except (TypeError, ValueError):
+            cmd_to = 30
+        cmd_to = max(1, min(cmd_to, self._SANDBOX_CMD_TIMEOUT_CAP_S))
+        return float(cmd_to + self._SANDBOX_TRANSPORT_BUFFER_S)
 
     def _identity_headers(self) -> dict[str, str]:
         if not self._sandbox_identity:
@@ -270,16 +292,36 @@ class SandboxToolDispatcher:
 
         endpoint_url = f"{self._sandbox_url}{path}"
         payload = self._translate_payload(tool_use)
+        request_timeout = self._request_timeout_for(tool_use, payload)
         t0 = time.monotonic()
         try:
             client = self._get_client()
-            resp = client.post(endpoint_url, json=payload, headers=self._identity_headers())
+            resp = client.post(
+                endpoint_url,
+                json=payload,
+                headers=self._identity_headers(),
+                timeout=request_timeout,
+            )
             latency_ms = (time.monotonic() - t0) * 1000
             body = resp.json()
             is_error = resp.status_code >= 400
         except Exception as exc:
             latency_ms = (time.monotonic() - t0) * 1000
             status = 500 if isinstance(exc, JSONDecodeError) else 599
+            # v0.50.11: the sandbox HTTP server dying mid-request — httpx
+            # RemoteProtocolError / "server disconnected without sending a response" —
+            # while executing the MODEL's tool call on the localhost container
+            # connection means the model's own command crashed/exhausted the sandbox
+            # (e.g. `ocrmypdf` on a multi-hundred-page PDF blowing past the 1g limit,
+            # instead of using the provided ocr_extract_text tool). The intended task
+            # path fits well within 1g, and a 127.0.0.1 socket has no network blips, so
+            # attribute it to the model: sandbox_oom — a scored model failure, NOT eval
+            # infra taint (Docker's OOMKilled flag is unreliable here, so we key off the
+            # disconnect itself, not oom_killed). Genuine transport faults (connect
+            # refused/reset, errno 104) keep error_code sandbox_transport → infra taint.
+            exc_name = type(exc).__name__
+            server_died = exc_name == "RemoteProtocolError" or "server disconnected" in str(exc).lower()
+            error_code = "sandbox_oom" if server_died else "sandbox_transport"
             dispatch_event = ToolDispatch(
                 trace_id=trace_id,
                 tool_use_id=tool_use.id,
@@ -288,17 +330,17 @@ class SandboxToolDispatcher:
                 request_body=tool_use.input,
                 response_status=status,
                 response_body={
-                    "infra_error": True,
-                    "error_code": "sandbox_transport",
+                    "infra_error": not server_died,
+                    "error_code": error_code,
                     "message": str(exc),
-                    "exc_type": type(exc).__name__,
+                    "exc_type": exc_name,
                 },
                 latency_ms=latency_ms,
             )
             raise SandboxInfraError(
-                "sandbox_transport",
+                error_code,
                 str(exc),
-                diagnostics={"endpoint_url": endpoint_url, "exc_type": type(exc).__name__},
+                diagnostics={"endpoint_url": endpoint_url, "exc_type": exc_name},
                 dispatch_event=dispatch_event,
             )
 
@@ -772,6 +814,46 @@ class SandboxToolDispatcher:
                 out["sha256"] = _sha256_text(value)
                 out["read_hint"] = _read_hint(str(raw_path))
         return out
+
+    def _apply_generic_output_policy(
+        self,
+        tool_use: ToolUseBlock,
+        trace_id: str,
+        result: ToolResultBlock,
+    ) -> ToolResultBlock:
+        """Stage oversized results from non-sandbox (mock-service) tools.
+
+        Task mock-service tools (declared via ``tool_endpoints``, e.g.
+        ``ocr_extract_text``) are routed through the plain HTTP dispatcher and
+        otherwise bypass output staging entirely, so a large result (e.g. a
+        full-document OCR dump) is injected verbatim and can blow the model's
+        per-message token budget. Mirror ``_apply_output_policy``: write the full
+        text to a workspace artifact and return a bounded preview + read_hint so
+        the model can page through it via Read(offset, limit). See v0.50.11 (T080
+        ocr_extract_text returned 428K chars -> 400 max-message-tokens).
+
+        Returns the result unchanged when it is already within budget. The trace
+        ``ToolDispatch.response_body`` is intentionally left intact so the full
+        tool output remains observable for replay/debugging.
+        """
+        blocks = list(getattr(result, "content", None) or [])
+        if not blocks or any(getattr(b, "text", None) is None for b in blocks):
+            return result
+        full_text = "".join(b.text for b in blocks)
+        staged = self._stage_large_text(
+            tool_use=tool_use,
+            trace_id=trace_id,
+            label="result",
+            text=full_text,
+            remote=bool(self._sandbox_url),
+        )
+        if staged is None:
+            return result
+        return ToolResultBlock(
+            tool_use_id=result.tool_use_id,
+            content=[TextBlock(text=json.dumps(staged, ensure_ascii=False))],
+            is_error=result.is_error,
+        )
 
     @staticmethod
     def _tool_input_error_message(tool_use: ToolUseBlock, marker: dict) -> str:

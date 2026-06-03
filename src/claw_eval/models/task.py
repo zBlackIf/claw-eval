@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import copy
 import re
+import socket
 from pathlib import Path
 from typing import Any
 
@@ -71,6 +72,26 @@ def _normalize_calendar_list_events_schema(data: dict[str, Any]) -> None:
         properties = schema.get("properties") or {}
         if "start_date" in properties or "end_date" in properties:
             tool["input_schema"] = copy.deepcopy(_CALENDAR_LIST_EVENTS_CANONICAL_SCHEMA)
+
+
+def _pick_free_tcp_ports(count: int) -> list[int]:
+    """Return *count* distinct free TCP ports assigned by the OS.
+
+    All sockets are held open simultaneously while their ports are read, so the
+    OS guarantees the ports are mutually distinct; they are then closed for the
+    mock services to bind. Matches how services bind (IPv4 wildcard), mirroring
+    ``claw_eval_ports.probe_unavailable_tcp_ports``.
+    """
+    socks: list[socket.socket] = []
+    try:
+        for _ in range(count):
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.bind(("0.0.0.0", 0))
+            socks.append(sock)
+        return [sock.getsockname()[1] for sock in socks]
+    finally:
+        for sock in socks:
+            sock.close()
 
 
 class Prompt(BaseModel):
@@ -224,6 +245,44 @@ class TaskDefinition(BaseModel):
 
         for ep in self.tool_endpoints:
             ep.url = _shift_url(ep.url)
+
+    def assign_dynamic_ports(self) -> None:
+        """Bind每个声明端口到一个 OS 分配的空闲端口（动态端口，bind 0）。
+
+        替代固定端口 + offset/lease 机制（见 v0.50.11 §3.3）：mock service 本就读
+        ``PORT`` env，这里在起服务前把每个 distinct 的声明端口映射成一个 OS 空闲端口，
+        并一致重写 svc.port / env[PORT] / health_check / reset_endpoint 及所有
+        tool_endpoints.url。端口不再有 ~47 并发硬上限，瓶颈转 RAM。
+
+        同一题内的所有端口由“同时持有多个 bind(0) socket 再统一读端口”保证互不相同
+        （OS 不会把已占用的端口再分给另一个打开的 socket）。题间的极小 TOCTOU 窗口由
+        ServiceManager 的 ServiceStartError + 重试兜底。
+        """
+        declared_ports = sorted({int(svc.port) for svc in self.services})
+        if not declared_ports:
+            return
+
+        free_ports = _pick_free_tcp_ports(len(declared_ports))
+        port_map = dict(zip(declared_ports, free_ports))
+
+        def _remap_url(url: str) -> str:
+            return re.sub(
+                r"localhost:(\d+)",
+                lambda m: f"localhost:{port_map.get(int(m.group(1)), int(m.group(1)))}",
+                url,
+            )
+
+        for svc in self.services:
+            new_port = port_map[int(svc.port)]
+            svc.port = new_port
+            svc.health_check = _remap_url(svc.health_check)
+            if svc.reset_endpoint:
+                svc.reset_endpoint = _remap_url(svc.reset_endpoint)
+            # Tell the subprocess which port to bind
+            svc.env = {**(svc.env or {}), "PORT": str(new_port)}
+
+        for ep in self.tool_endpoints:
+            ep.url = _remap_url(ep.url)
 
     def get_endpoint_map(self) -> dict[str, ToolEndpoint]:
         """Return {tool_name: ToolEndpoint} for dispatcher lookup."""

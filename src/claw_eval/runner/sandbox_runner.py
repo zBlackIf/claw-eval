@@ -22,6 +22,12 @@ import secrets
 from ..config import SandboxConfig
 from .sandbox_errors import SandboxInfraError
 
+# Docker SDK's default client timeout is 60s, which is the read timeout that
+# trips as "start_container ... Read timed out. (read timeout=60)" when dockerd
+# is saturated by many concurrent container starts. Raise it to 180s so a busy
+# daemon has time to respond instead of failing the task as an infra error.
+DOCKER_CLIENT_TIMEOUT_SECONDS = 180
+
 
 @dataclass
 class ContainerHandle:
@@ -55,7 +61,7 @@ class SandboxRunner:
         self._config = sandbox_config
         self._image = image or sandbox_config.image
 
-        kwargs: dict[str, Any] = {}
+        kwargs: dict[str, Any] = {"timeout": DOCKER_CLIENT_TIMEOUT_SECONDS}
         if sandbox_config.docker_host:
             kwargs["base_url"] = sandbox_config.docker_host
         else:
@@ -65,7 +71,7 @@ class SandboxRunner:
         if "base_url" in kwargs:
             self._docker = docker.DockerClient(**kwargs)
         else:
-            self._docker = docker.from_env()
+            self._docker = docker.from_env(timeout=DOCKER_CLIENT_TIMEOUT_SECONDS)
 
     @staticmethod
     def _active_docker_context_host() -> str | None:
@@ -356,16 +362,12 @@ class SandboxRunner:
 
     @staticmethod
     def _required_roots(file_list: list[str]) -> list[str]:
-        roots: set[str] = set()
-        for rel_path in file_list:
-            parts = Path(rel_path).parts
-            if not parts:
-                continue
-            if parts[0] == "fixtures" and len(parts) >= 2:
-                roots.add(f"/workspace/fixtures/{parts[1]}")
-            elif len(parts) >= 1:
-                roots.add(f"/workspace/{parts[0]}")
-        return sorted(roots)
+        # workspace per-call 守卫已停用：防串题由 identity token 保证（每次请求校验，
+        # 见 sandbox_identity_guard），而逐 fixture 文件的存在性校验会把"agent 正常
+        # 删除/改名 fixture（如 SQLite checkpoint 删 -wal）"误报成 sandbox_workspace_mismatch
+        # （eval-260602-032616-138931 共 194 次假阳性）。返回空列表即令容器内 guard 无 root
+        # 可查、恒通过；纯宿主侧改动，无需改容器、无需重建镜像。
+        return []
 
     @staticmethod
     def _bootstrap_identity(handle: ContainerHandle, required_roots: list[str], injected: int) -> None:

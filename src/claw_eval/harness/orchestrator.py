@@ -319,8 +319,9 @@ def run_harness_task(
         raise ValueError(f"Unknown harness: {harness}")
 
     task = TaskDefinition.from_yaml(task_yaml)
-    if port_offset:
-        task.apply_port_offset(port_offset)
+    # 动态端口（v0.50.11 §3.3）：OS 分配空闲端口，取代固定端口 + offset/lease。
+    # port_offset 入参保留兼容（不再使用）。
+    task.assign_dynamic_ports()
 
     trace_id = str(uuid4())
     task_trace_dir = trace_dir / f"{task.task_id}_{trace_id[:8]}"

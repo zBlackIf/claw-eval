@@ -228,7 +228,12 @@ def force_kill_pid(req: ForceKillPidRequest) -> dict[str, Any]:
     return resp
 
 
-@app.post("/ops_diagnostics/audit")
+# v0.52.1 fix: audit endpoint must be GET — the framework audit collector
+# (runner/loop.py + harness/orchestrator.py) fetches /audit via httpx.get; a
+# POST-only route returned 405 (swallowed), so the ops_diagnostics audit
+# snapshot was never recorded and 6/9 graded endpoints scored 0 for every
+# model (completion capped ~0.41). Match the config/scheduler GET convention.
+@app.get("/ops_diagnostics/audit")
 def audit() -> dict[str, Any]:
     return {"calls": copy.deepcopy(_audit_log), "total": len(_audit_log)}
 

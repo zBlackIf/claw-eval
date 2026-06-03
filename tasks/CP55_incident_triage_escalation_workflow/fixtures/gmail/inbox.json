@@ -5,7 +5,7 @@
     "to": "oncall@company.com",
     "subject": "[P0] payment-gateway error rate > 10%",
     "body": "Alert: payment-gateway integration error rate spiked to 15.2% at 10:00. Current status: DEGRADED. Last stable state: 2026-05-25 23:00. Possible cause: upstream provider issue.",
-    "date": "2026-05-26T10:05:00",
+    "date": "2026-05-26T10:05:00Z",
     "is_read": false,
     "labels": [
       "alert",
@@ -18,7 +18,7 @@
     "to": "oncall@company.com",
     "subject": "Re: Webhook delivery issues",
     "body": "We're investigating increased latency on our China endpoint. ETA for resolution: 2-4 hours. In the meantime, we recommend implementing retry logic with exponential backoff.",
-    "date": "2026-05-26T11:15:00",
+    "date": "2026-05-26T11:15:00Z",
     "is_read": false,
     "labels": [
       "vendor",

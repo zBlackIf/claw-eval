@@ -78,8 +78,10 @@ class SandboxConfig(BaseModel):
     enabled: bool = False
     image: str = "claw-eval-agent:latest"
     docker_host: str | None = None
-    memory_limit: str = "4g"
-    cpu_limit: float = 2.0
+    # v0.50.11：容器配额可经 env 调小，以在单机用更高并发跑 sandbox（4g 时单机仅 ~56 容器）。
+    # 默认仍 4g/2.0（行为不变）；高并发 sandbox 评测时设 ARK_CLAW_EVAL_SANDBOX_MEMORY=1g。
+    memory_limit: str = os.environ.get("ARK_CLAW_EVAL_SANDBOX_MEMORY", "4g") or "4g"
+    cpu_limit: float = float(os.environ.get("ARK_CLAW_EVAL_SANDBOX_CPU", "") or 2.0)
     sandbox_port: int = 8080
     container_timeout: int = 900
     max_concurrent: int = 10

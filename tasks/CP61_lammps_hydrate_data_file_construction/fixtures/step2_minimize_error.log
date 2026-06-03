@@ -1,0 +1,14 @@
+LAMMPS (2 Aug 2023 - Update 2)
+  using 1 OpenMP thread(s) per MPI task
+Reading data file input.data (written by step1_create_data.py) ...
+  orthogonal box = (0 0 0) to (12.03 12.03 12.03)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  192 atoms
+ERROR: Atoms in data file are out of the box (src/read_data.cpp:1453)
+  box dims = (0 0 0) to (12.03 12.03 12.03)
+  atom 137 (type 2, H) has coordinate z = 12.4117 -> outside +z face by 0.3817 Ang
+  atom 162 (type 4, C) has coordinate x = -0.0094 -> outside -x face
+  (root cause: step1_create_data.py hand-codes cage atom positions with 2-decimal
+   rounding; several H and methane-C atoms land just outside the a=12.03 box.)
+Last command: read_data input.data
